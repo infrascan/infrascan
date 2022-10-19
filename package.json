@@ -1,0 +1,30 @@
+{
+  "name": "infrascan",
+  "version": "0.0.1",
+  "description": "Tool to generate a system map by connecting to your AWS account.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "npm run build ; node ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lfarrel6/infrascan.git"
+  },
+  "keywords": [],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lfarrel6/infrascan/issues"
+  },
+  "homepage": "https://github.com/lfarrel6/infrascan#readme",
+  "devDependencies": {
+    "@aws-sdk/types": "^3.190.0",
+    "@types/node": "^18.11.2",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1236.0"
+  }
+}
