@@ -1,5 +1,6 @@
 import * as AWS from 'aws-sdk';
 import { servicesConfig, DEFAULT_REGION, ApiCall, isDynamicParameter, DynamicParameter, StaticParameter } from './service-config';
+import { scanEcsClusters } from './ecs';
 
 // Temp: restrict to single region
 AWS.config.update({
@@ -46,6 +47,9 @@ async function executeApiCall(handler: any, apiCall: ApiCall) {
     for(let dynamicValue of (selectedOutput as Array<string>)) {
       params[key] = dynamicValue;
       const result = await handler[apiCall.functionName](params).promise();
+      if(!result[key]) {
+        result[key] = dynamicValue;
+      }
       if(inMemDB[apiCall.functionName]) {
         inMemDB[apiCall.functionName].push(result);
       } else {
@@ -69,9 +73,9 @@ async function scanAwsAccount() {
   console.log(JSON.stringify(inMemDB, undefined, 2));
 }
 
-console.log('Beginning account scan');
-scanAwsAccount().then(() => {
-  console.log('Account scan succeeded');
-}).catch((err) => {
-  console.error('Account scan failed', err);
-});
+// console.log('Beginning ECS scan');
+// scanEcsClusters().then(() => {
+//   console.log('ECS scan succeeded');
+// }).catch((err) => {
+//   console.error('ECS scan failed', err);
+// });
