@@ -1,10 +1,16 @@
-import * as AWS from 'aws-sdk';
+import { IAM } from 'aws-sdk';
 
 function parseRoleName(roleArn: string): string | undefined {
-  return roleArn.split(":").pop();
+  const lastToken = roleArn.split(":").pop();
+  return lastToken?.split('/').pop();
 }
 
-export async function scanIamRole(iamClient: AWS.IAM, roleArn: string): Promise<object> {
+function decodePolicy(policyDoc: string): any {
+  const decodedPolicy = decodeURIComponent(policyDoc);
+  return JSON.parse(decodedPolicy);
+}
+
+export async function scanIamRole(iamClient: IAM, roleArn: string): Promise<object> {
   const roleName = parseRoleName(roleArn);
   // Init role state
   const iamState: any = {};
@@ -15,7 +21,10 @@ export async function scanIamRole(iamClient: AWS.IAM, roleArn: string): Promise<
     // Retrieve base info about Role, main insight being the trust relationship
 
     const baseRoleInfo = await iamClient.getRole({ RoleName: roleName }).promise();
-    iamState["role"] = baseRoleInfo;
+    if(baseRoleInfo?.Role?.AssumeRolePolicyDocument) {
+      baseRoleInfo.Role.AssumeRolePolicyDocument = decodePolicy(baseRoleInfo.Role.AssumeRolePolicyDocument);
+    }
+    iamState["role"] = baseRoleInfo?.Role;
 
     // Pull info about the role's inline policies
 
@@ -23,7 +32,12 @@ export async function scanIamRole(iamClient: AWS.IAM, roleArn: string): Promise<
     const inlinePolicies = [];
     for(let policy of rolePolicies.PolicyNames) {
       const policyInfo = await iamClient.getRolePolicy({ RoleName: roleName, PolicyName: policy }).promise();
-      inlinePolicies.push(policyInfo);
+      const formattedPolicyInfo = { 
+        RoleName: policyInfo.RoleName,
+        PolicyName: policyInfo.PolicyName,
+        PolicyDocument: decodePolicy(policyInfo.PolicyDocument)
+      };
+      inlinePolicies.push(formattedPolicyInfo);
     }
     iamState["inlinePolicies"] = inlinePolicies;
 
@@ -34,7 +48,7 @@ export async function scanIamRole(iamClient: AWS.IAM, roleArn: string): Promise<
     for(let policy of attachedPoliciesForRole.AttachedPolicies ?? []) {
       if(policy.PolicyArn) {
         const attachedPolicy = await iamClient.getPolicy({ PolicyArn: policy.PolicyArn }).promise();
-        attachedPolicies.push(attachedPolicy);
+        attachedPolicies.push(attachedPolicy.Policy);
       }
     }
     iamState["attachedPolicies"] = attachedPolicies;

@@ -1,7 +1,7 @@
-import * as AWS from 'aws-sdk';
+import { ECS, IAM } from 'aws-sdk';
 import { scanIamRole } from './iam';
 
-export async function scanEcsClusters(ecsClient: AWS.ECS): Promise<any> {
+export async function scanEcsClusters(ecsClient: ECS): Promise<any> {
   const ecsState: any = {};
 
   // Get all clusters in current scope
@@ -32,7 +32,7 @@ export async function scanEcsClusters(ecsClient: AWS.ECS): Promise<any> {
   return ecsState;
 }
 
-export async function scanEcsTaskDefinitions(ecsClient: AWS.ECS, iamClient: AWS.IAM) {
+export async function scanEcsTaskDefinitions(ecsClient: ECS, iamClient: IAM) {
   const tasksState: Array<any> = [];
 
   // Get task def families - this will let us filter the existing tasks more effectively
