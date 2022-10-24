@@ -17,11 +17,21 @@ async function scanAwsAccount() {
   const lambdaClient = new AWS.Lambda();
   const snsClient = new AWS.SNS();
   const sqsClient = new AWS.SQS();
+  console.log('Begin ECS Clusters Scan');
   const ecsScanResult = await scanEcsClusters(ecsClient);
+  console.log('End ECS Clusters Scan');
+  console.log('Begin ECS Tasks Scan');
   const ecsTasksScanResult = await scanEcsTaskDefinitions(ecsClient, iamClient);
+  console.log('End ECS Tasks Scan');
+  console.log('Begin Lambdas Scan');
   const lambdaScanResult = await scanLambdas(lambdaClient, iamClient);
+  console.log('End Lambdas Scan');
+  console.log('Begin SNS Scan');
   const snsScanResult = await scanTopics(snsClient);
+  console.log('End SNS Scan');
+  console.log('Begin SQS Scan');
   const sqsScanResult = await scanQueues(sqsClient);
+  console.log('End SQS Scan');
   return {
     ecsClusters: ecsScanResult,
     ecsTasks: ecsTasksScanResult,

@@ -48,7 +48,21 @@ export async function scanIamRole(iamClient: IAM, roleArn: string): Promise<obje
     for(let policy of attachedPoliciesForRole.AttachedPolicies ?? []) {
       if(policy.PolicyArn) {
         const attachedPolicy = await iamClient.getPolicy({ PolicyArn: policy.PolicyArn }).promise();
-        attachedPolicies.push(attachedPolicy.Policy);
+        
+        // Pull the specific policy version to get the embedded document
+        if(attachedPolicy.Policy?.DefaultVersionId) {
+          const policyVersion = await iamClient.getPolicyVersion({ 
+            PolicyArn: policy.PolicyArn, 
+            VersionId: attachedPolicy.Policy?.DefaultVersionId 
+          }).promise();
+          const formattedVersion = { ...attachedPolicy.Policy, ...policyVersion.PolicyVersion };
+          if(formattedVersion.Document) {
+            formattedVersion.Document = decodePolicy(formattedVersion.Document);
+          }
+          attachedPolicies.push(formattedVersion);
+        } else {
+          attachedPolicies.push(attachedPolicy.Policy);
+        }
       }
     }
     iamState["attachedPolicies"] = attachedPolicies;

@@ -11,6 +11,7 @@ export async function scanLambdas(lambdaClient: Lambda, iamClient: IAM): Promise
   // Pull all lambdas in scope
   console.log('Start Lambda.listFunctions');
   const lambdas = await lambdaClient.listFunctions().promise();
+  console.debug('Found',lambdas.Functions?.length,'Lambdas');
   console.log('End Lambda.listFunctions');
   if(lambdas.Functions) {
     for(let lambdaFunc of lambdas.Functions) {
@@ -34,8 +35,10 @@ export async function scanLambdas(lambdaClient: Lambda, iamClient: IAM): Promise
               const versionsOfLayer = await lambdaClient.listLayerVersions({ LayerName: layerName }).promise();
               const sortedVersions = (versionsOfLayer.LayerVersions ?? []).sort((layerA, layerB) => (layerA.Version as number) - (layerB.Version as number));
               const latest = sortedVersions.pop()?.Version as number;
-              const latestLayerVersion = await lambdaClient.getLayerVersion({ LayerName: layerName, VersionNumber: latest }).promise();
-              functionState["layers"].push(latestLayerVersion);
+              if(latest) {
+                const latestLayerVersion = await lambdaClient.getLayerVersion({ LayerName: layerName, VersionNumber: latest }).promise();
+                functionState["layers"].push(latestLayerVersion);
+              }
             }
           }
         }
