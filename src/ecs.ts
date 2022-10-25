@@ -77,35 +77,52 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
 
   // Get task def families - this will let us filter the existing tasks more effectively
   const taskDefFamilies = await ecsClient.listTaskDefinitionFamilies().promise();
+  console.debug('Found ', taskDefFamilies?.families?.length, 'task families');
   for(let family of taskDefFamilies.families ?? []) {
-    // TODO: only take latest revision, don't step over all versions
-    const taskDefsInFamily = await ecsClient.listTaskDefinitions({ familyPrefix: family }).promise();
-
-    const taskDefsState: Array<any> = [];
-    for(let taskDef of taskDefsInFamily.taskDefinitionArns ?? []) {
-      const taskInfo = await ecsClient.describeTaskDefinition({ taskDefinition: taskDef, include: ["TAGS"] }).promise();
-      const enrichedTaskInfo: any = { ...taskInfo, roles: {} };
+    console.log('Scanning task definitions in family:', family);
+    const taskDefsInFamily = await ecsClient.listTaskDefinitions({ familyPrefix: family, sort: 'DESC' }).promise();
+    // pull latest task def from family
+    const latestTaskDef = taskDefsInFamily?.taskDefinitionArns?.[0];
+    console.log('Latest task definitions in family:', family, latestTaskDef);
+    if(latestTaskDef){
+      const taskInfo = await ecsClient.describeTaskDefinition({ taskDefinition: latestTaskDef, include: ["TAGS"] }).promise();
+      const enrichedTaskInfo: any = { 
+        taskDefinition: taskInfo.taskDefinition, 
+        tags: taskInfo.tags,
+        roles: {} 
+      };
       // execution role
       const execRole = taskInfo.taskDefinition?.executionRoleArn;
       if(execRole) {
-        const roleInfo = await scanIamRole(iamClient, execRole);
-        enrichedTaskInfo["roles"]["executionRole"] = roleInfo;
+        try {
+          const roleInfo = await scanIamRole(iamClient, execRole);
+          enrichedTaskInfo["roles"]["executionRole"] = roleInfo;
+        } catch (err) {
+          console.error('Failed to scan execution role', {
+            err
+          });
+        }
       }
       
       // task defintion role
       const taskRole = taskInfo.taskDefinition?.taskRoleArn;
       if(taskRole) {
-        const roleInfo = await scanIamRole(iamClient, taskRole);
-        enrichedTaskInfo["roles"]["taskRole"] = roleInfo;
+        try {
+          const roleInfo = await scanIamRole(iamClient, taskRole);
+          enrichedTaskInfo["roles"]["taskRole"] = roleInfo;
+        } catch (err) {
+          console.error('Failed to scan task role', { 
+            err
+          });
+        }
       }
 
-      taskDefsState.push(enrichedTaskInfo);
+      tasksState.push({
+        familyName: family,
+        taskDefinitions: enrichedTaskInfo  
+      });
     }
 
-    tasksState.push({
-      familyName: family,
-      taskDefinitions: taskDefsState  
-    });
   }
 
   saveToFile(tasksState);
