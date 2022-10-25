@@ -1,34 +1,44 @@
 import * as AWS from 'aws-sdk';
-import { writeFileSync } from 'fs';
 import { DEFAULT_REGION } from './service-config';
-import { scanEcsClusters, scanEcsTaskDefinitions } from './ecs';
-import { scanLambdas } from './lambda';
-import { scanTopics } from './sns';
-import { scanQueues } from './sqs';
+import { scanEcsClusters, scanEcsTaskDefinitions, EcsCluster } from './ecs';
+import { scanLambdas, LambdaFunction } from './lambda';
+import { scanTopics, SnsTopic } from './sns';
+import { scanQueues, SqsQueue } from './sqs';
 
 // Temp: restrict to single region
 AWS.config.update({
   region: DEFAULT_REGION
 });
 
-async function scanAwsAccount() {
+export interface AccountState {
+  clusters: EcsCluster[],
+  lambdas: LambdaFunction[],
+  topics: SnsTopic[],
+  queues: SqsQueue[]
+}
+
+async function scanAwsAccount(): Promise<AccountState> {
+  const stsClient = new AWS.STS();
   const ecsClient = new AWS.ECS();
   const iamClient = new AWS.IAM();
   const lambdaClient = new AWS.Lambda();
   const snsClient = new AWS.SNS();
   const sqsClient = new AWS.SQS();
-  const ecsScanResult = await scanEcsClusters(ecsClient);
-  const ecsTasksScanResult = await scanEcsTaskDefinitions(ecsClient, iamClient);
-  const lambdaScanResult = await scanLambdas(lambdaClient, iamClient);
-  const snsScanResult = await scanTopics(snsClient);
-  const sqsScanResult = await scanQueues(sqsClient);
+
+  const caller = await stsClient.getCallerIdentity().promise();
+  const accountId = caller.Account as string;
+  const clusters = await scanEcsClusters(accountId, ecsClient);
+  await scanEcsTaskDefinitions(accountId, ecsClient, iamClient);
+  const lambdas = await scanLambdas(accountId, lambdaClient, iamClient);
+  const topics = await scanTopics(accountId, snsClient);
+  const queues = await scanQueues(accountId, sqsClient);
+  
   return {
-    ecsClusters: ecsScanResult,
-    ecsTasks: ecsTasksScanResult,
-    lambdas: lambdaScanResult,
-    sns: snsScanResult,
-    sqs: sqsScanResult
-  };
+    clusters,
+    lambdas,
+    topics,
+    queues
+  }
 }
 
 console.log('Beginning Account scan');
@@ -36,10 +46,6 @@ scanAwsAccount().then((accountState) => {
   console.log('Account scan succeeded');
   const formattedBlob = JSON.stringify(accountState, undefined, 2);
   console.log(formattedBlob);
-
-  if(process.env.OUTPUT_FILE) {
-    writeFileSync(process.env.OUTPUT_FILE, formattedBlob);
-  }
 
 }).catch((err) => {
   console.error('Account scan failed', err);
