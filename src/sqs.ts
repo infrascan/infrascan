@@ -4,6 +4,7 @@ import { persistToFileFactory, Tag } from './utils';
 export interface SqsQueue {
   ResourceKey: 'SQS',
   QueueUrl: string,
+  Name?: string,
   Arn?: string,
   Tags?: Tag[]
 }
@@ -19,7 +20,8 @@ export async function scanQueues(accountId: string, sqsClient: SQS): Promise<Sqs
   for(let queue of queues.QueueUrls ?? []) {
     const queueState: SqsQueue = {
       ResourceKey: 'SQS',
-      QueueUrl: queue
+      QueueUrl: queue,
+      Name: queue.split('/').pop()
     };
     // Get the queue's attributes
     const attributes = await sqsClient.getQueueAttributes({ QueueUrl: queue, AttributeNames: ['QueueArn'] }).promise();

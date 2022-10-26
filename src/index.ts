@@ -4,6 +4,7 @@ import { scanEcsClusters, scanEcsTaskDefinitions, EcsCluster } from './ecs';
 import { scanLambdas, LambdaFunction } from './lambda';
 import { scanTopics, SnsTopic } from './sns';
 import { scanQueues, SqsQueue } from './sqs';
+import { generateServiceMap } from './graph';
 
 // Temp: restrict to single region
 AWS.config.update({
@@ -41,12 +42,14 @@ async function scanAwsAccount(): Promise<AccountState> {
   }
 }
 
+// TODO: Update service scanners to generate edges based on permissions
 console.log('Beginning Account scan');
 scanAwsAccount().then((accountState) => {
   console.log('Account scan succeeded');
   const formattedBlob = JSON.stringify(accountState, undefined, 2);
   console.log(formattedBlob);
-
+  const graphableData = generateServiceMap(accountState);
+  console.log(graphableData);
 }).catch((err) => {
   console.error('Account scan failed', err);
 });

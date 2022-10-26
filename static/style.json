@@ -1,0 +1,42 @@
+[
+  {
+    "selector": "[type = \"ecs\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Containers/32/Arch_Amazon-Elastic-Container-Service_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"sqs\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_App-Integration/Arch_32/Arch_Amazon-Simple-Queue-Service_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"sns\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_App-Integration/Arch_32/Arch_Amazon-Simple-Notification-Service_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"lambda\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Compute/32/Arch_AWS-Lambda_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  }
+]

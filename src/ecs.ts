@@ -19,6 +19,7 @@ export interface EcsTask {
 export interface EcsCluster {
   ResourceKey: 'ECS',
   Arn: string,
+  Name: string | undefined,
   Tasks?: EcsTask[]
 }
 
@@ -35,6 +36,7 @@ export async function scanEcsClusters(accountId: string, ecsClient: ECS): Promis
     const clusterState: EcsCluster = {
       ResourceKey: 'ECS',
       Arn: cluster,
+      Name: cluster.split("/").pop(),
       Tasks: []
     };
     const tasks = await ecsClient.listTasks({ cluster }).promise();
@@ -87,16 +89,18 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
     if(latestTaskDef){
       const taskInfo = await ecsClient.describeTaskDefinition({ taskDefinition: latestTaskDef, include: ["TAGS"] }).promise();
       const enrichedTaskInfo: any = { 
-        taskDefinition: taskInfo.taskDefinition, 
-        tags: taskInfo.tags,
-        roles: {} 
+        FamilyName: family,
+        TaskDefinition: taskInfo.taskDefinition, 
+        Tags: taskInfo.tags,
+        ExecutionRole: {},
+        TaskRole: {}
       };
       // execution role
       const execRole = taskInfo.taskDefinition?.executionRoleArn;
       if(execRole) {
         try {
           const roleInfo = await scanIamRole(iamClient, execRole);
-          enrichedTaskInfo["roles"]["executionRole"] = roleInfo;
+          enrichedTaskInfo["ExecutionRole"] = roleInfo;
         } catch (err) {
           console.error('Failed to scan execution role', {
             err
@@ -109,7 +113,7 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
       if(taskRole) {
         try {
           const roleInfo = await scanIamRole(iamClient, taskRole);
-          enrichedTaskInfo["roles"]["taskRole"] = roleInfo;
+          enrichedTaskInfo["TaskRole"] = roleInfo;
         } catch (err) {
           console.error('Failed to scan task role', { 
             err
@@ -117,10 +121,7 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
         }
       }
 
-      tasksState.push({
-        familyName: family,
-        taskDefinitions: enrichedTaskInfo  
-      });
+      tasksState.push(enrichedTaskInfo);
     }
 
   }

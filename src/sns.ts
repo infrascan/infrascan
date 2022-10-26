@@ -3,6 +3,7 @@ import { persistToFileFactory, Tag } from './utils';
 
 export interface Subscription {
   Arn?: string,
+  Name?: string,
   Owner?: string,
   Protocol?: string, // TODO: constrain
   Endpoint?: string,
@@ -12,6 +13,7 @@ export interface Subscription {
 export interface SnsTopic {
   ResourceKey: 'SNS',
   Arn: string,
+  Name: string,
   LambdaSuccessFeedbackSampleRate?: string,
   Owner?: string,
   SubscriptionsPending?: string,
@@ -44,7 +46,8 @@ export async function scanTopics(accountId: string, snsClient: SNS): Promise<Sns
     if(topic.TopicArn) {
       const topicState: SnsTopic = {
         ResourceKey: 'SNS',
-        Arn: topic.TopicArn 
+        Arn: topic.TopicArn,
+        Name: topic.TopicArn
       };
       const attributes = await snsClient.getTopicAttributes({ TopicArn: topic.TopicArn }).promise();
       const formattedAttributes = { ...attributes.Attributes };
@@ -56,6 +59,7 @@ export async function scanTopics(accountId: string, snsClient: SNS): Promise<Sns
       const subscriptions = await snsClient.listSubscriptionsByTopic({ TopicArn: topic.TopicArn }).promise();
       topicState["Subscriptions"] = subscriptions.Subscriptions?.map((sub) => ({
         Arn: sub.SubscriptionArn,
+        Name: sub.SubscriptionArn,
         Protocol: sub.Protocol,
         Endpoint: sub.Endpoint,
         Owner: sub.Owner,
