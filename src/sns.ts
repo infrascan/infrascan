@@ -48,9 +48,9 @@ export async function scanTopics(accountId: string, snsClient: SNS): Promise<Sns
       };
       const attributes = await snsClient.getTopicAttributes({ TopicArn: topic.TopicArn }).promise();
       const formattedAttributes = { ...attributes.Attributes };
-      formattedAttributes.Policy = JSON.parse(attributes?.Attributes?.Policy ?? "");
-      formattedAttributes.EffectiveDeliveryPolicy = JSON.parse(attributes?.Attributes?.EffectiveDeliveryPolicy ?? "");
-      formattedAttributes.DeliveryPolicy = JSON.parse(attributes?.Attributes?.DeliveryPolicy ?? "");
+      formattedAttributes.Policy = JSON.parse(attributes?.Attributes?.Policy ?? "{}");
+      formattedAttributes.EffectiveDeliveryPolicy = JSON.parse(attributes?.Attributes?.EffectiveDeliveryPolicy ?? "{}");
+      formattedAttributes.DeliveryPolicy = JSON.parse(attributes?.Attributes?.DeliveryPolicy ?? "{}");
       Object.assign(topicState, formattedAttributes);
 
       const subscriptions = await snsClient.listSubscriptionsByTopic({ TopicArn: topic.TopicArn }).promise();
