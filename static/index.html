@@ -8,13 +8,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js" integrity="sha512-gEWKnYYa1/1c3jOuT9PR7NxiVI1bwn02DeJGsl+lMVQ1fWMNvtjkjxIApTdbJ/wcDjQmbf+McWahXwipdC9bGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="./js/graph.js"></script>
   <style>
+    #container {
+      display: flex;
+    }
+
     #cy {
-      height: 500px;
-      width: 500px;
+      height: 1000px;
+      width: 1000px;
+    }
+
+    #focus-container {
+      background-color: #efefef;
+      height: 600px;
+      overflow-y: scroll;
+    }
+
+    #focus-content {
+      height: 100%;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <div id="cy"></div>
+  <div id="container">
+    <div id="cy"></div>
+    <div id="focus-container">
+      <pre id="focus-content"></pre>
+    </div>
+  </div>
 </body>
 </html>

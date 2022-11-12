@@ -1,4 +1,4 @@
 node_modules
 dist
 state
-static/graph.json
+static/graph*.json

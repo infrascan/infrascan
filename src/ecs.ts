@@ -9,18 +9,16 @@ export interface EcsContainer {
   HealthState?: string
 }
 
-export interface EcsTask {
-  Arn: string,
-  TaskDefinitionArn: string,
-  Tags?: Tag[],
-  Containers?: EcsContainer[]
-}
-
 export interface EcsCluster {
   ResourceKey: 'ECS',
   Arn: string,
   Name: string | undefined,
-  Tasks?: EcsTask[]
+  Tasks?: Array<{
+    Arn: string,
+    TaskDefinitionArn: string,
+    Tags?: Tag[],
+    Containers?: EcsContainer[]
+  }>
 }
 
 export async function scanEcsClusters(accountId: string, ecsClient: ECS): Promise<EcsCluster[]> {
@@ -73,9 +71,16 @@ export async function scanEcsClusters(accountId: string, ecsClient: ECS): Promis
   return ecsState;
 }
 
-export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, iamClient: IAM) {
+export interface EcsTask {
+  ResourceKey: 'ECS',
+  FamilyName: string,
+  TaskDefinition?: ECS.TaskDefinition,
+  Tags?: Tag[],
+}
+
+export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, iamClient: IAM): Promise<EcsTask[]> {
   const saveToFile = persistToFileFactory(accountId, 'ecs-tasks');
-  const tasksState: Array<any> = [];
+  const tasksState: Array<EcsTask> = [];
 
   // Get task def families - this will let us filter the existing tasks more effectively
   const taskDefFamilies = await ecsClient.listTaskDefinitionFamilies().promise();
@@ -88,19 +93,17 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
     console.log('Latest task definitions in family:', family, latestTaskDef);
     if(latestTaskDef){
       const taskInfo = await ecsClient.describeTaskDefinition({ taskDefinition: latestTaskDef, include: ["TAGS"] }).promise();
-      const enrichedTaskInfo: any = { 
+      const enrichedTaskInfo: EcsTask = { 
+        ResourceKey: "ECS",
         FamilyName: family,
         TaskDefinition: taskInfo.taskDefinition, 
-        Tags: taskInfo.tags,
-        ExecutionRole: {},
-        TaskRole: {}
+        Tags: taskInfo.tags?.map(({ key, value }) => ({ Key: key ?? '', Value: value ?? ''}))
       };
       // execution role
       const execRole = taskInfo.taskDefinition?.executionRoleArn;
       if(execRole) {
         try {
-          const roleInfo = await scanIamRole(iamClient, execRole);
-          enrichedTaskInfo["ExecutionRole"] = roleInfo;
+          await scanIamRole(iamClient, execRole);
         } catch (err) {
           console.error('Failed to scan execution role', {
             err
@@ -112,19 +115,17 @@ export async function scanEcsTaskDefinitions(accountId: string, ecsClient: ECS, 
       const taskRole = taskInfo.taskDefinition?.taskRoleArn;
       if(taskRole) {
         try {
-          const roleInfo = await scanIamRole(iamClient, taskRole);
-          enrichedTaskInfo["TaskRole"] = roleInfo;
+          await scanIamRole(iamClient, taskRole);
         } catch (err) {
           console.error('Failed to scan task role', { 
             err
           });
         }
       }
-
       tasksState.push(enrichedTaskInfo);
     }
-
   }
 
   saveToFile(tasksState);
+  return tasksState;
 }

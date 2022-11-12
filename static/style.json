@@ -1,6 +1,13 @@
 [
   {
-    "selector": "[type = \"ecs\"]",
+    "selector": "edge",
+    "style": {
+      "width": "1px",
+      "background-color": "#000"
+    }
+  },
+  {
+    "selector": "[type = \"ECS\"]",
     "label": "data(name)",
     "css": {
       "background-opacity": 0,
@@ -10,7 +17,7 @@
     }
   },
   {
-    "selector": "[type = \"sqs\"]",
+    "selector": "[type = \"SQS\"]",
     "label": "data(name)",
     "css": {
       "background-opacity": 0,
@@ -20,7 +27,7 @@
     }
   },
   {
-    "selector": "[type = \"sns\"]",
+    "selector": "[type = \"SNS\"]",
     "label": "data(name)",
     "css": {
       "background-opacity": 0,
@@ -30,7 +37,7 @@
     }
   },
   {
-    "selector": "[type = \"lambda\"]",
+    "selector": "[type = \"Lambda\"]",
     "label": "data(name)",
     "css": {
       "background-opacity": 0,

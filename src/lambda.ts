@@ -33,12 +33,22 @@ export async function scanLambdas(accountId: string, lambdaClient: Lambda, iamCl
           Name: lambdaFunc.FunctionName,
           Runtime: lambdaFunc.Runtime
         };
+
+        
+        let lambdaRole = lambdaFunc.Role;
+        if(!lambdaRole) {
+          const detailedLambda = await lambdaClient.getFunction({
+            FunctionName: lambdaFunc.FunctionArn
+          }).promise();
+          lambdaRole = detailedLambda?.Configuration?.Role;
+        }
+
         // Scan the roles associated with each function
-        if(lambdaFunc.Role) {
+        if(lambdaRole) {
           console.log('Start IAM scan Role');
-          const functionRole = await scanIamRole(iamClient, lambdaFunc.Role);
+          await scanIamRole(iamClient, lambdaFunc.Role);
           console.log('End IAM scan role');
-          functionState["Role"] = functionRole;
+          functionState["Role"] = lambdaFunc.Role;
         }
 
         functionState["Layers"] = [];
