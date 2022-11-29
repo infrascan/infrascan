@@ -1,40 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Infrascan</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js" integrity="sha512-gEWKnYYa1/1c3jOuT9PR7NxiVI1bwn02DeJGsl+lMVQ1fWMNvtjkjxIApTdbJ/wcDjQmbf+McWahXwipdC9bGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="./js/graph.js"></script>
-  <style>
-    #container {
-      display: flex;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infrascan</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"
+      integrity="sha512-gEWKnYYa1/1c3jOuT9PR7NxiVI1bwn02DeJGsl+lMVQ1fWMNvtjkjxIApTdbJ/wcDjQmbf+McWahXwipdC9bGA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="./js/graph.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
 
-    #cy {
-      height: 1000px;
-      width: 1000px;
-    }
+      #container {
+        display: flex;
+      }
 
-    #focus-container {
-      background-color: #efefef;
-      height: 600px;
-      overflow-y: scroll;
-    }
+      #cy {
+        height: 100vh;
+        width: 1000px;
+      }
 
-    #focus-content {
-      height: 100%;
-      width: 100%;
-    }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <div id="cy"></div>
-    <div id="focus-container">
-      <pre id="focus-content"></pre>
+      #focus-container {
+        box-sizing: border-box;
+        border-left: 1px solid #000;
+        background-color: #efefef;
+        height: 100vh;
+        width: 600px;
+        overflow-y: scroll;
+        padding: 5px;
+      }
+
+      #focus-content {
+        height: 90%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="cy"></div>
+      <div id="focus-container">
+        <h3>Selected Node:</h3>
+        <pre id="focus-content"></pre>
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

@@ -1,9 +1,12 @@
 [
   {
     "selector": "edge",
+    "label": "data(name)",
     "style": {
       "width": "1px",
-      "background-color": "#000"
+      "background-color": "#000",
+      "curve-style": "bezier",
+      "target-arrow-shape": "triangle"
     }
   },
   {
@@ -42,6 +45,86 @@
     "css": {
       "background-opacity": 0,
       "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Compute/32/Arch_AWS-Lambda_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"DynamoDB\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Database/32/Arch_Amazon-DynamoDB_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"RDS\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Database/32/Arch_Amazon-RDS_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"ApiGateway\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_App-Integration/Arch_32/Arch_Amazon-API-Gateway_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"EC2-Networking\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Amazon-Virtual-Private-Cloud_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"Route53\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Amazon-Route-53_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"ELB\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Elastic-Load-Balancing_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"CloudFront\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Amazon-CloudFront_32.svg",
+      "background-fit": "contain",
+      "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"S3\"]",
+    "label": "data(name)",
+    "css": {
+      "background-opacity": 0,
+      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Storage/32/Arch_Amazon-Simple-Storage-Service_32.svg",
       "background-fit": "contain",
       "background-clip": "none"
     }

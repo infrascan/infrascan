@@ -1,212 +1,313 @@
 const SERVICES_CONFIG = [
   {
     service: "SQS",
-    fn: "listQueues",
-    formatter: ({ QueueUrls }) => QueueUrls.map((queueUrl) => ({
-      QueueUrl: queueUrl,
-      Name: queueUrl.split('/').pop()
-    }))
-  },
-  {
-    service: "SQS",
-    fn: "listQueueTags",
-    parameters: [
+    key: "SQS",
+    getters: [
       {
-        Key: "QueueUrl", 
-        Selector: "SQS|listQueues|[].QueueUrl"
-      }
+        fn: "listQueues",
+        formatter: ({ QueueUrls }) =>
+          QueueUrls.map((queueUrl) => ({
+            QueueUrl: queueUrl,
+            Name: queueUrl.split("/").pop(),
+          })),
+      },
+      {
+        fn: "listQueueTags",
+        parameters: [
+          {
+            Key: "QueueUrl",
+            Selector: "SQS|listQueues|_result[].QueueUrl",
+          },
+        ],
+        formatter: ({ Tags }) => Tags,
+      },
+      {
+        fn: "getQueueAttributes",
+        parameters: [
+          {
+            Key: "QueueUrl",
+            Selector: "SQS|listQueues|_result[].QueueUrl",
+          },
+          {
+            Key: "AttributeNames",
+            Value: ["All"],
+          },
+        ],
+        formatter: ({ Attributes }) => Attributes,
+      },
     ],
-    formatter: ({ Tags }) => Tags
+    nodes: ["SQS|getQueueAttributes|[]._result.QueueArn"],
   },
   {
     service: "SNS",
-    fn: "listTopics",
-    formatter: ({ Topics }) => Topics
-  },
-  {
-    service: "SNS",
-    fn: "getTopicAttributes",
-    parameters: [
+    key: "SNS",
+    getters: [
       {
-        Key: "TopicArn",
-        Selector: "SNS|listTopics|[].TopicArn"
-      }
+        fn: "listTopics",
+        formatter: ({ Topics }) => Topics,
+      },
+      {
+        fn: "getTopicAttributes",
+        parameters: [
+          {
+            Key: "TopicArn",
+            Selector: "SNS|listTopics|_result[].TopicArn",
+          },
+        ],
+        formatter: ({ Attributes }) => Attributes,
+      },
+      {
+        fn: "listSubscriptionsByTopic",
+        parameters: [
+          {
+            Key: "TopicArn",
+            Selector: "SNS|listTopics|_result[].TopicArn",
+          },
+        ],
+        formatter: ({ Subscriptions }) => Subscriptions,
+      },
+      {
+        fn: "listTagsForResource",
+        parameters: [
+          {
+            Key: "ResourceArn",
+            Selector: "SNS|listTopics|_result[].TopicArn",
+          },
+        ],
+      },
     ],
-    formatter: ({ Attributes }) => Attributes
-  },
-  {
-    service: "SNS",
-    fn: "listSubscriptionsByTopic",
-    parameters: [
+    nodes: ["SNS|listTopics|_result[].TopicArn"],
+    edges: [
       {
-        Key: "TopicArn",
-        Selector: "SNS|listTopics|[].TopicArn"
-      }
+        state: "SNS|listSubscriptionsByTopic|[]",
+        from: "_parameters.TopicArn",
+        // filter out non-service subscriptions
+        to: "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
+      },
     ],
-    formatter: ({ Subscriptions }) => Subscriptions
-  },
-  {
-    service: "SNS",
-    fn: "listTagsForResource",
-    parameters: [
-      {
-        Key: "ResourceArn",
-        Selector: "SNS|listTopics|[].TopicArn"
-      }
-    ]
   },
   {
     service: "Lambda",
-    fn: "listFunctions",
-    formatter: ({ Functions }) => Functions
-  },
-  {
-    service: "Lambda",
-    fn: "getFunction",
-    parameters: [
+    key: "Lambda",
+    getters: [
       {
-        Key: "FunctionName",
-        Selector: "Lambda|listFunctions|[].FunctionArn"
-      }
+        fn: "listFunctions",
+        formatter: ({ Functions }) => Functions,
+      },
+      {
+        fn: "getFunction",
+        parameters: [
+          {
+            Key: "FunctionName",
+            Selector: "Lambda|listFunctions|_result[].FunctionArn",
+          },
+        ],
+        iamRoleSelector: "Configuration.Role",
+      },
     ],
-    iamRoleSelector: "Configuration.Role"
+    nodes: ["Lambda|listFunctions|_result[].FunctionArn"],
   },
   {
     service: "S3",
-    fn: "listBuckets",
-    formatter: ({ Buckets }) => Buckets
-  },
-  {
-    service: "S3",
-    fn: "getBucketNotificationConfiguration",
-    parameters: [
+    key: "S3",
+    getters: [
       {
-        Key: "Bucket",
-        Selector: "S3|listBuckets|[].Name"
-      }
-    ]
-  },
-  {
-    service: "S3",
-    fn: "getBucketWebsite",
-    parameters: [
+        fn: "listBuckets",
+        formatter: ({ Buckets }) => Buckets,
+      },
       {
-        Key: "Bucket",
-        Selector: "S3|listBuckets|[].Name"
-      }
-    ]
-  },
-  {
-    service: "S3",
-    fn: "getBucketAcl",
-    parameters: [
+        fn: "getBucketNotificationConfiguration",
+        parameters: [
+          {
+            Key: "Bucket",
+            Selector: "S3|listBuckets|_result[].Name",
+          },
+        ],
+      },
       {
-        Key: "Bucket",
-        Selector: "S3|listBuckets|[].Name"
-      }
-    ]
+        fn: "getBucketWebsite",
+        parameters: [
+          {
+            Key: "Bucket",
+            Selector: "S3|listBuckets|_result[].Name",
+          },
+        ],
+      },
+      {
+        fn: "getBucketAcl",
+        parameters: [
+          {
+            Key: "Bucket",
+            Selector: "S3|listBuckets|_result[].Name",
+          },
+        ],
+      },
+    ],
+    nodes: ["S3|listBuckets|_result[].Name"],
+    edges: [
+      {
+        state: "S3|getBucketNotificationConfiguration|[]",
+        from: "_parameters.Bucket",
+        to: "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
+      },
+      {
+        state: "S3|getBucketNotificationConfiguration|[]",
+        from: "_parameters.Bucket",
+        to: "_result.QueueConfigurations | [].{target:Queue,name:Id}",
+      },
+      {
+        state: "S3|getBucketNotificationConfiguration|[]",
+        from: "_parameters.Bucket",
+        to: "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}",
+      },
+    ],
   },
   {
     service: "CloudFront",
-    fn: "listDistributions"
+    key: "CloudFront",
+    getters: [
+      {
+        fn: "listDistributions",
+        formatter: ({ DistributionList }) => DistributionList.Items,
+      },
+    ],
+    nodes: ["CloudFront|listDistributions|_result[].ARN"],
   },
   {
     service: "EC2",
-    fn: "describeVpcs",
-    formatter: ({ Vpcs }) => Vpcs
-  },
-  {
-    service: "EC2",
-    fn: "describeSubnets",
-    formatter: ({ Subnets }) => Subnets
+    key: "EC2-Networking",
+    getters: [
+      {
+        fn: "describeSubnets",
+        formatter: ({ Subnets }) => Subnets,
+      },
+      {
+        fn: "describeVpcs",
+        formatter: ({ Vpcs }) => Vpcs,
+      },
+    ],
+    // nodes: ["EC2|describeSubnets|[].SubnetId", "EC2|describeVpcs|[].VpcId"],
   },
   {
     service: "AutoScaling",
-    fn: "describeAutoScalingGroups",
-    formatter: ({ AutoScalingGroups }) => AutoScalingGroups
+    key: "AutoScaling",
+    getters: [
+      {
+        fn: "describeAutoScalingGroups",
+        formatter: ({ AutoScalingGroups }) => AutoScalingGroups,
+      },
+    ],
+    // nodes: ["AutoScaling|describeAutoScalingGroups|[].AutoScalingGroupARN"],
   },
   {
     service: "ApiGatewayV2",
-    fn: "getApis",
-    formatter: ({ Items }) => Items
+    key: "ApiGateway",
+    getters: [
+      {
+        fn: "getApis",
+        formatter: ({ Items }) => Items,
+      },
+    ],
+    nodes: ["ApiGatewayV2|getApis|_result[].ApiEndpoint"],
   },
   {
     service: "RDS",
-    fn: "describeDBInstances",
-    formatter: ({ DBInstances }) => DBInstances
+    key: "RDS",
+    getters: [
+      {
+        fn: "describeDBInstances",
+        formatter: ({ DBInstances }) => DBInstances,
+      },
+    ],
+    nodes: ["RDS|describeDBInstances|_result[].DBInstanceIdentifier"],
   },
   {
     service: "Route53",
-    fn: "listHostedZonesByName",
-    formatter: ({ HostedZones }) => HostedZones
-  },
-  {
-    service: "Route53",
-    fn: "listResourceRecordSets",
-    parameters: [
+    key: "Route53",
+    getters: [
       {
-        Key: "HostedZoneId",
-        Selector: "Route53|listHostedZonesByName|[].Id"
-      }
+        fn: "listHostedZonesByName",
+        formatter: ({ HostedZones }) => HostedZones,
+      },
+      {
+        fn: "listResourceRecordSets",
+        parameters: [
+          {
+            Key: "HostedZoneId",
+            Selector: "Route53|listHostedZonesByName|_result[].Id",
+          },
+        ],
+        formatter: ({ ResourceRecordSets }) => ResourceRecordSets,
+      },
     ],
-    formatter: ({ ResourceRecordSets }) => ResourceRecordSets
   },
   {
     service: "ELBv2",
-    fn: "describeLoadBalancers",
-    formatter: ({ LoadBalancers }) => LoadBalancers
-  },
-  {
-    service: "ELBv2",
-    fn: "describeTargetGroups",
-    parameters: [
+    key: "ELB",
+    getters: [
       {
-        Key: "LoadBalancerArn",
-        Selector: "ELBv2|describeLoadBalancers|[].LoadBalancerArn"
-      }
-    ],
-    formatter: ({ TargetGroups }) => TargetGroups
-  },
-  {
-    service: "ELBv2",
-    fn: "describeListeners",
-    parameters: [
+        fn: "describeLoadBalancers",
+        formatter: ({ LoadBalancers }) => LoadBalancers,
+      },
       {
-        Key: "LoadBalancerArn",
-        Selector: "ELBv2|describeLoadBalancers|[].LoadBalancerArn"
-      }
-    ],
-    formatter: ({ Listeners }) => Listeners
-  },
-  {
-    service: "ELBv2",
-    fn: "describeRules",
-    parameters: [
+        fn: "describeTargetGroups",
+        parameters: [
+          {
+            Key: "LoadBalancerArn",
+            Selector: "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
+          },
+        ],
+        formatter: ({ TargetGroups }) => TargetGroups,
+      },
       {
-        Key: "ListenerArn",
-        Selector: "ELBv2|describeListeners|[].ListenerArn"
-      }
+        fn: "describeListeners",
+        parameters: [
+          {
+            Key: "LoadBalancerArn",
+            Selector: "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
+          },
+        ],
+        formatter: ({ Listeners }) => Listeners,
+      },
+      {
+        fn: "describeRules",
+        parameters: [
+          {
+            Key: "ListenerArn",
+            Selector: "ELBv2|describeListeners|_result[].ListenerArn",
+          },
+        ],
+        formatter: ({ Rules }) => Rules,
+      },
     ],
-    formatter: ({ Rules }) => Rules
+    nodes: [
+      "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
+      // "ELBv2|describeListeners|[].ListenerArn",
+    ],
   },
   {
     service: "DynamoDB",
-    fn: "listTables",
-    formatter: ({ TableNames }) => TableNames
-  },
-  {
-    service: "DynamoDB",
-    fn: "describeTable",
-    parameters: [
+    key: "DynamoDB",
+    getters: [
       {
-        Key: "TableName",
-        Selector: "DynamoDB|listTables|[]"
-      }
+        fn: "listTables",
+        formatter: ({ TableNames }) => TableNames,
+      },
+      {
+        fn: "describeTable",
+        parameters: [
+          {
+            Key: "TableName",
+            Selector: "DynamoDB|listTables|_result",
+          },
+        ],
+        formatter: ({ Table }) => Table,
+      },
     ],
-    formatter: ({ Table }) => Table
-  }
+    nodes: ["DynamoDB|describeTable|[]._result.TableArn"],
+  },
 ];
 
 module.exports = {
-  SERVICES_CONFIG
-}
+  SERVICES_CONFIG,
+};
