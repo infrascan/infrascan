@@ -10,7 +10,7 @@
     }
   },
   {
-    "selector": "[type = \"ECS\"]",
+    "selector": "[type = \"ECS-Tasks\"]",
     "label": "data(name)",
     "css": {
       "background-opacity": 0,

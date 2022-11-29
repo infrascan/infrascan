@@ -1,9 +1,12 @@
 const { STS } = require("aws-sdk");
 const fs = require("fs");
 const jmespath = require("jmespath");
+const minimatch = require("minimatch");
+
+const OUTPUT_DIR = process.env.OUTPUT_DIR || "test-state";
 
 function buildFilePathForServiceCall(account, region, service, functionCall) {
-  return `./test-state/${account}-${region}-${service}-${functionCall}.json`;
+  return `./${OUTPUT_DIR}/${account}-${region}-${service}-${functionCall}.json`;
 }
 
 async function whoami() {
@@ -18,7 +21,7 @@ async function whoami() {
  * @returns any
  */
 function evaluateSelector(account, region, rawSelector) {
-  const [service, functionCall, selector] = rawSelector.split("|");
+  const [service, functionCall, ...selector] = rawSelector.split("|");
 
   const filePath = buildFilePathForServiceCall(
     account,
@@ -27,11 +30,34 @@ function evaluateSelector(account, region, rawSelector) {
     functionCall
   );
   const state = fs.readFileSync(filePath, "utf8");
-  return jmespath.search(JSON.parse(state), selector);
+  return jmespath.search(JSON.parse(state), selector.join("|"));
+}
+
+function getServiceFromArn(arn) {
+  const [_prefix, _aws, service] = arn.split(":");
+  return service;
+}
+
+function curryMinimatch(glob, opts) {
+  return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
+}
+
+function readStateFromFile(accountId, region, serviceName, functionCall) {
+  const fileName = buildFilePathForServiceCall(
+    accountId,
+    region,
+    serviceName,
+    functionCall
+  );
+  const contents = fs.readFileSync(fileName);
+  return JSON.parse(contents.toString());
 }
 
 module.exports = {
   buildFilePathForServiceCall,
   evaluateSelector,
   whoami,
+  getServiceFromArn,
+  curryMinimatch,
+  readStateFromFile,
 };

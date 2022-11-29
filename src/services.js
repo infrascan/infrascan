@@ -16,7 +16,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "QueueUrl",
-            Selector: "SQS|listQueues|_result[].QueueUrl",
+            Selector: "SQS|listQueues|[]._result[].QueueUrl",
           },
         ],
         formatter: ({ Tags }) => Tags,
@@ -26,7 +26,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "QueueUrl",
-            Selector: "SQS|listQueues|_result[].QueueUrl",
+            Selector: "SQS|listQueues|[]._result[].QueueUrl",
           },
           {
             Key: "AttributeNames",
@@ -36,7 +36,7 @@ const SERVICES_CONFIG = [
         formatter: ({ Attributes }) => Attributes,
       },
     ],
-    nodes: ["SQS|getQueueAttributes|[]._result.QueueArn"],
+    nodes: ["SQS|getQueueAttributes|[]._result.{id:QueueArn}"],
   },
   {
     service: "SNS",
@@ -51,7 +51,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "TopicArn",
-            Selector: "SNS|listTopics|_result[].TopicArn",
+            Selector: "SNS|listTopics|[]._result[].TopicArn",
           },
         ],
         formatter: ({ Attributes }) => Attributes,
@@ -61,7 +61,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "TopicArn",
-            Selector: "SNS|listTopics|_result[].TopicArn",
+            Selector: "SNS|listTopics|[]._result[].TopicArn",
           },
         ],
         formatter: ({ Subscriptions }) => Subscriptions,
@@ -71,12 +71,12 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "ResourceArn",
-            Selector: "SNS|listTopics|_result[].TopicArn",
+            Selector: "SNS|listTopics|[]._result[].TopicArn",
           },
         ],
       },
     ],
-    nodes: ["SNS|listTopics|_result[].TopicArn"],
+    nodes: ["SNS|listTopics|[]._result[].{id:TopicArn}"],
     edges: [
       {
         state: "SNS|listSubscriptionsByTopic|[]",
@@ -99,13 +99,16 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "FunctionName",
-            Selector: "Lambda|listFunctions|_result[].FunctionArn",
+            Selector: "Lambda|listFunctions|[]._result[].FunctionArn",
           },
         ],
-        iamRoleSelector: "Configuration.Role",
+        iamRoleSelectors: ["Configuration.Role"],
       },
     ],
-    nodes: ["Lambda|listFunctions|_result[].FunctionArn"],
+    nodes: ["Lambda|listFunctions|[]._result[].{id: FunctionArn}"],
+    iamRoles: [
+      "Lambda|getFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}",
+    ],
   },
   {
     service: "S3",
@@ -120,7 +123,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "Bucket",
-            Selector: "S3|listBuckets|_result[].Name",
+            Selector: "S3|listBuckets|[]._result[].Name",
           },
         ],
       },
@@ -129,7 +132,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "Bucket",
-            Selector: "S3|listBuckets|_result[].Name",
+            Selector: "S3|listBuckets|[]._result[].Name",
           },
         ],
       },
@@ -138,12 +141,12 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "Bucket",
-            Selector: "S3|listBuckets|_result[].Name",
+            Selector: "S3|listBuckets|[]._result[].Name",
           },
         ],
       },
     ],
-    nodes: ["S3|listBuckets|_result[].Name"],
+    nodes: ["S3|listBuckets|[]._result[].{id:Name}"],
     edges: [
       {
         state: "S3|getBucketNotificationConfiguration|[]",
@@ -171,7 +174,7 @@ const SERVICES_CONFIG = [
         formatter: ({ DistributionList }) => DistributionList.Items,
       },
     ],
-    nodes: ["CloudFront|listDistributions|_result[].ARN"],
+    nodes: ["CloudFront|listDistributions|[]._result[].{id:ARN}"],
   },
   {
     service: "EC2",
@@ -186,7 +189,7 @@ const SERVICES_CONFIG = [
         formatter: ({ Vpcs }) => Vpcs,
       },
     ],
-    // nodes: ["EC2|describeSubnets|[].SubnetId", "EC2|describeVpcs|[].VpcId"],
+    // nodes: ["EC2|describeSubnets|[].{id:SubnetId}", "EC2|describeVpcs|[].{id:VpcId}"],
   },
   {
     service: "AutoScaling",
@@ -197,7 +200,7 @@ const SERVICES_CONFIG = [
         formatter: ({ AutoScalingGroups }) => AutoScalingGroups,
       },
     ],
-    // nodes: ["AutoScaling|describeAutoScalingGroups|[].AutoScalingGroupARN"],
+    // nodes: ["AutoScaling|describeAutoScalingGroups|[].{id:AutoScalingGroupARN}"],
   },
   {
     service: "ApiGatewayV2",
@@ -208,7 +211,7 @@ const SERVICES_CONFIG = [
         formatter: ({ Items }) => Items,
       },
     ],
-    nodes: ["ApiGatewayV2|getApis|_result[].ApiEndpoint"],
+    nodes: ["ApiGatewayV2|getApis|[]._result | [].{id:ApiEndpoint}"],
   },
   {
     service: "RDS",
@@ -219,7 +222,9 @@ const SERVICES_CONFIG = [
         formatter: ({ DBInstances }) => DBInstances,
       },
     ],
-    nodes: ["RDS|describeDBInstances|_result[].DBInstanceIdentifier"],
+    nodes: [
+      "RDS|describeDBInstances|[]._result | [].{id:DBInstanceIdentifier}",
+    ],
   },
   {
     service: "Route53",
@@ -234,7 +239,7 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "HostedZoneId",
-            Selector: "Route53|listHostedZonesByName|_result[].Id",
+            Selector: "Route53|listHostedZonesByName|[]._result[].Id",
           },
         ],
         formatter: ({ ResourceRecordSets }) => ResourceRecordSets,
@@ -254,7 +259,8 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "LoadBalancerArn",
-            Selector: "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
+            Selector:
+              "ELBv2|describeLoadBalancers|[]._result[].LoadBalancerArn",
           },
         ],
         formatter: ({ TargetGroups }) => TargetGroups,
@@ -264,7 +270,8 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "LoadBalancerArn",
-            Selector: "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
+            Selector:
+              "ELBv2|describeLoadBalancers|[]._result[].LoadBalancerArn",
           },
         ],
         formatter: ({ Listeners }) => Listeners,
@@ -274,15 +281,15 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "ListenerArn",
-            Selector: "ELBv2|describeListeners|_result[].ListenerArn",
+            Selector: "ELBv2|describeListeners|[]._result[].ListenerArn",
           },
         ],
         formatter: ({ Rules }) => Rules,
       },
     ],
     nodes: [
-      "ELBv2|describeLoadBalancers|_result[].LoadBalancerArn",
-      // "ELBv2|describeListeners|[].ListenerArn",
+      "ELBv2|describeLoadBalancers|[]._result | [].{id:LoadBalancerArn}",
+      // "ELBv2|describeListeners|[] | {id:ListenerArn}",
     ],
   },
   {
@@ -298,13 +305,75 @@ const SERVICES_CONFIG = [
         parameters: [
           {
             Key: "TableName",
-            Selector: "DynamoDB|listTables|_result",
+            Selector: "DynamoDB|listTables|[]._result[]",
           },
         ],
         formatter: ({ Table }) => Table,
       },
     ],
-    nodes: ["DynamoDB|describeTable|[]._result.TableArn"],
+    nodes: ["DynamoDB|describeTable|[].{id:_result.TableArn}"],
+  },
+  {
+    service: "ECS",
+    key: "ECS-Cluster",
+    getters: [
+      {
+        fn: "listClusters",
+      },
+    ],
+    nodes: ["ECS|listClusters|[]._result.clusterArns | [].{id:@}"],
+  },
+  {
+    service: "ECS",
+    key: "ECS-Tasks",
+    getters: [
+      {
+        fn: "listTasks",
+        parameters: [
+          {
+            Key: "cluster",
+            Selector: "ECS|listClusters|[]._result.clusterArns[]",
+          },
+        ],
+      },
+      {
+        fn: "describeTasks",
+        parameters: [
+          {
+            Key: "cluster",
+            Selector: "ECS|listTasks|[]._parameters.cluster",
+          },
+          {
+            Key: "tasks",
+            Selector: "ECS|listTasks|[]._result.taskArns",
+          },
+        ],
+      },
+      {
+        fn: "describeTaskDefinition",
+        parameters: [
+          {
+            Key: "taskDefinition",
+            Selector: "ECS|describeTasks|[]._result.tasks[].taskDefinitionArn",
+          },
+          {
+            Key: "include",
+            Value: ["TAGS"],
+          },
+        ],
+        iamRoleSelectors: [
+          "taskDefinition.taskRoleArn",
+          "taskDefinition.executionRoleArn",
+        ],
+      },
+    ],
+    nodes: [
+      "ECS|describeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn}",
+    ],
+    iamRoles: [
+      "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
+      "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
+    ],
   },
 ];
 

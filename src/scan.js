@@ -5,6 +5,8 @@ const fs = require("fs");
 const { evaluateSelector, buildFilePathForServiceCall } = require("./utils");
 const { scanIamRole, IAM_STORAGE } = require("./iam");
 
+const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration"];
+
 function resolveParameters(account, region, parameters) {
   return parameters.reduce((acc, { Key, Selector, Value }) => {
     if (Selector) {
@@ -41,17 +43,7 @@ async function recordFunctionOutput(
     service,
     functionName
   );
-  if (functionState.length === 1) {
-    fs.writeFileSync(
-      outputFilePath,
-      JSON.stringify(functionState.pop(), undefined, 2)
-    );
-  } else {
-    fs.writeFileSync(
-      outputFilePath,
-      JSON.stringify(functionState, undefined, 2)
-    );
-  }
+  fs.writeFileSync(outputFilePath, JSON.stringify(functionState, undefined, 2));
 }
 
 async function makeFunctionCall(
@@ -62,7 +54,7 @@ async function makeFunctionCall(
   iamClient,
   functionCall
 ) {
-  const { fn, parameters, formatter, iamRoleSelector } = functionCall;
+  const { fn, parameters, formatter, iamRoleSelectors } = functionCall;
   const params = parameters
     ? resolveParameters(account, region, parameters)
     : [{}];
@@ -70,13 +62,21 @@ async function makeFunctionCall(
   const state = [];
   for (let paramObj of params) {
     try {
-      console.log(`${service} ${fn} ${paramObj}`);
+      console.log(`${service} ${fn}`);
       const result = (await client[fn](paramObj).promise()) ?? {};
       const formattedResult = formatter ? formatter(result) : result;
 
-      if (iamRoleSelector) {
-        const roleArn = jmespath.search(formattedResult, iamRoleSelector);
-        await scanIamRole(iamClient, roleArn);
+      if (iamRoleSelectors) {
+        for (let selector of iamRoleSelectors) {
+          const selectionResult = jmespath.search(formattedResult, selector);
+          if (Array.isArray(selectionResult)) {
+            for (let roleArn of selectionResult) {
+              await scanIamRole(iamClient, roleArn);
+            }
+          } else if (selectionResult) {
+            await scanIamRole(iamClient, selectionResult);
+          }
+        }
       }
 
       // using _ prefix to avoid issues with jmespath and dollar signs
@@ -88,7 +88,7 @@ async function makeFunctionCall(
       if (err.retryable) {
         // TODO: impl retryable
         console.log("Encountered retryable error", err);
-      } else {
+      } else if (!ERROR_CODES_TO_IGNORE.includes(err.code)) {
         console.log("Non retryable error", err);
       }
     }
@@ -96,10 +96,14 @@ async function makeFunctionCall(
   return state;
 }
 
-async function scanResourcesInAccount(account, region) {
+async function scanResourcesInAccount(account, region, servicesToScan) {
   const iamClient = new AWS.IAM();
   for (let serviceScanner of SERVICES) {
     const { service, getters } = serviceScanner;
+    if (servicesToScan.length > 0 && !servicesToScan.includes(service)) {
+      console.log(`Skipping ${service}, not included in services list`);
+      continue;
+    }
 
     const client = new AWS[service]({
       region,

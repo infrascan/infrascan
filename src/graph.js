@@ -1,8 +1,9 @@
-// const { IAM_STORAGE } = require("./iam");
 const { writeFileSync } = require("fs");
-const { SERVICES_CONFIG: SERVICES } = require("./services");
-const { evaluateSelector } = require("./utils");
 const jmespath = require("jmespath");
+const { SERVICES_CONFIG: SERVICES } = require("./services");
+const { evaluateSelector, readStateFromFile } = require("./utils");
+const { hydrateRoleStorage, IAM_STORAGE } = require("./iam");
+const { curryMinimatch, getServiceFromArn } = require("./utils");
 
 // {
 //   group: "nodes",
@@ -17,12 +18,13 @@ const jmespath = require("jmespath");
 //   },
 // }
 
-function formatIdAsNode(serviceKey, resourceId) {
+function formatIdAsNode(serviceKey, resourceId, parent) {
   return {
     group: "nodes",
     data: {
       id: resourceId,
       type: serviceKey,
+      parent,
     },
   };
 }
@@ -38,8 +40,8 @@ function generateNodesForService(account, region, serviceKey, nodes) {
   return nodes.reduce((accumulatedNodes, currentSelector) => {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
     console.log(account, region, currentSelector, selectedNodes);
-    const formattedNodes = selectedNodes.map((resourceId) =>
-      formatIdAsNode(serviceKey, resourceId)
+    const formattedNodes = selectedNodes.map(({ id, parent }) =>
+      formatIdAsNode(serviceKey, id, parent)
     );
     return accumulatedNodes.concat(formattedNodes);
   }, []);
@@ -93,7 +95,155 @@ function generateEdgesForService(account, region, serviceEdges) {
   return edges;
 }
 
+function getStatementsForRole(role) {
+  const inlineStatements =
+    jmespath.search(
+      role,
+      "inlinePolicies[].PolicyDocument.Document[].Statement"
+    ) ?? [];
+  const attachedStatements =
+    jmespath.search(role, "attachedPolicies[].Document.Statement") ?? [];
+  return {
+    inlineStatements,
+    attachedStatements: attachedStatements.flatMap((x) => x),
+  };
+}
+
+/**
+ * Given a resource glob in an iam policy, resolves the relevant resources
+ * @param {string} account
+ * @param {string} region
+ * @param {string} resourceArnFromPolicy
+ * @returns {string[]} relevant arns
+ */
+function resolveResourceGlob(account, region, resourceArnFromPolicy) {
+  if (resourceArnFromPolicy === "*") {
+    // TODO: use actions to infer which resources are impacted by a wildcard
+    // E.g. Actions: [s3:GetObject], Resources: [*]
+    return [];
+  } else if (resourceArnFromPolicy.includes("*")) {
+    const resourceService = getServiceFromArn(resourceArnFromPolicy);
+    if (resourceService) {
+      const serviceConfigs = SERVICES.filter(
+        ({ service }) => service.toLowerCase() === resourceService.toLowerCase()
+      );
+      if (serviceConfigs) {
+        const serviceArns = serviceConfigs.flatMap(({ nodes }) => {
+          if (!nodes || nodes.length === 0) {
+            return [];
+          }
+          const selectedNodes = nodes
+            .flatMap((nodeSelector) =>
+              evaluateSelector(account, region, nodeSelector)
+            )
+            .map(({ id }) => id);
+          // S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
+          // This means we need to build the ARN on the fly when matching in resource policies to allow partial
+          // matches of <bucket-name> to <bucket-arn>/<object-path>
+          if (resourceService === "s3") {
+            return selectedNodes?.map((node) => `arn:aws:s3:::${node}`);
+          }
+          return selectedNodes;
+        });
+        return serviceArns
+          .filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
+          .map((node) => {
+            // Because of S3 bucket names being converted into ARNs above
+            // we need to split out the name from the ARN to get the correct edge
+            if (resourceService === "s3") {
+              return node.split(":").pop();
+            } else {
+              return node;
+            }
+          });
+      }
+    }
+  } else {
+    const resourceService = getServiceFromArn(resourceArnFromPolicy);
+    const serviceConfigs = SERVICES.filter(
+      ({ service }) => service.toLowerCase() === resourceService.toLowerCase()
+    );
+    if (serviceConfigs) {
+      const serviceArns = serviceConfigs.flatMap(({ nodes }) => {
+        if (nodes) {
+          return nodes
+            .flatMap((nodeSelector) =>
+              evaluateSelector(account, region, nodeSelector)
+            )
+            .map(({ id }) => id);
+        } else {
+          return [];
+        }
+      });
+      return serviceArns.filter(
+        (knownArn) => knownArn === resourceArnFromPolicy
+      );
+    }
+  }
+  return [];
+}
+
+/**
+ * Takes inline or attached policy statements and returns the edges
+ * @param {Object[]} policyStatements
+ * @param {string[]} policyStatements.Resource
+ * @returns {string[]}
+ */
+function generateEdgesForPolicyStatements(account, region, policyStatements) {
+  return policyStatements.flatMap(({ Resource, ...rest }) => {
+    if (Array.isArray(Resource)) {
+      return Resource.flatMap((resourceGlobs) =>
+        resolveResourceGlob(account, region, resourceGlobs)
+      );
+    } else {
+      return resolveResourceGlob(account, region, Resource);
+    }
+  });
+}
+
+/**
+ *
+ * @param {string} account
+ * @param {string} region
+ * @param {string} roleExecutor - the arn of the resource using this role
+ * @param {string[]} roleSelectors
+ * @returns {Object[]} list of edge objects
+ */
+function generateEdgesForRole(account, region, roleSelectors) {
+  let edges = [];
+  for (let roleSelector of roleSelectors) {
+    // Get roles for service
+    const roleArns = evaluateSelector(account, region, roleSelector);
+    const roleEdges = roleArns.flatMap(({ arn, executor }) => {
+      const iamRole = IAM_STORAGE.getRole(arn);
+      // Get role's policy statements
+      const { inlineStatements, attachedStatements } =
+        getStatementsForRole(iamRole);
+
+      // Compute edges for inline policy statements
+      const effectedResourcesForInlineStatements =
+        generateEdgesForPolicyStatements(account, region, inlineStatements);
+
+      // Compute edges for attached policy statements
+      const effectedResourcesForAttachedStatements =
+        generateEdgesForPolicyStatements(account, region, attachedStatements);
+
+      // Iterate over the computed edges and format them
+      return effectedResourcesForInlineStatements
+        .concat(effectedResourcesForAttachedStatements)
+        .map((effectedArn) =>
+          formatEdge(executor, effectedArn, `${executor}:${effectedArn}`)
+        );
+    });
+    edges = edges.concat(roleEdges);
+  }
+  return edges;
+}
+
 function generateServiceMap(account, region) {
+  const iamState = readStateFromFile(account, region, "IAM", "roles");
+  hydrateRoleStorage(iamState);
+
   let graphNodes = [];
   for (let service of SERVICES) {
     if (service.nodes) {
@@ -120,20 +270,10 @@ function generateServiceMap(account, region) {
         region,
         service.edges
       );
-
-      console.log(
-        `Prefilter ${serviceEdges.length} edges generated for ${service.key}`
-      );
       const cleanedEdges = serviceEdges.filter(
         ({ data: { source, target } }) => {
           const sourceNode = graphNodes.find(({ data }) => data.id === source);
           const targetNode = graphNodes.find(({ data }) => data.id === target);
-          console.log({
-            source,
-            target,
-            sourceNode,
-            targetNode,
-          });
           return sourceNode != null && targetNode != null;
         }
       );
@@ -146,7 +286,22 @@ function generateServiceMap(account, region) {
     }
   }
 
-  const graphData = graphNodes.concat(graphEdges);
+  let roleEdges = [];
+  for (let service of SERVICES) {
+    if (service.iamRoles) {
+      const initialCount = roleEdges.length;
+      roleEdges = roleEdges.concat(
+        generateEdgesForRole(account, region, service.iamRoles)
+      );
+      console.log(
+        `Generated ${roleEdges.length - initialCount} edges for ${
+          service.key
+        }'s IAM roles`
+      );
+    }
+  }
+
+  const graphData = graphNodes.concat(graphEdges).concat(roleEdges);
 
   writeFileSync(
     `./static/graph-${Date.now()}.json`,
