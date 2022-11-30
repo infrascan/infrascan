@@ -1,5 +1,5 @@
 window.addEventListener("DOMContentLoaded", async () => {
-  const graphData = await fetch("/graph-1669753897408.json").then((res) =>
+  const graphData = await fetch("/graph-1669770159923.json").then((res) =>
     res.json()
   );
   const graphStyle = await fetch("/style.json").then((res) => res.json());
@@ -16,11 +16,15 @@ function addGraph(graphData, graphStyle) {
       // rows: 5
     },
   });
-  cy.nodes().on("tap", function (_) {
-    document.getElementById("focus-content").innerHTML = JSON.stringify(
-      this.data(),
-      undefined,
-      2
-    );
+  cy.nodes().on("tap", function (e) {
+    const isDirectTap = e.target.same(this);
+    if (isDirectTap) {
+      document.getElementById("focus-content").innerHTML = JSON.stringify(
+        this.data(),
+        undefined,
+        2
+      );
+      e.stopPropagation();
+    }
   });
 }

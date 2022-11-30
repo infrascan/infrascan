@@ -11,7 +11,7 @@ AWS.config.update({
 async function scan() {
   const caller = await whoami();
   console.log(`Beginning scan of ${caller.Account}`);
-  const servicesToScan = (process.env.SERVICES ?? "").split(",");
+  const servicesToScan = process.env.SERVICES?.split(",") ?? [];
   if (servicesToScan.length > 0) {
     console.log(`Filtering services according to supplied list`, {
       servicesToScan,

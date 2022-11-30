@@ -210,6 +210,10 @@ const SERVICES_CONFIG = [
         fn: "getApis",
         formatter: ({ Items }) => Items,
       },
+      {
+        fn: "getDomainNames",
+        formatter: ({ Items }) => Items,
+      },
     ],
     nodes: ["ApiGatewayV2|getApis|[]._result | [].{id:ApiEndpoint}"],
   },
@@ -244,6 +248,9 @@ const SERVICES_CONFIG = [
         ],
         formatter: ({ ResourceRecordSets }) => ResourceRecordSets,
       },
+    ],
+    nodes: [
+      "Route53|listResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name}",
     ],
   },
   {
@@ -328,6 +335,34 @@ const SERVICES_CONFIG = [
     key: "ECS-Tasks",
     getters: [
       {
+        fn: "listServices",
+        parameters: [
+          {
+            Key: "cluster",
+            Selector: "ECS|listClusters|[]._result.clusterArns[]",
+          },
+        ],
+      },
+      {
+        fn: "describeServices",
+        parameters: [
+          {
+            Key: "cluster",
+            Selector: "ECS|listServices|[]._parameters.cluster",
+          },
+          {
+            Key: "services",
+            // There's an upper limit here of 10 services, will need to add some support for
+            // paginating based on parameters as well as by API responses.
+            Selector: "ECS|listServices|[]._result.serviceArns",
+          },
+          {
+            Key: "include",
+            Value: ["TAGS"],
+          },
+        ],
+      },
+      {
         fn: "listTasks",
         parameters: [
           {
@@ -368,12 +403,12 @@ const SERVICES_CONFIG = [
       },
     ],
     nodes: [
-      "ECS|describeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn}",
+      "ECS|describeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn}",
     ],
-    iamRoles: [
-      "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
-      "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
-    ],
+    // iamRoles: [
+    //   "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
+    //   "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
+    // ],
   },
 ];
 
