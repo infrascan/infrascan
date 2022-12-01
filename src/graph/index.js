@@ -2,8 +2,15 @@ const { readFileSync, writeFileSync, statSync } = require("fs");
 const jmespath = require("jmespath");
 
 const { SERVICES_CONFIG: SERVICES } = require("../services");
-const { hydrateRoleStorage } = require("../iam");
-const { evaluateSelector, readStateFromFile } = require("../utils");
+const { hydrateRoleStorage, clearRoleStorage } = require("../iam");
+const {
+  evaluateSelector,
+  readStateFromFile,
+  METADATA_PATH,
+  DEFAULT_REGION,
+  evaluateSelectorGlobally,
+  splitServicesByGlobalAndRegional,
+} = require("../utils");
 
 const { generateEdgesForCloudfrontResources } = require("./cloudfront");
 const { generateEdgesForECSResources } = require("./ecs");
@@ -82,6 +89,31 @@ function generateEdgesForService(account, region, serviceEdges) {
   return edges;
 }
 
+function generateEdgesForServiceGlobally(serviceEdges) {
+  let edges = [];
+  for (let edge of serviceEdges) {
+    const { state, from, to } = edge;
+
+    const baseState = evaluateSelectorGlobally(state);
+    const generatedEdges = baseState.flatMap((state) => {
+      const sourceNode = jmespath.search(state, from);
+      const target = jmespath.search(state, to);
+      if (Array.isArray(target)) {
+        return target.map((edgeTargetInfo) =>
+          formatEdge(sourceNode, edgeTargetInfo.target, edgeTargetInfo.name)
+        );
+      } else if (target) {
+        return formatEdge(sourceNode, target.target, target.name);
+      } else {
+        return [];
+      }
+    });
+
+    edges = edges.concat(generatedEdges);
+  }
+  return edges;
+}
+
 function generateServiceMap(account, region) {
   const accountNode = formatIdAsNode("AWS-Account", account, {
     name: `AWS Account ${account}`,
@@ -90,7 +122,6 @@ function generateServiceMap(account, region) {
     parent: account,
     name: `AWS Region ${region}`,
   });
-
   const iamState = readStateFromFile(account, region, "IAM", "roles");
   hydrateRoleStorage(iamState);
 
@@ -197,38 +228,81 @@ function generateServiceMap(account, region) {
   return graphData;
 }
 
-function generateAggregateServiceMap() {
-  const accountNode = formatIdAsNode("AWS-Account", account, {
-    name: `AWS Account ${account}`,
+function generateGraph() {
+  const scanMetadataContents = readFileSync(METADATA_PATH).toString();
+  const scanMetadata = JSON.parse(scanMetadataContents);
+  console.log("Generating graph based on scan metadata", {
+    scanMetadata,
   });
-  const regionNode = formatIdAsNode("AWS-Region", region, {
-    parent: account,
-    name: `AWS Region ${region}`,
-  });
+  let graphNodes = [];
 
-  const iamState = readStateFromFile(account, region, "IAM", "roles");
-  hydrateRoleStorage(iamState);
+  const { global, regional } = splitServicesByGlobalAndRegional(SERVICES);
+  // Generate root nodes — Accounts and regions
+  for (let { account, regions } of scanMetadata) {
+    console.log(`Generating Nodes for ${account}`);
+    const accountNode = formatIdAsNode("AWS-Account", account, {
+      name: `AWS Account ${account}`,
+    });
+    graphNodes.push(accountNode);
+    const regionNodes = regions.map((region) =>
+      formatIdAsNode("AWS-Region", region, {
+        parent: account,
+        name: `${region} (${account})`,
+      })
+    );
+    graphNodes = graphNodes.concat(regionNodes);
+    // Only read IAM data from default region (global service)
+    const iamState = readStateFromFile(account, DEFAULT_REGION, "IAM", "roles");
+    hydrateRoleStorage(iamState);
 
-  let graphNodes = [accountNode, regionNode];
-  for (let service of SERVICES) {
-    if (service.nodes) {
-      console.log(`Generating graph nodes for ${service.key}`);
-      const initialLength = graphNodes.length;
-      graphNodes = graphNodes.concat(
-        generateNodesForService(
-          account,
-          region,
-          service.key,
-          service.nodes,
-          service.global
-        )
-      );
-      console.log(
-        `Generated ${graphNodes.length - initialLength} nodes for ${
-          service.key
-        }`
-      );
+    // Generate nodes for each global service
+    for (let service of global) {
+      if (service.nodes) {
+        console.log(`Generating graph nodes for ${service.key} in ${account}`);
+        const initialLength = graphNodes.length;
+        graphNodes = graphNodes.concat(
+          generateNodesForService(
+            account,
+            DEFAULT_REGION,
+            service.key,
+            service.nodes,
+            service.global
+          )
+        );
+        console.log(
+          `Generated ${graphNodes.length - initialLength} nodes for ${
+            service.key
+          }`
+        );
+      }
     }
+
+    // step through each scaned region
+    for (let region of regions) {
+      console.log(`Generating Nodes for ${account} in ${region}`);
+      // generate nodes for each regional service in this region
+      for (let regionalService of regional) {
+        if (regionalService.nodes) {
+          console.log(`Generating graph nodes for ${regionalService.key}`);
+          const initialLength = graphNodes.length;
+          graphNodes = graphNodes.concat(
+            generateNodesForService(
+              account,
+              region,
+              regionalService.key,
+              regionalService.nodes,
+              regionalService.global
+            )
+          );
+          console.log(
+            `Generated ${graphNodes.length - initialLength} nodes for ${
+              regionalService.key
+            }`
+          );
+        }
+      }
+    }
+    // clearRoleStorage();
   }
 
   let graphEdges = [];
@@ -236,11 +310,7 @@ function generateAggregateServiceMap() {
     if (service.edges) {
       console.log(`Generating graph edges for ${service.key}`);
       const initialLength = graphEdges.length;
-      const serviceEdges = generateEdgesForService(
-        account,
-        region,
-        service.edges
-      );
+      const serviceEdges = generateEdgesForServiceGlobally(service.edges);
       const cleanedEdges = serviceEdges.filter(
         ({ data: { source, target } }) => {
           const sourceNode = graphNodes.find(({ data }) => data.id === source);
@@ -248,6 +318,8 @@ function generateAggregateServiceMap() {
           return sourceNode != null && targetNode != null;
         }
       );
+      console.log(graphEdges.length, cleanedEdges.length);
+      console.log(graphEdges);
       graphEdges = graphEdges.concat(cleanedEdges);
       console.log(
         `Generated ${graphEdges.length - initialLength} edges for ${
@@ -262,9 +334,9 @@ function generateAggregateServiceMap() {
     if (service.iamRoles) {
       const initialCount = roleEdges.length;
       for (let roleSelector of service.iamRoles) {
-        const roleArns = evaluateSelector(account, region, roleSelector);
+        const roleArns = evaluateSelectorGlobally(roleSelector);
         const computedEdges = roleArns.flatMap(({ arn, executor }) => {
-          return generateEdgesForRole(account, region, arn, executor);
+          return generateEdgesForRole(arn, executor);
         });
         roleEdges = roleEdges.concat(computedEdges);
       }
@@ -277,15 +349,15 @@ function generateAggregateServiceMap() {
   }
 
   console.log("Manually generating edges for route 53 resources");
-  const route53Edges = generateEdgesForRoute53Resources(account, region);
+  const route53Edges = generateEdgesForRoute53Resources();
   console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
   console.log("Manually generating edges for cloudfront resources");
-  const cloudfrontEdges = generateEdgesForCloudfrontResources(account, region);
+  const cloudfrontEdges = generateEdgesForCloudfrontResources();
   console.log(
     `Generated ${cloudfrontEdges.length} edges for cloudfront resources`
   );
   console.log("Manually generating edges for ECS resources");
-  const ecsEdges = generateEdgesForECSResources(account, region);
+  const ecsEdges = generateEdgesForECSResources();
   console.log(`Generated ${ecsEdges.length} edges for ECS resources`);
 
   const graphData = graphNodes
@@ -309,9 +381,12 @@ function generateAggregateServiceMap() {
     JSON.stringify(graphData, undefined, 2),
     {}
   );
+
+  // TODO: add sanitized + searchable id to graph entries
   return graphData;
 }
 
 module.exports = {
   generateServiceMap,
+  generateGraph,
 };

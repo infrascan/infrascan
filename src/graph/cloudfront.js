@@ -4,12 +4,10 @@
  */
 
 const { formatEdge } = require("./graphUtilities");
-const { readStateFromFile } = require("../utils");
+const { getGlobalStateForServiceAndFunction } = require("../utils");
 
-function generateEdgesForCloudfrontResources(account, region) {
-  const cloudfrontRecords = readStateFromFile(
-    account,
-    region,
+function generateEdgesForCloudfrontResources() {
+  const cloudfrontRecords = getGlobalStateForServiceAndFunction(
     "CloudFront",
     "listDistributions"
   );
@@ -44,9 +42,7 @@ function generateEdgesForCloudfrontResources(account, region) {
 
   let cloudfrontEdges = [];
   // Generate edges for Route53 domains in front of Cloudfront
-  const s3State = readStateFromFile(
-    account,
-    region,
+  const s3State = getGlobalStateForServiceAndFunction(
     "S3",
     "listBuckets"
   ).flatMap(({ _result }) => _result);

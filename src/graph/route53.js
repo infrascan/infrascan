@@ -4,13 +4,11 @@
  */
 
 const { formatEdge } = require("./graphUtilities");
-const { readStateFromFile } = require("../utils");
+const { getGlobalStateForServiceAndFunction } = require("../utils");
 const minimatch = require("minimatch");
 
-function generateEdgesForRoute53Resources(account, region) {
-  const route53Records = readStateFromFile(
-    account,
-    region,
+function generateEdgesForRoute53Resources() {
+  const route53Records = getGlobalStateForServiceAndFunction(
     "Route53",
     "listResourceRecordSets"
   ).flatMap(({ _result }) => _result);
@@ -45,9 +43,7 @@ function generateEdgesForRoute53Resources(account, region) {
 
   let route53Edges = [];
   // Generate edges for Route53 domains in front of Cloudfront
-  const cloudfrontState = readStateFromFile(
-    account,
-    region,
+  const cloudfrontState = getGlobalStateForServiceAndFunction(
     "CloudFront",
     "listDistributions"
   ).flatMap(({ _result }) => _result);
@@ -65,7 +61,7 @@ function generateEdgesForRoute53Resources(account, region) {
   route53Edges = route53Edges.concat(cloudfrontEdges);
 
   // Generate edges for Route53 domains in front of S3 buckets
-  const s3State = readStateFromFile(account, region, "S3", "getBucketWebsite");
+  const s3State = getGlobalStateForServiceAndFunction("S3", "getBucketWebsite");
   const s3Edges = s3
     .map(({ Name }) => {
       const s3Bucket = s3State.find(({ _parameters }) => {
@@ -80,9 +76,7 @@ function generateEdgesForRoute53Resources(account, region) {
   route53Edges = route53Edges.concat(s3Edges);
 
   // Generate edges for Route53 domains in front of API Gateways
-  // const apiGatewayState = readStateFromFile(
-  //   account,
-  //   region,
+  // const apiGatewayState = getGlobalStateForServiceAndFunction(
   //   "ApiGatewayV2",
   //   "getDomainNames"
   // ).flatMap(({ _result }) => _result);
@@ -103,9 +97,7 @@ function generateEdgesForRoute53Resources(account, region) {
   //   .filter(Boolean);
   // route53Edges = route53Edges.concat(apiGatewayEdges);
 
-  const elbState = readStateFromFile(
-    account,
-    region,
+  const elbState = getGlobalStateForServiceAndFunction(
     "ELBv2",
     "describeLoadBalancers"
   ).flatMap(({ _result }) => _result);
@@ -123,9 +115,7 @@ function generateEdgesForRoute53Resources(account, region) {
   route53Edges = route53Edges.concat(elbEdges);
 
   // Generate edges for SNS http/https subscriptions pointed at domains in route53
-  const snsSubscriptionInfo = readStateFromFile(
-    account,
-    region,
+  const snsSubscriptionInfo = getGlobalStateForServiceAndFunction(
     "SNS",
     "listSubscriptionsByTopic"
   ).flatMap(({ _result }) => _result);

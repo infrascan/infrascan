@@ -2,9 +2,15 @@ const AWS = require("aws-sdk");
 const { SERVICES_CONFIG: SERVICES } = require("./services");
 const jmespath = require("jmespath");
 const fs = require("fs");
-const { evaluateSelector, buildFilePathForServiceCall } = require("./utils");
+const {
+  whoami,
+  evaluateSelector,
+  buildFilePathForServiceCall,
+  METADATA_PATH,
+  DEFAULT_REGION,
+  splitServicesByGlobalAndRegional,
+} = require("./utils");
 const { scanIamRole, IAM_STORAGE } = require("./iam");
-
 const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration", "NoSuchTagSet"];
 
 function resolveParameters(account, region, parameters) {
@@ -142,6 +148,73 @@ async function scanResourcesInAccount(account, region, servicesToScan) {
   );
 }
 
+async function performScan(config) {
+  const { global, regional } = splitServicesByGlobalAndRegional(SERVICES);
+
+  const scanMetadata = [];
+  for (let accountConfig of config) {
+    const { profile, regions, services } = accountConfig;
+    const credentials = new AWS.SharedIniFileCredentials({
+      profile,
+    });
+    AWS.config.update({ credentials, region: DEFAULT_REGION });
+    const globalCaller = await whoami();
+    const accountMetadataEntry = scanMetadata.find(
+      ({ account }) => account === globalCaller.Account
+    );
+    if (!accountMetadataEntry) {
+      scanMetadata.push({
+        account: globalCaller.Account,
+        regions: [],
+      });
+    }
+    console.log(`Scanning global resources in ${globalCaller.Account}`);
+    if (services?.length > 0) {
+      const filteredGlobalServices = global.filter(({ service }) =>
+        services.includes(service)
+      );
+      await scanResourcesInAccount(
+        globalCaller.Account,
+        "us-east-1",
+        filteredGlobalServices
+      );
+    } else {
+      await scanResourcesInAccount(globalCaller.Account, "us-east-1", global);
+    }
+
+    for (let region of regions) {
+      AWS.config.update({
+        region,
+      });
+      const caller = await whoami();
+      console.log(`Beginning scan of ${caller.Account} in ${region}`);
+      const servicesToScan = services ?? [];
+      if (servicesToScan.length > 0) {
+        console.log(`Filtering services according to supplied list`, {
+          servicesToScan,
+        });
+        const filteredRegionalServices = regional.filter(({ service }) =>
+          servicesToScan.includes(service)
+        );
+        await scanResourcesInAccount(
+          caller.Account,
+          region,
+          filteredRegionalServices
+        );
+      } else {
+        await scanResourcesInAccount(caller.Account, region, regional);
+      }
+      console.log(`Scan of ${caller.Account} in ${region} complete`);
+      const metadataEntry = scanMetadata.find(
+        ({ account }) => account === caller.Account
+      );
+      metadataEntry.regions.push(region);
+    }
+  }
+
+  fs.writeFileSync(METADATA_PATH, JSON.stringify(scanMetadata, undefined, 2));
+}
+
 module.exports = {
-  scanResourcesInAccount,
+  performScan,
 };

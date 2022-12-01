@@ -6,19 +6,15 @@
  */
 
 const { generateEdgesForRole, formatEdge } = require("./graphUtilities");
-const { readStateFromFile } = require("../utils");
+const { getGlobalStateForServiceAndFunction } = require("../utils");
 
-function generateEdgesForECSResources(account, region) {
-  const ecsServiceRecords = readStateFromFile(
-    account,
-    region,
+function generateEdgesForECSResources() {
+  const ecsServiceRecords = getGlobalStateForServiceAndFunction(
     "ECS",
     "describeServices"
   ).flatMap(({ _result }) => _result.services);
 
-  const ecsTaskDefinitionRecords = readStateFromFile(
-    account,
-    region,
+  const ecsTaskDefinitionRecords = getGlobalStateForServiceAndFunction(
     "ECS",
     "describeTaskDefinition"
   ).flatMap(({ _result }) => _result.taskDefinition);
@@ -32,8 +28,6 @@ function generateEdgesForECSResources(account, region) {
     if (matchedTaskDef.taskRoleArn) {
       taskEdges = taskEdges.concat(
         generateEdgesForRole(
-          account,
-          region,
           matchedTaskDef.taskRoleArn,
           matchedTaskDef.taskDefinitionArn
         )
@@ -42,8 +36,6 @@ function generateEdgesForECSResources(account, region) {
     if (matchedTaskDef.executionRoleArn) {
       taskEdges = taskEdges.concat(
         generateEdgesForRole(
-          account,
-          region,
           matchedTaskDef.executionRoleArn,
           matchedTaskDef.taskDefinitionArn
         )
@@ -59,9 +51,7 @@ function generateEdgesForECSResources(account, region) {
     }
   );
 
-  const elbTargetGroups = readStateFromFile(
-    account,
-    region,
+  const elbTargetGroups = getGlobalStateForServiceAndFunction(
     "ELBv2",
     "describeTargetGroups"
   ).flatMap(({ _result }) => _result);

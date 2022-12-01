@@ -3,7 +3,7 @@ const { IAM_STORAGE } = require("../iam");
 const {
   curryMinimatch,
   getServiceFromArn,
-  evaluateSelector,
+  evaluateSelectorGlobally,
 } = require("../utils");
 const { SERVICES_CONFIG: SERVICES } = require("../services");
 
@@ -38,12 +38,10 @@ function getStatementsForRole(role) {
 
 /**
  * Given a resource glob in an iam policy, resolves the relevant resources
- * @param {string} account
- * @param {string} region
  * @param {string} resourceArnFromPolicy
  * @returns {string[]} relevant arns
  */
-function resolveResourceGlob(account, region, resourceArnFromPolicy) {
+function resolveResourceGlob(resourceArnFromPolicy) {
   if (resourceArnFromPolicy === "*") {
     // TODO: use actions to infer which resources are impacted by a wildcard
     // E.g. Actions: [s3:GetObject], Resources: [*]
@@ -60,9 +58,7 @@ function resolveResourceGlob(account, region, resourceArnFromPolicy) {
             return [];
           }
           const selectedNodes = nodes
-            .flatMap((nodeSelector) =>
-              evaluateSelector(account, region, nodeSelector)
-            )
+            .flatMap((nodeSelector) => evaluateSelectorGlobally(nodeSelector))
             .map(({ id }) => id);
           // S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
           // This means we need to build the ARN on the fly when matching in resource policies to allow partial
@@ -94,9 +90,7 @@ function resolveResourceGlob(account, region, resourceArnFromPolicy) {
       const serviceArns = serviceConfigs.flatMap(({ nodes }) => {
         if (nodes) {
           return nodes
-            .flatMap((nodeSelector) =>
-              evaluateSelector(account, region, nodeSelector)
-            )
+            .flatMap((nodeSelector) => evaluateSelectorGlobally(nodeSelector))
             .map(({ id }) => id);
         } else {
           return [];
@@ -116,80 +110,37 @@ function resolveResourceGlob(account, region, resourceArnFromPolicy) {
  * @param {string[]} policyStatements.Resource
  * @returns {string[]}
  */
-function generateEdgesForPolicyStatements(account, region, policyStatements) {
+function generateEdgesForPolicyStatements(policyStatements) {
   return policyStatements.flatMap(({ Resource }) => {
     if (Array.isArray(Resource)) {
       return Resource.flatMap((resourceGlobs) =>
-        resolveResourceGlob(account, region, resourceGlobs)
+        resolveResourceGlob(resourceGlobs)
       );
     } else {
-      return resolveResourceGlob(account, region, Resource);
+      return resolveResourceGlob(Resource);
     }
   });
 }
 
-// /**
-//  *
-//  * @param {string} account
-//  * @param {string} region
-//  * @param {string} roleExecutor - the arn of the resource using this role
-//  * @param {string[]} roleSelectors
-//  * @returns {Object[]} list of edge objects
-//  */
-// function generateEdgesForRole(account, region, roleSelectors) {
-//   let edges = [];
-//   for (let roleSelector of roleSelectors) {
-//     // Get roles for service
-//     const roleArns = evaluateSelector(account, region, roleSelector);
-//     const roleEdges = roleArns.flatMap(({ arn, executor }) => {
-//       const iamRole = IAM_STORAGE.getRole(arn);
-//       // Get role's policy statements
-//       const { inlineStatements, attachedStatements } =
-//         getStatementsForRole(iamRole);
-
-//       // Compute edges for inline policy statements
-//       const effectedResourcesForInlineStatements =
-//         generateEdgesForPolicyStatements(account, region, inlineStatements);
-
-//       // Compute edges for attached policy statements
-//       const effectedResourcesForAttachedStatements =
-//         generateEdgesForPolicyStatements(account, region, attachedStatements);
-
-//       // Iterate over the computed edges and format them
-//       return effectedResourcesForInlineStatements
-//         .concat(effectedResourcesForAttachedStatements)
-//         .map((effectedArn) =>
-//           formatEdge(executor, effectedArn, `${executor}:${effectedArn}`)
-//         );
-//     });
-//     edges = edges.concat(roleEdges);
-//   }
-//   return edges;
-// }
 /**
  *
- * @param {string} account
- * @param {string} region
  * @param {string} arn
  * @param {string} roleExecutor - the arn of the resource using this role
  * @returns {Object[]} list of edge objects
  */
-function generateEdgesForRole(account, region, arn, executor) {
+function generateEdgesForRole(arn, executor) {
   const iamRole = IAM_STORAGE.getRole(arn);
   // Get role's policy statements
   const { inlineStatements, attachedStatements } =
     getStatementsForRole(iamRole);
 
   // Compute edges for inline policy statements
-  const effectedResourcesForInlineStatements = generateEdgesForPolicyStatements(
-    account,
-    region,
-    inlineStatements
-  );
+  const effectedResourcesForInlineStatements =
+    generateEdgesForPolicyStatements(inlineStatements);
 
   // Compute edges for attached policy statements
   const effectedResourcesForAttachedStatements =
-    generateEdgesForPolicyStatements(account, region, attachedStatements);
+    generateEdgesForPolicyStatements(attachedStatements);
 
   // Iterate over the computed edges and format them
   return effectedResourcesForInlineStatements
