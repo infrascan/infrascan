@@ -6,7 +6,7 @@ const SERVICES_CONFIG = [
       {
         fn: "listQueues",
         formatter: ({ QueueUrls }) =>
-          QueueUrls.map((queueUrl) => ({
+          QueueUrls?.map((queueUrl) => ({
             QueueUrl: queueUrl,
             Name: queueUrl.split("/").pop(),
           })),
@@ -113,10 +113,20 @@ const SERVICES_CONFIG = [
   {
     service: "S3",
     key: "S3",
+    global: true,
     getters: [
       {
         fn: "listBuckets",
         formatter: ({ Buckets }) => Buckets,
+      },
+      {
+        fn: "getBucketTagging",
+        parameters: [
+          {
+            Key: "Bucket",
+            Selector: "S3|listBuckets|[]._result[].Name",
+          },
+        ],
       },
       {
         fn: "getBucketNotificationConfiguration",
@@ -168,6 +178,7 @@ const SERVICES_CONFIG = [
   {
     service: "CloudFront",
     key: "CloudFront",
+    global: true,
     getters: [
       {
         fn: "listDistributions",
@@ -233,6 +244,7 @@ const SERVICES_CONFIG = [
   {
     service: "Route53",
     key: "Route53",
+    global: true,
     getters: [
       {
         fn: "listHostedZonesByName",
@@ -327,12 +339,31 @@ const SERVICES_CONFIG = [
       {
         fn: "listClusters",
       },
+      {
+        fn: "describeClusters",
+        parameters: [
+          {
+            Key: "clusters",
+            Selector: "ECS|listClusters|[]._result.clusterArns",
+          },
+          {
+            Key: "include",
+            Value: [
+              "ATTACHMENTS",
+              "SETTINGS",
+              "CONFIGURATIONS",
+              "STATISTICS",
+              "TAGS",
+            ],
+          },
+        ],
+      },
     ],
     nodes: ["ECS|listClusters|[]._result.clusterArns | [].{id:@}"],
   },
   {
     service: "ECS",
-    key: "ECS-Tasks",
+    key: "ECS-Services",
     getters: [
       {
         fn: "listServices",
@@ -354,6 +385,7 @@ const SERVICES_CONFIG = [
             Key: "services",
             // There's an upper limit here of 10 services, will need to add some support for
             // paginating based on parameters as well as by API responses.
+            // Max: 10
             Selector: "ECS|listServices|[]._result.serviceArns",
           },
           {
@@ -362,6 +394,15 @@ const SERVICES_CONFIG = [
           },
         ],
       },
+    ],
+    nodes: [
+      "ECS|describeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn}",
+    ],
+  },
+  {
+    service: "ECS",
+    key: "ECS-Tasks",
+    getters: [
       {
         fn: "listTasks",
         parameters: [
@@ -403,7 +444,8 @@ const SERVICES_CONFIG = [
       },
     ],
     nodes: [
-      "ECS|describeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn}",
+      // use describe services as source of ECS Task nodes to create parent relationship
+      "ECS|describeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
     ],
     // iamRoles: [
     //   "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",

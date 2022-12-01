@@ -1,5 +1,17 @@
 [
   {
+    "selector": "[type = \"AWS-Account\"]",
+    "style": {
+      "label": "data(name)"
+    }
+  },
+  {
+    "selector": "[type = \"AWS-Region\"]",
+    "style": {
+      "label": "data(name)"
+    }
+  },
+  {
     "selector": "edge",
     "label": "data(name)",
     "style": {
@@ -17,6 +29,20 @@
       "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Containers/32/Arch_Amazon-Elastic-Container-Service_32.svg",
       "background-fit": "contain",
       "background-clip": "none"
+    }
+  },
+  {
+    "selector": "[type = \"ECS-Cluster\"]",
+    "label": "data(name)",
+    "css": {
+      "background-color": "#E7E0FF"
+    }
+  },
+  {
+    "selector": "[type = \"ECS-Services\"]",
+    "label": "data(name)",
+    "css": {
+      "background-color": "#FFD0C7"
     }
   },
   {

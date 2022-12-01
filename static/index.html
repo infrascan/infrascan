@@ -11,11 +11,16 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cose-bilkent/1.6.5/cytoscape-cose-bilkent.js"></script>
     <script src="./js/graph.js"></script>
     <style>
       * {
         margin: 0;
         padding: 0;
+      }
+
+      body {
+        position: relative;
       }
 
       #container {
@@ -45,9 +50,29 @@
       .focused {
         border: solid 2px red;
       }
+
+      .fixed {
+        position: fixed;
+      }
+
+      .top-left {
+        top: 0;
+        left: 0;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .z-100 {
+        z-index: 100;
+      }
     </style>
   </head>
   <body>
+    <div id="restore-nodes" class="fixed top-left z-100 hidden">
+      <button onclick="restoreRemovedNodes()">Restore Graph</button>
+    </div>
     <div id="container">
       <div id="cy"></div>
       <div id="focus-container">

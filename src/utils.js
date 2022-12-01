@@ -3,7 +3,8 @@ const fs = require("fs");
 const jmespath = require("jmespath");
 const minimatch = require("minimatch");
 
-const OUTPUT_DIR = process.env.OUTPUT_DIR || "test-state";
+const OUTPUT_DIR = process.env.OUTPUT_DIR || "state";
+const METADATA_PATH = `./${OUTPUT_DIR}/metadata.json`;
 
 function buildFilePathForServiceCall(account, region, service, functionCall) {
   return `./${OUTPUT_DIR}/${account}-${region}-${service}-${functionCall}.json`;
@@ -54,6 +55,7 @@ function readStateFromFile(accountId, region, serviceName, functionCall) {
 }
 
 module.exports = {
+  METADATA_PATH,
   buildFilePathForServiceCall,
   evaluateSelector,
   whoami,

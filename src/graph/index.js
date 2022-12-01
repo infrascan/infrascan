@@ -1,4 +1,4 @@
-const { writeFileSync } = require("fs");
+const { readFileSync, writeFileSync, statSync } = require("fs");
 const jmespath = require("jmespath");
 
 const { SERVICES_CONFIG: SERVICES } = require("../services");
@@ -8,15 +8,20 @@ const { evaluateSelector, readStateFromFile } = require("../utils");
 const { generateEdgesForCloudfrontResources } = require("./cloudfront");
 const { generateEdgesForECSResources } = require("./ecs");
 const { generateEdgesForRoute53Resources } = require("./route53");
-const { formatEdge, generateEdgesForRole } = require("./graphUtilities");
+const {
+  formatEdge,
+  generateEdgesForRole,
+  sanitizeId,
+} = require("./graphUtilities");
 
-function formatIdAsNode(serviceKey, resourceId, parent) {
+function formatIdAsNode(serviceKey, resourceId, metadata = {}) {
   return {
     group: "nodes",
+    id: sanitizeId(resourceId),
     data: {
       id: resourceId,
       type: serviceKey,
-      parent,
+      ...metadata,
     },
   };
 }
@@ -28,13 +33,16 @@ function formatIdAsNode(serviceKey, resourceId, parent) {
  * @param {string[]} nodes
  * @returns {any[]}
  */
-function generateNodesForService(account, region, serviceKey, nodes) {
+function generateNodesForService(account, region, serviceKey, nodes, isGlobal) {
   return nodes.reduce((accumulatedNodes, currentSelector) => {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
     console.log(account, region, currentSelector, selectedNodes);
-    const formattedNodes = selectedNodes.map(({ id, parent }) =>
-      formatIdAsNode(serviceKey, id, parent)
-    );
+    const formattedNodes = selectedNodes.map(({ id, parent }) => {
+      const parentId = parent ? parent : isGlobal ? account : region;
+      return formatIdAsNode(serviceKey, id, {
+        parent: parentId,
+      });
+    });
     return accumulatedNodes.concat(formattedNodes);
   }, []);
 }
@@ -75,16 +83,30 @@ function generateEdgesForService(account, region, serviceEdges) {
 }
 
 function generateServiceMap(account, region) {
+  const accountNode = formatIdAsNode("AWS-Account", account, {
+    name: `AWS Account ${account}`,
+  });
+  const regionNode = formatIdAsNode("AWS-Region", region, {
+    parent: account,
+    name: `AWS Region ${region}`,
+  });
+
   const iamState = readStateFromFile(account, region, "IAM", "roles");
   hydrateRoleStorage(iamState);
 
-  let graphNodes = [];
+  let graphNodes = [accountNode, regionNode];
   for (let service of SERVICES) {
     if (service.nodes) {
       console.log(`Generating graph nodes for ${service.key}`);
       const initialLength = graphNodes.length;
       graphNodes = graphNodes.concat(
-        generateNodesForService(account, region, service.key, service.nodes)
+        generateNodesForService(
+          account,
+          region,
+          service.key,
+          service.nodes,
+          service.global
+        )
       );
       console.log(
         `Generated ${graphNodes.length - initialLength} nodes for ${
@@ -129,7 +151,7 @@ function generateServiceMap(account, region) {
         const computedEdges = roleArns.flatMap(({ arn, executor }) => {
           return generateEdgesForRole(account, region, arn, executor);
         });
-        roleEdges.concat(computedEdges);
+        roleEdges = roleEdges.concat(computedEdges);
       }
       console.log(
         `Generated ${roleEdges.length - initialCount} edges for ${
@@ -158,8 +180,132 @@ function generateServiceMap(account, region) {
     .concat(cloudfrontEdges)
     .concat(ecsEdges);
 
+  // don't overwrite previous graphs, move to last mod time file name
+  const stat = statSync("./static/graph.json");
+  const oldGraph = readFileSync("./static/graph.json");
   writeFileSync(
-    `./static/graph-${Date.now()}.json`,
+    `./static/graph-old-${Number(stat.mtimeMs)}.json`,
+    oldGraph,
+    {}
+  );
+
+  writeFileSync(
+    `./static/graph.json`,
+    JSON.stringify(graphData, undefined, 2),
+    {}
+  );
+  return graphData;
+}
+
+function generateAggregateServiceMap() {
+  const accountNode = formatIdAsNode("AWS-Account", account, {
+    name: `AWS Account ${account}`,
+  });
+  const regionNode = formatIdAsNode("AWS-Region", region, {
+    parent: account,
+    name: `AWS Region ${region}`,
+  });
+
+  const iamState = readStateFromFile(account, region, "IAM", "roles");
+  hydrateRoleStorage(iamState);
+
+  let graphNodes = [accountNode, regionNode];
+  for (let service of SERVICES) {
+    if (service.nodes) {
+      console.log(`Generating graph nodes for ${service.key}`);
+      const initialLength = graphNodes.length;
+      graphNodes = graphNodes.concat(
+        generateNodesForService(
+          account,
+          region,
+          service.key,
+          service.nodes,
+          service.global
+        )
+      );
+      console.log(
+        `Generated ${graphNodes.length - initialLength} nodes for ${
+          service.key
+        }`
+      );
+    }
+  }
+
+  let graphEdges = [];
+  for (let service of SERVICES) {
+    if (service.edges) {
+      console.log(`Generating graph edges for ${service.key}`);
+      const initialLength = graphEdges.length;
+      const serviceEdges = generateEdgesForService(
+        account,
+        region,
+        service.edges
+      );
+      const cleanedEdges = serviceEdges.filter(
+        ({ data: { source, target } }) => {
+          const sourceNode = graphNodes.find(({ data }) => data.id === source);
+          const targetNode = graphNodes.find(({ data }) => data.id === target);
+          return sourceNode != null && targetNode != null;
+        }
+      );
+      graphEdges = graphEdges.concat(cleanedEdges);
+      console.log(
+        `Generated ${graphEdges.length - initialLength} edges for ${
+          service.key
+        }`
+      );
+    }
+  }
+
+  let roleEdges = [];
+  for (let service of SERVICES) {
+    if (service.iamRoles) {
+      const initialCount = roleEdges.length;
+      for (let roleSelector of service.iamRoles) {
+        const roleArns = evaluateSelector(account, region, roleSelector);
+        const computedEdges = roleArns.flatMap(({ arn, executor }) => {
+          return generateEdgesForRole(account, region, arn, executor);
+        });
+        roleEdges = roleEdges.concat(computedEdges);
+      }
+      console.log(
+        `Generated ${roleEdges.length - initialCount} edges for ${
+          service.key
+        }'s IAM roles`
+      );
+    }
+  }
+
+  console.log("Manually generating edges for route 53 resources");
+  const route53Edges = generateEdgesForRoute53Resources(account, region);
+  console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
+  console.log("Manually generating edges for cloudfront resources");
+  const cloudfrontEdges = generateEdgesForCloudfrontResources(account, region);
+  console.log(
+    `Generated ${cloudfrontEdges.length} edges for cloudfront resources`
+  );
+  console.log("Manually generating edges for ECS resources");
+  const ecsEdges = generateEdgesForECSResources(account, region);
+  console.log(`Generated ${ecsEdges.length} edges for ECS resources`);
+
+  const graphData = graphNodes
+    .concat(graphEdges)
+    .concat(roleEdges)
+    .concat(route53Edges)
+    .concat(cloudfrontEdges)
+    .concat(ecsEdges);
+
+  // don't overwrite previous graphs, move to last mod time file name
+  const stat = statSync("./static/graph.json");
+  const oldGraph = readFileSync("./static/graph.json");
+  writeFileSync(
+    `./static/graph-old-${Number(stat.mtimeMs)}.json`,
+    oldGraph,
+    {}
+  );
+
+  writeFileSync(
+    `./static/graph.json`,
     JSON.stringify(graphData, undefined, 2),
     {}
   );

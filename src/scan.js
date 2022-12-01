@@ -5,10 +5,10 @@ const fs = require("fs");
 const { evaluateSelector, buildFilePathForServiceCall } = require("./utils");
 const { scanIamRole, IAM_STORAGE } = require("./iam");
 
-const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration"];
+const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration", "NoSuchTagSet"];
 
 function resolveParameters(account, region, parameters) {
-  return parameters.reduce((acc, { Key, Selector, Value }) => {
+  const allParamObjects = parameters.reduce((acc, { Key, Selector, Value }) => {
     if (Selector) {
       const parameterValues = evaluateSelector(account, region, Selector);
       for (let idx = 0; idx < parameterValues.length; idx++) {
@@ -28,9 +28,16 @@ function resolveParameters(account, region, parameters) {
     }
     return acc;
   }, []);
+  const validatedParamObjects = allParamObjects.filter((obj) => {
+    const allParamsPresent = parameters.every(({ Key }) =>
+      Object.keys(obj).includes(Key)
+    );
+    return allParamsPresent;
+  });
+  return validatedParamObjects;
 }
 
-async function recordFunctionOutput(
+function recordFunctionOutput(
   account,
   region,
   service,
@@ -79,7 +86,7 @@ async function makeFunctionCall(
         }
       }
 
-      // using _ prefix to avoid issues with jmespath and dollar signs
+      // using `_` prefix to avoid issues with jmespath and dollar signs
       state.push({
         _parameters: paramObj,
         _result: formattedResult,
@@ -98,12 +105,8 @@ async function makeFunctionCall(
 
 async function scanResourcesInAccount(account, region, servicesToScan) {
   const iamClient = new AWS.IAM();
-  for (let serviceScanner of SERVICES) {
+  for (let serviceScanner of servicesToScan) {
     const { service, getters } = serviceScanner;
-    if (servicesToScan.length > 0 && !servicesToScan.includes(service)) {
-      console.log(`Skipping ${service}, not included in services list`);
-      continue;
-    }
 
     const client = new AWS[service]({
       region,
@@ -118,7 +121,7 @@ async function scanResourcesInAccount(account, region, servicesToScan) {
         iamClient,
         functionCall
       );
-      await recordFunctionOutput(
+      recordFunctionOutput(
         account,
         region,
         service,

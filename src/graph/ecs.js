@@ -5,7 +5,7 @@
  * but the edges will be generated using the roles from their tasks
  */
 
-const { generateEdgesForRole } = require("./graphUtilities");
+const { generateEdgesForRole, formatEdge } = require("./graphUtilities");
 const { readStateFromFile } = require("../utils");
 
 function generateEdgesForECSResources(account, region) {
@@ -23,38 +23,35 @@ function generateEdgesForECSResources(account, region) {
     "describeTaskDefinition"
   ).flatMap(({ _result }) => _result.taskDefinition);
 
-  const taskRoleEdges = ecsServiceRecords.flatMap(
-    ({ serviceArn, taskDefinition }) => {
-      const matchedTaskDef = ecsTaskDefinitionRecords.find(
-        ({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
+  const taskRoleEdges = ecsServiceRecords.flatMap(({ taskDefinition }) => {
+    const matchedTaskDef = ecsTaskDefinitionRecords.find(
+      ({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
+    );
+
+    let taskEdges = [];
+    if (matchedTaskDef.taskRoleArn) {
+      taskEdges = taskEdges.concat(
+        generateEdgesForRole(
+          account,
+          region,
+          matchedTaskDef.taskRoleArn,
+          matchedTaskDef.taskDefinitionArn
+        )
       );
-
-      let taskEdges = [];
-      if (matchedTaskDef.taskRoleArn) {
-        // ServiceArn as the executor is technically inaccurate, but will create the desired edge
-        taskEdges = taskEdges.concat(
-          generateEdgesForRole(
-            account,
-            region,
-            matchedTaskDef.taskRoleArn,
-            serviceArn
-          )
-        );
-      }
-      if (matchedTaskDef.executionRoleArn) {
-        taskEdges = taskEdges.concat(
-          generateEdgesForRole(
-            account,
-            region,
-            matchedTaskDef.executionRoleArn,
-            serviceArn
-          )
-        );
-      }
-
-      return taskEdges;
     }
-  );
+    if (matchedTaskDef.executionRoleArn) {
+      taskEdges = taskEdges.concat(
+        generateEdgesForRole(
+          account,
+          region,
+          matchedTaskDef.executionRoleArn,
+          matchedTaskDef.taskDefinitionArn
+        )
+      );
+    }
+
+    return taskEdges;
+  });
 
   const loadBalancedECSServices = ecsServiceRecords.filter(
     ({ loadBalancers }) => {
@@ -62,10 +59,50 @@ function generateEdgesForECSResources(account, region) {
     }
   );
 
-  // Generate edges from target group arn to task
-  // Revert change which made services the ECS Nodes.
+  const elbTargetGroups = readStateFromFile(
+    account,
+    region,
+    "ELBv2",
+    "describeTargetGroups"
+  ).flatMap(({ _result }) => _result);
 
-  return taskRoleEdges;
+  // Step over every load balanced ECS Service
+  const ecsLoadBalancingEdges = loadBalancedECSServices.flatMap(
+    ({ loadBalancers, taskDefinition }) => {
+      // For each of their load balancer configs:
+      // - Find the relevant target group
+      // - Find the relevant task definition (down to the specific container)
+      // - Create an edge from each of the target group's load balancers, to the task node
+      return loadBalancers.flatMap(({ targetGroupArn, containerName }) => {
+        const targetGroup = elbTargetGroups.find(
+          ({ TargetGroupArn }) => targetGroupArn === TargetGroupArn
+        );
+        const matchedTaskDef = ecsTaskDefinitionRecords.find(
+          ({ taskDefinitionArn, containerDefinitions }) => {
+            const isLoadBalancedTask = taskDefinitionArn === taskDefinition;
+            const loadBalancedContainer = containerDefinitions.find(
+              ({ name: taskContainerName }) =>
+                containerName === taskContainerName
+            );
+            return isLoadBalancedTask && loadBalancedContainer;
+          }
+        );
+        if (!matchedTaskDef) {
+          return [];
+        }
+        return targetGroup.LoadBalancerArns.map((loadBalancerArn) => {
+          return formatEdge(
+            loadBalancerArn,
+            matchedTaskDef.taskDefinitionArn,
+            `${containerName}-LoadBalancing`
+          );
+        });
+      });
+    }
+  );
+
+  const ecsTaskEdges = taskRoleEdges.concat(ecsLoadBalancingEdges);
+  return ecsTaskEdges;
 }
 
 module.exports = {

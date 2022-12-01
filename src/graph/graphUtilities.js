@@ -8,10 +8,12 @@ const {
 const { SERVICES_CONFIG: SERVICES } = require("../services");
 
 function formatEdge(source, target, name) {
+  const edgeId = `${source}:${target}`;
   return {
     group: "edges",
+    id: sanitizeId(edgeId),
     data: {
-      id: `${source}:${target}`,
+      id: edgeId,
       name,
       source,
       target,
@@ -197,9 +199,18 @@ function generateEdgesForRole(account, region, arn, executor) {
     );
 }
 
+function sanitizeId(id) {
+  return id
+    .replaceAll(":", "-")
+    .replaceAll("/", "")
+    .replaceAll("\\", "")
+    .replaceAll(".", "_");
+}
+
 module.exports = {
   formatEdge,
   generateEdgesForPolicyStatements,
   getStatementsForRole,
   generateEdgesForRole,
+  sanitizeId,
 };

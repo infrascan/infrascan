@@ -13,14 +13,12 @@ function generateEdgesForRoute53Resources(account, region) {
     region,
     "Route53",
     "listResourceRecordSets"
-  );
+  ).flatMap(({ _result }) => _result);
 
   // Currently only concerned with alias records
-  const aliasRecords = route53Records.flatMap(({ _result: records }) =>
-    records.filter(({ Type, AliasTarget }) => {
-      return Type === "A" && Boolean(AliasTarget);
-    })
-  );
+  const aliasRecords = route53Records.filter(({ Type, AliasTarget }) => {
+    return Type === "A" && Boolean(AliasTarget);
+  });
 
   // Split the alias records by the AWS service they sit in front of
   const { cloudfront, s3, apiGateway, elb } = aliasRecords.reduce(
@@ -86,9 +84,24 @@ function generateEdgesForRoute53Resources(account, region) {
   //   account,
   //   region,
   //   "ApiGatewayV2",
-  //   "getApis"
-  // );
-  // const apiGatewayEdges = apiGateway.map(({ Name }) => {});
+  //   "getDomainNames"
+  // ).flatMap(({ _result }) => _result);
+  // const apiGatewayEdges = apiGatewayState
+  //   .flatMap(({ DomainName, DomainNameConfigurations }) => {
+  //     const apiGatewayDomain = `${DomainName}.`;
+  //     const matchedR53Record = route53Records.find(
+  //       ({ Name }) => Name === apiGatewayDomain
+  //     );
+  //     if (matchedR53Record) {
+  //       return formatEdge(
+  //         matchedR53Record.Name,
+  //         DomainNameConfigurations[0].ApiGatewayDomainName,
+  //         `Api Gateway Routing`
+  //       );
+  //     }
+  //   })
+  //   .filter(Boolean);
+  // route53Edges = route53Edges.concat(apiGatewayEdges);
 
   const elbState = readStateFromFile(
     account,
@@ -109,7 +122,28 @@ function generateEdgesForRoute53Resources(account, region) {
 
   route53Edges = route53Edges.concat(elbEdges);
 
-  return route53Edges;
+  // Generate edges for SNS http/https subscriptions pointed at domains in route53
+  const snsSubscriptionInfo = readStateFromFile(
+    account,
+    region,
+    "SNS",
+    "listSubscriptionsByTopic"
+  ).flatMap(({ _result }) => _result);
+
+  const webhookSubscriptions = snsSubscriptionInfo.filter(({ Protocol }) => {
+    return Protocol.startsWith("http");
+  });
+
+  const snsSubscriptionEdges = webhookSubscriptions
+    .flatMap(({ Endpoint, TopicArn, SubscriptionArn }) => {
+      const parsedUrl = new URL(Endpoint);
+      const hostname = `${parsedUrl.host}.`;
+      const targetRecord = route53Records.find(({ Name }) => Name === hostname);
+      return formatEdge(TopicArn, targetRecord.Name, SubscriptionArn);
+    })
+    .filter(Boolean);
+
+  return route53Edges.concat(snsSubscriptionEdges);
 }
 
 module.exports = {
