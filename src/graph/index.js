@@ -45,7 +45,11 @@ function generateNodesForService(account, region, serviceKey, nodes, isGlobal) {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
     console.log(account, region, currentSelector, selectedNodes);
     const formattedNodes = selectedNodes.map(({ id, parent }) => {
-      const parentId = parent ? parent : isGlobal ? account : region;
+      const parentId = parent
+        ? parent
+        : isGlobal
+        ? account
+        : `${account}-${region}`;
       return formatIdAsNode(serviceKey, id, {
         parent: parentId,
       });
@@ -104,7 +108,7 @@ function generateGraph() {
     });
     graphNodes.push(accountNode);
     const regionNodes = regions.map((region) =>
-      formatIdAsNode("AWS-Region", region, {
+      formatIdAsNode("AWS-Region", `${account}-${region}`, {
         parent: account,
         name: `${region} (${account})`,
       })

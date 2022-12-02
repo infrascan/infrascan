@@ -25,7 +25,7 @@ function generateEdgesForECSResources() {
     );
 
     let taskEdges = [];
-    if (matchedTaskDef.taskRoleArn) {
+    if (matchedTaskDef?.taskRoleArn) {
       taskEdges = taskEdges.concat(
         generateEdgesForRole(
           matchedTaskDef.taskRoleArn,
@@ -33,7 +33,7 @@ function generateEdgesForECSResources() {
         )
       );
     }
-    if (matchedTaskDef.executionRoleArn) {
+    if (matchedTaskDef?.executionRoleArn) {
       taskEdges = taskEdges.concat(
         generateEdgesForRole(
           matchedTaskDef.executionRoleArn,
