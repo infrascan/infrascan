@@ -8,7 +8,6 @@ let removedNodes = [],
   removedEdges = [],
   cy;
 function addGraph(graphData, graphStyle) {
-  console.log(graphData, graphStyle);
   cy = cytoscape({
     container: document.getElementById("cy"),
     elements: graphData,
@@ -30,27 +29,33 @@ function addGraph(graphData, graphStyle) {
   });
   /**
    * Double tap to show a specific section of the infrastructure. Currently has some weird behaviour:
-   * - If a node with a parent is removed, but the parent is not, when the graph is restored, the child will no longer have the parent (though the parent *will* exist)
-   * - Does not follow the entire chain — would like for a double tap to keep all nodes connected by any degree of separation.
-   * - Seems inconsistent in whether it keeps nodes based on their connection direction
    * - Fails to restore graph in certain instances based on edges to invalid/non-existant targets
    */
   cy.nodes().on("dbltap", function (e) {
-    const tappedParentList = [];
-    let parent = e.target.data().id;
-    while (parent !== undefined) {
-      tappedParentList.push(parent);
-      parent = cy.$(`[id = "${parent}"]`).data().parent;
-    }
-    const tappedNodeNeighbourhoodIds = e.target
-      .neighbourhood()
-      .map((node) => node.data().id)
-      .concat(tappedParentList);
+    // use depth first traversal with no goal to get the entire path for the clicked node
+    const { path } = cy.elements().dfs({
+      roots: `[id = "${e.target.data().id}"]`,
+    });
+    // step over every node on the path and get their parents (some unnecessary work being done here)
+    const allNodesToRetain = path.flatMap((nodeOnPath) => {
+      const succ = nodeOnPath.successors().map((node) => node.data().id);
+      const incom = nodeOnPath.predecessors().map((node) => node.data().id);
+      let allNodesToRetain = succ.concat(incom);
+      allNodesToRetain.push(nodeOnPath.data().id);
+      const ancestorIds = nodeOnPath
+        .ancestors()
+        .map((ancestorNode) => ancestorNode.data().id);
+      allNodesToRetain = allNodesToRetain.concat(ancestorIds);
+      const descendantIds = nodeOnPath
+        .descendants()
+        .map((descendantNode) => descendantNode.data().id);
+      return allNodesToRetain.concat(descendantIds);
+    });
+    // remove all nodes not included in the path + parents
     cy.nodes().forEach((node) => {
       const nodeId = node.data().id;
-      const inNeighbourhood = tappedNodeNeighbourhoodIds.includes(nodeId);
-      const isConnected = node.edgesWith(e.target).length > 0;
-      if (!inNeighbourhood && !isConnected) {
+      const shouldNodeBeRetained = allNodesToRetain.includes(nodeId);
+      if (!shouldNodeBeRetained) {
         node.connectedEdges().forEach((edge) => {
           const edgeId = edge.data().id;
           const removedEdge = cy.$(`[id = "${edgeId}"]`).remove();

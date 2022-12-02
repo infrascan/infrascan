@@ -21,7 +21,19 @@ async function main() {
     case "scan":
       return await performScan(config);
     case "graph":
-      return await generateGraph();
+      const graphData = generateGraph();
+      const mappedServices = graphData.reduce((acc, node) => {
+        if (node.data.service) {
+          acc.add(node.data.service);
+        }
+        return acc;
+      }, new Set());
+      console.log(
+        `Graph Complete. Found resources in ${
+          Array.from(mappedServices).length
+        } services.`
+      );
+      return;
     default:
       console.error(
         "Unknown command supplied. Currently only graph and scan are supported"

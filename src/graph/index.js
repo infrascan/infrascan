@@ -40,11 +40,18 @@ function formatIdAsNode(serviceKey, resourceId, metadata = {}) {
  * @param {string[]} nodes
  * @returns {any[]}
  */
-function generateNodesForService(account, region, serviceKey, nodes, isGlobal) {
+function generateNodesForService(
+  account,
+  region,
+  serviceName,
+  serviceKey,
+  nodes,
+  isGlobal
+) {
   return nodes.reduce((accumulatedNodes, currentSelector) => {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
     console.log(account, region, currentSelector, selectedNodes);
-    const formattedNodes = selectedNodes.map(({ id, parent }) => {
+    const formattedNodes = selectedNodes.map(({ id, parent, ...metadata }) => {
       const parentId = parent
         ? parent
         : isGlobal
@@ -52,6 +59,8 @@ function generateNodesForService(account, region, serviceKey, nodes, isGlobal) {
         : `${account}-${region}`;
       return formatIdAsNode(serviceKey, id, {
         parent: parentId,
+        service: serviceName,
+        ...metadata,
       });
     });
     return accumulatedNodes.concat(formattedNodes);
@@ -127,6 +136,7 @@ function generateGraph() {
           generateNodesForService(
             account,
             DEFAULT_REGION,
+            service.service,
             service.key,
             service.nodes,
             service.global
@@ -152,6 +162,7 @@ function generateGraph() {
             generateNodesForService(
               account,
               region,
+              regionalService.service,
               regionalService.key,
               regionalService.nodes,
               regionalService.global

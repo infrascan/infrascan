@@ -359,7 +359,9 @@ const SERVICES_CONFIG = [
         ],
       },
     ],
-    nodes: ["ECS|listClusters|[]._result.clusterArns | [].{id:@}"],
+    nodes: [
+      "ECS|describeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}",
+    ],
   },
   {
     service: "ECS",
@@ -396,7 +398,7 @@ const SERVICES_CONFIG = [
       },
     ],
     nodes: [
-      "ECS|describeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn}",
+      "ECS|describeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,info:@}",
     ],
   },
   {
