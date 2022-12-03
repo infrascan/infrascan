@@ -70,8 +70,16 @@
     </style>
   </head>
   <body>
-    <div id="restore-nodes" class="fixed top-left z-100 hidden">
-      <button onclick="restoreRemovedNodes()">Restore Graph</button>
+    <div id="top-left-container" class="fixed top-left z-100">
+      <input
+        type="text"
+        oninput="findNode()"
+        name="node-search"
+        id="node-search"
+      />
+      <button id="restore-nodes" class="hidden" onclick="restoreRemovedNodes()">
+        Restore Graph
+      </button>
     </div>
     <div id="container">
       <div id="cy"></div>

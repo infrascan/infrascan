@@ -117,8 +117,8 @@
   },
   {
     "selector": "[type = \"Route53\"]",
-    "label": "data(name)",
-    "css": {
+    "style": {
+      "label": "data(name)",
       "background-opacity": 0,
       "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Amazon-Route-53_32.svg",
       "background-fit": "contain",
@@ -153,6 +153,14 @@
       "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Storage/32/Arch_Amazon-Simple-Storage-Service_32.svg",
       "background-fit": "contain",
       "background-clip": "none"
+    }
+  },
+  {
+    "selector": ":selected",
+    "css": {
+      "border-width": "5px",
+      "border-style": "dashed",
+      "border-color": "red"
     }
   }
 ]

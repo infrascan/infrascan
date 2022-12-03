@@ -65,6 +65,18 @@ function addGraph(graphData, graphStyle) {
         removedNodes.push(removedNode);
       }
     });
+
+    const retainedElems = cy.$(
+      allNodesToRetain.map((id) => `[id="${id}"]`).join(",")
+    );
+
+    // Rerun layout on subset of the graph to make it readable
+    retainedElems
+      .layout({
+        name: "cose-bilkent",
+      })
+      .run();
+
     toggleRestoreButton();
     e.stopPropagation();
   });
@@ -94,4 +106,18 @@ function restoreRemovedNodes() {
     removedEdges = [];
   }
   toggleRestoreButton();
+}
+
+function findNode() {
+  const { value } = document.getElementById("node-search");
+  const foundNode = cy.$(`[ id = "${value}"]`);
+  if (foundNode) {
+    foundNode.select();
+    cy.animation({
+      fit: {
+        eles: foundNode,
+        padding: 220,
+      },
+    }).run();
+  }
 }

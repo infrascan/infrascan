@@ -262,7 +262,7 @@ const SERVICES_CONFIG = [
       },
     ],
     nodes: [
-      "Route53|listResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name}",
+      "Route53|listResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}",
     ],
   },
   {
