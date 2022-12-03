@@ -67,16 +67,30 @@
       .z-100 {
         z-index: 100;
       }
+
+      .prompt {
+        background-color: rgba(188, 188, 249, 0.544);
+        border: 2px solid #000;
+      }
+
+      #autocomplete-container {
+        width: 200px;
+        max-height: 100vh;
+        overflow-y: 100%;
+      }
     </style>
   </head>
   <body>
     <div id="top-left-container" class="fixed top-left z-100">
-      <input
-        type="text"
-        oninput="findNode()"
-        name="node-search"
-        id="node-search"
-      />
+      <div id="autocomplete-container">
+        <input
+          type="text"
+          oninput="findNode()"
+          name="node-search"
+          id="node-search"
+        />
+        <ul id="suggestions"></ul>
+      </div>
       <button id="restore-nodes" class="hidden" onclick="restoreRemovedNodes()">
         Restore Graph
       </button>

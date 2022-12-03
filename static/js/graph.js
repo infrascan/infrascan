@@ -108,9 +108,14 @@ function restoreRemovedNodes() {
   toggleRestoreButton();
 }
 
-function findNode() {
-  const { value } = document.getElementById("node-search");
-  const foundNode = cy.$(`[ id = "${value}"]`);
+function autocomplete(e) {
+  const selectedPrompt = e.target.innerText;
+  document.getElementById("node-search").value = selectedPrompt;
+  focusOnNode(selectedPrompt);
+}
+
+function focusOnNode(id) {
+  const foundNode = cy.$(`[ id = "${id}"]`);
   if (foundNode) {
     foundNode.select();
     cy.animation({
@@ -119,5 +124,45 @@ function findNode() {
         padding: 220,
       },
     }).run();
+    clearSuggestions();
+  }
+}
+
+function clearSuggestions() {
+  const dropdown = document.getElementById("suggestions");
+  for (let child of dropdown.children) {
+    dropdown.removeChild(child);
+  }
+}
+
+async function findNode() {
+  const { value } = document.getElementById("node-search");
+  if (value === "") {
+    clearSuggestions();
+    return;
+  }
+  console.log("searching", value);
+
+  const nodes = await fetch("http://localhost:7700/indexes/graph/search", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer test",
+    },
+    body: JSON.stringify({ q: value, filter: "group = nodes" }),
+  });
+
+  const { hits } = await nodes.json();
+  const promptElems = hits.map(({ data }) => {
+    const elem = document.createElement("li");
+    elem.classList.toggle("prompt");
+    elem.onclick = autocomplete;
+    elem.innerText = data.id;
+    return elem;
+  });
+  clearSuggestions();
+  const dropdown = document.getElementById("suggestions");
+  for (let prompt of promptElems) {
+    dropdown.appendChild(prompt);
   }
 }

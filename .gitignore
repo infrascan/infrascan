@@ -4,3 +4,6 @@ state
 test-state
 static/graph*.json
 config.json
+meilisearch
+data.ms
+dumps
