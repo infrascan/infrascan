@@ -42,6 +42,11 @@
         padding: 5px;
       }
 
+      #focus-container > div:not(:last-child) {
+        padding-bottom: 5px;
+        border-bottom: solid 1px black;
+      }
+
       #focus-content {
         height: 90%;
         width: 100%;
@@ -73,24 +78,14 @@
         border: 2px solid #000;
       }
 
-      #autocomplete-container {
-        width: 200px;
-        max-height: 100vh;
-        overflow-y: 100%;
+      #suggestions {
+        height: 100px;
+        overflow-y: scroll;
       }
     </style>
   </head>
   <body>
     <div id="top-left-container" class="fixed top-left z-100">
-      <div id="autocomplete-container">
-        <input
-          type="text"
-          oninput="findNode()"
-          name="node-search"
-          id="node-search"
-        />
-        <ul id="suggestions"></ul>
-      </div>
       <button id="restore-nodes" class="hidden" onclick="restoreRemovedNodes()">
         Restore Graph
       </button>
@@ -98,8 +93,20 @@
     <div id="container">
       <div id="cy"></div>
       <div id="focus-container">
-        <h3>Selected Node:</h3>
-        <pre id="focus-content"></pre>
+        <div id="autocomplete-container">
+          <h3>Search</h3>
+          <input
+            type="text"
+            oninput="findNode()"
+            name="node-search"
+            id="node-search"
+          />
+          <ul id="suggestions"></ul>
+        </div>
+        <div>
+          <h3>Selected Node</h3>
+          <pre id="focus-content"></pre>
+        </div>
       </div>
     </div>
   </body>

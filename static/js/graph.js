@@ -131,17 +131,18 @@ function focusOnNode(id) {
 function clearSuggestions() {
   const dropdown = document.getElementById("suggestions");
   for (let child of dropdown.children) {
-    dropdown.removeChild(child);
+    child.remove();
   }
 }
 
 async function findNode() {
   const { value } = document.getElementById("node-search");
-  if (value === "") {
+  const normalizedValue = value.trim();
+  if (normalizedValue === "") {
     clearSuggestions();
     return;
   }
-  console.log("searching", value);
+  console.log("searching", normalizedValue);
 
   const nodes = await fetch("http://localhost:7700/indexes/graph/search", {
     method: "POST",
@@ -149,7 +150,7 @@ async function findNode() {
       "Content-Type": "application/json",
       Authorization: "Bearer test",
     },
-    body: JSON.stringify({ q: value, filter: "group = nodes" }),
+    body: JSON.stringify({ q: normalizedValue, filter: "group = nodes" }),
   });
 
   const { hits } = await nodes.json();
