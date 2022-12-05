@@ -137,12 +137,17 @@ function clearSuggestions() {
 
 async function findNode() {
   const { value } = document.getElementById("node-search");
-  const normalizedValue = value.trim();
+  const normalizedValue = value
+    .trim()
+    .replaceAll(":", "-")
+    .replaceAll("/", "")
+    .replaceAll("\\", "")
+    .replaceAll(".", "_");
+
   if (normalizedValue === "") {
     clearSuggestions();
     return;
   }
-  console.log("searching", normalizedValue);
 
   const nodes = await fetch("http://localhost:7700/indexes/graph/search", {
     method: "POST",
@@ -154,7 +159,7 @@ async function findNode() {
   });
 
   const { hits } = await nodes.json();
-  const promptElems = hits.map(({ data }) => {
+  const promptElems = hits.reverse().map(({ data }) => {
     const elem = document.createElement("li");
     elem.classList.toggle("prompt");
     elem.onclick = autocomplete;
@@ -164,6 +169,6 @@ async function findNode() {
   clearSuggestions();
   const dropdown = document.getElementById("suggestions");
   for (let prompt of promptElems) {
-    dropdown.appendChild(prompt);
+    dropdown.prepend(prompt);
   }
 }
