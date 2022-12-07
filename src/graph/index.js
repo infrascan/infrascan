@@ -13,7 +13,11 @@ const {
 } = require("../utils");
 
 const { generateEdgesForCloudfrontResources } = require("./cloudfront");
-const { generateEdgesForECSResources } = require("./ecs");
+const {
+  generateEdgesForECSResources,
+  // generateNodesForECSTasks,
+} = require("./ecs");
+// const { generateNodesForEc2Networking } = require("./ec2");
 const { generateEdgesForRoute53Resources } = require("./route53");
 const {
   formatEdge,
@@ -51,18 +55,20 @@ function generateNodesForService(
   return nodes.reduce((accumulatedNodes, currentSelector) => {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
     console.log(account, region, currentSelector, selectedNodes);
-    const formattedNodes = selectedNodes.map(({ id, parent, ...metadata }) => {
-      const parentId = parent
-        ? parent
-        : isGlobal
-        ? account
-        : `${account}-${region}`;
-      return formatIdAsNode(serviceKey, id, {
-        parent: parentId,
-        service: serviceName,
-        ...metadata,
-      });
-    });
+    const formattedNodes = selectedNodes.flatMap(
+      ({ id, parent, ...metadata }) => {
+        const parentId = parent
+          ? parent
+          : isGlobal
+          ? account
+          : `${account}-${region}`;
+        return formatIdAsNode(serviceKey, id, {
+          parent: parentId,
+          service: serviceName,
+          ...metadata,
+        });
+      }
+    );
     return accumulatedNodes.concat(formattedNodes);
   }, []);
 }
@@ -155,6 +161,13 @@ function generateGraph() {
       console.log(`Generating Nodes for ${account} in ${region}`);
       // generate nodes for each regional service in this region
       for (let regionalService of regional) {
+        // if (regionalService.key === "EC2-Networking") {
+        //   const ec2NetworkingNodes = generateNodesForEc2Networking(
+        //     account,
+        //     region
+        //   );
+        //   graphNodes = graphNodes.concat(ec2NetworkingNodes);
+        // }
         if (regionalService.nodes) {
           console.log(`Generating graph nodes for ${regionalService.key}`);
           const initialLength = graphNodes.length;

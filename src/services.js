@@ -33,10 +33,33 @@ const SERVICES_CONFIG = [
             Value: ["All"],
           },
         ],
-        formatter: ({ Attributes }) => Attributes,
+        formatter: ({
+          Attributes: {
+            QueueArn,
+            Policy,
+            RedrivePolicy,
+            ...remainingAttributes
+          },
+        }) => ({
+          QueueArn,
+          // derive queue name
+          QueueName: QueueArn.split(":").pop(),
+          // Parse JSON documents to allow jmespath interegation
+          Policy: JSON.parse(Policy),
+          RedrivePolicy: JSON.parse(RedrivePolicy),
+          ...remainingAttributes,
+        }),
       },
     ],
-    nodes: ["SQS|getQueueAttributes|[]._result.{id:QueueArn}"],
+    nodes: ["SQS|getQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"],
+    edges: [
+      {
+        state: "SQS|getQueueAttributes|[]",
+        from: "_result.QueueArn",
+        // link queue to DLQ
+        to: "_result.RedrivePolicy.{target:deadLetterTargetArn}",
+      },
+    ],
   },
   {
     service: "SNS",
@@ -192,15 +215,17 @@ const SERVICES_CONFIG = [
     key: "EC2-Networking",
     getters: [
       {
-        fn: "describeSubnets",
-        formatter: ({ Subnets }) => Subnets,
-      },
-      {
         fn: "describeVpcs",
         formatter: ({ Vpcs }) => Vpcs,
       },
+      {
+        fn: "describeAvailabilityZones",
+      },
+      {
+        fn: "describeSubnets",
+        formatter: ({ Subnets }) => Subnets,
+      },
     ],
-    // nodes: ["EC2|describeSubnets|[].{id:SubnetId}", "EC2|describeVpcs|[].{id:VpcId}"],
   },
   {
     service: "AutoScaling",

@@ -24,10 +24,7 @@ function formatEdge(source, target, name) {
 
 function getStatementsForRole(role) {
   const inlineStatements =
-    jmespath.search(
-      role,
-      "inlinePolicies[].PolicyDocument.Document[].Statement"
-    ) ?? [];
+    jmespath.search(role, "inlinePolicies[].PolicyDocument.Statement[]") ?? [];
   const attachedStatements =
     jmespath.search(role, "attachedPolicies[].Document.Statement") ?? [];
   return {

@@ -5,8 +5,15 @@
  * but the edges will be generated using the roles from their tasks
  */
 
-const { generateEdgesForRole, formatEdge } = require("./graphUtilities");
-const { getGlobalStateForServiceAndFunction } = require("../utils");
+const {
+  generateEdgesForRole,
+  formatEdge,
+  sanitizeId,
+} = require("./graphUtilities");
+const {
+  getGlobalStateForServiceAndFunction,
+  evaluateSelector,
+} = require("../utils");
 
 function generateEdgesForECSResources() {
   const ecsServiceRecords = getGlobalStateForServiceAndFunction(
@@ -95,6 +102,31 @@ function generateEdgesForECSResources() {
   return ecsTaskEdges;
 }
 
+function generateNodesForECSTasks(account, region) {
+  const servicesState = evaluateSelector(
+    account,
+    region,
+    "ECS|describeServices|[]._result.services[]"
+  );
+
+  return servicesState.flatMap(
+    ({ serviceName, clusterArn, taskDefinition, networkConfiguration }) => {
+      return networkConfiguration.awsvpcConfiguration.subnets.map((subnet) => ({
+        group: "nodes",
+        id: sanitizeId(`${taskDefinition}-${subnet}`),
+        data: {
+          type: "ECS-Tasks",
+          id: `${taskDefinition}-${subnet}`,
+          parent: subnet,
+          ecsService: serviceName,
+          ecsCluster: clusterArn,
+        },
+      }));
+    }
+  );
+}
+
 module.exports = {
   generateEdgesForECSResources,
+  generateNodesForECSTasks,
 };

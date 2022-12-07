@@ -106,13 +106,24 @@
     }
   },
   {
-    "selector": "[type = \"EC2-Networking\"]",
+    "selector": "[type = \"EC2-VPC\"]",
     "label": "data(name)",
     "css": {
-      "background-opacity": 0,
-      "background-image": "./assets/aws/Architecture-Service-Icons/Arch_Networking-Content-Delivery/32/Arch_Amazon-Virtual-Private-Cloud_32.svg",
-      "background-fit": "contain",
-      "background-clip": "none"
+      "background-color": "#FAE2A5"
+    }
+  },
+  {
+    "selector": "[type = \"EC2-VPC-AZ\"]",
+    "label": "data(name)",
+    "css": {
+      "background-color": "#BEFAE5"
+    }
+  },
+  {
+    "selector": "[type = \"EC2-Subnet\"]",
+    "label": "data(name)",
+    "css": {
+      "background-color": "#F3D7FA"
     }
   },
   {

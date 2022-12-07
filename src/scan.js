@@ -94,6 +94,8 @@ async function makeFunctionCall(
 
       // using `_` prefix to avoid issues with jmespath and dollar signs
       state.push({
+        // track context in metadata to allow mapping to parents
+        _metadata: { account, region },
         _parameters: paramObj,
         _result: formattedResult,
       });
