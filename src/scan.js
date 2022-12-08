@@ -67,7 +67,8 @@ async function makeFunctionCall(
   iamClient,
   functionCall
 ) {
-  const { fn, parameters, formatter, iamRoleSelectors } = functionCall;
+  const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
+    functionCall;
   const params = parameters
     ? resolveParameters(account, region, parameters)
     : [{}];
@@ -76,29 +77,37 @@ async function makeFunctionCall(
   for (let paramObj of params) {
     try {
       console.log(`${service} ${fn}`);
-      const result = (await client[fn](paramObj).promise()) ?? {};
-      const formattedResult = formatter ? formatter(result) : result;
+      let pagingToken = undefined;
+      do {
+        const params = Object.assign(paramObj, {
+          [paginationToken?.request]: pagingToken,
+        });
+        const result = (await client[fn](params).promise()) ?? {};
+        pagingToken = result[paginationToken?.response];
 
-      if (iamRoleSelectors) {
-        for (let selector of iamRoleSelectors) {
-          const selectionResult = jmespath.search(formattedResult, selector);
-          if (Array.isArray(selectionResult)) {
-            for (let roleArn of selectionResult) {
-              await scanIamRole(iamClient, roleArn);
+        const formattedResult = formatter ? formatter(result) : result;
+
+        if (iamRoleSelectors) {
+          for (let selector of iamRoleSelectors) {
+            const selectionResult = jmespath.search(formattedResult, selector);
+            if (Array.isArray(selectionResult)) {
+              for (let roleArn of selectionResult) {
+                await scanIamRole(iamClient, roleArn);
+              }
+            } else if (selectionResult) {
+              await scanIamRole(iamClient, selectionResult);
             }
-          } else if (selectionResult) {
-            await scanIamRole(iamClient, selectionResult);
           }
         }
-      }
 
-      // using `_` prefix to avoid issues with jmespath and dollar signs
-      state.push({
-        // track context in metadata to allow mapping to parents
-        _metadata: { account, region },
-        _parameters: paramObj,
-        _result: formattedResult,
-      });
+        // using `_` prefix to avoid issues with jmespath and dollar signs
+        state.push({
+          // track context in metadata to allow mapping to parents
+          _metadata: { account, region },
+          _parameters: paramObj,
+          _result: formattedResult,
+        });
+      } while (pagingToken != null);
     } catch (err) {
       if (err.retryable) {
         // TODO: impl retryable

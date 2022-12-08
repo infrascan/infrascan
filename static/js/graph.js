@@ -1,5 +1,5 @@
 window.addEventListener("DOMContentLoaded", async () => {
-  const graphData = await fetch("/graph.json").then((res) => res.json());
+  const graphData = await fetch("/graph-small.json").then((res) => res.json());
   const graphStyle = await fetch("/style.json").then((res) => res.json());
   addGraph(graphData, graphStyle);
 });

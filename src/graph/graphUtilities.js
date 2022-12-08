@@ -47,7 +47,8 @@ function resolveResourceGlob(resourceArnFromPolicy) {
     const resourceService = getServiceFromArn(resourceArnFromPolicy);
     if (resourceService) {
       const serviceConfigs = SERVICES.filter(
-        ({ service }) => service.toLowerCase() === resourceService.toLowerCase()
+        ({ service, arnLabel }) =>
+          (arnLabel ?? service).toLowerCase() === resourceService.toLowerCase()
       );
       if (serviceConfigs) {
         const serviceArns = serviceConfigs.flatMap(({ nodes }) => {

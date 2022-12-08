@@ -54,7 +54,7 @@ function generateNodesForService(
 ) {
   return nodes.reduce((accumulatedNodes, currentSelector) => {
     const selectedNodes = evaluateSelector(account, region, currentSelector);
-    console.log(account, region, currentSelector, selectedNodes);
+    console.log(account, region, currentSelector);
     const formattedNodes = selectedNodes.flatMap(
       ({ id, parent, ...metadata }) => {
         const parentId = parent

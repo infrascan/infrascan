@@ -115,20 +115,23 @@ const SERVICES_CONFIG = [
     getters: [
       {
         fn: "listFunctions",
-        formatter: ({ Functions }) => Functions,
+        paginationToken: {
+          request: "Marker",
+          response: "NextMarker",
+        },
       },
       {
         fn: "getFunction",
         parameters: [
           {
             Key: "FunctionName",
-            Selector: "Lambda|listFunctions|[]._result[].FunctionArn",
+            Selector: "Lambda|listFunctions|[]._result.Functions[].FunctionArn",
           },
         ],
         iamRoleSelectors: ["Configuration.Role"],
       },
     ],
-    nodes: ["Lambda|listFunctions|[]._result[].{id: FunctionArn}"],
+    nodes: ["Lambda|listFunctions|[]._result.Functions[].{id: FunctionArn}"],
     iamRoles: [
       "Lambda|getFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}",
     ],
@@ -209,6 +212,45 @@ const SERVICES_CONFIG = [
       },
     ],
     nodes: ["CloudFront|listDistributions|[]._result[].{id:ARN}"],
+  },
+  {
+    service: "CloudWatchLogs",
+    key: "CloudWatchLogs",
+    arnLabel: "logs",
+    getters: [
+      {
+        fn: "describeLogGroups",
+        paginationToken: {
+          request: "nextToken",
+          response: "nextToken",
+        },
+      },
+      {
+        fn: "describeSubscriptionFilters",
+        parameters: [
+          {
+            Key: "logGroupName",
+            Selector:
+              "CloudWatchLogs|describeLogGroups|[]._result.logGroups[].logGroupName",
+          },
+        ],
+        paginationToken: {
+          request: "nextToken",
+          response: "nextToken",
+        },
+      },
+    ],
+    nodes: [
+      "CloudWatchLogs|describeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
+    ],
+    edges: [
+      {
+        state:
+          "CloudWatchLogs|describeSubscriptionFilters|[]._result.subscriptionFilters[]",
+        from: "logGroupName",
+        to: "{target:destinationArn}",
+      },
+    ],
   },
   {
     service: "EC2",
