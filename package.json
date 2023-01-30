@@ -9,15 +9,15 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/lfarrel6/infrascan.git"
+		"url": "git+https://github.com/infrascan/infrascan.git"
 	},
 	"keywords": [],
 	"author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/lfarrel6/infrascan/issues"
+		"url": "https://github.com/infrascan/infrascan/issues"
 	},
-	"homepage": "https://github.com/lfarrel6/infrascan#readme",
+	"homepage": "https://github.com/infrascan/infrascan#readme",
 	"dependencies": {
 		"aws-sdk": "^2.1236.0",
 		"jmespath": "^0.16.0",
