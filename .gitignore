@@ -1,5 +1,4 @@
 node_modules
-dist
 state
 test-state
 static/graph*.json
