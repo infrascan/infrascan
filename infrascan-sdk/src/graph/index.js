@@ -23,6 +23,9 @@ const {
 	sanitizeId,
 } = require('./graphUtilities');
 
+const { global: GLOBAL_SERVICES, regional: REGIONAL_SERVICES } =
+	splitServicesByGlobalAndRegional(SERVICES);
+
 function formatIdAsNode(serviceKey, resourceId, metadata = {}) {
 	return {
 		group: 'nodes',
@@ -42,16 +45,22 @@ function formatIdAsNode(serviceKey, resourceId, metadata = {}) {
  * @param {string[]} nodes
  * @returns {any[]}
  */
-function generateNodesForService(
+function generateNodesForService({
 	account,
 	region,
 	serviceName,
 	serviceKey,
 	nodes,
-	isGlobal
-) {
+	isGlobal,
+	resolveStateForServiceCall,
+}) {
 	return nodes.reduce((accumulatedNodes, currentSelector) => {
-		const selectedNodes = evaluateSelector(account, region, currentSelector);
+		const selectedNodes = evaluateSelector({
+			account,
+			region,
+			rawSelector: currentSelector,
+			resolveStateForServiceCall,
+		});
 		console.log(account, region, currentSelector);
 		const formattedNodes = selectedNodes.flatMap(
 			({ id, parent, ...metadata }) => {
@@ -104,15 +113,11 @@ function generateEdgesForServiceGlobally(serviceEdges) {
 	return edges;
 }
 
-function generateGraph() {
-	const scanMetadataContents = readFileSync(METADATA_PATH).toString();
-	const scanMetadata = JSON.parse(scanMetadataContents);
+function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 	console.log('Generating graph based on scan metadata', {
 		scanMetadata,
 	});
 	let graphNodes = [];
-
-	const { global, regional } = splitServicesByGlobalAndRegional(SERVICES);
 	// Generate root nodes — Accounts and regions
 	for (let { account, regions } of scanMetadata) {
 		console.log(`Generating Nodes for ${account}`);
@@ -128,7 +133,12 @@ function generateGraph() {
 		);
 		graphNodes = graphNodes.concat(regionNodes);
 		// Only read IAM data from default region (global service)
-		const iamState = readStateFromFile(account, DEFAULT_REGION, 'IAM', 'roles');
+		const iamState = resolveStateForServiceCall(
+			account,
+			DEFAULT_REGION,
+			'IAM',
+			'roles'
+		);
 		hydrateRoleStorage(iamState);
 
 		// Generate nodes for each global service
@@ -137,14 +147,15 @@ function generateGraph() {
 				console.log(`Generating graph nodes for ${service.key} in ${account}`);
 				const initialLength = graphNodes.length;
 				graphNodes = graphNodes.concat(
-					generateNodesForService(
+					generateNodesForService({
 						account,
-						DEFAULT_REGION,
-						service.service,
-						service.key,
-						service.nodes,
-						service.global
-					)
+						region: DEFAULT_REGION,
+						serviceName: service.service,
+						serviceKey: service.key,
+						nodes: service.nodes,
+						isGlobal: service.global,
+						resolveStateForServiceCall,
+					})
 				);
 				console.log(
 					`Generated ${graphNodes.length - initialLength} nodes for ${
@@ -170,14 +181,15 @@ function generateGraph() {
 					console.log(`Generating graph nodes for ${regionalService.key}`);
 					const initialLength = graphNodes.length;
 					graphNodes = graphNodes.concat(
-						generateNodesForService(
+						generateNodesForService({
 							account,
 							region,
-							regionalService.service,
-							regionalService.key,
-							regionalService.nodes,
-							regionalService.global
-						)
+							serviceName: regionalService.service,
+							serviceKey: regionalService.key,
+							nodes: regionalService.nodes,
+							isGlobal: regionalService.global,
+							resolveStateForServiceCall,
+						})
 					);
 					console.log(
 						`Generated ${graphNodes.length - initialLength} nodes for ${
