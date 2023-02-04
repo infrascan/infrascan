@@ -1,11 +1,5 @@
 const path = require('path');
 const { performScan, generateGraph } = require('@infrascan/sdk');
-const DEFAULT_CONFIG_PATH = 'config.default.json';
-
-function getConfig() {
-	const givenPath = process.env.CONFIG_PATH ?? DEFAULT_CONFIG_PATH;
-	return path.join(process.env.PWD, givenPath);
-}
 
 async function main() {
 	const command = process.argv.slice(2);
@@ -28,9 +22,7 @@ async function main() {
 				return acc;
 			}, new Set());
 			console.log(
-				`Graph Complete. Found resources in ${
-					Array.from(mappedServices).length
-				} services.`
+				`Graph Complete. Found resources in ${mappedServices.size} services.`
 			);
 			return;
 		default:

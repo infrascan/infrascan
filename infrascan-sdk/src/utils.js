@@ -1,19 +1,13 @@
-const { STS } = require("aws-sdk");
-const fs = require("fs");
-const jmespath = require("jmespath");
-const minimatch = require("minimatch");
+const { STS } = require('aws-sdk');
+const fs = require('fs');
+const jmespath = require('jmespath');
+const minimatch = require('minimatch');
 
-const DEFAULT_REGION = "us-east-1";
-const OUTPUT_DIR = process.env.OUTPUT_DIR || "state";
-const METADATA_PATH = `./${OUTPUT_DIR}/metadata.json`;
-
-function buildFilePathForServiceCall(account, region, service, functionCall) {
-  return `./${OUTPUT_DIR}/${account}-${region}-${service}-${functionCall}.json`;
-}
+const DEFAULT_REGION = 'us-east-1';
 
 async function whoami() {
-  const stsClient = new STS();
-  return await stsClient.getCallerIdentity().promise();
+	const stsClient = new STS();
+	return await stsClient.getCallerIdentity().promise();
 }
 
 /**
@@ -22,17 +16,20 @@ async function whoami() {
  * @param {String} rawSelector
  * @returns any
  */
-function evaluateSelector(account, region, rawSelector) {
-  const [service, functionCall, ...selector] = rawSelector.split("|");
-
-  const filePath = buildFilePathForServiceCall(
-    account,
-    region,
-    service,
-    functionCall
-  );
-  const state = fs.readFileSync(filePath, "utf8");
-  return jmespath.search(JSON.parse(state), selector.join("|"));
+function evaluateSelector({
+	account,
+	region,
+	rawSelector,
+	resolveStateForServiceCall,
+}) {
+	const [service, functionCall, ...selector] = rawSelector.split('|');
+	const state = resolveStateForServiceCall(
+		account,
+		region,
+		service,
+		functionCall
+	);
+	return jmespath.search(state, selector.join('|'));
 }
 
 /**
@@ -41,73 +38,60 @@ function evaluateSelector(account, region, rawSelector) {
  * @param {String} rawSelector
  * @returns any
  */
-function evaluateSelectorGlobally(rawSelector) {
-  const [service, functionCall, ...selector] = rawSelector.split("|");
-  const aggregateState = getGlobalStateForServiceAndFunction(
-    service,
-    functionCall
-  );
-  return jmespath.search(aggregateState, selector.join("|"));
+function evaluateSelectorGlobally(
+	rawSelector,
+	getGlobalStateForServiceAndFunction
+) {
+	const [service, functionCall, ...selector] = rawSelector.split('|');
+	const aggregateState = getGlobalStateForServiceAndFunction(
+		service,
+		functionCall
+	);
+	return jmespath.search(aggregateState, selector.join('|'));
 }
 
 function getServiceFromArn(arn) {
-  const [_prefix, _aws, service] = arn.split(":");
-  return service;
+	const [_prefix, _aws, service] = arn.split(':');
+	return service;
 }
 
 function curryMinimatch(glob, opts) {
-  return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
+	return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
 }
 
 function readStateFromFile(accountId, region, serviceName, functionCall) {
-  const fileName = buildFilePathForServiceCall(
-    accountId,
-    region,
-    serviceName,
-    functionCall
-  );
-  const contents = fs.readFileSync(fileName);
-  return JSON.parse(contents.toString());
-}
-
-function getGlobalStateForServiceAndFunction(serviceName, functionCall) {
-  const directoryContents = fs.readdirSync(OUTPUT_DIR);
-  const relevantStateFiles = directoryContents.filter((fileName) =>
-    minimatch(fileName, `*-*-${serviceName}-${functionCall}.json`)
-  );
-
-  return relevantStateFiles.flatMap((fileName) => {
-    const state = fs.readFileSync(`./${OUTPUT_DIR}/${fileName}`, "utf8");
-    return JSON.parse(state);
-  });
+	const fileName = buildFilePathForServiceCall(
+		accountId,
+		region,
+		serviceName,
+		functionCall
+	);
+	const contents = fs.readFileSync(fileName);
+	return JSON.parse(contents.toString());
 }
 
 // This function shouldn't exist, data structure should be updated
 function splitServicesByGlobalAndRegional(services) {
-  return services.reduce(
-    (filteredServices, currentService) => {
-      if (currentService.global) {
-        filteredServices.global.push(currentService);
-      } else {
-        filteredServices.regional.push(currentService);
-      }
-      return filteredServices;
-    },
-    { global: [], regional: [] }
-  );
+	return services.reduce(
+		(filteredServices, currentService) => {
+			if (currentService.global) {
+				filteredServices.global.push(currentService);
+			} else {
+				filteredServices.regional.push(currentService);
+			}
+			return filteredServices;
+		},
+		{ global: [], regional: [] }
+	);
 }
 
 module.exports = {
-  METADATA_PATH,
-  DEFAULT_REGION,
-  OUTPUT_DIR,
-  buildFilePathForServiceCall,
-  evaluateSelector,
-  whoami,
-  getServiceFromArn,
-  curryMinimatch,
-  readStateFromFile,
-  splitServicesByGlobalAndRegional,
-  evaluateSelectorGlobally,
-  getGlobalStateForServiceAndFunction,
+	DEFAULT_REGION,
+	evaluateSelector,
+	whoami,
+	getServiceFromArn,
+	curryMinimatch,
+	readStateFromFile,
+	splitServicesByGlobalAndRegional,
+	evaluateSelectorGlobally,
 };
