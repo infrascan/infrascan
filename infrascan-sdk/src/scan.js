@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const { SERVICES_CONFIG: SERVICES } = require('./services');
 const jmespath = require('jmespath');
-const fs = require('fs');
 const {
 	whoami,
 	evaluateSelector,

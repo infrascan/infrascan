@@ -1,5 +1,4 @@
-const path = require('path');
-const { performScan, generateGraph } = require('@infrascan/sdk');
+const { runGraph, runScan } = require('./commands');
 
 async function main() {
 	const command = process.argv.slice(2);
@@ -12,7 +11,7 @@ async function main() {
 	const config = require(getConfig());
 	switch (command[0].toLowerCase()) {
 		case 'scan':
-			return await performScan(config);
+			return await runScan(config);
 		case 'graph':
 			const graphData = generateGraph();
 			const mappedServices = graphData.reduce((acc, node) => {

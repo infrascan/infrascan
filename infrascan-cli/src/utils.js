@@ -36,11 +36,21 @@ function getGlobalStateForServiceAndFunction(serviceName, functionCall) {
 	});
 }
 
+function readScanMetadata() {
+	const metadata = fs.readFileSync(METADATA_PATH, 'utf8');
+	return JSON.parse(metadata);
+}
+
+function writeScanMetadata(metadata) {
+	recordServiceCall(METADATA_PATH, metadata);
+}
+
 module.exports = {
 	OUTPUT_DIR,
-	METADATA_PATH,
 	buildFilePathForServiceCall,
 	getGlobalStateForServiceAndFunction,
+	readScanMetadata,
 	recordServiceCall,
 	resolveStateForServiceCall,
+	writeScanMetadata,
 };

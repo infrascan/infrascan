@@ -88,12 +88,18 @@ function generateNodesForService({
  * @param {string} edges[].name
  * @returns {Object[]} list of edge objects
  */
-function generateEdgesForServiceGlobally(serviceEdges) {
+function generateEdgesForServiceGlobally({
+	serviceEdges,
+	getGlobalStateForServiceAndFunction,
+}) {
 	let edges = [];
 	for (let edge of serviceEdges) {
 		const { state, from, to } = edge;
 
-		const baseState = evaluateSelectorGlobally(state);
+		const baseState = evaluateSelectorGlobally(
+			state,
+			getGlobalStateForServiceAndFunction
+		);
 		const generatedEdges = baseState.flatMap((state) => {
 			const sourceNode = jmespath.search(state, from);
 			const target = jmespath.search(state, to);
@@ -113,7 +119,11 @@ function generateEdgesForServiceGlobally(serviceEdges) {
 	return edges;
 }
 
-function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
+function generateGraph({
+	scanMetadata,
+	resolveStateForServiceCall,
+	getGlobalStateForServiceAndFunction,
+}) {
 	console.log('Generating graph based on scan metadata', {
 		scanMetadata,
 	});
@@ -142,7 +152,7 @@ function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 		hydrateRoleStorage(iamState);
 
 		// Generate nodes for each global service
-		for (let service of global) {
+		for (let service of GLOBAL_SERVICES) {
 			if (service.nodes) {
 				console.log(`Generating graph nodes for ${service.key} in ${account}`);
 				const initialLength = graphNodes.length;
@@ -169,7 +179,7 @@ function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 		for (let region of regions) {
 			console.log(`Generating Nodes for ${account} in ${region}`);
 			// generate nodes for each regional service in this region
-			for (let regionalService of regional) {
+			for (let regionalService of REGIONAL_SERVICES) {
 				// if (regionalService.key === "EC2-Networking") {
 				//   const ec2NetworkingNodes = generateNodesForEc2Networking(
 				//     account,
@@ -207,7 +217,10 @@ function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 		if (service.edges) {
 			console.log(`Generating graph edges for ${service.key}`);
 			const initialLength = graphEdges.length;
-			const serviceEdges = generateEdgesForServiceGlobally(service.edges);
+			const serviceEdges = generateEdgesForServiceGlobally({
+				serviceEdges: service.edges,
+				getGlobalStateForServiceAndFunction,
+			});
 			const cleanedEdges = serviceEdges.filter(
 				({ data: { source, target } }) => {
 					const sourceNode = graphNodes.find(({ data }) => data.id === source);
@@ -230,9 +243,16 @@ function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 		if (service.iamRoles) {
 			const initialCount = roleEdges.length;
 			for (let roleSelector of service.iamRoles) {
-				const roleArns = evaluateSelectorGlobally(roleSelector);
+				const roleArns = evaluateSelectorGlobally(
+					roleSelector,
+					getGlobalStateForServiceAndFunction
+				);
 				const computedEdges = roleArns.flatMap(({ arn, executor }) => {
-					return generateEdgesForRole(arn, executor);
+					return generateEdgesForRole(
+						arn,
+						executor,
+						getGlobalStateForServiceAndFunction
+					);
 				});
 				roleEdges = roleEdges.concat(computedEdges);
 			}
@@ -246,42 +266,30 @@ function generateGraph({ scanMetadata, resolveStateForServiceCall }) {
 
 	// Generate edges manually for services which are too complex to configure in the json file
 	console.log('Manually generating edges for route 53 resources');
-	const route53Edges = generateEdgesForRoute53Resources();
+	const route53Edges = generateEdgesForRoute53Resources(
+		getGlobalStateForServiceAndFunction
+	);
 	console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
 	console.log('Manually generating edges for cloudfront resources');
-	const cloudfrontEdges = generateEdgesForCloudfrontResources();
+	const cloudfrontEdges = generateEdgesForCloudfrontResources(
+		getGlobalStateForServiceAndFunction
+	);
 	console.log(
 		`Generated ${cloudfrontEdges.length} edges for cloudfront resources`
 	);
 	console.log('Manually generating edges for ECS resources');
-	const ecsEdges = generateEdgesForECSResources();
+	const ecsEdges = generateEdgesForECSResources(
+		getGlobalStateForServiceAndFunction
+	);
 	console.log(`Generated ${ecsEdges.length} edges for ECS resources`);
 
-	// Collapse all graph elems into a single list before writing to disk
-	const graphData = graphNodes
+	// Collapse all graph elems into a single list before returning
+	return graphNodes
 		.concat(graphEdges)
 		.concat(roleEdges)
 		.concat(route53Edges)
 		.concat(cloudfrontEdges)
 		.concat(ecsEdges);
-
-	// don't overwrite previous graphs, move to last mod time file name
-	const stat = statSync('./static/graph.json');
-	const oldGraph = readFileSync('./static/graph.json');
-	writeFileSync(
-		`./static/graph-old-${Number(stat.mtimeMs)}.json`,
-		oldGraph,
-		{}
-	);
-
-	writeFileSync(
-		`./static/graph.json`,
-		JSON.stringify(graphData, undefined, 2),
-		{}
-	);
-
-	// TODO: add sanitized + searchable id to graph entries
-	return graphData;
 }
 
 module.exports = {
