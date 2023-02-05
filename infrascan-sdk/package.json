@@ -1,6 +1,6 @@
 {
-	"name": "infrascan",
-	"version": "0.0.1",
+	"name": "@infrascan/sdk",
+	"version": "0.1.0",
 	"description": "Tool to generate a system map by connecting to your AWS account.",
 	"main": "src/index.js",
 	"scripts": {
@@ -22,5 +22,8 @@
 		"aws-sdk": "^2.1236.0",
 		"jmespath": "^0.16.0",
 		"minimatch": "^5.1.0"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
 	}
 }

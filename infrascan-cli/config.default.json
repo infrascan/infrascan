@@ -1,0 +1,6 @@
+[
+	{
+		"regions": ["eu-west-1"],
+		"profile": "test-cli"
+	}
+]
