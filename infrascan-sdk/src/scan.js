@@ -171,21 +171,15 @@ async function performScan({
 	onServiceScanComplete,
 	resolveStateForServiceCall,
 }) {
-	const scanMetadata = [];
+	const scanMetadata = {};
 	const credentials = new AWS.SharedIniFileCredentials({
 		profile,
 	});
 	AWS.config.update({ credentials, region: DEFAULT_REGION });
 	const globalCaller = await whoami();
-	const accountMetadataEntry = scanMetadata.find(
-		({ account }) => account === globalCaller.Account
-	);
-	if (!accountMetadataEntry) {
-		scanMetadata.push({
-			account: globalCaller.Account,
-			regions: [],
-		});
-	}
+	scanMetadata.account = globalCaller.Account;
+	scanMetadata.regions = [];
+
 	console.log(`Scanning global resources in ${globalCaller.Account}`);
 	if (services?.length > 0) {
 		const filteredGlobalServices = GLOBAL_SERVICES.filter(({ service }) =>
@@ -239,10 +233,7 @@ async function performScan({
 			});
 		}
 		console.log(`Scan of ${caller.Account} in ${region} complete`);
-		const metadataEntry = scanMetadata.find(
-			({ account }) => account === caller.Account
-		);
-		metadataEntry.regions.push(region);
+		scanMetadata.regions.push(region);
 	}
 	return scanMetadata;
 }

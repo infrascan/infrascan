@@ -10,7 +10,7 @@
 	"author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
 	"license": "ISC",
 	"dependencies": {
-		"@infrascan/sdk": "file://../infrascan-sdk",
+		"@infrascan/sdk": "0.1.0",
 		"aws-sdk": "^2.1309.0",
 		"minimatch": "^6.1.6"
 	},

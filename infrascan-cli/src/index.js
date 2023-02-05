@@ -8,22 +8,11 @@ async function main() {
 		);
 		return;
 	}
-	const config = require(getConfig());
 	switch (command[0].toLowerCase()) {
 		case 'scan':
-			return await runScan(config);
+			return await runScan();
 		case 'graph':
-			const graphData = generateGraph();
-			const mappedServices = graphData.reduce((acc, node) => {
-				if (node.data.service) {
-					acc.add(node.data.service);
-				}
-				return acc;
-			}, new Set());
-			console.log(
-				`Graph Complete. Found resources in ${mappedServices.size} services.`
-			);
-			return;
+			return await runGraph();
 		default:
 			console.error(
 				'Unknown command supplied. Currently only graph and scan are supported'

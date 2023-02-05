@@ -1,5 +1,6 @@
 [
-  {
-    "regions": ["us-east-1"]
-  }
+	{
+		"regions": ["eu-west-1"],
+		"profile": "test-cli"
+	}
 ]

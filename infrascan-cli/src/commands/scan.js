@@ -1,4 +1,5 @@
 const { performScan } = require('@infrascan/sdk');
+const path = require('path');
 const {
 	buildFilePathForServiceCall,
 	recordServiceCall,

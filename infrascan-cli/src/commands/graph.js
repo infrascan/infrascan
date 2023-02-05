@@ -3,10 +3,12 @@ const {
 	resolveStateForServiceCall,
 	getGlobalStateForServiceAndFunction,
 	readScanMetadata,
+	writeGraphOutput,
 } = require('../utils');
 
 async function runGraph() {
 	const scanMetadata = readScanMetadata();
+	console.log(scanMetadata);
 	const graphData = generateGraph({
 		scanMetadata,
 		resolveStateForServiceCall,
@@ -21,6 +23,7 @@ async function runGraph() {
 	console.log(
 		`Graph Complete. Found resources in ${mappedServices.size} services.`
 	);
+	writeGraphOutput(graphData);
 }
 
 module.exports = runGraph;

@@ -3,12 +3,18 @@ const minimatch = require('minimatch');
 
 const OUTPUT_DIR = process.env.OUTPUT_DIR || 'state';
 const METADATA_PATH = `./${OUTPUT_DIR}/metadata.json`;
+const GRAPH_PATH = `./${OUTPUT_DIR}/graph.json`;
 
 function buildFilePathForServiceCall(account, region, service, functionCall) {
 	return `./${OUTPUT_DIR}/${account}-${region}-${service}-${functionCall}.json`;
 }
 
 function recordServiceCall(filePath, state) {
+	const outputDirExists = fs.existsSync(OUTPUT_DIR);
+	if (!outputDirExists) {
+		fs.mkdirSync(OUTPUT_DIR);
+	}
+
 	return fs.writeFileSync(filePath, JSON.stringify(state, undefined, 2));
 }
 
@@ -45,6 +51,10 @@ function writeScanMetadata(metadata) {
 	recordServiceCall(METADATA_PATH, metadata);
 }
 
+function writeGraphOutput(graph) {
+	recordServiceCall(GRAPH_PATH, graph);
+}
+
 module.exports = {
 	OUTPUT_DIR,
 	buildFilePathForServiceCall,
@@ -53,4 +63,5 @@ module.exports = {
 	recordServiceCall,
 	resolveStateForServiceCall,
 	writeScanMetadata,
+	writeGraphOutput,
 };
