@@ -13,5 +13,8 @@
 		"@infrascan/sdk": "file://../infrascan-sdk",
 		"aws-sdk": "^2.1309.0",
 		"minimatch": "^6.1.6"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
 	}
 }

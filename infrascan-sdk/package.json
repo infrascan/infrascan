@@ -22,5 +22,8 @@
 		"aws-sdk": "^2.1236.0",
 		"jmespath": "^0.16.0",
 		"minimatch": "^5.1.0"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
 	}
 }
