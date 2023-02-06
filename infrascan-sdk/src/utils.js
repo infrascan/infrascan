@@ -16,14 +16,14 @@ async function whoami() {
  * @param {String} rawSelector
  * @returns any
  */
-function evaluateSelector({
+async function evaluateSelector({
 	account,
 	region,
 	rawSelector,
 	resolveStateForServiceCall,
 }) {
 	const [service, functionCall, ...selector] = rawSelector.split('|');
-	const state = resolveStateForServiceCall(
+	const state = await resolveStateForServiceCall(
 		account,
 		region,
 		service,
@@ -38,12 +38,12 @@ function evaluateSelector({
  * @param {String} rawSelector
  * @returns any
  */
-function evaluateSelectorGlobally(
+async function evaluateSelectorGlobally(
 	rawSelector,
 	getGlobalStateForServiceAndFunction
 ) {
 	const [service, functionCall, ...selector] = rawSelector.split('|');
-	const aggregateState = getGlobalStateForServiceAndFunction(
+	const aggregateState = await getGlobalStateForServiceAndFunction(
 		service,
 		functionCall
 	);

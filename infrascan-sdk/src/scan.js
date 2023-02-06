@@ -13,37 +13,37 @@ const ERROR_CODES_TO_IGNORE = ['NoSuchWebsiteConfiguration', 'NoSuchTagSet'];
 const { global: GLOBAL_SERVICES, regional: REGIONAL_SERVICES } =
 	splitServicesByGlobalAndRegional(SERVICES);
 
-function resolveParameters({
+async function resolveParameters({
 	account,
 	region,
 	parameters,
 	resolveStateForServiceCall,
 }) {
-	const allParamObjects = parameters.reduce((acc, { Key, Selector, Value }) => {
+	let allParamObjects = [];
+	for (let { Key, Selector, Value } of parameters) {
 		if (Selector) {
-			const parameterValues = evaluateSelector({
+			const parameterValues = await evaluateSelector({
 				account,
 				region,
 				rawSelector: Selector,
 				resolveStateForServiceCall,
 			});
 			for (let idx = 0; idx < parameterValues.length; idx++) {
-				if (acc[idx] == null) {
-					acc[idx] = {};
+				if (allParamObjects[idx] == null) {
+					allParamObjects[idx] = {};
 				}
-				acc[idx][Key] = parameterValues[idx];
+				allParamObjects[idx][Key] = parameterValues[idx];
 			}
 		} else if (Value) {
-			if (acc.length === 0) {
-				acc.push({ [Key]: Value });
+			if (allParamObjects.length === 0) {
+				allParamObjects.push({ [Key]: Value });
 			} else {
-				for (let parameterObject of acc) {
+				for (let parameterObject of allParamObjects) {
 					parameterObject[Key] = Value;
 				}
 			}
 		}
-		return acc;
-	}, []);
+	}
 	const validatedParamObjects = allParamObjects.filter((obj) => {
 		const allParamsPresent = parameters.every(({ Key }) =>
 			Object.keys(obj).includes(Key)
@@ -65,7 +65,7 @@ async function makeFunctionCall({
 	const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
 		functionCall;
 	const params = parameters
-		? resolveParameters({
+		? await resolveParameters({
 				account,
 				region,
 				parameters,
@@ -145,7 +145,7 @@ async function scanResourcesInAccount({
 				functionCall,
 				resolveStateForServiceCall,
 			});
-			onServiceScanComplete(
+			await onServiceScanComplete(
 				account,
 				region,
 				service,
@@ -154,7 +154,7 @@ async function scanResourcesInAccount({
 			);
 		}
 	}
-	onServiceScanComplete(
+	await onServiceScanComplete(
 		account,
 		region,
 		'IAM',

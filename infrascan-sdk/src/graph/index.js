@@ -45,7 +45,7 @@ function formatIdAsNode(serviceKey, resourceId, metadata = {}) {
  * @param {string[]} nodes
  * @returns {any[]}
  */
-function generateNodesForService({
+async function generateNodesForService({
 	account,
 	region,
 	serviceName,
@@ -54,8 +54,9 @@ function generateNodesForService({
 	isGlobal,
 	resolveStateForServiceCall,
 }) {
-	return nodes.reduce((accumulatedNodes, currentSelector) => {
-		const selectedNodes = evaluateSelector({
+	let accumulatedNodes = [];
+	for (let currentSelector of nodes) {
+		const selectedNodes = await evaluateSelector({
 			account,
 			region,
 			rawSelector: currentSelector,
@@ -76,8 +77,9 @@ function generateNodesForService({
 				});
 			}
 		);
-		return accumulatedNodes.concat(formattedNodes);
-	}, []);
+		accumulatedNodes = accumulatedNodes.concat(formattedNodes);
+	}
+	return accumulatedNodes;
 }
 
 /**
@@ -88,7 +90,7 @@ function generateNodesForService({
  * @param {string} edges[].name
  * @returns {Object[]} list of edge objects
  */
-function generateEdgesForServiceGlobally({
+async function generateEdgesForServiceGlobally({
 	serviceEdges,
 	getGlobalStateForServiceAndFunction,
 }) {
@@ -96,7 +98,7 @@ function generateEdgesForServiceGlobally({
 	for (let edge of serviceEdges) {
 		const { state, from, to } = edge;
 
-		const baseState = evaluateSelectorGlobally(
+		const baseState = await evaluateSelectorGlobally(
 			state,
 			getGlobalStateForServiceAndFunction
 		);
@@ -119,7 +121,7 @@ function generateEdgesForServiceGlobally({
 	return edges;
 }
 
-function generateGraph({
+async function generateGraph({
 	scanMetadata,
 	resolveStateForServiceCall,
 	getGlobalStateForServiceAndFunction,
@@ -143,7 +145,7 @@ function generateGraph({
 		);
 		graphNodes = graphNodes.concat(regionNodes);
 		// Only read IAM data from default region (global service)
-		const iamState = resolveStateForServiceCall(
+		const iamState = await resolveStateForServiceCall(
 			account,
 			DEFAULT_REGION,
 			'IAM',
@@ -157,7 +159,7 @@ function generateGraph({
 				console.log(`Generating graph nodes for ${service.key} in ${account}`);
 				const initialLength = graphNodes.length;
 				graphNodes = graphNodes.concat(
-					generateNodesForService({
+					await generateNodesForService({
 						account,
 						region: DEFAULT_REGION,
 						serviceName: service.service,
@@ -191,7 +193,7 @@ function generateGraph({
 					console.log(`Generating graph nodes for ${regionalService.key}`);
 					const initialLength = graphNodes.length;
 					graphNodes = graphNodes.concat(
-						generateNodesForService({
+						await generateNodesForService({
 							account,
 							region,
 							serviceName: regionalService.service,
@@ -217,7 +219,7 @@ function generateGraph({
 		if (service.edges) {
 			console.log(`Generating graph edges for ${service.key}`);
 			const initialLength = graphEdges.length;
-			const serviceEdges = generateEdgesForServiceGlobally({
+			const serviceEdges = await generateEdgesForServiceGlobally({
 				serviceEdges: service.edges,
 				getGlobalStateForServiceAndFunction,
 			});
@@ -243,7 +245,7 @@ function generateGraph({
 		if (service.iamRoles) {
 			const initialCount = roleEdges.length;
 			for (let roleSelector of service.iamRoles) {
-				const roleArns = evaluateSelectorGlobally(
+				const roleArns = await evaluateSelectorGlobally(
 					roleSelector,
 					getGlobalStateForServiceAndFunction
 				);
@@ -266,19 +268,19 @@ function generateGraph({
 
 	// Generate edges manually for services which are too complex to configure in the json file
 	console.log('Manually generating edges for route 53 resources');
-	const route53Edges = generateEdgesForRoute53Resources(
+	const route53Edges = await generateEdgesForRoute53Resources(
 		getGlobalStateForServiceAndFunction
 	);
 	console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
 	console.log('Manually generating edges for cloudfront resources');
-	const cloudfrontEdges = generateEdgesForCloudfrontResources(
+	const cloudfrontEdges = await generateEdgesForCloudfrontResources(
 		getGlobalStateForServiceAndFunction
 	);
 	console.log(
 		`Generated ${cloudfrontEdges.length} edges for cloudfront resources`
 	);
 	console.log('Manually generating edges for ECS resources');
-	const ecsEdges = generateEdgesForECSResources(
+	const ecsEdges = await generateEdgesForECSResources(
 		getGlobalStateForServiceAndFunction
 	);
 	console.log(`Generated ${ecsEdges.length} edges for ECS resources`);

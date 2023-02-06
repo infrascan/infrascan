@@ -101,8 +101,12 @@ function generateEdgesForECSResources(getGlobalStateForServiceAndFunction) {
 	return ecsTaskEdges;
 }
 
-function generateNodesForECSTasks(account, region, resolveStateForServiceCall) {
-	const servicesState = evaluateSelector({
+async function generateNodesForECSTasks(
+	account,
+	region,
+	resolveStateForServiceCall
+) {
+	const servicesState = await evaluateSelector({
 		account,
 		region,
 		rawSelector: 'ECS|describeServices|[]._result.services[]',
