@@ -171,7 +171,9 @@ function useLocalProfile(profile) {
 
 async function assumeRole(roleToAssume) {
 	const stsClient = new AWS.STS();
-	const { Credentials } = await stsClient.assumeRole(roleToAssume).promise();
+	const { Credentials } = await stsClient
+		.assumeRole({ RoleArn: roleToAssume })
+		.promise();
 	return {
 		accessKeyId: Credentials.AccessKeyId,
 		secretAccessKey: Credentials.SecretAccessKey,
