@@ -163,6 +163,22 @@ async function scanResourcesInAccount({
 	);
 }
 
+function useLocalProfile(profile) {
+	return new AWS.SharedIniFileCredentials({
+		profile,
+	});
+}
+
+async function assumeRole(roleToAssume) {
+	const stsClient = new AWS.STS();
+	const { Credentials } = await stsClient.assumeRole(roleToAssume).promise();
+	return {
+		accessKeyId: Credentials.AccessKeyId,
+		secretAccessKey: Credentials.SecretAccessKey,
+		sessionToken: Credentials.SessionToken,
+	};
+}
+
 async function performScan({
 	profile,
 	roleToAssume,
@@ -172,9 +188,9 @@ async function performScan({
 	resolveStateForServiceCall,
 }) {
 	const scanMetadata = {};
-	const credentials = new AWS.SharedIniFileCredentials({
-		profile,
-	});
+	const credentials = profile
+		? useLocalProfile(profile)
+		: await assumeRole(roleToAssume);
 	AWS.config.update({ credentials, region: DEFAULT_REGION });
 	const globalCaller = await whoami();
 	scanMetadata.account = globalCaller.Account;
