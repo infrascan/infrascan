@@ -38,7 +38,7 @@ function getStatementsForRole(role) {
  * @param {string} resourceArnFromPolicy
  * @returns {string[]} relevant arns
  */
-function resolveResourceGlob({
+async function resolveResourceGlob({
 	resourceArnFromPolicy,
 	getGlobalStateForServiceAndFunction,
 }) {
@@ -54,26 +54,30 @@ function resolveResourceGlob({
 					(arnLabel ?? service).toLowerCase() === resourceService.toLowerCase()
 			);
 			if (serviceConfigs) {
-				const serviceArns = serviceConfigs.flatMap(({ nodes }) => {
-					if (!nodes || nodes.length === 0) {
-						return [];
-					}
-					const selectedNodes = nodes
-						.flatMap((nodeSelector) =>
-							evaluateSelectorGlobally(
-								nodeSelector,
-								getGlobalStateForServiceAndFunction
+				const serviceArns = await Promise.all(
+					serviceConfigs.flatMap(async ({ nodes }) => {
+						if (!nodes || nodes.length === 0) {
+							return [];
+						}
+						const selectedNodes = (
+							await Promise.all(
+								nodes.flatMap((nodeSelector) =>
+									evaluateSelectorGlobally(
+										nodeSelector,
+										getGlobalStateForServiceAndFunction
+									)
+								)
 							)
-						)
-						.map(({ id }) => id);
-					// S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
-					// This means we need to build the ARN on the fly when matching in resource policies to allow partial
-					// matches of <bucket-name> to <bucket-arn>/<object-path>
-					if (resourceService === 's3') {
-						return selectedNodes?.map((node) => `arn:aws:s3:::${node}`);
-					}
-					return selectedNodes;
-				});
+						).map(({ id }) => id);
+						// S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
+						// This means we need to build the ARN on the fly when matching in resource policies to allow partial
+						// matches of <bucket-name> to <bucket-arn>/<object-path>
+						if (resourceService === 's3') {
+							return selectedNodes?.map((node) => `arn:aws:s3:::${node}`);
+						}
+						return selectedNodes;
+					})
+				);
 				return serviceArns
 					.filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
 					.map((node) => {
@@ -93,20 +97,22 @@ function resolveResourceGlob({
 			({ service }) => service.toLowerCase() === resourceService.toLowerCase()
 		);
 		if (serviceConfigs) {
-			const serviceArns = serviceConfigs.flatMap(({ nodes }) => {
-				if (nodes) {
-					return nodes
-						.flatMap((nodeSelector) =>
-							evaluateSelectorGlobally(
-								nodeSelector,
-								getGlobalStateForServiceAndFunction
+			const serviceArns = await Promise.all(
+				serviceConfigs.flatMap(async ({ nodes }) => {
+					if (nodes) {
+						return await Promise.all(
+							nodes.flatMap((nodeSelector) =>
+								evaluateSelectorGlobally(
+									nodeSelector,
+									getGlobalStateForServiceAndFunction
+								)
 							)
-						)
-						.map(({ id }) => id);
-				} else {
-					return [];
-				}
-			});
+						).map(({ id }) => id);
+					} else {
+						return [];
+					}
+				})
+			);
 			return serviceArns.filter(
 				(knownArn) => knownArn === resourceArnFromPolicy
 			);
@@ -121,19 +127,27 @@ function resolveResourceGlob({
  * @param {string[]} policyStatements.Resource
  * @returns {string[]}
  */
-function generateEdgesForPolicyStatements(
+async function generateEdgesForPolicyStatements(
 	policyStatements,
 	getGlobalStateForServiceAndFunction
 ) {
-	return policyStatements.flatMap(({ Resource }) => {
-		if (Array.isArray(Resource)) {
-			return Resource.flatMap((resourceGlobs) =>
-				resolveResourceGlob(resourceGlobs, getGlobalStateForServiceAndFunction)
-			);
-		} else {
-			return resolveResourceGlob(Resource, getGlobalStateForServiceAndFunction);
-		}
-	});
+	return await Promise.all(
+		policyStatements.flatMap(({ Resource }) => {
+			if (Array.isArray(Resource)) {
+				return Resource.flatMap((resourceGlobs) =>
+					resolveResourceGlob(
+						resourceGlobs,
+						getGlobalStateForServiceAndFunction
+					)
+				);
+			} else {
+				return resolveResourceGlob(
+					Resource,
+					getGlobalStateForServiceAndFunction
+				);
+			}
+		})
+	);
 }
 
 /**
@@ -142,7 +156,7 @@ function generateEdgesForPolicyStatements(
  * @param {string} roleExecutor - the arn of the resource using this role
  * @returns {Object[]} list of edge objects
  */
-function generateEdgesForRole(
+async function generateEdgesForRole(
 	arn,
 	executor,
 	getGlobalStateForServiceAndFunction
@@ -153,14 +167,15 @@ function generateEdgesForRole(
 		getStatementsForRole(iamRole);
 
 	// Compute edges for inline policy statements
-	const effectedResourcesForInlineStatements = generateEdgesForPolicyStatements(
-		inlineStatements,
-		getGlobalStateForServiceAndFunction
-	);
+	const effectedResourcesForInlineStatements =
+		await generateEdgesForPolicyStatements(
+			inlineStatements,
+			getGlobalStateForServiceAndFunction
+		);
 
 	// Compute edges for attached policy statements
 	const effectedResourcesForAttachedStatements =
-		generateEdgesForPolicyStatements(
+		await generateEdgesForPolicyStatements(
 			attachedStatements,
 			getGlobalStateForServiceAndFunction
 		);

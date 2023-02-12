@@ -5,10 +5,10 @@
 
 const { formatEdge } = require('./graphUtilities');
 
-function generateEdgesForCloudfrontResources(
+async function generateEdgesForCloudfrontResources(
 	getGlobalStateForServiceAndFunction
 ) {
-	const cloudfrontRecords = getGlobalStateForServiceAndFunction(
+	const cloudfrontRecords = await getGlobalStateForServiceAndFunction(
 		'CloudFront',
 		'listDistributions'
 	);
@@ -43,9 +43,8 @@ function generateEdgesForCloudfrontResources(
 
 	let cloudfrontEdges = [];
 	// Generate edges for Route53 domains in front of Cloudfront
-	const s3State = getGlobalStateForServiceAndFunction(
-		'S3',
-		'listBuckets'
+	const s3State = (
+		await getGlobalStateForServiceAndFunction('S3', 'listBuckets')
 	).flatMap(({ _result }) => _result);
 	const s3Edges = s3
 		.flatMap(({ ARN, Origins }) => {

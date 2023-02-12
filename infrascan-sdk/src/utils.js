@@ -1,5 +1,4 @@
 const { STS } = require('aws-sdk');
-const fs = require('fs');
 const jmespath = require('jmespath');
 const minimatch = require('minimatch');
 
@@ -59,17 +58,6 @@ function curryMinimatch(glob, opts) {
 	return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
 }
 
-function readStateFromFile(accountId, region, serviceName, functionCall) {
-	const fileName = buildFilePathForServiceCall(
-		accountId,
-		region,
-		serviceName,
-		functionCall
-	);
-	const contents = fs.readFileSync(fileName);
-	return JSON.parse(contents.toString());
-}
-
 // This function shouldn't exist, data structure should be updated
 function splitServicesByGlobalAndRegional(services) {
 	return services.reduce(
@@ -91,7 +79,6 @@ module.exports = {
 	whoami,
 	getServiceFromArn,
 	curryMinimatch,
-	readStateFromFile,
 	splitServicesByGlobalAndRegional,
 	evaluateSelectorGlobally,
 };

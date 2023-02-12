@@ -6,10 +6,14 @@
 const { formatEdge } = require('./graphUtilities');
 const minimatch = require('minimatch');
 
-function generateEdgesForRoute53Resources(getGlobalStateForServiceAndFunction) {
-	const route53Records = getGlobalStateForServiceAndFunction(
-		'Route53',
-		'listResourceRecordSets'
+async function generateEdgesForRoute53Resources(
+	getGlobalStateForServiceAndFunction
+) {
+	const route53Records = (
+		await getGlobalStateForServiceAndFunction(
+			'Route53',
+			'listResourceRecordSets'
+		)
 	).flatMap(({ _result }) => _result);
 
 	// Currently only concerned with alias records
@@ -42,9 +46,8 @@ function generateEdgesForRoute53Resources(getGlobalStateForServiceAndFunction) {
 
 	let route53Edges = [];
 	// Generate edges for Route53 domains in front of Cloudfront
-	const cloudfrontState = getGlobalStateForServiceAndFunction(
-		'CloudFront',
-		'listDistributions'
+	const cloudfrontState = (
+		await getGlobalStateForServiceAndFunction('CloudFront', 'listDistributions')
 	).flatMap(({ _result }) => _result);
 	const cloudfrontEdges = cloudfront
 		.map(({ Name, AliasTarget }) => {
@@ -60,7 +63,10 @@ function generateEdgesForRoute53Resources(getGlobalStateForServiceAndFunction) {
 	route53Edges = route53Edges.concat(cloudfrontEdges);
 
 	// Generate edges for Route53 domains in front of S3 buckets
-	const s3State = getGlobalStateForServiceAndFunction('S3', 'getBucketWebsite');
+	const s3State = await getGlobalStateForServiceAndFunction(
+		'S3',
+		'getBucketWebsite'
+	);
 	const s3Edges = s3
 		.map(({ Name }) => {
 			const s3Bucket = s3State.find(({ _parameters }) => {
@@ -96,9 +102,8 @@ function generateEdgesForRoute53Resources(getGlobalStateForServiceAndFunction) {
 	//   .filter(Boolean);
 	// route53Edges = route53Edges.concat(apiGatewayEdges);
 
-	const elbState = getGlobalStateForServiceAndFunction(
-		'ELBv2',
-		'describeLoadBalancers'
+	const elbState = (
+		await getGlobalStateForServiceAndFunction('ELBv2', 'describeLoadBalancers')
 	).flatMap(({ _result }) => _result);
 	const elbEdges = elb
 		.map(({ Name, AliasTarget }) => {
@@ -114,9 +119,8 @@ function generateEdgesForRoute53Resources(getGlobalStateForServiceAndFunction) {
 	route53Edges = route53Edges.concat(elbEdges);
 
 	// Generate edges for SNS http/https subscriptions pointed at domains in route53
-	const snsSubscriptionInfo = getGlobalStateForServiceAndFunction(
-		'SNS',
-		'listSubscriptionsByTopic'
+	const snsSubscriptionInfo = (
+		await getGlobalStateForServiceAndFunction('SNS', 'listSubscriptionsByTopic')
 	).flatMap(({ _result }) => _result);
 
 	const webhookSubscriptions = snsSubscriptionInfo.filter(({ Protocol }) => {

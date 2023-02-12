@@ -12,44 +12,46 @@ const {
 } = require('./graphUtilities');
 const { evaluateSelector } = require('../utils');
 
-function generateEdgesForECSResources(getGlobalStateForServiceAndFunction) {
-	const ecsServiceRecords = getGlobalStateForServiceAndFunction(
-		'ECS',
-		'describeServices'
+async function generateEdgesForECSResources(
+	getGlobalStateForServiceAndFunction
+) {
+	const ecsServiceRecords = (
+		await getGlobalStateForServiceAndFunction('ECS', 'describeServices')
 	).flatMap(({ _result }) => _result.services);
 
-	const ecsTaskDefinitionRecords = getGlobalStateForServiceAndFunction(
-		'ECS',
-		'describeTaskDefinition'
+	const ecsTaskDefinitionRecords = (
+		await getGlobalStateForServiceAndFunction('ECS', 'describeTaskDefinition')
 	).flatMap(({ _result }) => _result.taskDefinition);
 
-	const taskRoleEdges = ecsServiceRecords.flatMap(({ taskDefinition }) => {
-		const matchedTaskDef = ecsTaskDefinitionRecords.find(
-			({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
-		);
-
-		let taskEdges = [];
-		if (matchedTaskDef?.taskRoleArn) {
-			taskEdges = taskEdges.concat(
-				generateEdgesForRole(
-					matchedTaskDef.taskRoleArn,
-					matchedTaskDef.taskDefinitionArn,
-					getGlobalStateForServiceAndFunction
-				)
+	const taskRoleEdges = await Promise.all(
+		ecsServiceRecords.flatMap(({ taskDefinition }) => {
+			const matchedTaskDef = ecsTaskDefinitionRecords.find(
+				({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
 			);
-		}
-		if (matchedTaskDef?.executionRoleArn) {
-			taskEdges = taskEdges.concat(
-				generateEdgesForRole(
-					matchedTaskDef.executionRoleArn,
-					matchedTaskDef.taskDefinitionArn,
-					getGlobalStateForServiceAndFunction
-				)
-			);
-		}
 
-		return taskEdges;
-	});
+			let taskEdges = [];
+			if (matchedTaskDef?.taskRoleArn) {
+				taskEdges = taskEdges.concat(
+					generateEdgesForRole(
+						matchedTaskDef.taskRoleArn,
+						matchedTaskDef.taskDefinitionArn,
+						getGlobalStateForServiceAndFunction
+					)
+				);
+			}
+			if (matchedTaskDef?.executionRoleArn) {
+				taskEdges = taskEdges.concat(
+					generateEdgesForRole(
+						matchedTaskDef.executionRoleArn,
+						matchedTaskDef.taskDefinitionArn,
+						getGlobalStateForServiceAndFunction
+					)
+				);
+			}
+
+			return taskEdges;
+		})
+	);
 
 	const loadBalancedECSServices = ecsServiceRecords.filter(
 		({ loadBalancers }) => {
@@ -57,9 +59,8 @@ function generateEdgesForECSResources(getGlobalStateForServiceAndFunction) {
 		}
 	);
 
-	const elbTargetGroups = getGlobalStateForServiceAndFunction(
-		'ELBv2',
-		'describeTargetGroups'
+	const elbTargetGroups = (
+		await getGlobalStateForServiceAndFunction('ELBv2', 'describeTargetGroups')
 	).flatMap(({ _result }) => _result);
 
 	// Step over every load balanced ECS Service
