@@ -184,6 +184,12 @@ async function assumeRole(roleToAssume) {
 	};
 }
 
+async function getAllRegions() {
+	const ec2Client = new AWS.EC2();
+	const { Regions } = await ec2Client.describeRegions().promise();
+	return Regions.map(({ RegionName }) => RegionName);
+}
+
 async function performScan({
 	profile,
 	roleToAssume,
@@ -223,7 +229,9 @@ async function performScan({
 		});
 	}
 
-	for (let region of regions) {
+	const regionsToScan = regions ?? (await getAllRegions());
+
+	for (let region of regionsToScan) {
 		AWS.config.update({
 			region,
 		});
