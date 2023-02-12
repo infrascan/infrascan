@@ -9,13 +9,13 @@ const {
 async function runGraph() {
 	const scanMetadata = readScanMetadata();
 	console.log(scanMetadata);
-	const graphData = generateGraph({
+	const graphData = await generateGraph({
 		scanMetadata,
 		resolveStateForServiceCall,
 		getGlobalStateForServiceAndFunction,
 	});
 	const mappedServices = graphData.reduce((acc, node) => {
-		if (node.data.service) {
+		if (node?.data?.service) {
 			acc.add(node.data.service);
 		}
 		return acc;
