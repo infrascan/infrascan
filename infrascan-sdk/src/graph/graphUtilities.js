@@ -137,16 +137,16 @@ async function generateEdgesForPolicyStatements(
 		policyStatements.flatMap(({ Resource }) => {
 			if (Array.isArray(Resource)) {
 				return Resource.flatMap((resourceGlobs) =>
-					resolveResourceGlob(
-						resourceGlobs,
-						getGlobalStateForServiceAndFunction
-					)
+					resolveResourceGlob({
+						resourceArnFromPolicy: resourceGlobs,
+						getGlobalStateForServiceAndFunction,
+					})
 				);
 			} else {
-				return resolveResourceGlob(
-					Resource,
-					getGlobalStateForServiceAndFunction
-				);
+				return resolveResourceGlob({
+					resourceArnFromPolicy: Resource,
+					getGlobalStateForServiceAndFunction,
+				});
 			}
 		})
 	);
