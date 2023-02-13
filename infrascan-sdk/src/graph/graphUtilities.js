@@ -54,30 +54,32 @@ async function resolveResourceGlob({
 					(arnLabel ?? service).toLowerCase() === resourceService.toLowerCase()
 			);
 			if (serviceConfigs) {
-				const serviceArns = await Promise.all(
-					serviceConfigs.flatMap(async ({ nodes }) => {
-						if (!nodes || nodes.length === 0) {
-							return [];
-						}
-						const selectedNodes = (
-							await Promise.all(
-								nodes.flatMap((nodeSelector) =>
-									evaluateSelectorGlobally(
-										nodeSelector,
-										getGlobalStateForServiceAndFunction
-									)
-								)
-							)
-						).map(({ id }) => id);
-						// S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
-						// This means we need to build the ARN on the fly when matching in resource policies to allow partial
-						// matches of <bucket-name> to <bucket-arn>/<object-path>
-						if (resourceService === 's3') {
-							return selectedNodes?.map((node) => `arn:aws:s3:::${node}`);
-						}
-						return selectedNodes;
-					})
-				);
+				let serviceArns = [];
+				for (let { nodes } of serviceConfigs) {
+					if (!nodes || nodes.length === 0) {
+						return [];
+					}
+
+					let globalState = [];
+					for (let selector of nodes) {
+						const selectedState = await evaluateSelectorGlobally(
+							selector,
+							getGlobalStateForServiceAndFunction
+						);
+						globalState = globalState.concat(selectedState);
+					}
+					const selectedNodes = globalState.map(({ id }) => id);
+					// S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
+					// This means we need to build the ARN on the fly when matching in resource policies to allow partial
+					// matches of <bucket-name> to <bucket-arn>/<object-path>
+					if (resourceService === 's3') {
+						serviceArns = serviceArns.concat(
+							selectedNodes?.map((node) => `arn:aws:s3:::${node}`)
+						);
+					} else {
+						serviceArns = serviceArns.concat(selectedNodes);
+					}
+				}
 				return serviceArns
 					.filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
 					.map((node) => {
