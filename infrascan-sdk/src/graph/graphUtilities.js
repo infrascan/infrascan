@@ -100,11 +100,13 @@ async function resolveResourceGlob({
 			const serviceArns = await Promise.all(
 				serviceConfigs.flatMap(async ({ nodes }) => {
 					if (nodes) {
-						return await Promise.all(
-							nodes.flatMap((nodeSelector) =>
-								evaluateSelectorGlobally(
-									nodeSelector,
-									getGlobalStateForServiceAndFunction
+						return (
+							await Promise.all(
+								nodes.flatMap((nodeSelector) =>
+									evaluateSelectorGlobally(
+										nodeSelector,
+										getGlobalStateForServiceAndFunction
+									)
 								)
 							)
 						).map(({ id }) => id);
