@@ -135,23 +135,25 @@ async function generateEdgesForPolicyStatements(
 	policyStatements,
 	getGlobalStateForServiceAndFunction
 ) {
-	return await Promise.all(
-		policyStatements.flatMap(({ Resource }) => {
-			if (Array.isArray(Resource)) {
-				return Resource.flatMap((resourceGlobs) =>
-					resolveResourceGlob({
-						resourceArnFromPolicy: resourceGlobs,
-						getGlobalStateForServiceAndFunction,
-					})
-				);
-			} else {
-				return resolveResourceGlob({
-					resourceArnFromPolicy: Resource,
+	let resources = [];
+	for (let { Resource } of policyStatements) {
+		if (Array.isArray(Resource)) {
+			for (let resourceGlobs of Resource) {
+				const resolvedState = await resolveResourceGlob({
+					resourceArnFromPolicy: resourceGlobs,
 					getGlobalStateForServiceAndFunction,
 				});
+				resources = resources.concat(resolvedState);
 			}
-		})
-	);
+		} else {
+			const matchedResources = await resolveResourceGlob({
+				resourceArnFromPolicy: Resource,
+				getGlobalStateForServiceAndFunction,
+			});
+			resources = resources.concat(matchedResources);
+		}
+	}
+	return resources;
 }
 
 /**

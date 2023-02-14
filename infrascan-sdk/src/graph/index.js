@@ -249,16 +249,14 @@ async function generateGraph({
 					roleSelector,
 					getGlobalStateForServiceAndFunction
 				);
-				const computedEdges = await Promise.all(
-					roleArns.flatMap(({ arn, executor }) => {
-						return generateEdgesForRole(
-							arn,
-							executor,
-							getGlobalStateForServiceAndFunction
-						);
-					})
-				);
-				roleEdges = roleEdges.concat(computedEdges);
+				for (let { arn, executor } of roleArns) {
+					const generatedEdges = await generateEdgesForRole(
+						arn,
+						executor,
+						getGlobalStateForServiceAndFunction
+					);
+					roleEdges = roleEdges.concat(generatedEdges);
+				}
 			}
 			console.log(
 				`Generated ${roleEdges.length - initialCount} edges for ${

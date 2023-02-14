@@ -23,35 +23,29 @@ async function generateEdgesForECSResources(
 		await getGlobalStateForServiceAndFunction('ECS', 'describeTaskDefinition')
 	).flatMap(({ _result }) => _result.taskDefinition);
 
-	const taskRoleEdges = await Promise.all(
-		ecsServiceRecords.flatMap(({ taskDefinition }) => {
-			const matchedTaskDef = ecsTaskDefinitionRecords.find(
-				({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
+	let taskRoleEdges = [];
+	for (let { taskDefinition } of ecsServiceRecords) {
+		const matchedTaskDef = ecsTaskDefinitionRecords.find(
+			({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
+		);
+
+		if (matchedTaskDef?.taskRoleArn) {
+			const edgesForTaskRole = await generateEdgesForRole(
+				matchedTaskDef.taskRoleArn,
+				matchedTaskDef.taskDefinitionArn,
+				getGlobalStateForServiceAndFunction
 			);
-
-			let taskEdges = [];
-			if (matchedTaskDef?.taskRoleArn) {
-				taskEdges = taskEdges.concat(
-					generateEdgesForRole(
-						matchedTaskDef.taskRoleArn,
-						matchedTaskDef.taskDefinitionArn,
-						getGlobalStateForServiceAndFunction
-					)
-				);
-			}
-			if (matchedTaskDef?.executionRoleArn) {
-				taskEdges = taskEdges.concat(
-					generateEdgesForRole(
-						matchedTaskDef.executionRoleArn,
-						matchedTaskDef.taskDefinitionArn,
-						getGlobalStateForServiceAndFunction
-					)
-				);
-			}
-
-			return taskEdges;
-		})
-	);
+			taskRoleEdges = taskRoleEdges.concat(edgesForTaskRole);
+		}
+		if (matchedTaskDef?.executionRoleArn) {
+			const edgesForExecutionRole = await generateEdgesForRole(
+				matchedTaskDef.executionRoleArn,
+				matchedTaskDef.taskDefinitionArn,
+				getGlobalStateForServiceAndFunction
+			);
+			taskRoleEdges = taskRoleEdges.concat(edgesForExecutionRole);
+		}
+	}
 
 	const loadBalancedECSServices = ecsServiceRecords.filter(
 		({ loadBalancers }) => {

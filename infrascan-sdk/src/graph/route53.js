@@ -9,12 +9,11 @@ const minimatch = require('minimatch');
 async function generateEdgesForRoute53Resources(
 	getGlobalStateForServiceAndFunction
 ) {
-	const route53Records = (
-		await getGlobalStateForServiceAndFunction(
-			'Route53',
-			'listResourceRecordSets'
-		)
-	).flatMap(({ _result }) => _result);
+	const route53State = await getGlobalStateForServiceAndFunction(
+		'Route53',
+		'listResourceRecordSets'
+	);
+	const route53Records = route53State.flatMap(({ _result }) => _result);
 
 	// Currently only concerned with alias records
 	const aliasRecords = route53Records.filter(({ Type, AliasTarget }) => {
