@@ -1,6 +1,8 @@
 window.addEventListener('DOMContentLoaded', async () => {
 	const graphData = await fetch('/graph.json').then((res) => res.json());
-	const graphStyle = await fetch('/style.json').then((res) => res.json());
+	const graphStyle = await fetch(
+		'https://d3flxncytuj99u.cloudfront.net/graph-styles/default.json'
+	).then((res) => res.json());
 	addGraph(graphData, graphStyle);
 });
 

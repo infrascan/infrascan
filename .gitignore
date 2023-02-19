@@ -6,3 +6,4 @@ config.json
 meilisearch
 data.ms
 dumps
+.DS_Store
