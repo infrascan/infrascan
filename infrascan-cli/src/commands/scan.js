@@ -6,6 +6,7 @@ const {
 	resolveStateForServiceCall,
 	writeScanMetadata,
 } = require('../utils');
+const AWS = require('aws-sdk');
 const DEFAULT_CONFIG_PATH = 'config.default.json';
 
 function getConfig() {
@@ -23,15 +24,23 @@ function writeStateToFs(account, region, service, functionName, functionState) {
 	recordServiceCall(filePath, functionState);
 }
 
+function resolveCredentials(profile, roleToAssume) {
+	if (profile) {
+		return new AWS.SharedIniFileCredentials({ profile });
+	} else if (roleToAssume) {
+		return new AWS.TemporaryCredentials({ RoleArn: roleToAssume });
+	}
+}
+
 async function runScan() {
 	const scanConfig = require(getConfig());
 	const metadata = [];
 	for (let accountConfig of scanConfig) {
 		// Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
 		const { profile, roleToAssume, regions, services } = accountConfig;
+		const credentials = resolveCredentials(profile, roleToAssume);
 		const accountMetadata = await performScan({
-			profile,
-			roleToAssume,
+			credentials,
 			regions,
 			services,
 			onServiceScanComplete: writeStateToFs,
