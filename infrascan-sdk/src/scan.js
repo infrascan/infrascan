@@ -163,29 +163,6 @@ async function scanResourcesInAccount({
 	);
 }
 
-function useLocalProfile(profile) {
-	return new AWS.SharedIniFileCredentials({
-		profile,
-	});
-}
-
-async function assumeRole(roleToAssume) {
-	const stsClient = new AWS.STS();
-	console.log('Assuming role', roleToAssume);
-	const { Credentials } = await stsClient
-		.assumeRole({
-			RoleArn: roleToAssume,
-			RoleSessionName: 'infrascan-session',
-		})
-		.promise();
-	console.log('Assumed role', roleToAssume);
-	return {
-		accessKeyId: Credentials.AccessKeyId,
-		secretAccessKey: Credentials.SecretAccessKey,
-		sessionToken: Credentials.SessionToken,
-	};
-}
-
 async function getAllRegions() {
 	const ec2Client = new AWS.EC2();
 	const { Regions } = await ec2Client.describeRegions().promise();
@@ -193,18 +170,20 @@ async function getAllRegions() {
 }
 
 async function performScan({
-	profile,
-	roleToAssume,
+	credentials,
 	regions,
 	services,
 	onServiceScanComplete,
 	resolveStateForServiceCall,
 }) {
 	const scanMetadata = {};
-	const credentials = profile
-		? useLocalProfile(profile)
-		: await assumeRole(roleToAssume);
-	AWS.config.update({ credentials, region: DEFAULT_REGION });
+
+	// If credentials have a getter, assume they're AWS credentials, else assume they're the raw credentials
+	const awsCredentials =
+		typeof credentials.get === 'function'
+			? credentials
+			: new AWS.Credentials(credentials);
+	AWS.config.update({ credentials: awsCredentials, region: DEFAULT_REGION });
 	const globalCaller = await whoami();
 	scanMetadata.account = globalCaller.Account;
 	scanMetadata.regions = [];
