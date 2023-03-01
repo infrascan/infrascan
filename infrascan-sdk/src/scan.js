@@ -169,8 +169,23 @@ async function getAllRegions() {
 	return Regions.map(({ RegionName }) => RegionName);
 }
 
+async function assumeRole(roleToAssume) {
+	const sts = new AWS.STS();
+	console.log('Assuming Role', roleToAssume);
+	const { Credentials } = await sts
+		.assumeRole({ RoleArn: roleToAssume, RoleSessionName: 'infrascan' })
+		.promise();
+	console.log('Assumed Role', roleToAssume);
+	return {
+		accessKeyId: Credentials.AccessKeyId,
+		secretAccessKey: Credentials.SecretAccessKey,
+		sessionToken: Credentials.SessionToken,
+	};
+}
+
 async function performScan({
 	credentials,
+	roleToAssume,
 	regions,
 	services,
 	onServiceScanComplete,
@@ -184,6 +199,10 @@ async function performScan({
 			? credentials
 			: new AWS.Credentials(credentials);
 	AWS.config.update({ credentials: awsCredentials, region: DEFAULT_REGION });
+	if (roleToAssume) {
+		const credentials = await assumeRole(roleToAssume);
+		AWS.config.update({ credentials });
+	}
 	const globalCaller = await whoami();
 	scanMetadata.account = globalCaller.Account;
 	scanMetadata.regions = [];
