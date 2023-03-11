@@ -1,6 +1,6 @@
 {
 	"name": "@infrascan/cli",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Thin command line wrapper around the infrascan sdk",
 	"main": "src/index.js",
 	"scripts": {
@@ -10,7 +10,7 @@
 	"author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
 	"license": "ISC",
 	"dependencies": {
-		"@infrascan/sdk": "^0.2.0",
+		"@infrascan/sdk": "^0.2.2",
 		"aws-sdk": "^2.1309.0",
 		"minimatch": "^6.1.6"
 	},

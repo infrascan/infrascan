@@ -145,12 +145,7 @@ async function generateGraph({
 		);
 		graphNodes = graphNodes.concat(regionNodes);
 		// Only read IAM data from default region (global service)
-		const iamState = await resolveStateForServiceCall(
-			account,
-			DEFAULT_REGION,
-			'IAM',
-			'roles'
-		);
+		const iamState = await getGlobalStateForServiceAndFunction('IAM', 'roles');
 		hydrateRoleStorage(iamState);
 
 		// Generate nodes for each global service
