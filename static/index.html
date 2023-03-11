@@ -30,7 +30,7 @@
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer"
 		></script>
-		<script src="./js/sigma.graph.js"></script>
+		<script src="./js/cyto.graph.js"></script>
 		<style>
 			* {
 				margin: 0;
@@ -111,6 +111,18 @@
 		<div id="container">
 			<div id="cy"></div>
 			<div id="focus-container">
+				<div id="control-panel">
+					<label for="hide-dangling">
+						Hide dangling nodes:
+						<input
+							id="hide-dangling"
+							name="hide-dangling"
+							type="checkbox"
+							value="false"
+							onchange="toggleDangling()"
+						/>
+					</label>
+				</div>
 				<div id="autocomplete-container">
 					<h3>Search</h3>
 					<input

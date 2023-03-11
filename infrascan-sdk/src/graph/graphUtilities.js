@@ -7,7 +7,7 @@ const {
 } = require('../utils');
 const { SERVICES_CONFIG: SERVICES } = require('../services');
 
-function formatEdge(source, target, name) {
+function formatEdge(source, target, name, statement, roleArn) {
 	const edgeId = `${source}:${target}`;
 	return {
 		group: 'edges',
@@ -18,17 +18,28 @@ function formatEdge(source, target, name) {
 			source,
 			target,
 			type: 'edge',
+			info: {
+				roleArn,
+				label: name,
+				statement,
+			},
 		},
 	};
 }
 
 function getStatementsForRole(role) {
 	const inlineStatements =
-		jmespath.search(role, 'inlinePolicies[].PolicyDocument.Statement[]') ?? [];
+		jmespath.search(
+			role,
+			'inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}'
+		) ?? [];
 	const attachedStatements =
-		jmespath.search(role, 'attachedPolicies[].Document.Statement') ?? [];
+		jmespath.search(
+			role,
+			'attachedPolicies[].{label:PolicyName,statements:Document.Statement}'
+		) ?? [];
 	return {
-		inlineStatements,
+		inlineStatements: inlineStatements.flatMap((x) => x),
 		attachedStatements: attachedStatements.flatMap((x) => x),
 	};
 }
@@ -139,21 +150,50 @@ async function generateEdgesForPolicyStatements(
 	getGlobalStateForServiceAndFunction
 ) {
 	let resources = [];
-	for (let { Resource } of policyStatements) {
-		if (Array.isArray(Resource)) {
-			for (let resourceGlobs of Resource) {
-				const resolvedState = await resolveResourceGlob({
-					resourceArnFromPolicy: resourceGlobs,
+	for (let { label, statements } of policyStatements) {
+		for (let statement of statements) {
+			const { Resource } = statement;
+			if (Array.isArray(Resource)) {
+				for (let resourceGlobs of Resource) {
+					let resolvedState = await resolveResourceGlob({
+						resourceArnFromPolicy: resourceGlobs,
+						getGlobalStateForServiceAndFunction,
+					});
+					if (Array.isArray(resolvedState)) {
+						resolvedState = resolvedState.map((node) => ({
+							label,
+							node,
+							statement,
+						}));
+					} else {
+						resolvedState = {
+							node: resolvedState,
+							label,
+							statement,
+						};
+					}
+					resources = resources.concat(resolvedState);
+				}
+			} else {
+				let matchedResources = await resolveResourceGlob({
+					resourceArnFromPolicy: Resource,
 					getGlobalStateForServiceAndFunction,
 				});
-				resources = resources.concat(resolvedState);
+				if (Array.isArray(matchedResources)) {
+					matchedResources = matchedResources.map((node) => ({
+						label,
+						node,
+						statement,
+					}));
+				} else {
+					matchedResources = {
+						node: matchedResources,
+						label,
+						statement,
+					};
+				}
+				resources = resources.concat(matchedResources);
 			}
-		} else {
-			const matchedResources = await resolveResourceGlob({
-				resourceArnFromPolicy: Resource,
-				getGlobalStateForServiceAndFunction,
-			});
-			resources = resources.concat(matchedResources);
 		}
 	}
 	return resources;
@@ -192,8 +232,8 @@ async function generateEdgesForRole(
 	// Iterate over the computed edges and format them
 	return effectedResourcesForInlineStatements
 		.concat(effectedResourcesForAttachedStatements)
-		.map((effectedArn) =>
-			formatEdge(executor, effectedArn, `${executor}:${effectedArn}`)
+		.map(({ label, node, statement }) =>
+			formatEdge(executor, node, label, statement, arn)
 		);
 }
 

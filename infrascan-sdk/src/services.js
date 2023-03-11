@@ -131,7 +131,9 @@ const SERVICES_CONFIG = [
 				iamRoleSelectors: ['Configuration.Role'],
 			},
 		],
-		nodes: ['Lambda|listFunctions|[]._result.Functions[].{id: FunctionArn}'],
+		nodes: [
+			'Lambda|listFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}',
+		],
 		iamRoles: [
 			'Lambda|getFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}',
 		],
@@ -182,7 +184,7 @@ const SERVICES_CONFIG = [
 				],
 			},
 		],
-		nodes: ['S3|listBuckets|[]._result[].{id:Name}'],
+		nodes: ['S3|listBuckets|[]._result[].{id:Name,name:Name}'],
 		edges: [
 			{
 				state: 'S3|getBucketNotificationConfiguration|[]',
@@ -208,10 +210,23 @@ const SERVICES_CONFIG = [
 		getters: [
 			{
 				fn: 'listDistributions',
-				formatter: ({ DistributionList }) => DistributionList.Items,
+				formatter: ({ DistributionList }) => {
+					return DistributionList.Items.map((distribution) => {
+						const _infrascanLabel =
+							distribution.Aliases.Quantity > 0
+								? distribution.Aliases.Items[0]
+								: distribution.DomainName;
+						return {
+							...distribution,
+							_infrascanLabel,
+						};
+					});
+				},
 			},
 		],
-		nodes: ['CloudFront|listDistributions|[]._result[].{id:ARN}'],
+		nodes: [
+			'CloudFront|listDistributions|[]._result[].{id:ARN,name:_infrascanLabel}',
+		],
 	},
 	{
 		service: 'CloudWatchLogs',
@@ -305,7 +320,7 @@ const SERVICES_CONFIG = [
 			},
 		],
 		nodes: [
-			'RDS|describeDBInstances|[]._result | [].{id:DBInstanceIdentifier}',
+			'RDS|describeDBInstances|[]._result | [].{id:DBInstanceIdentifier,name:DBName}',
 		],
 	},
 	{
