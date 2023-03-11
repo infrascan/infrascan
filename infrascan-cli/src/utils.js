@@ -26,8 +26,12 @@ function resolveStateForServiceCall(account, region, service, functionCall) {
 		functionCall
 	);
 
-	const state = fs.readFileSync(filePath, 'utf8');
-	return JSON.parse(state);
+	try {
+		const state = fs.readFileSync(filePath, 'utf8');
+		return JSON.parse(state);
+	} catch (_) {
+		return [];
+	}
 }
 
 function getGlobalStateForServiceAndFunction(serviceName, functionCall) {

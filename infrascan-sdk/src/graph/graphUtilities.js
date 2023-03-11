@@ -99,25 +99,28 @@ async function resolveResourceGlob({
 			({ service }) => service.toLowerCase() === resourceService.toLowerCase()
 		);
 		if (serviceConfigs) {
-			const serviceArns = await Promise.all(
-				serviceConfigs.flatMap(async ({ nodes }) => {
-					if (nodes) {
-						return (
-							await Promise.all(
-								nodes.flatMap((nodeSelector) =>
-									evaluateSelectorGlobally(
-										nodeSelector,
-										getGlobalStateForServiceAndFunction
-									)
-								)
-							)
-						).map(({ id }) => id);
-					} else {
-						return [];
+			let allServiceIds = [];
+			for (let { nodes } of serviceConfigs) {
+				if (nodes) {
+					let nodeIds = [];
+					for (let nodeSelector of nodes) {
+						const selectedNodes = await evaluateSelectorGlobally(
+							nodeSelector,
+							getGlobalStateForServiceAndFunction
+						);
+						const selectedIds = selectedNodes.flatMap((resource) => {
+							if (Array.isArray(resource)) {
+								return resource.map(({ id }) => id);
+							} else {
+								return resource.id;
+							}
+						});
+						nodeIds = nodeIds.concat(selectedIds);
 					}
-				})
-			);
-			return serviceArns.filter(
+					allServiceIds = allServiceIds.concat(nodeIds);
+				}
+			}
+			return allServiceIds.filter(
 				(knownArn) => knownArn === resourceArnFromPolicy
 			);
 		}
