@@ -151,48 +151,50 @@ async function generateEdgesForPolicyStatements(
 ) {
 	let resources = [];
 	for (let { label, statements } of policyStatements) {
-		for (let statement of statements) {
-			const { Resource } = statement;
-			if (Array.isArray(Resource)) {
-				for (let resourceGlobs of Resource) {
-					let resolvedState = await resolveResourceGlob({
-						resourceArnFromPolicy: resourceGlobs,
+		if (statements) {
+			for (let statement of statements) {
+				const { Resource } = statement;
+				if (Array.isArray(Resource)) {
+					for (let resourceGlobs of Resource) {
+						let resolvedState = await resolveResourceGlob({
+							resourceArnFromPolicy: resourceGlobs,
+							getGlobalStateForServiceAndFunction,
+						});
+						if (Array.isArray(resolvedState)) {
+							resolvedState = resolvedState.map((node) => ({
+								label,
+								node,
+								statement,
+							}));
+						} else {
+							resolvedState = {
+								node: resolvedState,
+								label,
+								statement,
+							};
+						}
+						resources = resources.concat(resolvedState);
+					}
+				} else {
+					let matchedResources = await resolveResourceGlob({
+						resourceArnFromPolicy: Resource,
 						getGlobalStateForServiceAndFunction,
 					});
-					if (Array.isArray(resolvedState)) {
-						resolvedState = resolvedState.map((node) => ({
+					if (Array.isArray(matchedResources)) {
+						matchedResources = matchedResources.map((node) => ({
 							label,
 							node,
 							statement,
 						}));
 					} else {
-						resolvedState = {
-							node: resolvedState,
+						matchedResources = {
+							node: matchedResources,
 							label,
 							statement,
 						};
 					}
-					resources = resources.concat(resolvedState);
+					resources = resources.concat(matchedResources);
 				}
-			} else {
-				let matchedResources = await resolveResourceGlob({
-					resourceArnFromPolicy: Resource,
-					getGlobalStateForServiceAndFunction,
-				});
-				if (Array.isArray(matchedResources)) {
-					matchedResources = matchedResources.map((node) => ({
-						label,
-						node,
-						statement,
-					}));
-				} else {
-					matchedResources = {
-						node: matchedResources,
-						label,
-						statement,
-					};
-				}
-				resources = resources.concat(matchedResources);
 			}
 		}
 	}
