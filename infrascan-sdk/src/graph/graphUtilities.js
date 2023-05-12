@@ -151,7 +151,7 @@ async function generateEdgesForPolicyStatements(
 ) {
 	let resources = [];
 	for (let { label, statements } of policyStatements) {
-		if (statements) {
+		if (statements && Symbol.iterator in Object(statements)) {
 			for (let statement of statements) {
 				const { Resource } = statement;
 				if (Array.isArray(Resource)) {
