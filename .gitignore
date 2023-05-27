@@ -1,7 +1,7 @@
 node_modules
 state
 test-state
-static/graph*.json
+static
 config.json
 meilisearch
 data.ms
