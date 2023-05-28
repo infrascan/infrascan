@@ -319,6 +319,7 @@ export const REGIONAL_SERVICES: ServiceConfig[] = [
 			},
 			{
 				fn: 'describeAvailabilityZones',
+				formatter: formatters.EC2.describeAvailabilityZones,
 			},
 			{
 				fn: 'describeSubnets',

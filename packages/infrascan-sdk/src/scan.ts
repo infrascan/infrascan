@@ -14,7 +14,7 @@ import {
 	DEFAULT_REGION,
 	invokeDynamicClient,
 } from './utils';
-import { scanIamRole, IAM_STORAGE } from './iam';
+import { scanIamRole, IAMStorage } from './iam';
 const ERROR_CODES_TO_IGNORE = ['NoSuchWebsiteConfiguration', 'NoSuchTagSet'];
 
 type ResolveParametersOptions = {
@@ -72,6 +72,7 @@ type MakeFunctionCallOptions = {
 	iamClient: IAM;
 	functionCall: ServiceGetter;
 	resolveStateForServiceCall: ResolveStateFromServiceFn;
+	iamStorage: IAMStorage;
 };
 async function makeFunctionCall({
 	account,
@@ -81,6 +82,7 @@ async function makeFunctionCall({
 	iamClient,
 	functionCall,
 	resolveStateForServiceCall,
+	iamStorage,
 }: MakeFunctionCallOptions) {
 	const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
 		functionCall;
@@ -94,7 +96,7 @@ async function makeFunctionCall({
 		});
 	}
 
-	const state = [];
+	const state: GenericState[] = [];
 	for (let requestParameters of resolvedParameters) {
 		try {
 			console.log(`${service} ${fn}`);
@@ -103,7 +105,6 @@ async function makeFunctionCall({
 				if (paginationToken?.request != null) {
 					requestParameters[paginationToken.request] = pagingToken;
 				}
-				// TODO: Move to JS
 				const result =
 					(await invokeDynamicClient(client, fn, requestParameters)) ?? {};
 				if (paginationToken?.response != null) {
@@ -117,10 +118,10 @@ async function makeFunctionCall({
 						const selectionResult = jmespath.search(formattedResult, selector);
 						if (Array.isArray(selectionResult)) {
 							for (let roleArn of selectionResult) {
-								await scanIamRole(iamClient, roleArn);
+								await scanIamRole(iamStorage, iamClient, roleArn);
 							}
 						} else if (selectionResult) {
-							await scanIamRole(iamClient, selectionResult);
+							await scanIamRole(iamStorage, iamClient, selectionResult);
 						}
 					}
 				}
@@ -135,7 +136,6 @@ async function makeFunctionCall({
 			} while (pagingToken != null);
 		} catch (err: any) {
 			if (err?.retryable) {
-				// TODO: impl retryable
 				console.log('Encountered retryable error', err);
 			} else if (!ERROR_CODES_TO_IGNORE.includes(err?.code)) {
 				console.log('Non retryable error', err);
@@ -151,6 +151,7 @@ export type ScanResourcesInAccountOptions = {
 	servicesToScan: ServiceConfig[];
 	onServiceScanComplete: ServiceScanCompleteCallbackFn;
 	resolveStateForServiceCall: ResolveStateFromServiceFn;
+	iamStorage: IAMStorage;
 };
 
 import { IAM } from '@aws-sdk/client-iam';
@@ -160,6 +161,7 @@ async function scanResourcesInAccount({
 	servicesToScan,
 	onServiceScanComplete,
 	resolveStateForServiceCall,
+	iamStorage,
 }: ScanResourcesInAccountOptions): Promise<void> {
 	const iamClient = new IAM({ region });
 	for (let serviceScanner of servicesToScan) {
@@ -176,6 +178,7 @@ async function scanResourcesInAccount({
 				iamClient,
 				functionCall,
 				resolveStateForServiceCall,
+				iamStorage,
 			});
 			await onServiceScanComplete(
 				account,
@@ -191,7 +194,7 @@ async function scanResourcesInAccount({
 		region,
 		'IAM',
 		'roles',
-		IAM_STORAGE.getAllRoles()
+		iamStorage.getAllRoles()
 	);
 }
 
@@ -205,6 +208,7 @@ async function getAllRegions(
 }
 
 import type { AwsCredentialIdentityProvider } from '@aws-sdk/types';
+import { GenericState } from './graphTypes';
 export type ServiceScanCompleteCallbackFn = (
 	account: string,
 	region: string,
@@ -249,6 +253,7 @@ export async function performScan({
 		regions: [],
 	};
 
+	const iamStorage = new IAMStorage();
 	console.log(`Scanning global resources in ${globalCaller.Account}`);
 	if (services?.length != null && services?.length > 0) {
 		const filteredGlobalServices = GLOBAL_SERVICES.filter(({ service }) =>
@@ -260,6 +265,7 @@ export async function performScan({
 			servicesToScan: filteredGlobalServices,
 			onServiceScanComplete,
 			resolveStateForServiceCall,
+			iamStorage,
 		});
 	} else {
 		await scanResourcesInAccount({
@@ -268,6 +274,7 @@ export async function performScan({
 			servicesToScan: GLOBAL_SERVICES,
 			onServiceScanComplete,
 			resolveStateForServiceCall,
+			iamStorage,
 		});
 	}
 
@@ -293,6 +300,7 @@ export async function performScan({
 				servicesToScan: filteredRegionalServices,
 				onServiceScanComplete,
 				resolveStateForServiceCall,
+				iamStorage,
 			});
 		} else {
 			await scanResourcesInAccount({
@@ -301,6 +309,7 @@ export async function performScan({
 				servicesToScan: REGIONAL_SERVICES,
 				onServiceScanComplete,
 				resolveStateForServiceCall,
+				iamStorage,
 			});
 		}
 		console.log(`Scan of ${caller.Account} in ${region} complete`);

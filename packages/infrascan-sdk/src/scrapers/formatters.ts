@@ -150,6 +150,7 @@ export const SNS = {
  * EC2 Formatters
  */
 import type {
+	DescribeAvailabilityZonesResult,
 	DescribeSubnetsResult,
 	DescribeVpcsResult,
 } from '@aws-sdk/client-ec2';
@@ -159,6 +160,10 @@ export const EC2 = {
 	describeSubnets: simpleLookupFactory<DescribeSubnetsResult, 'Subnets'>(
 		'Subnets'
 	),
+	describeAvailabilityZones: simpleLookupFactory<
+		DescribeAvailabilityZonesResult,
+		'AvailabilityZones'
+	>('AvailabilityZones'),
 };
 
 /**

@@ -62,6 +62,11 @@ export async function evaluateSelectorGlobally(
 	return jmespath.search(aggregateState, selector.join('|'));
 }
 
+/**
+ * Split out an arn to find the resources service
+ * @param {string} arn
+ * @returns {string | undefined}
+ */
 export function getServiceFromArn(arn) {
 	const [_prefix, _aws, service] = arn.split(':');
 	return service;

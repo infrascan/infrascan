@@ -1,4 +1,3 @@
-const { readFileSync, writeFileSync, statSync } = require('fs');
 const jmespath = require('jmespath');
 
 const { SERVICES_CONFIG: SERVICES } = require('../services');
@@ -22,7 +21,6 @@ const {
 	generateEdgesForRole,
 	sanitizeId,
 } = require('./graphUtilities');
-
 const { global: GLOBAL_SERVICES, regional: REGIONAL_SERVICES } =
 	splitServicesByGlobalAndRegional(SERVICES);
 
