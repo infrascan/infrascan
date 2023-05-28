@@ -1,40 +1,58 @@
-function parseRoleName(roleArn) {
+export function parseRoleName(roleArn) {
 	const lastToken = roleArn.split(':').pop();
 	return lastToken?.split('/').pop();
 }
 
-function decodePolicy(policyDoc) {
+export function decodePolicy(policyDoc) {
 	const decodedPolicy = decodeURIComponent(policyDoc);
 	return JSON.parse(decodedPolicy);
 }
 
-const IAM_STORAGE = {
+export const IAM_STORAGE = {
 	data: {},
+	/**
+	 * Set a role in storage
+	 * @param {string} arn
+	 * @param {Object} role
+	 */
 	setRole: function (arn, role) {
 		this.data[arn] = role;
 	},
+	/**
+	 * Get a role from storage
+	 * @param {string} arn
+	 * @returns {Object | undefined}
+	 */
 	getRole: function (arn) {
 		return this.data[arn];
 	},
+	/**
+	 * Get all roles from storage
+	 * @returns {Object[]}
+	 */
 	getAllRoles: function () {
 		return Object.values(this.data);
 	},
+	/**
+	 * Delete all stored roles
+	 * @type {function}
+	 */
 	clearAllRoles: function () {
 		this.data = {};
 	},
 };
 
-function hydrateRoleStorage(roles) {
+export function hydrateRoleStorage(roles) {
 	for (let role of roles) {
 		IAM_STORAGE.setRole(role.roleArn, role);
 	}
 }
 
-function clearRoleStorage() {
+export function clearRoleStorage() {
 	IAM_STORAGE.clearAllRoles();
 }
 
-async function scanIamRole(iamClient, roleArn) {
+export async function scanIamRole(iamClient, roleArn) {
 	const roleName = parseRoleName(roleArn);
 	const prescannedRole = IAM_STORAGE.getRole(roleArn);
 	if (prescannedRole) {
@@ -111,10 +129,3 @@ async function scanIamRole(iamClient, roleArn) {
 	}
 	IAM_STORAGE.setRole(roleArn, iamState);
 }
-
-module.exports = {
-	IAM_STORAGE,
-	scanIamRole,
-	hydrateRoleStorage,
-	clearRoleStorage,
-};

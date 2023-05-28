@@ -5,6 +5,7 @@
 	"main": "src/index.js",
 	"scripts": {
 		"dev": "node ./src/index.js",
+		"build": "tsc --project tsconfig.json",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
@@ -19,11 +20,34 @@
 	},
 	"homepage": "https://github.com/infrascan/infrascan#readme",
 	"dependencies": {
-		"aws-sdk": "^2.1236.0",
+		"@aws-sdk/client-api-gateway": "^3.341.0",
+		"@aws-sdk/client-auto-scaling": "^3.341.0",
+		"@aws-sdk/client-cloudfront": "^3.341.0",
+		"@aws-sdk/client-cloudwatch-logs": "^3.341.0",
+		"@aws-sdk/client-dynamodb": "^3.341.0",
+		"@aws-sdk/client-ec2": "^3.341.0",
+		"@aws-sdk/client-ecs": "^3.341.0",
+		"@aws-sdk/client-elastic-load-balancing-v2": "^3.341.0",
+		"@aws-sdk/client-iam": "^3.341.0",
+		"@aws-sdk/client-lambda": "^3.341.0",
+		"@aws-sdk/client-rds": "^3.341.0",
+		"@aws-sdk/client-route-53": "^3.341.0",
+		"@aws-sdk/client-s3": "^3.341.0",
+		"@aws-sdk/client-sns": "^3.341.0",
+		"@aws-sdk/client-sqs": "^3.341.0",
+		"@aws-sdk/client-sts": "^3.341.0",
+		"@aws-sdk/config-resolver": "^3.341.0",
 		"jmespath": "^0.16.0",
 		"minimatch": "^5.1.0"
 	},
 	"publishConfig": {
 		"registry": "https://npm.pkg.github.com"
+	},
+	"devDependencies": {
+		"@aws-sdk/types": "^3.341.0",
+		"@types/jmespath": "^0.15.0",
+		"ts-node": "^10.9.1",
+		"tsc": "^2.0.4",
+		"typescript": "^5.0.4"
 	}
 }

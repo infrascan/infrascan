@@ -1,25 +1,36 @@
-const AWS = require('aws-sdk');
-const { SERVICES_CONFIG: SERVICES } = require('./services');
-const jmespath = require('jmespath');
-const {
+import {
+	REGIONAL_SERVICES,
+	GLOBAL_SERVICES,
+	ServiceConfig,
+	ServiceGetter,
+	ParameterResolver,
+} from './scrapers/services';
+import type { ServiceClients } from './scrapers/client';
+import { dynamicClient } from './scrapers/client';
+import jmespath from 'jmespath';
+import {
 	whoami,
 	evaluateSelector,
 	DEFAULT_REGION,
-	splitServicesByGlobalAndRegional,
-} = require('./utils');
-const { scanIamRole, IAM_STORAGE } = require('./iam');
+	invokeDynamicClient,
+} from './utils';
+import { scanIamRole, IAM_STORAGE } from './iam';
 const ERROR_CODES_TO_IGNORE = ['NoSuchWebsiteConfiguration', 'NoSuchTagSet'];
 
-const { global: GLOBAL_SERVICES, regional: REGIONAL_SERVICES } =
-	splitServicesByGlobalAndRegional(SERVICES);
+type ResolveParametersOptions = {
+	account: string;
+	region: string;
+	parameters: ParameterResolver[];
+	resolveStateForServiceCall: ResolveStateFromServiceFn;
+};
 
 async function resolveParameters({
 	account,
 	region,
 	parameters,
 	resolveStateForServiceCall,
-}) {
-	let allParamObjects = [];
+}: ResolveParametersOptions): Promise<Record<string, any>[]> {
+	let allParamObjects: Record<string, string>[] = [];
 	for (let { Key, Selector, Value } of parameters) {
 		if (Selector) {
 			const parameterValues = await evaluateSelector({
@@ -53,6 +64,15 @@ async function resolveParameters({
 	return validatedParamObjects;
 }
 
+type MakeFunctionCallOptions = {
+	account: string;
+	region: string;
+	service: string;
+	client: ServiceClients;
+	iamClient: IAM;
+	functionCall: ServiceGetter;
+	resolveStateForServiceCall: ResolveStateFromServiceFn;
+};
 async function makeFunctionCall({
 	account,
 	region,
@@ -61,29 +81,34 @@ async function makeFunctionCall({
 	iamClient,
 	functionCall,
 	resolveStateForServiceCall,
-}) {
+}: MakeFunctionCallOptions) {
 	const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
 		functionCall;
-	const params = parameters
-		? await resolveParameters({
-				account,
-				region,
-				parameters,
-				resolveStateForServiceCall,
-		  })
-		: [{}];
+	let resolvedParameters: Record<string, any>[] = [{}];
+	if (parameters) {
+		resolvedParameters = await resolveParameters({
+			account,
+			region,
+			parameters,
+			resolveStateForServiceCall,
+		});
+	}
 
 	const state = [];
-	for (let paramObj of params) {
+	for (let requestParameters of resolvedParameters) {
 		try {
 			console.log(`${service} ${fn}`);
 			let pagingToken = undefined;
 			do {
-				const params = Object.assign(paramObj, {
-					[paginationToken?.request]: pagingToken,
-				});
-				const result = (await client[fn](params).promise()) ?? {};
-				pagingToken = result[paginationToken?.response];
+				if (paginationToken?.request != null) {
+					requestParameters[paginationToken.request] = pagingToken;
+				}
+				// TODO: Move to JS
+				const result =
+					(await invokeDynamicClient(client, fn, requestParameters)) ?? {};
+				if (paginationToken?.response != null) {
+					pagingToken = result[paginationToken?.response];
+				}
 
 				const formattedResult = formatter ? formatter(result) : result;
 
@@ -104,15 +129,15 @@ async function makeFunctionCall({
 				state.push({
 					// track context in metadata to allow mapping to parents
 					_metadata: { account, region },
-					_parameters: paramObj,
+					_parameters: requestParameters,
 					_result: formattedResult,
 				});
 			} while (pagingToken != null);
-		} catch (err) {
-			if (err.retryable) {
+		} catch (err: any) {
+			if (err?.retryable) {
 				// TODO: impl retryable
 				console.log('Encountered retryable error', err);
-			} else if (!ERROR_CODES_TO_IGNORE.includes(err.code)) {
+			} else if (!ERROR_CODES_TO_IGNORE.includes(err?.code)) {
 				console.log('Non retryable error', err);
 			}
 		}
@@ -120,20 +145,27 @@ async function makeFunctionCall({
 	return state;
 }
 
+export type ScanResourcesInAccountOptions = {
+	account: string;
+	region: string;
+	servicesToScan: ServiceConfig[];
+	onServiceScanComplete: ServiceScanCompleteCallbackFn;
+	resolveStateForServiceCall: ResolveStateFromServiceFn;
+};
+
+import { IAM } from '@aws-sdk/client-iam';
 async function scanResourcesInAccount({
 	account,
 	region,
 	servicesToScan,
 	onServiceScanComplete,
 	resolveStateForServiceCall,
-}) {
-	const iamClient = new AWS.IAM();
+}: ScanResourcesInAccountOptions): Promise<void> {
+	const iamClient = new IAM({ region });
 	for (let serviceScanner of servicesToScan) {
-		const { service, getters } = serviceScanner;
+		const { service, clientKey, getters } = serviceScanner;
 
-		const client = new AWS[service]({
-			region,
-		});
+		const client = await dynamicClient(service, clientKey, { region });
 
 		for (let functionCall of getters) {
 			const functionState = await makeFunctionCall({
@@ -163,52 +195,62 @@ async function scanResourcesInAccount({
 	);
 }
 
-async function getAllRegions() {
-	const ec2Client = new AWS.EC2();
-	const { Regions } = await ec2Client.describeRegions().promise();
-	return Regions.map(({ RegionName }) => RegionName);
+import { EC2 } from '@aws-sdk/client-ec2';
+async function getAllRegions(
+	credentials: AwsCredentialIdentityProvider
+): Promise<string[]> {
+	const ec2Client = new EC2({ region: DEFAULT_REGION, credentials });
+	const { Regions } = await ec2Client.describeRegions({ AllRegions: true });
+	return Regions?.map(({ RegionName }) => RegionName as string) ?? [];
 }
 
-async function assumeRole(roleToAssume) {
-	const sts = new AWS.STS();
-	console.log('Assuming Role', roleToAssume);
-	const { Credentials } = await sts
-		.assumeRole({ RoleArn: roleToAssume, RoleSessionName: 'infrascan' })
-		.promise();
-	console.log('Assumed Role', roleToAssume);
-	return {
-		accessKeyId: Credentials.AccessKeyId,
-		secretAccessKey: Credentials.SecretAccessKey,
-		sessionToken: Credentials.SessionToken,
-	};
-}
+import type { AwsCredentialIdentityProvider } from '@aws-sdk/types';
+export type ServiceScanCompleteCallbackFn = (
+	account: string,
+	region: string,
+	service: string,
+	functionName: string,
+	functionState: any
+) => void;
+export type ResolveStateFromServiceFn = (
+	account: string,
+	region: string,
+	service: string,
+	functionName: string
+) => void;
+export type PerformScanOptions = {
+	credentials: AwsCredentialIdentityProvider;
+	regions?: string[];
+	services?: string[];
+	onServiceScanComplete: ServiceScanCompleteCallbackFn;
+	resolveStateForServiceCall: ResolveStateFromServiceFn;
+};
 
-async function performScan({
+export type ScanMetadata = {
+	account: string;
+	regions: string[];
+};
+
+export async function performScan({
 	credentials,
-	roleToAssume,
 	regions,
 	services,
 	onServiceScanComplete,
 	resolveStateForServiceCall,
-}) {
-	const scanMetadata = {};
+}: PerformScanOptions) {
+	const globalCaller = await whoami(credentials, DEFAULT_REGION);
 
-	// If credentials have a getter, assume they're AWS credentials, else assume they're the raw credentials
-	const awsCredentials =
-		typeof credentials.get === 'function'
-			? credentials
-			: new AWS.Credentials(credentials);
-	AWS.config.update({ credentials: awsCredentials, region: DEFAULT_REGION });
-	if (roleToAssume) {
-		const credentials = await assumeRole(roleToAssume);
-		AWS.config.update({ credentials });
+	if (globalCaller?.Account == null) {
+		throw new Error('Failed to get caller identity');
 	}
-	const globalCaller = await whoami();
-	scanMetadata.account = globalCaller.Account;
-	scanMetadata.regions = [];
+
+	const scanMetadata: ScanMetadata = {
+		account: globalCaller?.Account,
+		regions: [],
+	};
 
 	console.log(`Scanning global resources in ${globalCaller.Account}`);
-	if (services?.length > 0) {
+	if (services?.length != null && services?.length > 0) {
 		const filteredGlobalServices = GLOBAL_SERVICES.filter(({ service }) =>
 			services.includes(service)
 		);
@@ -229,13 +271,13 @@ async function performScan({
 		});
 	}
 
-	const regionsToScan = regions ?? (await getAllRegions());
+	const regionsToScan = regions ?? (await getAllRegions(credentials));
 
 	for (let region of regionsToScan) {
-		AWS.config.update({
-			region,
-		});
-		const caller = await whoami();
+		const caller = await whoami(credentials, region);
+		if (caller.Account == null) {
+			throw new Error('Failed to get caller identity');
+		}
 		console.log(`Beginning scan of ${caller.Account} in ${region}`);
 		const servicesToScan = services ?? [];
 		if (servicesToScan.length > 0) {
@@ -266,7 +308,3 @@ async function performScan({
 	}
 	return scanMetadata;
 }
-
-module.exports = {
-	performScan,
-};

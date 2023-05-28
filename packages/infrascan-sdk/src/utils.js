@@ -1,21 +1,34 @@
-const { STS } = require('aws-sdk');
-const jmespath = require('jmespath');
-const minimatch = require('minimatch');
+import { STS } from '@aws-sdk/client-sts';
+import jmespath from 'jmespath';
+import minimatch from 'minimatch';
 
-const DEFAULT_REGION = 'us-east-1';
+export const DEFAULT_REGION = 'us-east-1';
 
-async function whoami() {
-	const stsClient = new STS();
-	return await stsClient.getCallerIdentity().promise();
+/**
+ *
+ * @param {import('@aws-sdk/types').AwsCredentialIdentityProvider} credentials
+ * @param {string} region
+ * @returns {import('@aws-sdk/client-sts').GetCallerIdentityCommandOutput}
+ */
+export async function whoami(credentials, region) {
+	const stsClient = new STS({
+		credentials,
+		region,
+	});
+	return await stsClient.getCallerIdentity();
 }
 
 /**
  * Takes a selector as defined in the services config file, an account, and region, and returns the result of
  * applying the selector on the relevant state file
- * @param {String} rawSelector
+ * @param {object} config
+ * @param {string} config.account
+ * @param {string} config.region
+ * @param {string} config.rawSelector
+ * @param {function} config.resolveStateForServiceCall
  * @returns any
  */
-async function evaluateSelector({
+export async function evaluateSelector({
 	account,
 	region,
 	rawSelector,
@@ -37,7 +50,7 @@ async function evaluateSelector({
  * @param {String} rawSelector
  * @returns any
  */
-async function evaluateSelectorGlobally(
+export async function evaluateSelectorGlobally(
 	rawSelector,
 	getGlobalStateForServiceAndFunction
 ) {
@@ -49,36 +62,21 @@ async function evaluateSelectorGlobally(
 	return jmespath.search(aggregateState, selector.join('|'));
 }
 
-function getServiceFromArn(arn) {
+export function getServiceFromArn(arn) {
 	const [_prefix, _aws, service] = arn.split(':');
 	return service;
 }
 
-function curryMinimatch(glob, opts) {
+export function curryMinimatch(glob, opts) {
 	return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
 }
 
-// This function shouldn't exist, data structure should be updated
-function splitServicesByGlobalAndRegional(services) {
-	return services.reduce(
-		(filteredServices, currentService) => {
-			if (currentService.global) {
-				filteredServices.global.push(currentService);
-			} else {
-				filteredServices.regional.push(currentService);
-			}
-			return filteredServices;
-		},
-		{ global: [], regional: [] }
-	);
+export async function createDynamicClient(service, clientKey, config) {
+	const serviceModule = await import(`@aws-sdk/client-${service}`);
+	return new serviceModule[clientKey](config ?? {});
 }
 
-module.exports = {
-	DEFAULT_REGION,
-	evaluateSelector,
-	whoami,
-	getServiceFromArn,
-	curryMinimatch,
-	splitServicesByGlobalAndRegional,
-	evaluateSelectorGlobally,
-};
+export async function invokeDynamicClient(client, functionKey) {
+	const functionArguments = Array.from(arguments).slice(2);
+	return await client[functionKey](...functionArguments);
+}

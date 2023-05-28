@@ -16,5 +16,10 @@
 	},
 	"publishConfig": {
 		"registry": "https://npm.pkg.github.com"
+	},
+	"devDependencies": {
+		"ts-node": "^10.9.1",
+		"tsc": "^2.0.4",
+		"typescript": "^5.0.4"
 	}
 }

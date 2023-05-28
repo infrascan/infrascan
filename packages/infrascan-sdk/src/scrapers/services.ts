@@ -1,151 +1,51 @@
-const SERVICES_CONFIG = [
+import * as formatters from './formatters';
+import type { SupportedServices } from './client';
+
+export type ParameterResolver = {
+	Key: string;
+	Selector?: string;
+	Value?: any;
+};
+
+export type EdgeResolver = {
+	state: string;
+	from: string;
+	to: string;
+};
+
+export type PaginationToken = {
+	request?: string;
+	response?: string;
+};
+
+export type ServiceGetter = {
+	fn: string;
+	parameters?: ParameterResolver[];
+	formatter?: (state: any) => any;
+	paginationToken?: PaginationToken;
+	iamRoleSelectors?: string[];
+};
+
+export type ServiceConfig = {
+	service: keyof SupportedServices;
+	clientKey: string;
+	key: string;
+	getters: ServiceGetter[];
+	arnLabel?: string;
+	nodes?: string[];
+	edges?: EdgeResolver[];
+	iamRoles?: string[];
+};
+
+export const GLOBAL_SERVICES: ServiceConfig[] = [
 	{
-		service: 'SQS',
-		key: 'SQS',
-		getters: [
-			{
-				fn: 'listQueues',
-				formatter: ({ QueueUrls }) =>
-					QueueUrls?.map((queueUrl) => ({
-						QueueUrl: queueUrl,
-						Name: queueUrl.split('/').pop(),
-					})),
-			},
-			{
-				fn: 'listQueueTags',
-				parameters: [
-					{
-						Key: 'QueueUrl',
-						Selector: 'SQS|listQueues|[]._result[].QueueUrl',
-					},
-				],
-				formatter: ({ Tags }) => Tags,
-			},
-			{
-				fn: 'getQueueAttributes',
-				parameters: [
-					{
-						Key: 'QueueUrl',
-						Selector: 'SQS|listQueues|[]._result[].QueueUrl',
-					},
-					{
-						Key: 'AttributeNames',
-						Value: ['All'],
-					},
-				],
-				formatter: ({
-					Attributes: {
-						QueueArn,
-						Policy,
-						RedrivePolicy,
-						...remainingAttributes
-					},
-				}) => ({
-					QueueArn,
-					// derive queue name
-					QueueName: QueueArn.split(':').pop(),
-					// Parse JSON documents to allow jmespath interegation
-					Policy: JSON.parse(Policy ?? '{}'),
-					RedrivePolicy: JSON.parse(RedrivePolicy ?? '{}'),
-					...remainingAttributes,
-				}),
-			},
-		],
-		nodes: ['SQS|getQueueAttributes|[]._result.{id:QueueArn,name:QueueName}'],
-		edges: [
-			{
-				state: 'SQS|getQueueAttributes|[]',
-				from: '_result.QueueArn',
-				// link queue to DLQ
-				to: '_result.RedrivePolicy.{target:deadLetterTargetArn}',
-			},
-		],
-	},
-	{
-		service: 'SNS',
-		key: 'SNS',
-		getters: [
-			{
-				fn: 'listTopics',
-				formatter: ({ Topics }) => Topics,
-			},
-			{
-				fn: 'getTopicAttributes',
-				parameters: [
-					{
-						Key: 'TopicArn',
-						Selector: 'SNS|listTopics|[]._result[].TopicArn',
-					},
-				],
-				formatter: ({ Attributes }) => Attributes,
-			},
-			{
-				fn: 'listSubscriptionsByTopic',
-				parameters: [
-					{
-						Key: 'TopicArn',
-						Selector: 'SNS|listTopics|[]._result[].TopicArn',
-					},
-				],
-				formatter: ({ Subscriptions }) => Subscriptions,
-			},
-			{
-				fn: 'listTagsForResource',
-				parameters: [
-					{
-						Key: 'ResourceArn',
-						Selector: 'SNS|listTopics|[]._result[].TopicArn',
-					},
-				],
-			},
-		],
-		nodes: ['SNS|listTopics|[]._result[].{id:TopicArn}'],
-		edges: [
-			{
-				state: 'SNS|listSubscriptionsByTopic|[]',
-				from: '_parameters.TopicArn',
-				// filter out non-service subscriptions
-				to: '_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}',
-			},
-		],
-	},
-	{
-		service: 'Lambda',
-		key: 'Lambda',
-		getters: [
-			{
-				fn: 'listFunctions',
-				paginationToken: {
-					request: 'Marker',
-					response: 'NextMarker',
-				},
-			},
-			{
-				fn: 'getFunction',
-				parameters: [
-					{
-						Key: 'FunctionName',
-						Selector: 'Lambda|listFunctions|[]._result.Functions[].FunctionArn',
-					},
-				],
-				iamRoleSelectors: ['Configuration.Role'],
-			},
-		],
-		nodes: [
-			'Lambda|listFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}',
-		],
-		iamRoles: [
-			'Lambda|getFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}',
-		],
-	},
-	{
-		service: 'S3',
+		service: 's3',
 		key: 'S3',
-		global: true,
+		clientKey: 'S3',
 		getters: [
 			{
 				fn: 'listBuckets',
-				formatter: ({ Buckets }) => Buckets,
+				formatter: formatters.S3.listBuckets,
 			},
 			{
 				fn: 'getBucketTagging',
@@ -204,24 +104,13 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'CloudFront',
+		service: 'cloudfront',
 		key: 'CloudFront',
-		global: true,
+		clientKey: 'CloudFront',
 		getters: [
 			{
 				fn: 'listDistributions',
-				formatter: ({ DistributionList }) => {
-					return DistributionList.Items.map((distribution) => {
-						const _infrascanLabel =
-							distribution.Aliases.Quantity > 0
-								? distribution.Aliases.Items[0]
-								: distribution.DomainName;
-						return {
-							...distribution,
-							_infrascanLabel,
-						};
-					});
-				},
+				formatter: formatters.Cloudfront.listDistributions,
 			},
 		],
 		nodes: [
@@ -229,7 +118,159 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'CloudWatchLogs',
+		service: 'route-53',
+		clientKey: 'Route53',
+		key: 'Route53',
+		getters: [
+			{
+				fn: 'listHostedZonesByName',
+				formatter: formatters.Route53.listHostedZonesByName,
+			},
+			{
+				fn: 'listResourceRecordSets',
+				parameters: [
+					{
+						Key: 'HostedZoneId',
+						Selector: 'Route53|listHostedZonesByName|[]._result[].Id',
+					},
+				],
+				formatter: formatters.Route53.listResourceRecordsSets,
+			},
+		],
+		nodes: [
+			'Route53|listResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}',
+		],
+	},
+];
+
+export const REGIONAL_SERVICES: ServiceConfig[] = [
+	{
+		service: 'sqs',
+		key: 'SQS',
+		clientKey: 'SQS',
+		getters: [
+			{
+				fn: 'listQueues',
+				formatter: formatters.SQS.listQueues,
+			},
+			{
+				fn: 'listQueueTags',
+				parameters: [
+					{
+						Key: 'QueueUrl',
+						Selector: 'SQS|listQueues|[]._result[].QueueUrl',
+					},
+				],
+				formatter: formatters.SQS.listQueueTags,
+			},
+			{
+				fn: 'getQueueAttributes',
+				parameters: [
+					{
+						Key: 'QueueUrl',
+						Selector: 'SQS|listQueues|[]._result[].QueueUrl',
+					},
+					{
+						Key: 'AttributeNames',
+						Value: ['All'],
+					},
+				],
+				formatter: formatters.SQS.getQueueAttributes,
+			},
+		],
+		nodes: ['SQS|getQueueAttributes|[]._result.{id:QueueArn,name:QueueName}'],
+		edges: [
+			{
+				state: 'SQS|getQueueAttributes|[]',
+				from: '_result.QueueArn',
+				// link queue to DLQ
+				to: '_result.RedrivePolicy.{target:deadLetterTargetArn}',
+			},
+		],
+	},
+	{
+		service: 'sns',
+		key: 'SNS',
+		clientKey: 'SNS',
+		getters: [
+			{
+				fn: 'listTopics',
+				formatter: formatters.SNS.listTopics,
+			},
+			{
+				fn: 'getTopicAttributes',
+				parameters: [
+					{
+						Key: 'TopicArn',
+						Selector: 'SNS|listTopics|[]._result[].TopicArn',
+					},
+				],
+				formatter: formatters.SNS.getTopicAttributes,
+			},
+			{
+				fn: 'listSubscriptionsByTopic',
+				parameters: [
+					{
+						Key: 'TopicArn',
+						Selector: 'SNS|listTopics|[]._result[].TopicArn',
+					},
+				],
+				formatter: formatters.SNS.listSubscriptionByTopic,
+			},
+			{
+				fn: 'listTagsForResource',
+				parameters: [
+					{
+						Key: 'ResourceArn',
+						Selector: 'SNS|listTopics|[]._result[].TopicArn',
+					},
+				],
+			},
+		],
+		nodes: ['SNS|listTopics|[]._result[].{id:TopicArn}'],
+		edges: [
+			{
+				state: 'SNS|listSubscriptionsByTopic|[]',
+				from: '_parameters.TopicArn',
+				// filter out non-service subscriptions
+				to: '_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}',
+			},
+		],
+	},
+	{
+		service: 'lambda',
+		clientKey: 'Lambda',
+		key: 'Lambda',
+		getters: [
+			{
+				fn: 'listFunctions',
+				paginationToken: {
+					request: 'Marker',
+					response: 'NextMarker',
+				},
+			},
+			{
+				fn: 'getFunction',
+				parameters: [
+					{
+						Key: 'FunctionName',
+						Selector: 'Lambda|listFunctions|[]._result.Functions[].FunctionArn',
+					},
+				],
+				iamRoleSelectors: ['Configuration.Role'],
+			},
+		],
+		nodes: [
+			'Lambda|listFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}',
+		],
+		iamRoles: [
+			'Lambda|getFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}',
+		],
+	},
+
+	{
+		service: 'cloudwatch-logs',
+		clientKey: 'CloudWatchLogs',
 		key: 'CloudWatchLogs',
 		arnLabel: 'logs',
 		getters: [
@@ -268,55 +309,59 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'EC2',
+		service: 'ec2',
+		clientKey: 'EC2',
 		key: 'EC2-Networking',
 		getters: [
 			{
 				fn: 'describeVpcs',
-				formatter: ({ Vpcs }) => Vpcs,
+				formatter: formatters.EC2.describeVPCs,
 			},
 			{
 				fn: 'describeAvailabilityZones',
 			},
 			{
 				fn: 'describeSubnets',
-				formatter: ({ Subnets }) => Subnets,
+				formatter: formatters.EC2.describeSubnets,
 			},
 		],
 	},
 	{
-		service: 'AutoScaling',
+		service: 'auto-scaling',
+		clientKey: 'AutoScaling',
 		key: 'AutoScaling',
 		getters: [
 			{
 				fn: 'describeAutoScalingGroups',
-				formatter: ({ AutoScalingGroups }) => AutoScalingGroups,
+				formatter: formatters.AutoScaling.describeAutoScalingGroups,
 			},
 		],
 		// nodes: ["AutoScaling|describeAutoScalingGroups|[].{id:AutoScalingGroupARN}"],
 	},
 	{
-		service: 'ApiGatewayV2',
+		service: 'api-gateway',
 		key: 'ApiGateway',
+		clientKey: 'APIGateway',
 		getters: [
 			{
 				fn: 'getApis',
-				formatter: ({ Items }) => Items,
+				formatter: formatters.ApiGateway.getApis,
 			},
 			{
 				fn: 'getDomainNames',
-				formatter: ({ Items }) => Items,
+				formatter: formatters.ApiGateway.getDomainNames,
 			},
 		],
 		nodes: ['ApiGatewayV2|getApis|[]._result | [].{id:ApiEndpoint}'],
 	},
 	{
-		service: 'RDS',
+		service: 'rds',
+		clientKey: 'RDS',
 		key: 'RDS',
 		getters: [
 			{
 				fn: 'describeDBInstances',
-				formatter: ({ DBInstances }) => DBInstances,
+				formatter: formatters.RDS.describeDBInstances,
 			},
 		],
 		nodes: [
@@ -324,36 +369,13 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'Route53',
-		key: 'Route53',
-		global: true,
-		getters: [
-			{
-				fn: 'listHostedZonesByName',
-				formatter: ({ HostedZones }) => HostedZones,
-			},
-			{
-				fn: 'listResourceRecordSets',
-				parameters: [
-					{
-						Key: 'HostedZoneId',
-						Selector: 'Route53|listHostedZonesByName|[]._result[].Id',
-					},
-				],
-				formatter: ({ ResourceRecordSets }) => ResourceRecordSets,
-			},
-		],
-		nodes: [
-			'Route53|listResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}',
-		],
-	},
-	{
-		service: 'ELBv2',
+		service: 'elastic-load-balancing-v2',
+		clientKey: 'ElasticLoadBalancingV2',
 		key: 'ELB',
 		getters: [
 			{
 				fn: 'describeLoadBalancers',
-				formatter: ({ LoadBalancers }) => LoadBalancers,
+				formatter: formatters.ElasticLoadBalancing.describeLoadBalancers,
 			},
 			{
 				fn: 'describeTargetGroups',
@@ -364,7 +386,7 @@ const SERVICES_CONFIG = [
 							'ELBv2|describeLoadBalancers|[]._result[].LoadBalancerArn',
 					},
 				],
-				formatter: ({ TargetGroups }) => TargetGroups,
+				formatter: formatters.ElasticLoadBalancing.describeTargetGroups,
 			},
 			{
 				fn: 'describeListeners',
@@ -375,7 +397,7 @@ const SERVICES_CONFIG = [
 							'ELBv2|describeLoadBalancers|[]._result[].LoadBalancerArn',
 					},
 				],
-				formatter: ({ Listeners }) => Listeners,
+				formatter: formatters.ElasticLoadBalancing.describeListeners,
 			},
 			{
 				fn: 'describeRules',
@@ -385,7 +407,7 @@ const SERVICES_CONFIG = [
 						Selector: 'ELBv2|describeListeners|[]._result[].ListenerArn',
 					},
 				],
-				formatter: ({ Rules }) => Rules,
+				formatter: formatters.ElasticLoadBalancing.describeRules,
 			},
 		],
 		nodes: [
@@ -394,12 +416,13 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'DynamoDB',
+		service: 'dynamodb',
+		clientKey: 'DynamoDB',
 		key: 'DynamoDB',
 		getters: [
 			{
 				fn: 'listTables',
-				formatter: ({ TableNames }) => TableNames,
+				formatter: formatters.DynamoDB.listTables,
 			},
 			{
 				fn: 'describeTable',
@@ -409,14 +432,15 @@ const SERVICES_CONFIG = [
 						Selector: 'DynamoDB|listTables|[]._result[]',
 					},
 				],
-				formatter: ({ Table }) => Table,
+				formatter: formatters.DynamoDB.describeTable,
 			},
 		],
 		nodes: ['DynamoDB|describeTable|[].{id:_result.TableArn}'],
 	},
 	{
-		service: 'ECS',
+		service: 'ecs',
 		key: 'ECS-Cluster',
+		clientKey: 'ECS',
 		getters: [
 			{
 				fn: 'listClusters',
@@ -446,8 +470,9 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'ECS',
+		service: 'ecs',
 		key: 'ECS-Services',
+		clientKey: 'ECS',
 		getters: [
 			{
 				fn: 'listServices',
@@ -484,8 +509,9 @@ const SERVICES_CONFIG = [
 		],
 	},
 	{
-		service: 'ECS',
+		service: 'ecs',
 		key: 'ECS-Tasks',
+		clientKey: 'ECS',
 		getters: [
 			{
 				fn: 'listTasks',
@@ -531,13 +557,9 @@ const SERVICES_CONFIG = [
 			// use describe services as source of ECS Task nodes to create parent relationship
 			'ECS|describeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}',
 		],
-		// iamRoles: [
-		//   "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
-		//   "ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
-		// ],
+		iamRoles: [
+			'ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}',
+			'ECS|describeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}',
+		],
 	},
 ];
-
-module.exports = {
-	SERVICES_CONFIG,
-};
