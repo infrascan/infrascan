@@ -26,6 +26,8 @@ export type GraphEdge = {
   };
 };
 
+export type GraphElement = GraphNode | GraphEdge;
+
 export type State<T> = {
   _metadata: {
     account: string;

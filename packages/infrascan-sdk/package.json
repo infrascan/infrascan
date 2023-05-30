@@ -46,6 +46,7 @@
 	"devDependencies": {
 		"@aws-sdk/types": "^3.341.0",
 		"@types/jmespath": "^0.15.0",
+		"@types/minimatch": "^5.1.2",
 		"ts-node": "^10.9.1",
 		"tsc": "^2.0.4",
 		"typescript": "^5.0.4"

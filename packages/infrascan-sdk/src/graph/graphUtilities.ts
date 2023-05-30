@@ -6,7 +6,7 @@ import {
   getServiceFromArn,
   evaluateSelectorGlobally,
 } from "../utils";
-import type { GraphNode, GraphEdge } from "../graphTypes";
+import type { GraphEdge } from "../graphTypes";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,
