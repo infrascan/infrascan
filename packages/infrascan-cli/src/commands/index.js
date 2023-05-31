@@ -1,4 +1,4 @@
 module.exports = {
-	runGraph: require('./graph'),
-	runScan: require('./scan'),
+  runGraph: require("./graph"),
+  runScan: require("./scan"),
 };

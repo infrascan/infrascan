@@ -1,7 +1,7 @@
 [
-	{
-		"regions": ["eu-west-1"],
-		"profile": "test-cli",
-		"services": ["SQS", "Route53"]
-	}
+  {
+    "regions": ["eu-west-1"],
+    "profile": "test-cli",
+    "services": ["SQS", "Route53"]
+  }
 ]
