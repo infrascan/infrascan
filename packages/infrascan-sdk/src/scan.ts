@@ -1,21 +1,38 @@
+import jmespath from "jmespath";
+import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import { EC2 } from "@aws-sdk/client-ec2";
+import { IAM } from "@aws-sdk/client-iam";
+import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
+
+import type { GenericState } from "@sharedTypes/scan";
+import type {
+  ServiceScanCompleteCallbackFn,
+  ResolveStateFromServiceFn,
+} from "@sharedTypes/api";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,
   ServiceConfig,
   ServiceGetter,
   ParameterResolver,
-} from "./scrapers/services";
-import type { ServiceClients } from "./scrapers/client";
-import { dynamicClient } from "./scrapers/client";
-import jmespath from "jmespath";
-import {
-  whoami,
-  evaluateSelector,
-  DEFAULT_REGION,
-  invokeDynamicClient,
-} from "./utils";
+} from "@scrapers/services";
+import { dynamicClient, ServiceClients } from "@scrapers/client";
+
+import { evaluateSelector, DEFAULT_REGION, invokeDynamicClient } from "./utils";
 import { scanIamRole, IAMStorage } from "./iam";
+
 const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration", "NoSuchTagSet"];
+
+async function whoami(
+  credentials: AwsCredentialIdentityProvider,
+  region: string
+): Promise<GetCallerIdentityCommandOutput> {
+  const stsClient = new STS({
+    credentials,
+    region,
+  });
+  return await stsClient.getCallerIdentity({});
+}
 
 type ResolveParametersOptions = {
   account: string;
@@ -30,8 +47,8 @@ async function resolveParameters({
   parameters,
   resolveStateForServiceCall,
 }: ResolveParametersOptions): Promise<Record<string, any>[]> {
-  let allParamObjects: Record<string, string>[] = [];
-  for (let { Key, Selector, Value } of parameters) {
+  const allParamObjects: Record<string, string>[] = [];
+  for (const { Key, Selector, Value } of parameters) {
     if (Selector) {
       const parameterValues = await evaluateSelector({
         account,
@@ -49,7 +66,7 @@ async function resolveParameters({
       if (allParamObjects.length === 0) {
         allParamObjects.push({ [Key]: Value });
       } else {
-        for (let parameterObject of allParamObjects) {
+        for (const parameterObject of allParamObjects) {
           parameterObject[Key] = Value;
         }
       }
@@ -97,7 +114,7 @@ async function makeFunctionCall({
   }
 
   const state: GenericState[] = [];
-  for (let requestParameters of resolvedParameters) {
+  for (const requestParameters of resolvedParameters) {
     try {
       console.log(`${service} ${fn}`);
       let pagingToken = undefined;
@@ -114,10 +131,10 @@ async function makeFunctionCall({
         const formattedResult = formatter ? formatter(result) : result;
 
         if (iamRoleSelectors) {
-          for (let selector of iamRoleSelectors) {
+          for (const selector of iamRoleSelectors) {
             const selectionResult = jmespath.search(formattedResult, selector);
             if (Array.isArray(selectionResult)) {
-              for (let roleArn of selectionResult) {
+              for (const roleArn of selectionResult) {
                 await scanIamRole(iamStorage, iamClient, roleArn);
               }
             } else if (selectionResult) {
@@ -154,7 +171,6 @@ export type ScanResourcesInAccountOptions = {
   iamStorage: IAMStorage;
 };
 
-import { IAM } from "@aws-sdk/client-iam";
 async function scanResourcesInAccount({
   account,
   region,
@@ -164,12 +180,12 @@ async function scanResourcesInAccount({
   iamStorage,
 }: ScanResourcesInAccountOptions): Promise<void> {
   const iamClient = new IAM({ region });
-  for (let serviceScanner of servicesToScan) {
+  for (const serviceScanner of servicesToScan) {
     const { service, clientKey, getters } = serviceScanner;
 
     const client = await dynamicClient(service, clientKey, { region });
 
-    for (let functionCall of getters) {
+    for (const functionCall of getters) {
       const functionState = await makeFunctionCall({
         account,
         region,
@@ -198,7 +214,6 @@ async function scanResourcesInAccount({
   );
 }
 
-import { EC2 } from "@aws-sdk/client-ec2";
 async function getAllRegions(
   credentials: AwsCredentialIdentityProvider
 ): Promise<string[]> {
@@ -207,21 +222,6 @@ async function getAllRegions(
   return Regions?.map(({ RegionName }) => RegionName as string) ?? [];
 }
 
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
-import { GenericState } from "./graphTypes";
-export type ServiceScanCompleteCallbackFn = (
-  account: string,
-  region: string,
-  service: string,
-  functionName: string,
-  functionState: any
-) => void;
-export type ResolveStateFromServiceFn = (
-  account: string,
-  region: string,
-  service: string,
-  functionName: string
-) => void;
 export type PerformScanOptions = {
   credentials: AwsCredentialIdentityProvider;
   regions?: string[];
@@ -280,7 +280,7 @@ export async function performScan({
 
   const regionsToScan = regions ?? (await getAllRegions(credentials));
 
-  for (let region of regionsToScan) {
+  for (const region of regionsToScan) {
     const caller = await whoami(credentials, region);
     if (caller.Account == null) {
       throw new Error("Failed to get caller identity");

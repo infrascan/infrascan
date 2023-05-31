@@ -52,7 +52,7 @@ export class IAMStorage {
 
 export function hydrateRoleStorage(roles: StoredRole[]): IAMStorage {
   const storage = new IAMStorage();
-  for (let role of roles) {
+  for (const role of roles) {
     storage.setRole(role.roleArn, role);
   }
   return storage;
@@ -106,7 +106,7 @@ async function scanInlinePoliciesForRole(
     RoleName: roleName,
   });
   const inlinePolicies = [];
-  for (let policy of rolePolicies?.PolicyNames ?? []) {
+  for (const policy of rolePolicies?.PolicyNames ?? []) {
     const policyInfo = await iamClient.getRolePolicy({
       RoleName: roleName,
       PolicyName: policy,
@@ -133,7 +133,7 @@ async function scanAttachedPoliciesForRole(
   const attachedPoliciesForRole = await iamClient.listAttachedRolePolicies({
     RoleName: roleName,
   });
-  for (let policy of attachedPoliciesForRole.AttachedPolicies ?? []) {
+  for (const policy of attachedPoliciesForRole.AttachedPolicies ?? []) {
     if (policy.PolicyArn) {
       const attachedPolicy = await iamClient.getPolicy({
         PolicyArn: policy.PolicyArn,

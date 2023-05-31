@@ -28,13 +28,7 @@ export type GraphEdge = {
 
 export type GraphElement = GraphNode | GraphEdge;
 
-export type State<T> = {
-  _metadata: {
-    account: string;
-    region: string;
-  };
-  _result: T;
-  _parameters?: any;
-};
-
-export type GenericState = State<any>;
+export type GetGlobalStateForServiceAndFunction = (
+  service: string,
+  functionName: string
+) => any;

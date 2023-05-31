@@ -4,13 +4,14 @@
  */
 
 import { ResourceRecordSet } from "@aws-sdk/client-route-53";
-import { GraphEdge, State } from "../graphTypes";
 import {
+  GraphEdge,
   GetGlobalStateForServiceAndFunction,
-  formatEdge,
-} from "./graphUtilities";
+} from "@sharedTypes/graph";
+import { State } from "@sharedTypes/scan";
+import { formatEdge } from "./graph_utilities";
 import minimatch from "minimatch";
-import { CloudfrontDistributionSummary } from "../scrapers/formatters";
+import { CloudfrontDistributionSummary } from "@scrapers/formatters";
 import { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
 import { LoadBalancer } from "@aws-sdk/client-elastic-load-balancing-v2";
 import { Subscription } from "@aws-sdk/client-sns";
@@ -39,7 +40,7 @@ export async function generateEdgesForRoute53Resources(
     elb: [],
   };
 
-  const { cloudfront, s3, apiGateway, elb } = aliasRecords.reduce(
+  const { cloudfront, s3, elb } = aliasRecords.reduce(
     (aliasByService, currentRecord) => {
       const domain = currentRecord.AliasTarget?.DNSName;
       if (domain?.includes(".cloudfront.net.")) {

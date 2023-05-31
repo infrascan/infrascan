@@ -1,29 +1,35 @@
 import jmespath from "jmespath";
 
+import type {
+  GraphEdge,
+  GraphNode,
+  GraphElement,
+  GetGlobalStateForServiceAndFunction,
+} from "@sharedTypes/graph";
+import type { ResolveStateFromServiceFn } from "@sharedTypes/api";
+
 import {
   GLOBAL_SERVICES,
   REGIONAL_SERVICES,
   EdgeResolver,
-} from "../scrapers/services";
-import { IAMStorage, StoredRole, hydrateRoleStorage } from "../iam";
+} from "@scrapers/services";
+import { IAMStorage, StoredRole, hydrateRoleStorage } from "./iam";
 import {
   evaluateSelector,
   DEFAULT_REGION,
   evaluateSelectorGlobally,
-} from "../utils";
+} from "./utils";
 
-import { generateEdgesForCloudfrontResources } from "./cloudfront";
-import { generateEdgesForECSResources } from "./ecs";
-// import { generateNodesForEc2Networking } from "./ec2";
-import { generateEdgesForRoute53Resources } from "./route53";
+import { generateEdgesForCloudfrontResources } from "./graph/cloudfront";
+import { generateEdgesForECSResources } from "./graph/ecs";
+// import { generateNodesForEc2Networking } from "./graph/ec2";
+import { generateEdgesForRoute53Resources } from "./graph/route53";
 import {
-  GetGlobalStateForServiceAndFunction,
   formatEdge,
   generateEdgesForRole,
   sanitizeId,
-} from "./graphUtilities";
-import { GraphEdge, GraphNode, GraphElement } from "../graphTypes";
-import { ResolveStateFromServiceFn, ScanMetadata } from "../scan";
+} from "./graph/graph_utilities";
+import type { ScanMetadata } from "./scan";
 
 function formatIdAsNode(
   serviceKey: string,
@@ -67,7 +73,7 @@ async function generateNodesForService({
   resolveStateForServiceCall,
 }: GenerateNodesForServiceOptions): Promise<GraphNode[]> {
   let accumulatedNodes: GraphNode[] = [];
-  for (let currentSelector of nodes) {
+  for (const currentSelector of nodes) {
     const selectedNodes = await evaluateSelector({
       account,
       region,
@@ -117,7 +123,7 @@ async function generateEdgesForServiceGlobally({
   getGlobalStateForServiceAndFunction,
 }: GenerateEdgesForServiceGloballyOptions): Promise<GraphEdge[]> {
   let edges: GraphEdge[] = [];
-  for (let edge of serviceEdges) {
+  for (const edge of serviceEdges) {
     const { state, from, to } = edge;
 
     const baseState = await evaluateSelectorGlobally(
@@ -163,7 +169,7 @@ export async function generateGraph({
   });
   let graphNodes: GraphNode[] = [];
   // Generate root nodes — Accounts and regions
-  for (let { account, regions } of scanMetadata) {
+  for (const { account, regions } of scanMetadata) {
     console.log(`Generating Nodes for ${account}`);
     const accountNode = formatIdAsNode("AWS-Account", account, {
       name: `AWS Account ${account}`,
@@ -184,7 +190,7 @@ export async function generateGraph({
     hydrateRoleStorage(iamState);
 
     // Generate nodes for each global service
-    for (let service of GLOBAL_SERVICES) {
+    for (const service of GLOBAL_SERVICES) {
       if (service.nodes) {
         console.log(`Generating graph nodes for ${service.key} in ${account}`);
         const initialLength = graphNodes.length;
@@ -208,10 +214,10 @@ export async function generateGraph({
     }
 
     // step through each scaned region
-    for (let region of regions) {
+    for (const region of regions) {
       console.log(`Generating Nodes for ${account} in ${region}`);
       // generate nodes for each regional service in this region
-      for (let regionalService of REGIONAL_SERVICES) {
+      for (const regionalService of REGIONAL_SERVICES) {
         // if (regionalService.key === "EC2-Networking") {
         //   const ec2NetworkingNodes = generateNodesForEc2Networking(
         //     account,
@@ -246,7 +252,7 @@ export async function generateGraph({
   const ALL_SERVICES = [...GLOBAL_SERVICES, ...REGIONAL_SERVICES];
   // Step over each service, generate edges for each one based on global state (all regions, all accounts)
   let graphEdges: GraphEdge[] = [];
-  for (let service of ALL_SERVICES) {
+  for (const service of ALL_SERVICES) {
     if (service.edges) {
       console.log(`Generating graph edges for ${service.key}`);
       const initialLength = graphEdges.length;
@@ -272,15 +278,15 @@ export async function generateGraph({
 
   // Step over each service, generate edges for the service's roles based on global state (any region, any account)
   let roleEdges: GraphEdge[] = [];
-  for (let service of ALL_SERVICES) {
+  for (const service of ALL_SERVICES) {
     if (service.iamRoles) {
       const initialCount = roleEdges.length;
-      for (let roleSelector of service.iamRoles) {
+      for (const roleSelector of service.iamRoles) {
         const roleArns = await evaluateSelectorGlobally(
           roleSelector,
           getGlobalStateForServiceAndFunction
         );
-        for (let { arn, executor } of roleArns) {
+        for (const { arn, executor } of roleArns) {
           const generatedEdges = await generateEdgesForRole(
             iamStorage,
             arn,

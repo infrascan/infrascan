@@ -3,9 +3,10 @@
  */
 
 import { evaluateSelector } from "../utils";
-import { sanitizeId } from "./graphUtilities";
-import type { ResolveStateFromServiceFn } from "../scan";
-import type { GraphNode, State } from "../graphTypes";
+import { sanitizeId } from "./graph_utilities";
+import type { ResolveStateFromServiceFn } from "@sharedTypes/api";
+import type { GraphNode } from "@sharedTypes/graph";
+import type { State } from "@sharedTypes/scan";
 import type { AvailabilityZone, Subnet, Vpc } from "@aws-sdk/client-ec2";
 
 type EC2VpcState = State<Vpc[]>;

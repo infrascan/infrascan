@@ -3,13 +3,14 @@
  * as this logic is too messy to define in the config as normal
  */
 
-import {
-  formatEdge,
+import type {
   GetGlobalStateForServiceAndFunction,
-} from "./graphUtilities";
-import type { GraphEdge, State } from "../graphTypes";
-import type { CloudfrontDistributionSummary } from "../scrapers/formatters";
+  GraphEdge,
+} from "@sharedTypes/graph";
+import type { State } from "@sharedTypes/scan";
+import type { CloudfrontDistributionSummary } from "@scrapers/formatters";
 import type { Bucket } from "@aws-sdk/client-s3";
+import { formatEdge } from "./graph_utilities";
 
 type GlobalCloudFrontState = State<CloudfrontDistributionSummary[]>;
 type GlobalS3State = State<Bucket[]>;
@@ -52,7 +53,7 @@ export async function generateEdgesForCloudfrontResources(
     initialValue
   );
 
-  let cloudfrontEdges: GraphEdge[] = [];
+  const cloudfrontEdges: GraphEdge[] = [];
   // Generate edges for Route53 domains in front of Cloudfront
   const s3State: GlobalS3State[] = await getGlobalStateForServiceAndFunction(
     "S3",

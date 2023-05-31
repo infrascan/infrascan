@@ -1,18 +1,32 @@
 import jmespath from "jmespath";
+import minimatch from "minimatch";
 import { IAMStorage } from "../iam";
 import type { StoredRole } from "../iam";
-import {
-  curryMinimatch,
-  getServiceFromArn,
-  evaluateSelectorGlobally,
-} from "../utils";
-import type { GraphEdge } from "../graphTypes";
+import { evaluateSelectorGlobally } from "../utils";
+import type {
+  GraphEdge,
+  GetGlobalStateForServiceAndFunction,
+} from "@sharedTypes/graph";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,
   ServiceConfig,
-} from "../scrapers/services";
+} from "@scrapers/services";
 const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
+
+type MinimatchOptions = {
+  partial?: boolean;
+};
+
+function curryMinimatch(glob: string, opts?: MinimatchOptions) {
+  return (comparisonString: string) =>
+    minimatch(comparisonString, glob, opts ?? {});
+}
+
+function getServiceFromArn(arn: string): string | undefined {
+  const [, , service] = arn.split(":");
+  return service;
+}
 
 export function formatEdge(
   source: string,
@@ -61,10 +75,7 @@ export function getStatementsForRole(role: StoredRole) {
     attachedStatements: attachedStatements.flatMap((stmt) => stmt),
   };
 }
-export type GetGlobalStateForServiceAndFunction = (
-  service: string,
-  functionName: string
-) => any;
+
 export type ResolveResourceGlobOptions = {
   resourceArnFromPolicy: string;
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
@@ -151,7 +162,7 @@ async function findNodesForService(
   }
 
   let globalState: string[] = [];
-  for (let selector of nodes) {
+  for (const selector of nodes) {
     const selectedState = (await evaluateSelectorGlobally(
       selector,
       getGlobalStateForServiceAndFunction
@@ -192,11 +203,11 @@ export async function generateEdgesForPolicyStatements(
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
 ): Promise<EdgeResource[]> {
   let resources: EdgeResource[] = [];
-  for (let { label, statements } of policyStatements) {
-    for (let statement of statements) {
+  for (const { label, statements } of policyStatements) {
+    for (const statement of statements) {
       const { Resource } = statement;
       if (Array.isArray(Resource)) {
-        for (let resourceGlobs of Resource) {
+        for (const resourceGlobs of Resource) {
           const resolvedResources = await resolveResourceGlob({
             resourceArnFromPolicy: resourceGlobs,
             getGlobalStateForServiceAndFunction,

@@ -1,22 +1,6 @@
-import { STS } from '@aws-sdk/client-sts';
-import jmespath from 'jmespath';
-import minimatch from 'minimatch';
+import jmespath from "jmespath";
 
-export const DEFAULT_REGION = 'us-east-1';
-
-/**
- *
- * @param {import('@aws-sdk/types').AwsCredentialIdentityProvider} credentials
- * @param {string} region
- * @returns {import('@aws-sdk/client-sts').GetCallerIdentityCommandOutput}
- */
-export async function whoami(credentials, region) {
-	const stsClient = new STS({
-		credentials,
-		region,
-	});
-	return await stsClient.getCallerIdentity();
-}
+export const DEFAULT_REGION = "us-east-1";
 
 /**
  * Takes a selector as defined in the services config file, an account, and region, and returns the result of
@@ -29,19 +13,19 @@ export async function whoami(credentials, region) {
  * @returns any
  */
 export async function evaluateSelector({
-	account,
-	region,
-	rawSelector,
-	resolveStateForServiceCall,
+  account,
+  region,
+  rawSelector,
+  resolveStateForServiceCall,
 }) {
-	const [service, functionCall, ...selector] = rawSelector.split('|');
-	const state = await resolveStateForServiceCall(
-		account,
-		region,
-		service,
-		functionCall
-	);
-	return jmespath.search(state, selector.join('|'));
+  const [service, functionCall, ...selector] = rawSelector.split("|");
+  const state = await resolveStateForServiceCall(
+    account,
+    region,
+    service,
+    functionCall
+  );
+  return jmespath.search(state, selector.join("|"));
 }
 
 /**
@@ -51,37 +35,23 @@ export async function evaluateSelector({
  * @returns any
  */
 export async function evaluateSelectorGlobally(
-	rawSelector,
-	getGlobalStateForServiceAndFunction
+  rawSelector,
+  getGlobalStateForServiceAndFunction
 ) {
-	const [service, functionCall, ...selector] = rawSelector.split('|');
-	const aggregateState = await getGlobalStateForServiceAndFunction(
-		service,
-		functionCall
-	);
-	return jmespath.search(aggregateState, selector.join('|'));
-}
-
-/**
- * Split out an arn to find the resources service
- * @param {string} arn
- * @returns {string | undefined}
- */
-export function getServiceFromArn(arn) {
-	const [_prefix, _aws, service] = arn.split(':');
-	return service;
-}
-
-export function curryMinimatch(glob, opts) {
-	return (comparisonString) => minimatch(comparisonString, glob, opts ?? {});
+  const [service, functionCall, ...selector] = rawSelector.split("|");
+  const aggregateState = await getGlobalStateForServiceAndFunction(
+    service,
+    functionCall
+  );
+  return jmespath.search(aggregateState, selector.join("|"));
 }
 
 export async function createDynamicClient(service, clientKey, config) {
-	const serviceModule = await import(`@aws-sdk/client-${service}`);
-	return new serviceModule[clientKey](config ?? {});
+  const serviceModule = await import(`@aws-sdk/client-${service}`);
+  return new serviceModule[clientKey](config ?? {});
 }
 
 export async function invokeDynamicClient(client, functionKey) {
-	const functionArguments = Array.from(arguments).slice(2);
-	return await client[functionKey](...functionArguments);
+  const functionArguments = Array.from(arguments).slice(2);
+  return await client[functionKey](...functionArguments);
 }

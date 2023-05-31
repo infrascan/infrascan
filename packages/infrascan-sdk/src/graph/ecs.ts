@@ -4,24 +4,29 @@
  * For now, only services will be rendered as nodes, within their clusters
  * but the edges will be generated using the roles from their tasks
  */
-
-import {
-  generateEdgesForRole,
-  formatEdge,
-  sanitizeId,
-  GetGlobalStateForServiceAndFunction,
-} from "./graphUtilities";
-import { evaluateSelector } from "../utils";
+import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
 import type {
   DescribeServicesResponse,
   DescribeTaskDefinitionResponse,
   Service,
   TaskDefinition,
 } from "@aws-sdk/client-ecs";
-import type { State, GraphNode, GraphEdge } from "../graphTypes";
+
+import type {
+  GetGlobalStateForServiceAndFunction,
+  GraphNode,
+  GraphEdge,
+} from "@sharedTypes/graph";
+import type { State } from "@sharedTypes/scan";
+import type { ResolveStateFromServiceFn } from "@sharedTypes/api";
+
+import {
+  generateEdgesForRole,
+  formatEdge,
+  sanitizeId,
+} from "./graph_utilities";
+import { evaluateSelector } from "../utils";
 import { IAMStorage } from "../iam";
-import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
-import { ResolveStateFromServiceFn } from "../scan";
 
 type ECSServiceState = State<DescribeServicesResponse>;
 type ECSTaskState = State<DescribeTaskDefinitionResponse>;
@@ -44,7 +49,7 @@ export async function generateEdgesForECSResources(
     .filter((taskDef) => taskDef != null) as TaskDefinition[];
 
   let taskRoleEdges: GraphEdge[] = [];
-  for (let { taskDefinition } of ecsServiceRecords) {
+  for (const { taskDefinition } of ecsServiceRecords) {
     const matchedTaskDef = ecsTaskDefinitionRecords.find(
       ({ taskDefinitionArn }) => taskDefinitionArn === taskDefinition
     );
