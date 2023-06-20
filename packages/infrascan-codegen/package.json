@@ -1,0 +1,21 @@
+{
+  "name": "infrascan-codegen",
+  "version": "0.1.0",
+  "description": "CodeGen Library to create typesafe scanners for infrascan-sdk",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node ./src/index.ts generate ./config.json"
+  },
+  "keywords": [],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "ISC",
+  "dependencies": {
+    "cac": "^6.7.14",
+    "ts-morph": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3"
+  }
+}
