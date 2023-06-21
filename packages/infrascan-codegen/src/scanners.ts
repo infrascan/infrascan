@@ -37,6 +37,18 @@ export type ScannerDefinition = {
   iamRoles?: string[];
 };
 
+const SERVICE_FUNCTION_IMPORT_SUFFIXES: readonly string[] = [
+  "Command",
+  "CommandInput",
+  "CommandOutput",
+];
+
+function generateFunctionImports(serviceFunction: string): string[] {
+  return SERVICE_FUNCTION_IMPORT_SUFFIXES.map(
+    (suffix) => serviceFunction + suffix
+  );
+}
+
 function implementFunctionCallForScanner(
   writer: CodeBlockWriter,
   clientVariableName: string,
@@ -55,22 +67,36 @@ function implementFunctionCallForScanner(
     writer.writeLine("try").block(() => {
       writer.writeLine(`console.log("${service} ${fn}");`);
       const pagingTokenVariable = `${fn}PagingToken`;
-      writer.writeLine(`let ${pagingTokenVariable} = undefined;`);
+      writer.writeLine(
+        `let ${pagingTokenVariable}: string | undefined = undefined;`
+      );
       writer.writeLine("do {");
-      if (paginationToken?.request != null) {
-        writer.writeLine(
-          `requestParameters[${paginationToken.request}] = ${pagingTokenVariable};`
-        );
-      }
 
       let resultVariable = "result";
       if (hasParameters) {
+        if (paginationToken?.request != null) {
+          writer.writeLine(
+            `requestParameters["${paginationToken.request}"] = ${pagingTokenVariable};`
+          );
+        }
         writer.writeLine(
-          `const ${resultVariable} = await ${clientVariableName}.${fn}(requestParameters);`
+          `const ${fn}Cmd = new ${fn}Command(requestParameters);`
+        );
+        writer.writeLine(
+          `const ${resultVariable}: ${fn}CommandOutput = await ${clientVariableName}.send(${fn}Cmd);`
         );
       } else {
+        if (paginationToken?.request != null) {
+          writer.writeLine(
+            `const ${fn}Cmd = new ${fn}Command({ "${paginationToken.request}": ${pagingTokenVariable} } as ${fn}CommandInput);`
+          );
+        } else {
+          writer.writeLine(
+            `const ${fn}Cmd = new ${fn}Command({} as ${fn}CommandInput);`
+          );
+        }
         writer.writeLine(
-          `const ${resultVariable} = await ${clientVariableName}.${fn}({});`
+          `const ${resultVariable}: ${fn}CommandOutput = await ${clientVariableName}.send(${fn}Cmd);`
         );
       }
       if (formatter != null) {
@@ -81,20 +107,23 @@ function implementFunctionCallForScanner(
       }
 
       writer.writeLine(
-        `${fn}State.push({ _metadata: { account, region }, _parameters: requestParameters, _result: ${resultVariable} });`
+        `${fn}State.push({ _metadata: { account, region }, _parameters: ${
+          hasParameters ? "requestParameters" : "{}"
+        }, _result: ${resultVariable} });`
       );
 
       if (paginationToken?.response != null) {
         writer.writeLine(
-          `${pagingTokenVariable} = result[${paginationToken.response}]`
+          `${pagingTokenVariable} = result["${paginationToken.response}"]`
         );
       }
 
       if (iamRoleSelectors != null) {
+        const serializedIAMSelectors = iamRoleSelectors
+          .map((selector) => `"${selector}"`)
+          .join(",");
         writer.writeLine(
-          `const iamRoleSelectors = [${iamRoleSelectors
-            .map((selector) => `"${selector}"`)
-            .join(",")}]`
+          `const iamRoleSelectors = [${serializedIAMSelectors}]`
         );
         writer
           .writeLine("for(const selector of iamRoleSelectors)")
@@ -126,9 +155,13 @@ function implementFunctionCallForScanner(
   const hasParameters = parameters != null;
   if (hasParameters) {
     // TODO: add types here
+
+    writer.writeLine(
+      `const ${fn}ParameterResolvers = ${JSON.stringify(parameters)};`
+    );
     const parametersVariable = `${fn}Parameters`;
     writer.writeLine(
-      `const ${parametersVariable}: Record<string, any>[] = await resolveFunctionCallParameters(account, region, parameters, resolveStateForServiceCall);`
+      `const ${parametersVariable} = (await resolveFunctionCallParameters(account, region, ${fn}ParameterResolvers, resolveStateForServiceCall)) as ${fn}CommandInput[];`
     );
     writer
       .writeLine(`for(const requestParameters of ${parametersVariable})`)
@@ -163,9 +196,12 @@ export function generateScanner(project: Project, config: ScannerDefinition) {
     moduleSpecifier: "@sharedTypes/scan",
   });
 
+  const commandImports = config.getters.flatMap(({ fn }) =>
+    generateFunctionImports(fn)
+  );
   // Import service from AWS
   sourceFile.addImportDeclaration({
-    namedImports: [config.clientKey],
+    namedImports: [`${config.clientKey}Client`, ...commandImports],
     moduleSpecifier: `@aws-sdk/client-${config.service}`,
   });
 
@@ -220,9 +256,9 @@ export function generateScanner(project: Project, config: ScannerDefinition) {
   });
 
   scanFunction.setBodyText((writer) => {
-    const clientVariableName = `${config.clientKey}Client`;
+    const clientVariableName = config.clientKey;
     writer.writeLine(
-      `const ${clientVariableName} = new ${config.clientKey}({ region });`
+      `const ${clientVariableName} = new ${config.clientKey}Client({ region });`
     );
     for (const getter of config.getters) {
       implementFunctionCallForScanner(

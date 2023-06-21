@@ -1,39 +1,41 @@
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn } from "@sharedTypes/api";
 import type { GenericState } from "@sharedTypes/scan";
-import { Lambda } from "@aws-sdk/client-lambda";
+import { LambdaClient, ListFunctionsCommand, ListFunctionsCommandInput, ListFunctionsCommandOutput, GetFunctionCommand, GetFunctionCommandInput, GetFunctionCommandOutput } from "@aws-sdk/client-lambda";
 import { IAM } from "@aws-sdk/client-iam";
 import jmespath from "jmespath";
 
 async function performScan(account: string, region: string, onServiceScanComplete: ServiceScanCompleteCallbackFn, resolveStateForServiceCall: ResolveStateFromServiceFn) {
-  const LambdaClient = new Lambda({ region });
+  const Lambda = new LambdaClient({ region });
 
-  const listFunctionsState: GenericState[] = [];
+  const ListFunctionsState: GenericState[] = [];
   try {
-    console.log("lambda listFunctions");
-    let listFunctionsPagingToken = undefined;
+    console.log("lambda ListFunctions");
+    let ListFunctionsPagingToken: string | undefined = undefined;
     do {
-      requestParameters[Marker] = listFunctionsPagingToken;
-      const result = await LambdaClient.listFunctions({});
-      listFunctionsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: result });
-      listFunctionsPagingToken = result[NextMarker];
-    } while (listFunctionsPagingToken != null);
+      const ListFunctionsCmd = new ListFunctionsCommand({ "Marker": ListFunctionsPagingToken } as ListFunctionsCommandInput);
+      const result: ListFunctionsCommandOutput = await Lambda.send(ListFunctionsCmd);
+      ListFunctionsState.push({ _metadata: { account, region }, _parameters: {}, _result: result });
+      ListFunctionsPagingToken = result["NextMarker"];
+    } while (ListFunctionsPagingToken != null);
   }
   catch (err: any) {
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
   }
-  await onServiceScanComplete(account, region, "lambda", "listFunctions", listFunctionsState);
+  await onServiceScanComplete(account, region, "lambda", "ListFunctions", ListFunctionsState);
 
-  const getFunctionState: GenericState[] = [];
-  const getFunctionParameters: Record<string, any>[] = await resolveFunctionCallParameters(account, region, parameters, resolveStateForServiceCall);
-  for (const requestParameters of getFunctionParameters) {
+  const GetFunctionState: GenericState[] = [];
+  const GetFunctionParameterResolvers = [{ "Key": "FunctionName", "Selector": "Lambda|ListFunctions|[]._result.Functions[].FunctionArn" }];
+  const GetFunctionParameters = (await resolveFunctionCallParameters(account, region, GetFunctionParameterResolvers, resolveStateForServiceCall)) as GetFunctionCommandInput[];
+  for (const requestParameters of GetFunctionParameters) {
     try {
-      console.log("lambda getFunction");
-      let getFunctionPagingToken = undefined;
+      console.log("lambda GetFunction");
+      let GetFunctionPagingToken: string | undefined = undefined;
       do {
-        const result = await LambdaClient.getFunction(requestParameters);
-        getFunctionState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: result });
+        const GetFunctionCmd = new GetFunctionCommand(requestParameters);
+        const result: GetFunctionCommandOutput = await Lambda.send(GetFunctionCmd);
+        GetFunctionState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: result });
         const iamRoleSelectors = ["Configuration.Role"];
         for (const selector of iamRoleSelectors) {
           const selectionResult = jmespath.search(result, selector);
@@ -47,7 +49,7 @@ async function performScan(account: string, region: string, onServiceScanComplet
             console.log(selectionResult);
           }
         }
-      } while (getFunctionPagingToken != null);
+      } while (GetFunctionPagingToken != null);
     }
     catch (err: any) {
       if (err?.retryable) {
@@ -55,7 +57,7 @@ async function performScan(account: string, region: string, onServiceScanComplet
       }
     }
   }
-  await onServiceScanComplete(account, region, "lambda", "getFunction", getFunctionState);
+  await onServiceScanComplete(account, region, "lambda", "GetFunction", GetFunctionState);
 }
 
 export { performScan };

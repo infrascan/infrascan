@@ -1,61 +1,64 @@
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn } from "@sharedTypes/api";
 import type { GenericState } from "@sharedTypes/scan";
-import { EC2 } from "@aws-sdk/client-ec2";
+import { EC2Client, DescribeVpcsCommand, DescribeVpcsCommandInput, DescribeVpcsCommandOutput, DescribeAvailabilityZonesCommand, DescribeAvailabilityZonesCommandInput, DescribeAvailabilityZonesCommandOutput, DescribeSubnetsCommand, DescribeSubnetsCommandInput, DescribeSubnetsCommandOutput } from "@aws-sdk/client-ec2";
 import * as formatters from "./formatters";
 
 async function performScan(account: string, region: string, onServiceScanComplete: ServiceScanCompleteCallbackFn, resolveStateForServiceCall: ResolveStateFromServiceFn) {
-  const EC2Client = new EC2({ region });
+  const EC2 = new EC2Client({ region });
 
-  const describeVpcsState: GenericState[] = [];
+  const DescribeVpcsState: GenericState[] = [];
   try {
-    console.log("ec2 describeVpcs");
-    let describeVpcsPagingToken = undefined;
+    console.log("ec2 DescribeVpcs");
+    let DescribeVpcsPagingToken: string | undefined = undefined;
     do {
-      const result = await EC2Client.describeVpcs({});
+      const DescribeVpcsCmd = new DescribeVpcsCommand({} as DescribeVpcsCommandInput);
+      const result: DescribeVpcsCommandOutput = await EC2.send(DescribeVpcsCmd);
       const formattedResult = formatters.EC2.describeVPCs(result);
-      describeVpcsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
-    } while (describeVpcsPagingToken != null);
+      DescribeVpcsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
+    } while (DescribeVpcsPagingToken != null);
   }
   catch (err: any) {
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
   }
-  await onServiceScanComplete(account, region, "ec2", "describeVpcs", describeVpcsState);
+  await onServiceScanComplete(account, region, "ec2", "DescribeVpcs", DescribeVpcsState);
 
-  const describeAvailabilityZonesState: GenericState[] = [];
+  const DescribeAvailabilityZonesState: GenericState[] = [];
   try {
-    console.log("ec2 describeAvailabilityZones");
-    let describeAvailabilityZonesPagingToken = undefined;
+    console.log("ec2 DescribeAvailabilityZones");
+    let DescribeAvailabilityZonesPagingToken: string | undefined = undefined;
     do {
-      const result = await EC2Client.describeAvailabilityZones({});
+      const DescribeAvailabilityZonesCmd = new DescribeAvailabilityZonesCommand({} as DescribeAvailabilityZonesCommandInput);
+      const result: DescribeAvailabilityZonesCommandOutput = await EC2.send(DescribeAvailabilityZonesCmd);
       const formattedResult = formatters.EC2.describeAvailabilityZones(result);
-      describeAvailabilityZonesState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
-    } while (describeAvailabilityZonesPagingToken != null);
+      DescribeAvailabilityZonesState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
+    } while (DescribeAvailabilityZonesPagingToken != null);
   }
   catch (err: any) {
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
   }
-  await onServiceScanComplete(account, region, "ec2", "describeAvailabilityZones", describeAvailabilityZonesState);
+  await onServiceScanComplete(account, region, "ec2", "DescribeAvailabilityZones", DescribeAvailabilityZonesState);
 
-  const describeSubnetsState: GenericState[] = [];
+  const DescribeSubnetsState: GenericState[] = [];
   try {
-    console.log("ec2 describeSubnets");
-    let describeSubnetsPagingToken = undefined;
+    console.log("ec2 DescribeSubnets");
+    let DescribeSubnetsPagingToken: string | undefined = undefined;
     do {
-      const result = await EC2Client.describeSubnets({});
+      const DescribeSubnetsCmd = new DescribeSubnetsCommand({} as DescribeSubnetsCommandInput);
+      const result: DescribeSubnetsCommandOutput = await EC2.send(DescribeSubnetsCmd);
       const formattedResult = formatters.EC2.describeSubnets(result);
-      describeSubnetsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
-    } while (describeSubnetsPagingToken != null);
+      DescribeSubnetsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
+    } while (DescribeSubnetsPagingToken != null);
   }
   catch (err: any) {
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
   }
-  await onServiceScanComplete(account, region, "ec2", "describeSubnets", describeSubnetsState);
+  await onServiceScanComplete(account, region, "ec2", "DescribeSubnets", DescribeSubnetsState);
 }
 
 export { performScan };
