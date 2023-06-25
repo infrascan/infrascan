@@ -4,7 +4,7 @@
   "description": "CodeGen Library to create typesafe scanners for infrascan-sdk",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node ./src/index.ts generate ./config.json"
+    "dev": "ts-node ./src/index.ts generate ./config.json --base-path ./aws/scan"
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",

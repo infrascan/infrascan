@@ -7,41 +7,11 @@ import {
 } from "ts-morph";
 import { SemicolonPreference } from "typescript";
 
-export type ParameterResolver = {
-  Key: string;
-  Selector?: string;
-  Value?: any;
-};
-
-export type EdgeResolver = {
-  state: string;
-  from: string;
-  to: string;
-};
-
-export type PaginationToken = {
-  request?: string;
-  response?: string;
-};
-
-export type ServiceGetter = {
-  fn: string;
-  parameters?: ParameterResolver[];
-  formatter?: string;
-  paginationToken?: PaginationToken;
-  iamRoleSelectors?: string[];
-};
-
-export type ScannerDefinition = {
-  service: string;
-  clientKey: string;
-  key: string;
-  getters: ServiceGetter[];
-  arnLabel?: string;
-  nodes?: string[];
-  edges?: EdgeResolver[];
-  iamRoles?: string[];
-};
+import type {
+  PaginationToken,
+  ServiceGetter,
+  ScannerDefinition,
+} from "./types";
 
 type ServiceFunctionImports = {
   input: string;
@@ -118,14 +88,12 @@ function scanIAMRolesFromState(
     );
     writer.writeLine(`if(Array.isArray(selectionResult))`).block(() => {
       writer.writeLine(`for(const roleArn of selectionResult)`).block(() => {
-        writer.writeLine(
-          "await scanIamRole(iamRoleStorage, iamClient, roleArn);"
-        );
+        writer.writeLine("await scanIamRole(iamStorage, iamClient, roleArn);");
       });
     });
     writer.writeLine("else if(selectionResult != null)").block(() => {
       writer.writeLine(
-        "await scanIamRole(iamRoleStorage, iamClient, roleArn);"
+        "await scanIamRole(iamStorage, iamClient, selectionResult);"
       );
     });
   });
@@ -240,12 +208,12 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
       "ServiceScanCompleteCallbackFn",
       "ResolveStateFromServiceFn",
     ],
-    moduleSpecifier: "./types/api",
+    moduleSpecifier: "@shared-types/api",
   });
   sourceFile.addImportDeclaration({
     isTypeOnly: true,
     namedImports: ["GenericState"],
-    moduleSpecifier: "./types/scan",
+    moduleSpecifier: "@shared-types/scan",
   });
 }
 
@@ -263,21 +231,29 @@ function addScannerSpecificImports(
   });
 
   // If service contains references to IAM roles, import the IAM client and jmespath selector
-  const hasIamRoleSelectors = config.getters.some(
+  sourceFile.addImportDeclaration({
+    namedImports: ["scanIamRole", "IAMStorage"],
+    moduleSpecifier: "./helpers/iam",
+  });
+  sourceFile.addImportDeclaration({
+    namedImports: ["IAM"],
+    moduleSpecifier: "@aws-sdk/client-iam",
+  });
+  const hasIAMRoles = config.getters.some(
     ({ iamRoleSelectors }) => iamRoleSelectors != null
   );
-  if (hasIamRoleSelectors) {
-    sourceFile.addImportDeclaration({
-      namedImports: ["scanIamRole", "IAMStorage"],
-      moduleSpecifier: "./helpers/iam",
-    });
+  if (hasIAMRoles) {
     sourceFile.addImportDeclaration({
       defaultImport: "jmespath",
       moduleSpecifier: "jmespath",
     });
+  }
+
+  const hasParams = config.getters.some(({ parameters }) => parameters != null);
+  if (hasParams) {
     sourceFile.addImportDeclaration({
-      namedImports: ["IAM"],
-      moduleSpecifier: "@aws-sdk/client-iam",
+      namedImports: ["resolveFunctionCallParameters"],
+      moduleSpecifier: "./helpers/state",
     });
   }
 
@@ -340,9 +316,14 @@ const FORMATTER_CONFIG: Readonly<FormatCodeSettings> = {
   semicolons: SemicolonPreference.Insert,
   indentSize: 2,
 };
-export function generateScanner(project: Project, config: ScannerDefinition) {
+export function generateScanner(
+  project: Project,
+  basePath: string,
+  config: ScannerDefinition,
+  verbose: boolean
+) {
   const sourceFile = project.createSourceFile(
-    `./aws/services/${config.clientKey}.ts`
+    `./${basePath}/${config.clientKey}.ts`
   );
   addGeneratedFileNotice(sourceFile);
   addStandardScannerImports(sourceFile);
@@ -367,8 +348,10 @@ export function generateScanner(project: Project, config: ScannerDefinition) {
   sourceFile.addExportDeclaration({
     namedExports: [scanEntrypointFunction.getName() as string],
   });
+  if (verbose) {
+    console.log(sourceFile.getFilePath());
+    console.log(sourceFile.getText());
+  }
   sourceFile.formatText(FORMATTER_CONFIG);
-  console.log(sourceFile.getFilePath());
-  console.log(sourceFile.getText());
   sourceFile.saveSync();
 }
