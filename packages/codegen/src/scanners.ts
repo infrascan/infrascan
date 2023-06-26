@@ -233,7 +233,7 @@ function addScannerSpecificImports(
   // If service contains references to IAM roles, import the IAM client and jmespath selector
   sourceFile.addImportDeclaration({
     namedImports: ["scanIamRole", "IAMStorage"],
-    moduleSpecifier: "./helpers/iam",
+    moduleSpecifier: "../helpers/iam",
   });
   sourceFile.addImportDeclaration({
     namedImports: ["IAM"],
@@ -253,7 +253,7 @@ function addScannerSpecificImports(
   if (hasParams) {
     sourceFile.addImportDeclaration({
       namedImports: ["resolveFunctionCallParameters"],
-      moduleSpecifier: "./helpers/state",
+      moduleSpecifier: "../helpers/state",
     });
   }
 
@@ -264,7 +264,7 @@ function addScannerSpecificImports(
   if (hasOutputFormatters) {
     sourceFile.addImportDeclaration({
       namespaceImport: "formatters",
-      moduleSpecifier: "./formatters",
+      moduleSpecifier: "../helpers/formatters",
     });
   }
 }

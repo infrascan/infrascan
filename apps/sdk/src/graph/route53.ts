@@ -7,8 +7,8 @@ import { ResourceRecordSet } from "@aws-sdk/client-route-53";
 import {
   GraphEdge,
   GetGlobalStateForServiceAndFunction,
-} from "@sharedTypes/graph";
-import { State } from "@sharedTypes/scan";
+} from "@shared-types/graph";
+import { State } from "@shared-types/scan";
 import { formatEdge } from "./graph_utilities";
 import minimatch from "minimatch";
 import { CloudfrontDistributionSummary } from "@scrapers/formatters";

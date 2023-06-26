@@ -1,9 +1,14 @@
 {
-	"packageManager": "npm",
-	"workspaces": [
-		"packages/*"
-	],
-	"devDependencies": {
-		"turbo": "^1.9.9"
-	}
+  "packageManager": "npm",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "turbo": "^1.9.9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build"
+  }
 }

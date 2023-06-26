@@ -2,12 +2,14 @@
   "name": "@infrascan/sdk",
   "version": "0.2.6",
   "description": "Tool to generate a system map by connecting to your AWS account.",
-  "main": "src/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "node ./src/index.js",
+    "codegen": "infrascan-codegen generate ./config.json --base-path ./src/aws/scan",
     "build": "rm -rf dist ; tsc --project tsconfig.json",
     "test": "echo \"Error: no test specified\"",
-    "lint": "eslint ."
+    "lint": "tsc --project ./tsconfig.lint.json"
   },
   "repository": {
     "type": "git",
@@ -46,13 +48,13 @@
   },
   "devDependencies": {
     "@aws-sdk/types": "^3.341.0",
+    "@infrascan/codegen": "*",
     "@types/jmespath": "^0.15.0",
     "@types/minimatch": "^5.1.2",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
-    "eslint": "^8.41.0",
     "ts-node": "^10.9.1",
-    "tsc": "^2.0.4",
-    "typescript": "^5.0.4"
+    "tsconfig": "*",
+    "typescript": "^5.1.3"
   }
 }

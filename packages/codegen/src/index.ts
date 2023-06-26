@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { readFileSync } from "fs";
 import { cac } from "cac";
 import { Project } from "ts-morph";

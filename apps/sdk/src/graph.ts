@@ -5,8 +5,8 @@ import type {
   GraphNode,
   GraphElement,
   GetGlobalStateForServiceAndFunction,
-} from "@sharedTypes/graph";
-import type { ResolveStateFromServiceFn } from "@sharedTypes/api";
+} from "@shared-types/graph";
+import type { ResolveStateFromServiceFn } from "@shared-types/api";
 
 import {
   GLOBAL_SERVICES,

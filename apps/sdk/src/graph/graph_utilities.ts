@@ -6,7 +6,7 @@ import { evaluateSelectorGlobally } from "../utils";
 import type {
   GraphEdge,
   GetGlobalStateForServiceAndFunction,
-} from "@sharedTypes/graph";
+} from "@shared-types/graph";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,

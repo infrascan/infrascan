@@ -16,9 +16,9 @@ import type {
   GetGlobalStateForServiceAndFunction,
   GraphNode,
   GraphEdge,
-} from "@sharedTypes/graph";
-import type { State } from "@sharedTypes/scan";
-import type { ResolveStateFromServiceFn } from "@sharedTypes/api";
+} from "@shared-types/graph";
+import type { State } from "@shared-types/scan";
+import type { ResolveStateFromServiceFn } from "@shared-types/api";
 
 import {
   generateEdgesForRole,

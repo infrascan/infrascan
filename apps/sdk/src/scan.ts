@@ -4,11 +4,11 @@ import { EC2 } from "@aws-sdk/client-ec2";
 import { IAM } from "@aws-sdk/client-iam";
 import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 
-import type { GenericState } from "@sharedTypes/scan";
+import type { GenericState } from "shared-types/scan";
 import type {
   ServiceScanCompleteCallbackFn,
   ResolveStateFromServiceFn,
-} from "@sharedTypes/api";
+} from "shared-types/api";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,
