@@ -189,7 +189,7 @@ import type {
 } from "@aws-sdk/client-api-gateway";
 
 export const ApiGateway = {
-  getApis: simpleLookupFactory<GetRestApisCommandOutput, "items">("items"),
+  getRestApis: simpleLookupFactory<GetRestApisCommandOutput, "items">("items"),
   getDomainNames: simpleLookupFactory<GetDomainNamesCommandOutput, "items">(
     "items"
   ),

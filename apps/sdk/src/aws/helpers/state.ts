@@ -1,5 +1,7 @@
-import jmespath from "jmespath";
 import type { ResolveStateFromServiceFn } from "@shared-types/api";
+
+import jmespath from "jmespath";
+import { GetGlobalStateForServiceAndFunction } from "@shared-types/graph";
 
 export type ParameterResolver = {
   Key: string;
@@ -47,7 +49,7 @@ export async function resolveFunctionCallParameters(
   return validatedParamObjects;
 }
 
-async function evaluateSelector(
+export async function evaluateSelector(
   account: string,
   region: string,
   rawSelector: string,
@@ -61,4 +63,16 @@ async function evaluateSelector(
     functionCall
   );
   return jmespath.search(state, selector.join("|"));
+}
+
+export async function evaluateSelectorGlobally(
+  rawSelector: string,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
+) {
+  const [service, functionCall, ...selector] = rawSelector.split("|");
+  const aggregateState = await getGlobalStateForServiceAndFunction(
+    service,
+    functionCall
+  );
+  return jmespath.search(aggregateState, selector.join("|"));
 }

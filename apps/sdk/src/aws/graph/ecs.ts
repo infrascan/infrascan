@@ -4,14 +4,12 @@
  * For now, only services will be rendered as nodes, within their clusters
  * but the edges will be generated using the roles from their tasks
  */
-import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
 import type {
   DescribeServicesResponse,
   DescribeTaskDefinitionResponse,
   Service,
   TaskDefinition,
 } from "@aws-sdk/client-ecs";
-
 import type {
   GetGlobalStateForServiceAndFunction,
   GraphNode,
@@ -20,13 +18,14 @@ import type {
 import type { State } from "@shared-types/scan";
 import type { ResolveStateFromServiceFn } from "@shared-types/api";
 
+import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
 import {
   generateEdgesForRole,
   formatEdge,
   sanitizeId,
-} from "./graph_utilities";
-import { evaluateSelector } from "../utils";
-import { IAMStorage } from "../iam";
+} from "./graph-utilities";
+import { evaluateSelector } from "../helpers/state";
+import { IAMStorage } from "../helpers/iam";
 
 type ECSServiceState = State<DescribeServicesResponse>;
 type ECSTaskState = State<DescribeTaskDefinitionResponse>;
@@ -133,12 +132,12 @@ export async function generateNodesForECSTasks(
   region: string,
   resolveStateForServiceCall: ResolveStateFromServiceFn
 ): Promise<GraphNode[]> {
-  const servicesState: Service[] = await evaluateSelector({
+  const servicesState: Service[] = await evaluateSelector(
     account,
     region,
-    rawSelector: "ECS|describeServices|[]._result.services[]",
-    resolveStateForServiceCall,
-  });
+    "ECS|describeServices|[]._result.services[]",
+    resolveStateForServiceCall
+  );
 
   const servicesNodes = servicesState
     .flatMap(

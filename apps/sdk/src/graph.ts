@@ -1,5 +1,3 @@
-import jmespath from "jmespath";
-
 import type {
   GraphEdge,
   GraphNode,
@@ -8,27 +6,28 @@ import type {
 } from "@shared-types/graph";
 import type { ResolveStateFromServiceFn } from "@shared-types/api";
 
+import jmespath from "jmespath";
 import {
   GLOBAL_SERVICES,
   REGIONAL_SERVICES,
   EdgeResolver,
 } from "@scrapers/services";
-import { IAMStorage, StoredRole, hydrateRoleStorage } from "./iam";
+import { AWS_DEFAULT_REGION } from "./aws/defaults";
+import { generateEdgesForCloudfrontResources } from "./aws/graph/cloudfront";
+// import { generateNodesForEc2Networking } from "./graph/ec2";
+import { generateEdgesForECSResources } from "./aws/graph/ecs";
+import { generateEdgesForRoute53Resources } from "./aws/graph/route53";
+import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
 import {
   evaluateSelector,
-  DEFAULT_REGION,
   evaluateSelectorGlobally,
-} from "./utils";
+} from "./aws/helpers/state";
 
-import { generateEdgesForCloudfrontResources } from "./graph/cloudfront";
-import { generateEdgesForECSResources } from "./graph/ecs";
-// import { generateNodesForEc2Networking } from "./graph/ec2";
-import { generateEdgesForRoute53Resources } from "./graph/route53";
 import {
   formatEdge,
   generateEdgesForRole,
   sanitizeId,
-} from "./graph/graph_utilities";
+} from "./aws/graph/graph-utilities";
 import type { ScanMetadata } from "./scan";
 
 function formatIdAsNode(
@@ -74,12 +73,12 @@ async function generateNodesForService({
 }: GenerateNodesForServiceOptions): Promise<GraphNode[]> {
   let accumulatedNodes: GraphNode[] = [];
   for (const currentSelector of nodes) {
-    const selectedNodes = await evaluateSelector({
+    const selectedNodes = await evaluateSelector(
       account,
       region,
-      rawSelector: currentSelector,
-      resolveStateForServiceCall,
-    });
+      currentSelector,
+      resolveStateForServiceCall
+    );
     console.log(account, region, currentSelector);
     const formattedNodes = selectedNodes.flatMap(
       ({ id, parent, ...metadata }: SelectedNode) => {
@@ -197,7 +196,7 @@ export async function generateGraph({
         graphNodes = graphNodes.concat(
           await generateNodesForService({
             account,
-            region: DEFAULT_REGION,
+            region: AWS_DEFAULT_REGION,
             serviceName: service.service,
             serviceKey: service.key,
             nodes: service.nodes,

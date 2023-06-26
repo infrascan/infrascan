@@ -9,9 +9,9 @@ import {
   GetGlobalStateForServiceAndFunction,
 } from "@shared-types/graph";
 import { State } from "@shared-types/scan";
-import { formatEdge } from "./graph_utilities";
+import { formatEdge } from "./graph-utilities";
 import minimatch from "minimatch";
-import { CloudfrontDistributionSummary } from "@scrapers/formatters";
+import { CloudfrontDistributionSummary } from "../helpers/formatters";
 import { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
 import { LoadBalancer } from "@aws-sdk/client-elastic-load-balancing-v2";
 import { Subscription } from "@aws-sdk/client-sns";

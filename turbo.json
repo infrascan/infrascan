@@ -1,7 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
-    "codegen": {},
+    "codegen": {
+      "cache": false
+    },
     "dev": {
       "dependsOn": ["codegen"],
       "cache": false

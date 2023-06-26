@@ -215,6 +215,11 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
     namedImports: ["GenericState"],
     moduleSpecifier: "@shared-types/scan",
   });
+  sourceFile.addImportDeclaration({
+    isTypeOnly: true,
+    namedImports: ["AwsCredentialIdentityProvider"],
+    moduleSpecifier: "@aws-sdk/types",
+  });
 }
 
 function addScannerSpecificImports(
@@ -276,6 +281,10 @@ function createScanEntrypoint(sourceFile: SourceFile): FunctionDeclaration {
     isAsync: true,
     parameters: [
       {
+        name: "credentials",
+        type: "AwsCredentialIdentityProvider",
+      },
+      {
         name: "account",
         type: "string",
       },
@@ -323,7 +332,7 @@ export function generateScanner(
   verbose: boolean
 ) {
   const sourceFile = project.createSourceFile(
-    `./${basePath}/${config.clientKey}.ts`
+    `./${basePath}/${config.key}.generated.ts`
   );
   addGeneratedFileNotice(sourceFile);
   addStandardScannerImports(sourceFile);
@@ -333,7 +342,7 @@ export function generateScanner(
   scanEntrypointFunction.setBodyText((writer) => {
     const clientVariableName = config.clientKey;
     writer.writeLine(
-      `const ${clientVariableName} = new ${config.clientKey}Client({ region });`
+      `const ${clientVariableName} = new ${config.clientKey}Client({ region, credentials });`
     );
     for (const getter of config.getters) {
       implementFunctionCallForScanner(

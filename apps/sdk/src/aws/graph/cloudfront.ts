@@ -8,9 +8,9 @@ import type {
   GraphEdge,
 } from "shared-types/graph";
 import type { State } from "@shared-types/scan";
-import type { CloudfrontDistributionSummary } from "@scrapers/formatters";
+import type { CloudfrontDistributionSummary } from "../helpers/formatters";
 import type { Bucket } from "@aws-sdk/client-s3";
-import { formatEdge } from "./graph_utilities";
+import { formatEdge } from "./graph-utilities";
 
 type GlobalCloudFrontState = State<CloudfrontDistributionSummary[]>;
 type GlobalS3State = State<Bucket[]>;

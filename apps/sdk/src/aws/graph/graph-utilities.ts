@@ -1,8 +1,8 @@
 import jmespath from "jmespath";
 import minimatch from "minimatch";
-import { IAMStorage } from "../iam";
-import type { StoredRole } from "../iam";
-import { evaluateSelectorGlobally } from "../utils";
+import { IAMStorage } from "../helpers/iam";
+import type { StoredRole } from "../helpers/iam";
+import { evaluateSelectorGlobally } from "../helpers/state";
 import type {
   GraphEdge,
   GetGlobalStateForServiceAndFunction,

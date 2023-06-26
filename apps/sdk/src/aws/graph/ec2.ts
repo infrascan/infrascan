@@ -2,8 +2,8 @@
  * Handles the custom logic for generating EC2 networking nodes
  */
 
-import { evaluateSelector } from "../utils";
-import { sanitizeId } from "./graph_utilities";
+import { evaluateSelector } from "../helpers/state";
+import { sanitizeId } from "./graph-utilities";
 import type { ResolveStateFromServiceFn } from "@shared-types/api";
 import type { GraphNode } from "@shared-types/graph";
 import type { State } from "@shared-types/scan";
@@ -18,12 +18,12 @@ export async function generateNodesForEc2Networking(
   resolveStateForServiceCall: ResolveStateFromServiceFn
 ) {
   let ec2NetworkingState: GraphNode[] = [];
-  const vpcsState: EC2VpcState[] = await evaluateSelector({
+  const vpcsState: EC2VpcState[] = await evaluateSelector(
     account,
     region,
-    rawSelector: "EC2|describeVpcs|[]",
-    resolveStateForServiceCall,
-  });
+    "EC2|describeVpcs|[]",
+    resolveStateForServiceCall
+  );
   const vpcNodes: GraphNode[] = vpcsState.flatMap(({ _metadata, _result }) => {
     return _result.map(({ VpcId, ...vpcInfo }) => ({
       group: "nodes",
@@ -39,12 +39,12 @@ export async function generateNodesForEc2Networking(
 
   ec2NetworkingState = ec2NetworkingState.concat(vpcNodes);
 
-  const availabilityZoneState: EC2AZState[] = await evaluateSelector({
+  const availabilityZoneState: EC2AZState[] = await evaluateSelector(
     account,
     region,
-    rawSelector: "EC2|describeAvailabilityZones|[]",
-    resolveStateForServiceCall,
-  });
+    "EC2|describeAvailabilityZones|[]",
+    resolveStateForServiceCall
+  );
 
   /**
    * Main complication with EC2 Networking: Availability Zones have to be forced into
@@ -69,12 +69,12 @@ export async function generateNodesForEc2Networking(
 
   ec2NetworkingState = ec2NetworkingState.concat(availabilityZoneNodes);
 
-  const subnetsState: EC2SubnetState[] = await evaluateSelector({
+  const subnetsState: EC2SubnetState[] = await evaluateSelector(
     account,
     region,
-    rawSelector: "EC2|describeSubnets|[]",
-    resolveStateForServiceCall,
-  });
+    "EC2|describeSubnets|[]",
+    resolveStateForServiceCall
+  );
 
   const subnetNodes: GraphNode[] = subnetsState.flatMap(({ _result }) => {
     return _result.map(

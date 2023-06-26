@@ -1,27 +1,18 @@
-import jmespath from "jmespath";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
-import { EC2 } from "@aws-sdk/client-ec2";
-import { IAM } from "@aws-sdk/client-iam";
-import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
-
-import type { GenericState } from "shared-types/scan";
 import type {
   ServiceScanCompleteCallbackFn,
   ResolveStateFromServiceFn,
-} from "shared-types/api";
+} from "@shared-types/api";
+
+import { EC2 } from "@aws-sdk/client-ec2";
+import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import {
-  REGIONAL_SERVICES,
-  GLOBAL_SERVICES,
-  ServiceConfig,
-  ServiceGetter,
-  ParameterResolver,
-} from "@scrapers/services";
-import { dynamicClient, ServiceClients } from "@scrapers/client";
-
-import { evaluateSelector, DEFAULT_REGION, invokeDynamicClient } from "./utils";
-import { scanIamRole, IAMStorage } from "./iam";
-
-const ERROR_CODES_TO_IGNORE = ["NoSuchWebsiteConfiguration", "NoSuchTagSet"];
+  REGIONAL_SERVICE_SCANNERS,
+  GLOBAL_SERVICE_SCANNERS,
+} from "./aws/scan/index.generated";
+import { IAMStorage } from "./aws/helpers/iam";
+import { IAM } from "@aws-sdk/client-iam";
+import { AWS_DEFAULT_REGION } from "./aws/defaults";
 
 async function whoami(
   credentials: AwsCredentialIdentityProvider,
@@ -34,190 +25,10 @@ async function whoami(
   return await stsClient.getCallerIdentity({});
 }
 
-type ResolveParametersOptions = {
-  account: string;
-  region: string;
-  parameters: ParameterResolver[];
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
-};
-
-async function resolveParameters({
-  account,
-  region,
-  parameters,
-  resolveStateForServiceCall,
-}: ResolveParametersOptions): Promise<Record<string, any>[]> {
-  const allParamObjects: Record<string, string>[] = [];
-  for (const { Key, Selector, Value } of parameters) {
-    if (Selector) {
-      const parameterValues = await evaluateSelector({
-        account,
-        region,
-        rawSelector: Selector,
-        resolveStateForServiceCall,
-      });
-      for (let idx = 0; idx < parameterValues.length; idx++) {
-        if (allParamObjects[idx] == null) {
-          allParamObjects[idx] = {};
-        }
-        allParamObjects[idx][Key] = parameterValues[idx];
-      }
-    } else if (Value) {
-      if (allParamObjects.length === 0) {
-        allParamObjects.push({ [Key]: Value });
-      } else {
-        for (const parameterObject of allParamObjects) {
-          parameterObject[Key] = Value;
-        }
-      }
-    }
-  }
-  const validatedParamObjects = allParamObjects.filter((obj) => {
-    const allParamsPresent = parameters.every(({ Key }) =>
-      Object.keys(obj).includes(Key)
-    );
-    return allParamsPresent;
-  });
-  return validatedParamObjects;
-}
-
-type MakeFunctionCallOptions = {
-  account: string;
-  region: string;
-  service: string;
-  client: ServiceClients;
-  iamClient: IAM;
-  functionCall: ServiceGetter;
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
-  iamStorage: IAMStorage;
-};
-async function makeFunctionCall({
-  account,
-  region,
-  service,
-  client,
-  iamClient,
-  functionCall,
-  resolveStateForServiceCall,
-  iamStorage,
-}: MakeFunctionCallOptions) {
-  const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
-    functionCall;
-  let resolvedParameters: Record<string, any>[] = [{}];
-  if (parameters) {
-    resolvedParameters = await resolveParameters({
-      account,
-      region,
-      parameters,
-      resolveStateForServiceCall,
-    });
-  }
-
-  const state: GenericState[] = [];
-  for (const requestParameters of resolvedParameters) {
-    try {
-      console.log(`${service} ${fn}`);
-      let pagingToken = undefined;
-      do {
-        if (paginationToken?.request != null) {
-          requestParameters[paginationToken.request] = pagingToken;
-        }
-        const result =
-          (await invokeDynamicClient(client, fn, requestParameters)) ?? {};
-        if (paginationToken?.response != null) {
-          pagingToken = result[paginationToken?.response];
-        }
-
-        const formattedResult = formatter ? formatter(result) : result;
-
-        if (iamRoleSelectors) {
-          for (const selector of iamRoleSelectors) {
-            const selectionResult = jmespath.search(formattedResult, selector);
-            if (Array.isArray(selectionResult)) {
-              for (const roleArn of selectionResult) {
-                await scanIamRole(iamStorage, iamClient, roleArn);
-              }
-            } else if (selectionResult) {
-              await scanIamRole(iamStorage, iamClient, selectionResult);
-            }
-          }
-        }
-
-        // using `_` prefix to avoid issues with jmespath and dollar signs
-        state.push({
-          // track context in metadata to allow mapping to parents
-          _metadata: { account, region },
-          _parameters: requestParameters,
-          _result: formattedResult,
-        });
-      } while (pagingToken != null);
-    } catch (err: any) {
-      if (err?.retryable) {
-        console.log("Encountered retryable error", err);
-      } else if (!ERROR_CODES_TO_IGNORE.includes(err?.code)) {
-        console.log("Non retryable error", err);
-      }
-    }
-  }
-  return state;
-}
-
-export type ScanResourcesInAccountOptions = {
-  account: string;
-  region: string;
-  servicesToScan: ServiceConfig[];
-  onServiceScanComplete: ServiceScanCompleteCallbackFn;
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
-  iamStorage: IAMStorage;
-};
-
-async function scanResourcesInAccount({
-  account,
-  region,
-  servicesToScan,
-  onServiceScanComplete,
-  resolveStateForServiceCall,
-  iamStorage,
-}: ScanResourcesInAccountOptions): Promise<void> {
-  const iamClient = new IAM({ region });
-  for (const serviceScanner of servicesToScan) {
-    const { service, clientKey, getters } = serviceScanner;
-
-    const client = await dynamicClient(service, clientKey, { region });
-
-    for (const functionCall of getters) {
-      const functionState = await makeFunctionCall({
-        account,
-        region,
-        service,
-        client,
-        iamClient,
-        functionCall,
-        resolveStateForServiceCall,
-        iamStorage,
-      });
-      await onServiceScanComplete(
-        account,
-        region,
-        service,
-        functionCall.fn,
-        functionState
-      );
-    }
-  }
-  await onServiceScanComplete(
-    account,
-    region,
-    "IAM",
-    "roles",
-    iamStorage.getAllRoles()
-  );
-}
-
 async function getAllRegions(
   credentials: AwsCredentialIdentityProvider
 ): Promise<string[]> {
-  const ec2Client = new EC2({ region: DEFAULT_REGION, credentials });
+  const ec2Client = new EC2({ region: AWS_DEFAULT_REGION, credentials });
   const { Regions } = await ec2Client.describeRegions({ AllRegions: true });
   return Regions?.map(({ RegionName }) => RegionName as string) ?? [];
 }
@@ -235,6 +46,10 @@ export type ScanMetadata = {
   regions: string[];
 };
 
+export type GlobalService = keyof typeof GLOBAL_SERVICE_SCANNERS;
+export type RegionalService = keyof typeof REGIONAL_SERVICE_SCANNERS;
+export type ServiceList = (GlobalService | RegionalService)[];
+
 export async function performScan({
   credentials,
   regions,
@@ -242,7 +57,7 @@ export async function performScan({
   onServiceScanComplete,
   resolveStateForServiceCall,
 }: PerformScanOptions) {
-  const globalCaller = await whoami(credentials, DEFAULT_REGION);
+  const globalCaller = await whoami(credentials, AWS_DEFAULT_REGION);
 
   if (globalCaller?.Account == null) {
     throw new Error("Failed to get caller identity");
@@ -253,29 +68,31 @@ export async function performScan({
     regions: [],
   };
 
+  const iamClient = new IAM({ credentials });
   const iamStorage = new IAMStorage();
   console.log(`Scanning global resources in ${globalCaller.Account}`);
-  if (services?.length != null && services?.length > 0) {
-    const filteredGlobalServices = GLOBAL_SERVICES.filter(({ service }) =>
-      services.includes(service)
-    );
-    await scanResourcesInAccount({
-      account: globalCaller.Account,
-      region: "us-east-1",
-      servicesToScan: filteredGlobalServices,
-      onServiceScanComplete,
-      resolveStateForServiceCall,
-      iamStorage,
-    });
-  } else {
-    await scanResourcesInAccount({
-      account: globalCaller.Account,
-      region: "us-east-1",
-      servicesToScan: GLOBAL_SERVICES,
-      onServiceScanComplete,
-      resolveStateForServiceCall,
-      iamStorage,
-    });
+
+  let globalServicesToScan = Object.keys(
+    GLOBAL_SERVICE_SCANNERS
+  ) as GlobalService[];
+  if (services?.length != null) {
+    globalServicesToScan = Object.keys(GLOBAL_SERVICE_SCANNERS).filter(
+      (service) => services.includes(service)
+    ) as GlobalService[];
+  }
+
+  for (const globalServiceScanner of globalServicesToScan) {
+    for (const scanner of GLOBAL_SERVICE_SCANNERS[globalServiceScanner]) {
+      await scanner(
+        credentials,
+        globalCaller.Account as string,
+        AWS_DEFAULT_REGION,
+        iamClient,
+        iamStorage,
+        onServiceScanComplete,
+        resolveStateForServiceCall
+      );
+    }
   }
 
   const regionsToScan = regions ?? (await getAllRegions(credentials));
@@ -286,32 +103,32 @@ export async function performScan({
       throw new Error("Failed to get caller identity");
     }
     console.log(`Beginning scan of ${caller.Account} in ${region}`);
-    const servicesToScan = services ?? [];
-    if (servicesToScan.length > 0) {
+    let regionalServicesToScan = Object.keys(
+      REGIONAL_SERVICE_SCANNERS
+    ) as RegionalService[];
+    if (services?.length != null) {
       console.log(`Filtering services according to supplied list`, {
-        servicesToScan,
+        services,
       });
-      const filteredRegionalServices = REGIONAL_SERVICES.filter(({ service }) =>
-        servicesToScan.includes(service)
-      );
-      await scanResourcesInAccount({
-        account: caller.Account,
-        region,
-        servicesToScan: filteredRegionalServices,
-        onServiceScanComplete,
-        resolveStateForServiceCall,
-        iamStorage,
-      });
-    } else {
-      await scanResourcesInAccount({
-        account: caller.Account,
-        region,
-        servicesToScan: REGIONAL_SERVICES,
-        onServiceScanComplete,
-        resolveStateForServiceCall,
-        iamStorage,
-      });
+      regionalServicesToScan = Object.keys(REGIONAL_SERVICE_SCANNERS).filter(
+        (service) => services.includes(service)
+      ) as RegionalService[];
     }
+
+    for (const regionalService of regionalServicesToScan) {
+      for (const scanner of REGIONAL_SERVICE_SCANNERS[regionalService]) {
+        await scanner(
+          credentials,
+          globalCaller.Account as string,
+          AWS_DEFAULT_REGION,
+          iamClient,
+          iamStorage,
+          onServiceScanComplete,
+          resolveStateForServiceCall
+        );
+      }
+    }
+
     console.log(`Scan of ${caller.Account} in ${region} complete`);
     scanMetadata.regions.push(region);
   }
