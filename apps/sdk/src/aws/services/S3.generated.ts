@@ -112,4 +112,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["S3|ListBuckets|[]._result[].{id:Name,name:Name}"];
+const EDGE_SELECTORS = [{ "state": "S3|GetBucketNotificationConfiguration|[]", "from": "_parameters.Bucket", "to": "_result.TopicConfigurations | [].{target:TopicArn,name:Id}" }, { "state": "S3|GetBucketNotificationConfiguration|[]", "from": "_parameters.Bucket", "to": "_result.QueueConfigurations | [].{target:Queue,name:Id}" }, { "state": "S3|GetBucketNotificationConfiguration|[]", "from": "_parameters.Bucket", "to": "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}" }];
+
+export { performScan, NODE_SELECTORS, EDGE_SELECTORS };

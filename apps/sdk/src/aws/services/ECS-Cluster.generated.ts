@@ -49,4 +49,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}"];
+
+export { performScan, NODE_SELECTORS };

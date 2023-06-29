@@ -3,7 +3,7 @@
 import { readFileSync } from "fs";
 import { cac } from "cac";
 import { Project } from "ts-morph";
-import { generateScanner } from "./scanners";
+import { generateService } from "./services";
 import { generateEntrypoint } from "./entrypoint";
 
 import type { ScannerDefinition } from "./types";
@@ -30,7 +30,7 @@ cli
       const scannersTsProject = new Project();
       const basePath = options.basePath;
       for (let scanner of parsedConfig) {
-        generateScanner(scannersTsProject, basePath, scanner, options.verbose);
+        generateService(scannersTsProject, basePath, scanner, options.verbose);
       }
       generateEntrypoint(
         scannersTsProject,

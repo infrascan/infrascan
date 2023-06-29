@@ -9,7 +9,7 @@ import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import {
   REGIONAL_SERVICE_SCANNERS,
   GLOBAL_SERVICE_SCANNERS,
-} from "./aws/scan/index.generated";
+} from "./aws/services/index.generated";
 import { IAMStorage } from "./aws/helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { AWS_DEFAULT_REGION } from "./aws/defaults";

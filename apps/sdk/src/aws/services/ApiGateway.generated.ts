@@ -47,4 +47,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"];
+
+export { performScan, NODE_SELECTORS };

@@ -52,4 +52,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}"];
+const EDGE_SELECTORS = [{ "state": "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]", "from": "logGroupName", "to": "{target:destinationArn}" }];
+
+export { performScan, NODE_SELECTORS, EDGE_SELECTORS };

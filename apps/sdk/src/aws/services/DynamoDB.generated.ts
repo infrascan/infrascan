@@ -52,4 +52,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["DynamoDB|DescribeTable|[].{id:_result.TableArn}"];
+
+export { performScan, NODE_SELECTORS };

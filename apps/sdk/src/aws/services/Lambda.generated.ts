@@ -63,4 +63,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}"];
+
+export { performScan, NODE_SELECTORS };

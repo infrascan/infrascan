@@ -95,4 +95,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["SNS|ListTopics|[]._result[].{id:TopicArn}"];
+const EDGE_SELECTORS = [{ "state": "SNS|ListSubscriptionsByTopic|[]", "from": "_parameters.TopicArn", "to": "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}" }];
+
+export { performScan, NODE_SELECTORS, EDGE_SELECTORS };

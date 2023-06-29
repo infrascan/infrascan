@@ -29,4 +29,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["RDS|DescribeDBInstances|[]._result | [].{id:DBInstanceIdentifier,name:DBName}"];
+
+export { performScan, NODE_SELECTORS };

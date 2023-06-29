@@ -27,4 +27,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["CloudFront|ListDistributions|[]._result[].{id:ARN,name:_infrascanLabel}"];
+
+export { performScan, NODE_SELECTORS };

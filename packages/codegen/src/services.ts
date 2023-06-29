@@ -4,6 +4,7 @@ import {
   SourceFile,
   FunctionDeclaration,
   FormatCodeSettings,
+  VariableDeclarationKind,
 } from "ts-morph";
 import { SemicolonPreference } from "typescript";
 
@@ -11,6 +12,7 @@ import type {
   PaginationToken,
   ServiceGetter,
   ScannerDefinition,
+  EdgeResolver,
 } from "./types";
 
 type ServiceFunctionImports = {
@@ -319,13 +321,52 @@ function addGeneratedFileNotice(sourceFile: SourceFile): void {
   );
 }
 
+function addNodeSelectorVariable(
+  sourceFile: SourceFile,
+  nodeSelectors: string[]
+): string {
+  const nodeSelectorVariable = "NODE_SELECTORS";
+  const formattedSelectors = nodeSelectors.map((node) => `"${node}"`).join(",");
+  sourceFile.addVariableStatement({
+    declarationKind: VariableDeclarationKind.Const,
+    declarations: [
+      {
+        name: nodeSelectorVariable,
+        initializer: `[${formattedSelectors}]`,
+      },
+    ],
+  });
+  return nodeSelectorVariable;
+}
+
+function addEdgeSelectorVariable(
+  sourceFile: SourceFile,
+  edgeSelectors: EdgeResolver[]
+): string {
+  const edgeSelectorVariable = "EDGE_SELECTORS";
+  const formattedSelectors = edgeSelectors
+    .map((edge) => JSON.stringify(edge))
+    .join(",");
+  sourceFile.addVariableStatement({
+    declarationKind: VariableDeclarationKind.Const,
+    declarations: [
+      {
+        name: edgeSelectorVariable,
+        initializer: `[${formattedSelectors}]`,
+      },
+    ],
+  });
+  return edgeSelectorVariable;
+}
+
 const FORMATTER_CONFIG: Readonly<FormatCodeSettings> = {
   placeOpenBraceOnNewLineForControlBlocks: false,
   placeOpenBraceOnNewLineForFunctions: false,
   semicolons: SemicolonPreference.Insert,
   indentSize: 2,
 };
-export function generateScanner(
+
+export function generateService(
   project: Project,
   basePath: string,
   config: ScannerDefinition,
@@ -354,8 +395,27 @@ export function generateScanner(
       writer.blankLine();
     }
   });
+
+  const exportedVars = [scanEntrypointFunction.getName() as string];
+
+  if (config.nodes != null) {
+    const nodeSelectorVariable = addNodeSelectorVariable(
+      sourceFile,
+      config.nodes
+    );
+    exportedVars.push(nodeSelectorVariable);
+  }
+
+  if (config.edges != null) {
+    const edgeSelectorVariable = addEdgeSelectorVariable(
+      sourceFile,
+      config.edges
+    );
+    exportedVars.push(edgeSelectorVariable);
+  }
+
   sourceFile.addExportDeclaration({
-    namedExports: [scanEntrypointFunction.getName() as string],
+    namedExports: exportedVars,
   });
   if (verbose) {
     console.log(sourceFile.getFilePath());

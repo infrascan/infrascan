@@ -16,7 +16,7 @@ function addServiceScannerImport(sourceFile: SourceFile, service: string) {
   });
 }
 
-function createScannerExportObject(services: ScannerDefinition[]) {
+function createExportObjectForKey(services: ScannerDefinition[], key: string) {
   const preparedServices = services.reduce(
     (scannersByService, currentService) => {
       if (scannersByService[currentService.service]) {
@@ -31,13 +31,51 @@ function createScannerExportObject(services: ScannerDefinition[]) {
   const keyValuePairs = Object.entries(preparedServices)
     .map(([serviceName, scanners]) => {
       const scannersFnList = scanners
-        .map((clientKey) => `${kebabCaseToCamelCase(clientKey)}.performScan`)
+        .map((clientKey) => `${kebabCaseToCamelCase(clientKey)}.${key}`)
         .join(", ");
       return `"${serviceName}": [${scannersFnList}]`;
     })
     .join(",\n");
 
   return `{\n${keyValuePairs}\n}`;
+}
+
+function createConst(
+  sourceFile: SourceFile,
+  variableName: string,
+  value: string
+) {
+  sourceFile.addVariableStatement({
+    declarationKind: VariableDeclarationKind.Const,
+    declarations: [
+      {
+        name: variableName,
+        initializer: value,
+      },
+    ],
+  });
+}
+
+function createScannerExportObject(services: ScannerDefinition[]) {
+  return createExportObjectForKey(services, "performScan");
+}
+
+function createNodeSelectorExport(
+  sourceFile: SourceFile,
+  services: ScannerDefinition[],
+  variableName: string
+) {
+  const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
+  createConst(sourceFile, variableName, exportObject);
+}
+
+function createEdgeSelectorExport(
+  sourceFile: SourceFile,
+  services: ScannerDefinition[],
+  variableName: string
+) {
+  const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
+  createConst(sourceFile, variableName, exportObject);
 }
 
 function declareScannerListAsConstant(
@@ -57,6 +95,26 @@ function declareScannerListAsConstant(
     ],
   });
 
+  const globalServicesWithNodeSelectors = globalServices.filter(
+    (service) => service.nodes != null
+  );
+  const globalNodeSelectorsVariable = "GLOBAL_NODE_SELECTORS";
+  createNodeSelectorExport(
+    sourceFile,
+    globalServicesWithNodeSelectors,
+    globalNodeSelectorsVariable
+  );
+
+  const globalServicesWithEdgeSelectors = globalServices.filter(
+    (service) => service.edges != null
+  );
+  const globalEdgeSelectorsVariable = "GLOBAL_EDGE_SELECTORS";
+  createEdgeSelectorExport(
+    sourceFile,
+    globalServicesWithEdgeSelectors,
+    globalEdgeSelectorsVariable
+  );
+
   const regionalServices = services.filter((service) => !service.isGlobal);
   const regionalScannersExport = createScannerExportObject(regionalServices);
   const regionalScannersVariable = "REGIONAL_SERVICE_SCANNERS";
@@ -70,8 +128,35 @@ function declareScannerListAsConstant(
     ],
   });
 
+  const regionalServicesWithNodeSelectors = regionalServices.filter(
+    (service) => service.nodes != null
+  );
+  const regionalNodeSelectorsVariable = "REGIONAL_NODE_SELECTORS";
+  createNodeSelectorExport(
+    sourceFile,
+    regionalServicesWithNodeSelectors,
+    regionalNodeSelectorsVariable
+  );
+
+  const regionalServicesWithEdgeSelectors = regionalServices.filter(
+    (service) => service.edges != null
+  );
+  const regionalEdgeSelectorsVariable = "REGIONAL_EDGE_SELECTORS";
+  createNodeSelectorExport(
+    sourceFile,
+    regionalServicesWithEdgeSelectors,
+    regionalEdgeSelectorsVariable
+  );
+
   sourceFile.addExportDeclaration({
-    namedExports: [regionalScannersVariable, globalScannersVariable],
+    namedExports: [
+      regionalScannersVariable,
+      regionalNodeSelectorsVariable,
+      regionalEdgeSelectorsVariable,
+      globalScannersVariable,
+      globalNodeSelectorsVariable,
+      globalEdgeSelectorsVariable,
+    ],
   });
 }
 

@@ -87,4 +87,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}"];
+
+export { performScan, NODE_SELECTORS };

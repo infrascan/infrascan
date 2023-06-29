@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "node ./src/index.js",
-    "codegen": "infrascan-codegen generate ./config.json --base-path ./src/aws/scan",
+    "codegen": "infrascan-codegen generate ./config.json --base-path ./src/aws/services",
     "build": "rm -rf dist ; tsc --project tsconfig.json",
     "test": "echo \"Error: no test specified\"",
     "lint": "tsc --project ./tsconfig.lint.json"

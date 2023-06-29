@@ -21,6 +21,14 @@ const GLOBAL_SERVICE_SCANNERS = {
     "cloudfront": [CloudFront.performScan],
     "route-53": [Route53.performScan]
 };
+const GLOBAL_NODE_SELECTORS = {
+    "s3": [S3.NODE_SELECTORS],
+    "cloudfront": [CloudFront.NODE_SELECTORS],
+    "route-53": [Route53.NODE_SELECTORS]
+};
+const GLOBAL_EDGE_SELECTORS = {
+    "s3": [S3.NODE_SELECTORS]
+};
 const REGIONAL_SERVICE_SCANNERS = {
     "api-gateway": [ApiGateway.performScan],
     "auto-scaling": [AutoScaling.performScan],
@@ -34,5 +42,21 @@ const REGIONAL_SERVICE_SCANNERS = {
     "sns": [SNS.performScan],
     "sqs": [SQS.performScan]
 };
+const REGIONAL_NODE_SELECTORS = {
+    "api-gateway": [ApiGateway.NODE_SELECTORS],
+    "cloudwatch-logs": [CloudWatchLogs.NODE_SELECTORS],
+    "dynamodb": [DynamoDB.NODE_SELECTORS],
+    "ecs": [ECSCluster.NODE_SELECTORS, ECSServices.NODE_SELECTORS, ECSTasks.NODE_SELECTORS],
+    "elastic-load-balancing-v2": [ELB.NODE_SELECTORS],
+    "lambda": [Lambda.NODE_SELECTORS],
+    "rds": [RDS.NODE_SELECTORS],
+    "sns": [SNS.NODE_SELECTORS],
+    "sqs": [SQS.NODE_SELECTORS]
+};
+const REGIONAL_EDGE_SELECTORS = {
+    "cloudwatch-logs": [CloudWatchLogs.NODE_SELECTORS],
+    "sns": [SNS.NODE_SELECTORS],
+    "sqs": [SQS.NODE_SELECTORS]
+};
 
-export { REGIONAL_SERVICE_SCANNERS, GLOBAL_SERVICE_SCANNERS };
+export { REGIONAL_SERVICE_SCANNERS, REGIONAL_NODE_SELECTORS, REGIONAL_EDGE_SELECTORS, GLOBAL_SERVICE_SCANNERS, GLOBAL_NODE_SELECTORS, GLOBAL_EDGE_SELECTORS };

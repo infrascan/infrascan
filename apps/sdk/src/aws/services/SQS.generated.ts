@@ -74,4 +74,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"];
+const EDGE_SELECTORS = [{ "state": "SQS|GetQueueAttributes|[]", "from": "_result.QueueArn", "to": "_result.RedrivePolicy.{target:deadLetterTargetArn}" }];
+
+export { performScan, NODE_SELECTORS, EDGE_SELECTORS };

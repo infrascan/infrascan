@@ -49,4 +49,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-export { performScan };
+const NODE_SELECTORS = ["Route53|ListResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}"];
+
+export { performScan, NODE_SELECTORS };
