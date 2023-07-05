@@ -366,10 +366,13 @@ export function generateService(
   project: Project,
   basePath: string,
   config: ScannerDefinition,
+  overwrite: boolean,
   verbose: boolean
 ) {
   const sourceFile = project.createSourceFile(
-    `./${basePath}/${config.key}.generated.ts`
+    `./${basePath}/${config.key}.generated.ts`,
+    "",
+    { overwrite }
   );
   addGeneratedFileNotice(sourceFile);
   addScannerSpecificImports(sourceFile, config);

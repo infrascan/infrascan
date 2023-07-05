@@ -164,10 +164,13 @@ export function generateEntrypoint(
   project: Project,
   basePath: string,
   services: ScannerDefinition[],
+  overwrite: boolean,
   verbose: boolean
 ) {
   const sourceFile = project.createSourceFile(
-    `./${basePath}/index.generated.ts`
+    `./${basePath}/index.generated.ts`,
+    "",
+    { overwrite }
   );
 
   sourceFile.insertText(
