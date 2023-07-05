@@ -8,7 +8,7 @@
     "declarationMap": false,
     "outDir": "./dist",
     "paths": {
-      "@shared-types/*": ["@infrascan/shared-types"],
+      "@shared-types/*": ["./shared-types/*"],
       "@scrapers/*": ["./scrapers/*"]
     }
   }

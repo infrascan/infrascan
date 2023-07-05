@@ -1,46 +1,21 @@
-#!/usr/bin/env node
-
-import { readFileSync } from "fs";
-import { cac } from "cac";
 import { Project } from "ts-morph";
 import { generateService } from "./services";
 import { generateEntrypoint } from "./entrypoint";
 
-import type { ScannerDefinition } from "./types";
-export type {
-  ParameterResolver,
-  EdgeResolver,
-  PaginationToken,
-  ServiceGetter,
-  ScannerDefinition,
-} from "./types";
+import type { ScannerDefinition } from "@infrascan/shared-types";
 
-const cli = cac("infrascan-codegen");
-cli
-  .command(
-    "generate <config>",
-    "Generate typescript implementation using the given config file"
-  )
-  .option("--base-path <path>", "Base path for generated code output")
-  .option("-v, --verbose", "Enable verbose output")
-  .action((config, options) => {
-    try {
-      const scannerConfigs = readFileSync(config).toString("utf8");
-      const parsedConfig: ScannerDefinition[] = JSON.parse(scannerConfigs);
-      const scannersTsProject = new Project();
-      const basePath = options.basePath;
-      for (let scanner of parsedConfig) {
-        generateService(scannersTsProject, basePath, scanner, options.verbose);
-      }
-      generateEntrypoint(
-        scannersTsProject,
-        basePath,
-        parsedConfig,
-        options.verbose
-      );
-    } catch (err) {
-      console.error("Failed to generate scanner implementation:", err);
+export function generateScannerImplementations(
+  config: ScannerDefinition[],
+  basePath: string,
+  verbose: boolean
+): void {
+  try {
+    const scannersTsProject = new Project();
+    for (let scanner of config) {
+      generateService(scannersTsProject, basePath, scanner, verbose);
     }
-  });
-
-cli.parse();
+    generateEntrypoint(scannersTsProject, basePath, config, verbose);
+  } catch (err) {
+    console.error("Failed to generate scanner implementation:", err);
+  }
+}

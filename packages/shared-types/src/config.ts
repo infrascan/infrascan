@@ -32,5 +32,5 @@ export type ScannerDefinition = {
   nodes?: string[];
   edges?: EdgeResolver[];
   iamRoles?: string[];
-  isGlobal: boolean;
+  isGlobal?: boolean;
 };

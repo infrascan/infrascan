@@ -1,11 +1,9 @@
 {
-  "name": "infrascan-codegen",
+  "name": "@infrascan/codegen",
   "version": "0.1.0",
   "description": "CodeGen Library to create typesafe scanners for infrascan-sdk",
-  "main": "dist/index.js",
-  "bin": {
-    "infrascan-codegen": "dist/index.js"
-  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist ; tsc --project tsconfig.json"
   },
@@ -17,6 +15,7 @@
     "ts-morph": "^19.0.0"
   },
   "devDependencies": {
+    "@infrascan/shared-types": "^0.1.0",
     "@types/node": "^20.3.1",
     "ts-node": "^10.9.1",
     "tsconfig": "*",

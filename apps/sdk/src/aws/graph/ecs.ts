@@ -14,9 +14,9 @@ import type {
   GetGlobalStateForServiceAndFunction,
   GraphNode,
   GraphEdge,
-} from "@shared-types/graph";
-import type { State } from "@shared-types/scan";
-import type { ResolveStateFromServiceFn } from "@shared-types/api";
+} from "@infrascan/shared-types";
+import type { State } from "@infrascan/shared-types";
+import type { ResolveStateFromServiceFn } from "@infrascan/shared-types";
 
 import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
 import {

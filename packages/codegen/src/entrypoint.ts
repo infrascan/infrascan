@@ -1,5 +1,5 @@
 import { Project, SourceFile, VariableDeclarationKind } from "ts-morph";
-import type { ScannerDefinition } from "./types";
+import type { ScannerDefinition } from "@infrascan/shared-types";
 
 function kebabCaseToCamelCase(val: string): string {
   const tokens = val.split("-");

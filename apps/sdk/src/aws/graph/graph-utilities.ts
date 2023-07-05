@@ -1,17 +1,18 @@
 import jmespath from "jmespath";
 import minimatch from "minimatch";
 import { IAMStorage } from "../helpers/iam";
-import type { StoredRole } from "../helpers/iam";
 import { evaluateSelectorGlobally } from "../helpers/state";
-import type {
-  GraphEdge,
-  GetGlobalStateForServiceAndFunction,
-} from "@shared-types/graph";
 import {
   REGIONAL_SERVICES,
   GLOBAL_SERVICES,
   ServiceConfig,
 } from "@scrapers/services";
+
+import type { StoredRole } from "../helpers/iam";
+import type {
+  GraphEdge,
+  GetGlobalStateForServiceAndFunction,
+} from "@infrascan/shared-types";
 const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
 
 type MinimatchOptions = {

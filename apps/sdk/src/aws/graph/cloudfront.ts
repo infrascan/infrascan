@@ -6,8 +6,8 @@
 import type {
   GetGlobalStateForServiceAndFunction,
   GraphEdge,
-} from "shared-types/graph";
-import type { State } from "@shared-types/scan";
+} from "@infrascan/shared-types";
+import type { State } from "@infrascan/shared-types";
 import type { CloudfrontDistributionSummary } from "../helpers/formatters";
 import type { Bucket } from "@aws-sdk/client-s3";
 import { formatEdge } from "./graph-utilities";

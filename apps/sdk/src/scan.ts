@@ -1,9 +1,3 @@
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
-import type {
-  ServiceScanCompleteCallbackFn,
-  ResolveStateFromServiceFn,
-} from "@shared-types/api";
-
 import { EC2 } from "@aws-sdk/client-ec2";
 import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import {
@@ -13,6 +7,12 @@ import {
 import { IAMStorage } from "./aws/helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { AWS_DEFAULT_REGION } from "./aws/defaults";
+
+import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import type {
+  ServiceScanCompleteCallbackFn,
+  ResolveStateFromServiceFn,
+} from "@infrascan/shared-types";
 
 async function whoami(
   credentials: AwsCredentialIdentityProvider,

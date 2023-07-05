@@ -1,11 +1,3 @@
-import type {
-  GraphEdge,
-  GraphNode,
-  GraphElement,
-  GetGlobalStateForServiceAndFunction,
-} from "@shared-types/graph";
-import type { ResolveStateFromServiceFn } from "@shared-types/api";
-
 import jmespath from "jmespath";
 import {
   GLOBAL_SERVICES,
@@ -22,12 +14,19 @@ import {
   evaluateSelector,
   evaluateSelectorGlobally,
 } from "./aws/helpers/state";
-
 import {
   formatEdge,
   generateEdgesForRole,
   sanitizeId,
 } from "./aws/graph/graph-utilities";
+
+import type {
+  GraphEdge,
+  GraphNode,
+  GraphElement,
+  GetGlobalStateForServiceAndFunction,
+  ResolveStateFromServiceFn,
+} from "@infrascan/shared-types";
 import type { ScanMetadata } from "./scan";
 
 function formatIdAsNode(

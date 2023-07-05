@@ -9,6 +9,9 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "codegen": "turbo run codegen",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
   }
 }

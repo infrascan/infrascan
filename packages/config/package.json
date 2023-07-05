@@ -1,0 +1,12 @@
+{
+  "name": "@infrascan/config",
+  "version": "0.1.0",
+  "description": "Package containing the typed service definitions for generating scanners",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "ISC"
+}

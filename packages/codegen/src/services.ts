@@ -13,7 +13,7 @@ import type {
   ServiceGetter,
   ScannerDefinition,
   EdgeResolver,
-} from "./types";
+} from "@infrascan/shared-types";
 
 type ServiceFunctionImports = {
   input: string;
@@ -209,13 +209,9 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
     namedImports: [
       "ServiceScanCompleteCallbackFn",
       "ResolveStateFromServiceFn",
+      "GenericState",
     ],
-    moduleSpecifier: "@shared-types/api",
-  });
-  sourceFile.addImportDeclaration({
-    isTypeOnly: true,
-    namedImports: ["GenericState"],
-    moduleSpecifier: "@shared-types/scan",
+    moduleSpecifier: "@infrascan/shared-types",
   });
   sourceFile.addImportDeclaration({
     isTypeOnly: true,
@@ -376,8 +372,8 @@ export function generateService(
     `./${basePath}/${config.key}.generated.ts`
   );
   addGeneratedFileNotice(sourceFile);
-  addStandardScannerImports(sourceFile);
   addScannerSpecificImports(sourceFile, config);
+  addStandardScannerImports(sourceFile);
 
   const scanEntrypointFunction = createScanEntrypoint(sourceFile);
   scanEntrypointFunction.setBodyText((writer) => {

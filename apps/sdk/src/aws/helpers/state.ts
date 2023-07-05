@@ -1,13 +1,10 @@
-import type { ResolveStateFromServiceFn } from "@shared-types/api";
-
 import jmespath from "jmespath";
-import { GetGlobalStateForServiceAndFunction } from "@shared-types/graph";
 
-export type ParameterResolver = {
-  Key: string;
-  Selector?: string;
-  Value?: any;
-};
+import type {
+  ResolveStateFromServiceFn,
+  GetGlobalStateForServiceAndFunction,
+  ParameterResolver,
+} from "@infrascan/shared-types";
 
 export async function resolveFunctionCallParameters(
   account: string,
