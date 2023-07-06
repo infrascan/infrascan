@@ -1,12 +1,7 @@
 import jmespath from "jmespath";
-import {
-  GLOBAL_SERVICES,
-  REGIONAL_SERVICES,
-  EdgeResolver,
-} from "@scrapers/services";
+import { GLOBAL_SERVICES, REGIONAL_SERVICES } from "@infrascan/config";
 import { AWS_DEFAULT_REGION } from "./aws/defaults";
 import { generateEdgesForCloudfrontResources } from "./aws/graph/cloudfront";
-// import { generateNodesForEc2Networking } from "./graph/ec2";
 import { generateEdgesForECSResources } from "./aws/graph/ecs";
 import { generateEdgesForRoute53Resources } from "./aws/graph/route53";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
@@ -20,6 +15,7 @@ import {
   sanitizeId,
 } from "./aws/graph/graph-utilities";
 
+import type { EdgeResolver } from "@infrascan/shared-types";
 import type {
   GraphEdge,
   GraphNode,

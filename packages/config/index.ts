@@ -520,4 +520,10 @@ const SERVICE_SCANNERS: ScannerDefinition[] = [
   },
 ];
 
+export const GLOBAL_SERVICES = SERVICE_SCANNERS.filter(
+  (scanner) => scanner.isGlobal
+);
+export const REGIONAL_SERVICES = SERVICE_SCANNERS.filter(
+  (scanner) => !scanner.isGlobal
+);
 export default SERVICE_SCANNERS;

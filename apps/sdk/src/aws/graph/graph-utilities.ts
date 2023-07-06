@@ -2,16 +2,13 @@ import jmespath from "jmespath";
 import minimatch from "minimatch";
 import { IAMStorage } from "../helpers/iam";
 import { evaluateSelectorGlobally } from "../helpers/state";
-import {
-  REGIONAL_SERVICES,
-  GLOBAL_SERVICES,
-  ServiceConfig,
-} from "@scrapers/services";
+import { REGIONAL_SERVICES, GLOBAL_SERVICES } from "@infrascan/config";
 
 import type { StoredRole } from "../helpers/iam";
 import type {
   GraphEdge,
   GetGlobalStateForServiceAndFunction,
+  ScannerDefinition,
 } from "@infrascan/shared-types";
 const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
 
@@ -153,7 +150,7 @@ export async function resolveResourceGlob({
 }
 
 async function findNodesForService(
-  serviceConfig: ServiceConfig,
+  serviceConfig: ScannerDefinition,
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
 ) {
   const { nodes, arnLabel, service } = serviceConfig;
