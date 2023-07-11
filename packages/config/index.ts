@@ -1,71 +1,80 @@
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-const SERVICE_SCANNERS: ScannerDefinition[] = [
-  {
-    service: "s3",
-    key: "S3",
-    clientKey: "S3",
-    isGlobal: true,
-    getters: [
-      {
-        fn: "ListBuckets",
-      },
-      {
-        fn: "GetBucketTagging",
-        parameters: [
-          {
-            Key: "Bucket",
-            Selector: "S3|ListBuckets|[]._result[].Name",
-          },
-        ],
-      },
-      {
-        fn: "GetBucketNotificationConfiguration",
-        parameters: [
-          {
-            Key: "Bucket",
-            Selector: "S3|ListBuckets|[]._result[].Name",
-          },
-        ],
-      },
-      {
-        fn: "GetBucketWebsite",
-        parameters: [
-          {
-            Key: "Bucket",
-            Selector: "S3|ListBuckets|[]._result[].Name",
-          },
-        ],
-      },
-      {
-        fn: "GetBucketAcl",
-        parameters: [
-          {
-            Key: "Bucket",
-            Selector: "S3|ListBuckets|[]._result[].Name",
-          },
-        ],
-      },
-    ],
-    nodes: ["S3|ListBuckets|[]._result[].{id:Name,name:Name}"],
-    edges: [
-      {
-        state: "S3|GetBucketNotificationConfiguration|[]",
-        from: "_parameters.Bucket",
-        to: "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
-      },
-      {
-        state: "S3|GetBucketNotificationConfiguration|[]",
-        from: "_parameters.Bucket",
-        to: "_result.QueueConfigurations | [].{target:Queue,name:Id}",
-      },
-      {
-        state: "S3|GetBucketNotificationConfiguration|[]",
-        from: "_parameters.Bucket",
-        to: "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}",
-      },
-    ],
-  },
+type S3Functions =
+  | "ListBuckets"
+  | "GetBucketTagging"
+  | "GetBucketNotificationConfiguration"
+  | "GetBucketWebsite"
+  | "GetBucketAcl";
+const S3Scanner: ScannerDefinition<"S3", S3Functions> = {
+  service: "s3",
+  key: "S3",
+  clientKey: "S3",
+  isGlobal: true,
+  getters: [
+    {
+      fn: "ListBuckets",
+      formatter: "formatters.S3.listBuckets",
+    },
+    {
+      fn: "GetBucketTagging",
+      parameters: [
+        {
+          Key: "Bucket",
+          Selector: "S3|ListBuckets|[]._result[].Name",
+        },
+      ],
+    },
+    {
+      fn: "GetBucketNotificationConfiguration",
+      parameters: [
+        {
+          Key: "Bucket",
+          Selector: "S3|ListBuckets|[]._result[].Name",
+        },
+      ],
+    },
+    {
+      fn: "GetBucketWebsite",
+      parameters: [
+        {
+          Key: "Bucket",
+          Selector: "S3|ListBuckets|[]._result[].Name",
+        },
+      ],
+    },
+    {
+      fn: "GetBucketAcl",
+      parameters: [
+        {
+          Key: "Bucket",
+          Selector: "S3|ListBuckets|[]._result[].Name",
+        },
+      ],
+    },
+  ],
+  nodes: ["S3|ListBuckets|[]._result[].{id:Name,name:Name}"],
+  edges: [
+    {
+      state: "S3|GetBucketNotificationConfiguration|[]",
+      from: "_parameters.Bucket",
+      to: "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
+    },
+    {
+      state: "S3|GetBucketNotificationConfiguration|[]",
+      from: "_parameters.Bucket",
+      to: "_result.QueueConfigurations | [].{target:Queue,name:Id}",
+    },
+    {
+      state: "S3|GetBucketNotificationConfiguration|[]",
+      from: "_parameters.Bucket",
+      to: "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}",
+    },
+  ],
+};
+
+type CloudFrontFunctions = "ListDistributions";
+const CloudfrontScanner: ScannerDefinition<"CloudFront", CloudFrontFunctions> =
   {
     service: "cloudfront",
     key: "CloudFront",
@@ -74,450 +83,556 @@ const SERVICE_SCANNERS: ScannerDefinition[] = [
     getters: [
       {
         fn: "ListDistributions",
+        formatter: "formatters.Cloudfront.listDistributions",
       },
     ],
     nodes: [
       "CloudFront|ListDistributions|[]._result[].{id:ARN,name:_infrascanLabel}",
     ],
-  },
-  {
-    service: "route-53",
-    clientKey: "Route53",
-    key: "Route53",
-    isGlobal: true,
-    getters: [
-      {
-        fn: "ListHostedZonesByName",
-      },
-      {
-        fn: "ListResourceRecordSets",
-        parameters: [
-          {
-            Key: "HostedZoneId",
-            Selector: "Route53|ListHostedZonesByName|[]._result[].Id",
-          },
-        ],
-      },
-    ],
-    nodes: [
-      "Route53|ListResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}",
-    ],
-  },
-  {
-    service: "api-gateway",
-    key: "ApiGateway",
-    clientKey: "APIGateway",
-    getters: [
-      {
-        fn: "GetRestApis",
-        formatter: "formatters.ApiGateway.getRestApis",
-      },
-      {
-        fn: "GetDomainNames",
-        formatter: "formatters.ApiGateway.getDomainNames",
-      },
-    ],
-    nodes: ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"],
-  },
-  {
-    service: "auto-scaling",
-    clientKey: "AutoScaling",
-    key: "AutoScaling",
-    getters: [
-      {
-        fn: "DescribeAutoScalingGroups",
-        formatter: "formatters.AutoScaling.describeAutoScalingGroups",
-      },
-    ],
-  },
-  {
-    service: "cloudwatch-logs",
-    clientKey: "CloudWatchLogs",
-    key: "CloudWatchLogs",
-    arnLabel: "logs",
-    getters: [
-      {
-        fn: "DescribeLogGroups",
-        paginationToken: {
-          request: "nextToken",
-          response: "nextToken",
+  };
+
+type Route53Functions = "ListHostedZonesByName" | "ListResourceRecordSets";
+const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
+  service: "route-53",
+  clientKey: "Route53",
+  key: "Route53",
+  isGlobal: true,
+  getters: [
+    {
+      fn: "ListHostedZonesByName",
+      formatter: "formatters.Route53.listHostedZonesByName",
+    },
+    {
+      fn: "ListResourceRecordSets",
+      parameters: [
+        {
+          Key: "HostedZoneId",
+          Selector: "Route53|ListHostedZonesByName|[]._result[].Id",
         },
+      ],
+      formatter: "formatters.Route53.listResourceRecordSets",
+    },
+  ],
+  nodes: [
+    "Route53|ListResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}",
+  ],
+};
+
+type ApiGatewayFunctions = "GetApis" | "GetDomainNames";
+const ApiGatewayScanner: ScannerDefinition<
+  "ApiGatewayV2",
+  ApiGatewayFunctions
+> = {
+  service: "apigatewayv2",
+  key: "ApiGateway",
+  clientKey: "ApiGatewayV2",
+  getters: [
+    {
+      fn: "GetApis",
+      formatter: "formatters.ApiGateway.getApis",
+    },
+    {
+      fn: "GetDomainNames",
+      formatter: "formatters.ApiGateway.getDomainNames",
+    },
+  ],
+  nodes: ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"],
+};
+
+type AutoScalingFunctions = "DescribeAutoScalingGroups";
+const AutoScalingScanner: ScannerDefinition<
+  "AutoScaling",
+  AutoScalingFunctions
+> = {
+  service: "auto-scaling",
+  clientKey: "AutoScaling",
+  key: "AutoScaling",
+  getters: [
+    {
+      fn: "DescribeAutoScalingGroups",
+      formatter: "formatters.AutoScaling.describeAutoScalingGroups",
+    },
+  ],
+};
+
+type CloudWatchLogsFunctions =
+  | "DescribeLogGroups"
+  | "DescribeSubscriptionFilters";
+const CloudWatchLogsScanner: ScannerDefinition<
+  "CloudWatchLogs",
+  CloudWatchLogsFunctions
+> = {
+  service: "cloudwatch-logs",
+  clientKey: "CloudWatchLogs",
+  key: "CloudWatchLogs",
+  arnLabel: "logs",
+  getters: [
+    {
+      fn: "DescribeLogGroups",
+      paginationToken: {
+        request: "nextToken",
+        response: "nextToken",
       },
-      {
-        fn: "DescribeSubscriptionFilters",
-        parameters: [
-          {
-            Key: "logGroupName",
-            Selector:
-              "CloudWatchLogs|DescribeLogGroups|[]._result.logGroups[].logGroupName",
-          },
-        ],
-        paginationToken: {
-          request: "nextToken",
-          response: "nextToken",
+    },
+    {
+      fn: "DescribeSubscriptionFilters",
+      parameters: [
+        {
+          Key: "logGroupName",
+          Selector:
+            "CloudWatchLogs|DescribeLogGroups|[]._result.logGroups[].logGroupName",
         },
+      ],
+      paginationToken: {
+        request: "nextToken",
+        response: "nextToken",
       },
-    ],
-    nodes: [
-      "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
-    ],
-    edges: [
-      {
-        state:
-          "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
-        from: "logGroupName",
-        to: "{target:destinationArn}",
-      },
-    ],
-  },
-  {
-    service: "dynamodb",
-    clientKey: "DynamoDB",
-    key: "DynamoDB",
-    getters: [
-      {
-        fn: "ListTables",
-        formatter: "formatters.DynamoDB.listTables",
-      },
-      {
-        fn: "DescribeTable",
-        parameters: [
-          {
-            Key: "TableName",
-            Selector: "DynamoDB|ListTables|[]._result[]",
-          },
-        ],
-        formatter: "formatters.DynamoDB.describeTable",
-      },
-    ],
-    nodes: ["DynamoDB|DescribeTable|[].{id:_result.TableArn}"],
-  },
-  {
-    service: "ec2",
-    clientKey: "EC2",
-    key: "EC2-Networking",
-    isGlobal: false,
-    getters: [
-      {
-        fn: "DescribeVpcs",
-        formatter: "formatters.EC2.describeVPCs",
-      },
-      {
-        fn: "DescribeAvailabilityZones",
-        formatter: "formatters.EC2.describeAvailabilityZones",
-      },
-      {
-        fn: "DescribeSubnets",
-        formatter: "formatters.EC2.describeSubnets",
-      },
-    ],
-  },
-  {
-    service: "ecs",
-    key: "ECS-Cluster",
-    clientKey: "ECS",
-    getters: [
-      {
-        fn: "ListClusters",
-      },
-      {
-        fn: "DescribeClusters",
-        parameters: [
-          {
-            Key: "clusters",
-            Selector: "ECS|ListClusters|[]._result.clusterArns",
-          },
-          {
-            Key: "include",
-            Value: [
-              "ATTACHMENTS",
-              "SETTINGS",
-              "CONFIGURATIONS",
-              "STATISTICS",
-              "TAGS",
-            ],
-          },
-        ],
-      },
-    ],
-    nodes: [
-      "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}",
-    ],
-  },
-  {
-    service: "ecs",
-    key: "ECS-Services",
-    clientKey: "ECS",
-    getters: [
-      {
-        fn: "ListServices",
-        parameters: [
-          {
-            Key: "cluster",
-            Selector: "ECS|ListClusters|[]._result.clusterArns[]",
-          },
-          {
-            Key: "maxResults",
-            Value: 100,
-          },
-        ],
-      },
-      {
-        fn: "DescribeServices",
-        parameters: [
-          {
-            Key: "cluster",
-            Selector: "ECS|ListServices|[]._parameters.cluster",
-          },
-          {
-            Key: "services",
-            Selector: "ECS|ListServices|[]._result.serviceArns",
-          },
-          {
-            Key: "include",
-            Value: ["TAGS"],
-          },
-        ],
-      },
-    ],
-    nodes: [
-      "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,info:@}",
-    ],
-  },
-  {
-    service: "ecs",
-    key: "ECS-Tasks",
-    clientKey: "ECS",
-    getters: [
-      {
-        fn: "ListTasks",
-        parameters: [
-          {
-            Key: "cluster",
-            Selector: "ECS|ListClusters|[]._result.clusterArns[]",
-          },
-        ],
-      },
-      {
-        fn: "DescribeTasks",
-        parameters: [
-          {
-            Key: "cluster",
-            Selector: "ECS|ListTasks|[]._parameters.cluster",
-          },
-          {
-            Key: "tasks",
-            Selector: "ECS|ListTasks|[]._result.taskArns",
-          },
-        ],
-      },
-      {
-        fn: "DescribeTaskDefinition",
-        parameters: [
-          {
-            Key: "taskDefinition",
-            Selector: "ECS|DescribeTasks|[]._result.tasks[].taskDefinitionArn",
-          },
-          {
-            Key: "include",
-            Value: ["TAGS"],
-          },
-        ],
-        iamRoleSelectors: [
-          "taskDefinition.taskRoleArn",
-          "taskDefinition.executionRoleArn",
-        ],
-      },
-    ],
-    nodes: [
-      "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
-    ],
-    iamRoles: [
-      "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
-      "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
-    ],
-  },
-  {
-    service: "elastic-load-balancing-v2",
-    clientKey: "ElasticLoadBalancingV2",
-    key: "ELB",
-    getters: [
-      {
-        fn: "DescribeLoadBalancers",
-        formatter: "formatters.ElasticLoadBalancing.describeLoadBalancers",
-      },
-      {
-        fn: "DescribeTargetGroups",
-        parameters: [
-          {
-            Key: "LoadBalancerArn",
-            Selector:
-              "ELBv2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
-          },
-        ],
-        formatter: "formatters.ElasticLoadBalancing.describeTargetGroups",
-      },
-      {
-        fn: "DescribeListeners",
-        parameters: [
-          {
-            Key: "LoadBalancerArn",
-            Selector:
-              "ELBv2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
-          },
-        ],
-        formatter: "formatters.ElasticLoadBalancing.describeListeners",
-      },
-      {
-        fn: "DescribeRules",
-        parameters: [
-          {
-            Key: "ListenerArn",
-            Selector: "ELBv2|DescribeListeners|[]._result[].ListenerArn",
-          },
-        ],
-        formatter: "formatters.ElasticLoadBalancing.describeRules",
-      },
-    ],
-    nodes: ["ELBv2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn}"],
-  },
-  {
-    service: "lambda",
-    clientKey: "Lambda",
-    key: "Lambda",
-    isGlobal: false,
-    getters: [
-      {
-        fn: "ListFunctions",
-        paginationToken: {
-          request: "Marker",
-          response: "NextMarker",
+    },
+  ],
+  nodes: [
+    "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
+  ],
+  edges: [
+    {
+      state:
+        "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
+      from: "logGroupName",
+      to: "{target:destinationArn}",
+    },
+  ],
+};
+
+type DynamoDbFunctions = "ListTables" | "DescribeTable";
+const DynamoDbScanner: ScannerDefinition<"DynamoDB", DynamoDbFunctions> = {
+  service: "dynamodb",
+  clientKey: "DynamoDB",
+  key: "DynamoDB",
+  getters: [
+    {
+      fn: "ListTables",
+      formatter: "formatters.DynamoDB.listTables",
+    },
+    {
+      fn: "DescribeTable",
+      parameters: [
+        {
+          Key: "TableName",
+          Selector: "DynamoDB|ListTables|[]._result[]",
         },
+      ],
+      formatter: "formatters.DynamoDB.describeTable",
+    },
+  ],
+  nodes: ["DynamoDB|DescribeTable|[].{id:_result.TableArn}"],
+};
+
+type EC2Functions =
+  | "DescribeVpcs"
+  | "DescribeAvailabilityZones"
+  | "DescribeSubnets";
+const EC2Scanner: ScannerDefinition<"EC2", EC2Functions> = {
+  service: "ec2",
+  clientKey: "EC2",
+  key: "EC2-Networking",
+  isGlobal: false,
+  getters: [
+    {
+      fn: "DescribeVpcs",
+      formatter: "formatters.EC2.describeVPCs",
+    },
+    {
+      fn: "DescribeAvailabilityZones",
+      formatter: "formatters.EC2.describeAvailabilityZones",
+    },
+    {
+      fn: "DescribeSubnets",
+      formatter: "formatters.EC2.describeSubnets",
+    },
+  ],
+};
+
+type ECSClusterFunctions = "ListClusters" | "DescribeClusters";
+const ECSClusterScanner: ScannerDefinition<"ECS", ECSClusterFunctions> = {
+  service: "ecs",
+  key: "ECS-Cluster",
+  clientKey: "ECS",
+  getters: [
+    {
+      fn: "ListClusters",
+    },
+    {
+      fn: "DescribeClusters",
+      parameters: [
+        {
+          Key: "clusters",
+          Selector: "ECS|ListClusters|[]._result.clusterArns",
+        },
+        {
+          Key: "include",
+          Value: [
+            "ATTACHMENTS",
+            "SETTINGS",
+            "CONFIGURATIONS",
+            "STATISTICS",
+            "TAGS",
+          ],
+        },
+      ],
+    },
+  ],
+  nodes: [
+    "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}",
+  ],
+};
+
+type ECSServiceFunctions = "ListServices" | "DescribeServices";
+const ECSServiceScanner: ScannerDefinition<
+  "ECS",
+  ECSServiceFunctions | ECSClusterFunctions
+> = {
+  service: "ecs",
+  key: "ECS-Services",
+  clientKey: "ECS",
+  getters: [
+    {
+      fn: "ListServices",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListClusters|[]._result.clusterArns[]",
+        },
+        {
+          Key: "maxResults",
+          Value: 100,
+        },
+      ],
+    },
+    {
+      fn: "DescribeServices",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListServices|[]._parameters.cluster",
+        },
+        {
+          Key: "services",
+          Selector: "ECS|ListServices|[]._result.serviceArns",
+        },
+        {
+          Key: "include",
+          Value: ["TAGS"],
+        },
+      ],
+    },
+  ],
+  nodes: [
+    "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,info:@}",
+  ],
+};
+
+type ECSTaskFunctions =
+  | "ListTasks"
+  | "DescribeTasks"
+  | "DescribeTaskDefinition";
+const ECSTaskScanner: ScannerDefinition<
+  "ECS",
+  ECSTaskFunctions | ECSServiceFunctions | ECSClusterFunctions
+> = {
+  service: "ecs",
+  key: "ECS-Tasks",
+  clientKey: "ECS",
+  getters: [
+    {
+      fn: "ListTasks",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListClusters|[]._result.clusterArns[]",
+        },
+      ],
+    },
+    {
+      fn: "DescribeTasks",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListTasks|[]._parameters.cluster",
+        },
+        {
+          Key: "tasks",
+          Selector: "ECS|ListTasks|[]._result.taskArns",
+        },
+      ],
+    },
+    {
+      fn: "DescribeTaskDefinition",
+      parameters: [
+        {
+          Key: "taskDefinition",
+          Selector: "ECS|DescribeTasks|[]._result.tasks[].taskDefinitionArn",
+        },
+        {
+          Key: "include",
+          Value: ["TAGS"],
+        },
+      ],
+      iamRoleSelectors: [
+        "taskDefinition.taskRoleArn",
+        "taskDefinition.executionRoleArn",
+      ],
+    },
+  ],
+  nodes: [
+    "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
+  ],
+  iamRoles: [
+    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
+    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
+  ],
+};
+
+type ElasticLoadBalancingFunctions =
+  | "DescribeLoadBalancers"
+  | "DescribeTargetGroups"
+  | "DescribeListeners"
+  | "DescribeRules";
+
+const ElasticLoadBalancingScanner: ScannerDefinition<
+  "ElasticLoadBalancingV2",
+  ElasticLoadBalancingFunctions
+> = {
+  service: "elastic-load-balancing-v2",
+  clientKey: "ElasticLoadBalancingV2",
+  key: "ELB",
+  getters: [
+    {
+      fn: "DescribeLoadBalancers",
+      formatter: "formatters.ElasticLoadBalancing.describeLoadBalancers",
+    },
+    {
+      fn: "DescribeTargetGroups",
+      parameters: [
+        {
+          Key: "LoadBalancerArn",
+          Selector:
+            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+        },
+      ],
+      formatter: "formatters.ElasticLoadBalancing.describeTargetGroups",
+    },
+    {
+      fn: "DescribeListeners",
+      parameters: [
+        {
+          Key: "LoadBalancerArn",
+          Selector:
+            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+        },
+      ],
+      formatter: "formatters.ElasticLoadBalancing.describeListeners",
+    },
+    {
+      fn: "DescribeRules",
+      parameters: [
+        {
+          Key: "ListenerArn",
+          Selector:
+            "ElasticLoadBalancingV2|DescribeListeners|[]._result[].ListenerArn",
+        },
+      ],
+      formatter: "formatters.ElasticLoadBalancing.describeRules",
+    },
+  ],
+  nodes: [
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn}",
+  ],
+};
+
+type LambdaFunctions = "ListFunctions" | "GetFunction";
+const LambdaScanner: ScannerDefinition<"Lambda", LambdaFunctions> = {
+  service: "lambda",
+  clientKey: "Lambda",
+  key: "Lambda",
+  isGlobal: false,
+  getters: [
+    {
+      fn: "ListFunctions",
+      paginationToken: {
+        request: "Marker",
+        response: "NextMarker",
       },
-      {
-        fn: "GetFunction",
-        parameters: [
-          {
-            Key: "FunctionName",
-            Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
-          },
-        ],
-        iamRoleSelectors: ["Configuration.Role"],
-      },
-    ],
-    nodes: [
-      "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
-    ],
-    iamRoles: [
-      "Lambda|GetFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}",
-    ],
-  },
-  {
-    service: "rds",
-    clientKey: "RDS",
-    key: "RDS",
-    getters: [
-      {
-        fn: "DescribeDBInstances",
-        formatter: "formatters.RDS.describeDBInstances",
-      },
-    ],
-    nodes: [
-      "RDS|DescribeDBInstances|[]._result | [].{id:DBInstanceIdentifier,name:DBName}",
-    ],
-  },
-  {
-    service: "sns",
-    key: "SNS",
-    clientKey: "SNS",
-    getters: [
-      {
-        fn: "ListTopics",
-        formatter: "formatters.SNS.listTopics",
-      },
-      {
-        fn: "GetTopicAttributes",
-        parameters: [
-          {
-            Key: "TopicArn",
-            Selector: "SNS|ListTopics|[]._result[].TopicArn",
-          },
-        ],
-        formatter: "formatters.SNS.getTopicAttributes",
-      },
-      {
-        fn: "ListSubscriptionsByTopic",
-        parameters: [
-          {
-            Key: "TopicArn",
-            Selector: "SNS|ListTopics|[]._result[].TopicArn",
-          },
-        ],
-        formatter: "formatters.SNS.listSubscriptionByTopic",
-      },
-      {
-        fn: "ListTagsForResource",
-        parameters: [
-          {
-            Key: "ResourceArn",
-            Selector: "SNS|ListTopics|[]._result[].TopicArn",
-          },
-        ],
-      },
-    ],
-    nodes: ["SNS|ListTopics|[]._result[].{id:TopicArn}"],
-    edges: [
-      {
-        state: "SNS|ListSubscriptionsByTopic|[]",
-        from: "_parameters.TopicArn",
-        to: "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
-      },
-    ],
-  },
-  {
-    service: "sqs",
-    key: "SQS",
-    clientKey: "SQS",
-    isGlobal: false,
-    getters: [
-      {
-        fn: "ListQueues",
-        formatter: "formatters.SQS.listQueues",
-      },
-      {
-        fn: "ListQueueTags",
-        parameters: [
-          {
-            Key: "QueueUrl",
-            Selector: "SQS|ListQueues|[]._result[].QueueUrl",
-          },
-        ],
-        formatter: "formatters.SQS.listQueueTags",
-      },
-      {
-        fn: "GetQueueAttributes",
-        parameters: [
-          {
-            Key: "QueueUrl",
-            Selector: "SQS|ListQueues|[]._result[].QueueUrl",
-          },
-          {
-            Key: "AttributeNames",
-            Value: ["All"],
-          },
-        ],
-        formatter: "formatters.SQS.getQueueAttributes",
-      },
-    ],
-    nodes: ["SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"],
-    edges: [
-      {
-        state: "SQS|GetQueueAttributes|[]",
-        from: "_result.QueueArn",
-        to: "_result.RedrivePolicy.{target:deadLetterTargetArn}",
-      },
-    ],
-  },
+    },
+    {
+      fn: "GetFunction",
+      parameters: [
+        {
+          Key: "FunctionName",
+          Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
+        },
+      ],
+      iamRoleSelectors: ["Configuration.Role"],
+    },
+  ],
+  nodes: [
+    "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
+  ],
+  iamRoles: [
+    "Lambda|GetFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}",
+  ],
+};
+
+type RDSFunctions = "DescribeDBInstances";
+const RDSScanner: ScannerDefinition<"RDS", RDSFunctions> = {
+  service: "rds",
+  clientKey: "RDS",
+  key: "RDS",
+  getters: [
+    {
+      fn: "DescribeDBInstances",
+      formatter: "formatters.RDS.describeDBInstances",
+    },
+  ],
+  nodes: [
+    "RDS|DescribeDBInstances|[]._result | [].{id:DBInstanceIdentifier,name:DBName}",
+  ],
+};
+
+type SNSFunctions =
+  | "ListTopics"
+  | "GetTopicAttributes"
+  | "ListSubscriptionsByTopic"
+  | "ListTagsForResource";
+const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
+  service: "sns",
+  key: "SNS",
+  clientKey: "SNS",
+  getters: [
+    {
+      fn: "ListTopics",
+      formatter: "formatters.SNS.listTopics",
+    },
+    {
+      fn: "GetTopicAttributes",
+      parameters: [
+        {
+          Key: "TopicArn",
+          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+        },
+      ],
+      formatter: "formatters.SNS.getTopicAttributes",
+    },
+    {
+      fn: "ListSubscriptionsByTopic",
+      parameters: [
+        {
+          Key: "TopicArn",
+          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+        },
+      ],
+      formatter: "formatters.SNS.listSubscriptionByTopic",
+    },
+    {
+      fn: "ListTagsForResource",
+      parameters: [
+        {
+          Key: "ResourceArn",
+          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+        },
+      ],
+    },
+  ],
+  nodes: ["SNS|ListTopics|[]._result[].{id:TopicArn}"],
+  edges: [
+    {
+      state: "SNS|ListSubscriptionsByTopic|[]",
+      from: "_parameters.TopicArn",
+      to: "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
+    },
+  ],
+};
+
+type SQSFunctions = "ListQueues" | "ListQueueTags" | "GetQueueAttributes";
+const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
+  service: "sqs",
+  key: "SQS",
+  clientKey: "SQS",
+  isGlobal: false,
+  getters: [
+    {
+      fn: "ListQueues",
+      formatter: "formatters.SQS.listQueues",
+    },
+    {
+      fn: "ListQueueTags",
+      parameters: [
+        {
+          Key: "QueueUrl",
+          Selector: "SQS|ListQueues|[]._result[].QueueUrl",
+        },
+      ],
+      formatter: "formatters.SQS.listQueueTags",
+    },
+    {
+      fn: "GetQueueAttributes",
+      parameters: [
+        {
+          Key: "QueueUrl",
+          Selector: "SQS|ListQueues|[]._result[].QueueUrl",
+        },
+        {
+          Key: "AttributeNames",
+          Value: ["All"],
+        },
+      ],
+      formatter: "formatters.SQS.getQueueAttributes",
+    },
+  ],
+  nodes: ["SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"],
+  edges: [
+    {
+      state: "SQS|GetQueueAttributes|[]",
+      from: "_result.QueueArn",
+      to: "_result.RedrivePolicy.{target:deadLetterTargetArn}",
+    },
+  ],
+};
+
+export type GenericScanner =
+  | ScannerDefinition<"S3", S3Functions>
+  | ScannerDefinition<"CloudFront", "ListDistributions">
+  | ScannerDefinition<"Route53", Route53Functions>
+  | ScannerDefinition<"ApiGatewayV2", ApiGatewayFunctions>
+  | ScannerDefinition<"AutoScaling", "DescribeAutoScalingGroups">
+  | ScannerDefinition<"CloudWatchLogs", CloudWatchLogsFunctions>
+  | ScannerDefinition<"DynamoDB", DynamoDbFunctions>
+  | ScannerDefinition<"EC2", EC2Functions>
+  | ScannerDefinition<
+      "ECS",
+      ECSClusterFunctions | ECSServiceFunctions | ECSTaskFunctions
+    >
+  | ScannerDefinition<"ElasticLoadBalancingV2", ElasticLoadBalancingFunctions>
+  | ScannerDefinition<"Lambda", LambdaFunctions>
+  | ScannerDefinition<"RDS", "DescribeDBInstances">
+  | ScannerDefinition<"SNS", SNSFunctions>
+  | ScannerDefinition<"SQS", SQSFunctions>;
+
+const SERVICE_SCANNERS: GenericScanner[] = [
+  S3Scanner,
+  CloudfrontScanner,
+  Route53Scanner,
+  ApiGatewayScanner,
+  AutoScalingScanner,
+  CloudWatchLogsScanner,
+  DynamoDbScanner,
+  EC2Scanner,
+  ECSClusterScanner,
+  ECSServiceScanner,
+  ECSTaskScanner,
+  ElasticLoadBalancingScanner,
+  LambdaScanner,
+  RDSScanner,
+  SNSScanner,
+  SQSScanner,
 ];
 
 export const GLOBAL_SERVICES = SERVICE_SCANNERS.filter(

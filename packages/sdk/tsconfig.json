@@ -1,0 +1,13 @@
+{
+  "extends": "tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "Node16",
+    "allowJs": true,
+    "baseUrl": "src",
+    "rootDir": "src",
+    "declarationMap": false,
+    "outDir": "./dist"
+  }
+}

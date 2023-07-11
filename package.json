@@ -1,7 +1,7 @@
 {
   "packageManager": "npm",
   "workspaces": [
-    "apps/*",
+    "internal/*",
     "packages/*"
   ],
   "devDependencies": {
