@@ -11,10 +11,10 @@ import {
 import { State } from "@infrascan/shared-types";
 import { formatEdge } from "./graph-utilities";
 import minimatch from "minimatch";
-import { CloudfrontDistributionSummary } from "../helpers/formatters";
 import { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
 import { LoadBalancer } from "@aws-sdk/client-elastic-load-balancing-v2";
 import { Subscription } from "@aws-sdk/client-sns";
+import type { Formatters } from "@infrascan/config";
 
 export async function generateEdgesForRoute53Resources(
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
@@ -59,7 +59,7 @@ export async function generateEdgesForRoute53Resources(
 
   let route53Edges: GraphEdge[] = [];
   // Generate edges for Route53 domains in front of Cloudfront
-  const cloudfrontState: State<CloudfrontDistributionSummary[]>[] =
+  const cloudfrontState: State<Formatters.CloudfrontDistributionSummary[]>[] =
     await getGlobalStateForServiceAndFunction(
       "CloudFront",
       "ListDistributions"

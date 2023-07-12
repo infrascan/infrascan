@@ -11,7 +11,6 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "ISC",
   "dependencies": {
-    "cac": "^6.7.14",
     "ts-morph": "^19.0.0"
   },
   "devDependencies": {

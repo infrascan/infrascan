@@ -1,7 +1,7 @@
 import { ApiGatewayV2Client, GetApisCommandInput, GetApisCommandOutput, GetApisCommand, GetDomainNamesCommandInput, GetDomainNamesCommandOutput, GetDomainNamesCommand } from "@aws-sdk/client-apigatewayv2";
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -15,7 +15,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const GetApisCmd = new GetApisCommand({} as GetApisCommandInput);
       const result: GetApisCommandOutput = await ApiGatewayV2.send(GetApisCmd);
-      const formattedResult = formatters.ApiGateway.getApis(result);
+      const formattedResult = Formatters.ApiGatewayV2.getApis(result);
       GetApisState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (GetApisPagingToken != null);
   }
@@ -33,7 +33,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const GetDomainNamesCmd = new GetDomainNamesCommand({} as GetDomainNamesCommandInput);
       const result: GetDomainNamesCommandOutput = await ApiGatewayV2.send(GetDomainNamesCmd);
-      const formattedResult = formatters.ApiGateway.getDomainNames(result);
+      const formattedResult = Formatters.ApiGatewayV2.getDomainNames(result);
       GetDomainNamesState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (GetDomainNamesPagingToken != null);
   }

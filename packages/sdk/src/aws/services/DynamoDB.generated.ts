@@ -2,7 +2,7 @@ import { DynamoDBClient, ListTablesCommandInput, ListTablesCommandOutput, ListTa
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListTablesCmd = new ListTablesCommand({} as ListTablesCommandInput);
       const result: ListTablesCommandOutput = await DynamoDB.send(ListTablesCmd);
-      const formattedResult = formatters.DynamoDB.listTables(result);
+      const formattedResult = Formatters.DynamoDB.listTables(result);
       ListTablesState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListTablesPagingToken != null);
   }
@@ -37,7 +37,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const DescribeTableCmd = new DescribeTableCommand(requestParameters);
         const result: DescribeTableCommandOutput = await DynamoDB.send(DescribeTableCmd);
-        const formattedResult = formatters.DynamoDB.describeTable(result);
+        const formattedResult = Formatters.DynamoDB.describeTable(result);
         DescribeTableState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (DescribeTablePagingToken != null);
     }

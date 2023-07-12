@@ -1,7 +1,7 @@
 import { AutoScalingClient, DescribeAutoScalingGroupsCommandInput, DescribeAutoScalingGroupsCommandOutput, DescribeAutoScalingGroupsCommand } from "@aws-sdk/client-auto-scaling";
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -15,7 +15,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const DescribeAutoScalingGroupsCmd = new DescribeAutoScalingGroupsCommand({} as DescribeAutoScalingGroupsCommandInput);
       const result: DescribeAutoScalingGroupsCommandOutput = await AutoScaling.send(DescribeAutoScalingGroupsCmd);
-      const formattedResult = formatters.AutoScaling.describeAutoScalingGroups(result);
+      const formattedResult = Formatters.AutoScaling.describeAutoScalingGroups(result);
       DescribeAutoScalingGroupsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (DescribeAutoScalingGroupsPagingToken != null);
   }

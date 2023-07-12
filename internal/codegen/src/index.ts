@@ -2,10 +2,10 @@ import { Project } from "ts-morph";
 import { generateService } from "./services";
 import { generateEntrypoint } from "./entrypoint";
 
-import type { ScannerBase } from "@infrascan/shared-types";
+import type { BaseScannerDefinition } from "@infrascan/shared-types";
 
 export function generateScannerImplementations(
-  config: ScannerBase[],
+  config: BaseScannerDefinition[],
   basePath: string,
   overwrite: boolean,
   verbose: boolean

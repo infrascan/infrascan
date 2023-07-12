@@ -8,11 +8,11 @@ import type {
   GraphEdge,
 } from "@infrascan/shared-types";
 import type { State } from "@infrascan/shared-types";
-import type { CloudfrontDistributionSummary } from "../helpers/formatters";
+import type { Formatters } from "@infrascan/config";
 import type { Bucket } from "@aws-sdk/client-s3";
 import { formatEdge } from "./graph-utilities";
 
-type GlobalCloudFrontState = State<CloudfrontDistributionSummary[]>;
+type GlobalCloudFrontState = State<Formatters.CloudfrontDistributionSummary[]>;
 type GlobalS3State = State<Bucket[]>;
 export async function generateEdgesForCloudfrontResources(
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
@@ -34,7 +34,7 @@ export async function generateEdgesForCloudfrontResources(
   // Split the alias records by the AWS service they sit in front of
   const initialValue = { cloudfrontS3Connections: [] } as Record<
     string,
-    CloudfrontDistributionSummary[]
+    Formatters.CloudfrontDistributionSummary[]
   >;
   const { cloudfrontS3Connections } = originDistributions.reduce(
     (distributionsByType, currentDistribution) => {

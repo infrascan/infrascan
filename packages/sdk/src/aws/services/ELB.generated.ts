@@ -2,7 +2,7 @@ import { ElasticLoadBalancingV2Client, DescribeLoadBalancersCommandInput, Descri
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const DescribeLoadBalancersCmd = new DescribeLoadBalancersCommand({} as DescribeLoadBalancersCommandInput);
       const result: DescribeLoadBalancersCommandOutput = await ElasticLoadBalancingV2.send(DescribeLoadBalancersCmd);
-      const formattedResult = formatters.ElasticLoadBalancing.describeLoadBalancers(result);
+      const formattedResult = Formatters.ElasticLoadBalancingV2.describeLoadBalancers(result);
       DescribeLoadBalancersState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (DescribeLoadBalancersPagingToken != null);
   }
@@ -37,7 +37,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const DescribeTargetGroupsCmd = new DescribeTargetGroupsCommand(requestParameters);
         const result: DescribeTargetGroupsCommandOutput = await ElasticLoadBalancingV2.send(DescribeTargetGroupsCmd);
-        const formattedResult = formatters.ElasticLoadBalancing.describeTargetGroups(result);
+        const formattedResult = Formatters.ElasticLoadBalancingV2.describeTargetGroups(result);
         DescribeTargetGroupsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (DescribeTargetGroupsPagingToken != null);
     }
@@ -59,7 +59,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const DescribeListenersCmd = new DescribeListenersCommand(requestParameters);
         const result: DescribeListenersCommandOutput = await ElasticLoadBalancingV2.send(DescribeListenersCmd);
-        const formattedResult = formatters.ElasticLoadBalancing.describeListeners(result);
+        const formattedResult = Formatters.ElasticLoadBalancingV2.describeListeners(result);
         DescribeListenersState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (DescribeListenersPagingToken != null);
     }
@@ -81,7 +81,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const DescribeRulesCmd = new DescribeRulesCommand(requestParameters);
         const result: DescribeRulesCommandOutput = await ElasticLoadBalancingV2.send(DescribeRulesCmd);
-        const formattedResult = formatters.ElasticLoadBalancing.describeRules(result);
+        const formattedResult = Formatters.ElasticLoadBalancingV2.describeRules(result);
         DescribeRulesState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (DescribeRulesPagingToken != null);
     }

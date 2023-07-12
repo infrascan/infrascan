@@ -2,7 +2,7 @@ import { SNSClient, ListTopicsCommandInput, ListTopicsCommandOutput, ListTopicsC
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListTopicsCmd = new ListTopicsCommand({} as ListTopicsCommandInput);
       const result: ListTopicsCommandOutput = await SNS.send(ListTopicsCmd);
-      const formattedResult = formatters.SNS.listTopics(result);
+      const formattedResult = Formatters.SNS.listTopics(result);
       ListTopicsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListTopicsPagingToken != null);
   }
@@ -37,7 +37,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const GetTopicAttributesCmd = new GetTopicAttributesCommand(requestParameters);
         const result: GetTopicAttributesCommandOutput = await SNS.send(GetTopicAttributesCmd);
-        const formattedResult = formatters.SNS.getTopicAttributes(result);
+        const formattedResult = Formatters.SNS.getTopicAttributes(result);
         GetTopicAttributesState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (GetTopicAttributesPagingToken != null);
     }
@@ -59,7 +59,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const ListSubscriptionsByTopicCmd = new ListSubscriptionsByTopicCommand(requestParameters);
         const result: ListSubscriptionsByTopicCommandOutput = await SNS.send(ListSubscriptionsByTopicCmd);
-        const formattedResult = formatters.SNS.listSubscriptionByTopic(result);
+        const formattedResult = Formatters.SNS.listSubscriptionByTopic(result);
         ListSubscriptionsByTopicState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (ListSubscriptionsByTopicPagingToken != null);
     }

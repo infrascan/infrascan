@@ -2,7 +2,7 @@ import { SQSClient, ListQueuesCommandInput, ListQueuesCommandOutput, ListQueuesC
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListQueuesCmd = new ListQueuesCommand({} as ListQueuesCommandInput);
       const result: ListQueuesCommandOutput = await SQS.send(ListQueuesCmd);
-      const formattedResult = formatters.SQS.listQueues(result);
+      const formattedResult = Formatters.SQS.listQueues(result);
       ListQueuesState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListQueuesPagingToken != null);
   }
@@ -37,7 +37,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const ListQueueTagsCmd = new ListQueueTagsCommand(requestParameters);
         const result: ListQueueTagsCommandOutput = await SQS.send(ListQueueTagsCmd);
-        const formattedResult = formatters.SQS.listQueueTags(result);
+        const formattedResult = Formatters.SQS.listQueueTags(result);
         ListQueueTagsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (ListQueueTagsPagingToken != null);
     }
@@ -59,7 +59,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const GetQueueAttributesCmd = new GetQueueAttributesCommand(requestParameters);
         const result: GetQueueAttributesCommandOutput = await SQS.send(GetQueueAttributesCmd);
-        const formattedResult = formatters.SQS.getQueueAttributes(result);
+        const formattedResult = Formatters.SQS.getQueueAttributes(result);
         GetQueueAttributesState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (GetQueueAttributesPagingToken != null);
     }

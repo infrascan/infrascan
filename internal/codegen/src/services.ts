@@ -10,11 +10,7 @@ import { SemicolonPreference } from "typescript";
 
 import type {
   PaginationToken,
-  ServiceGetter,
-  ScannerDefinition,
-  EdgeResolver,
-  SupportedClient,
-  ScannerBase,
+  BaseScannerDefinition,
   BaseGetter,
   BaseEdgeResolver,
 } from "@infrascan/shared-types";
@@ -155,7 +151,7 @@ function implementFunctionCallForScanner(
       }
       if (formatter != null) {
         writer.writeLine(
-          `const formattedResult = ${formatter}(${resultVariable});`
+          `const formattedResult = Formatters.${clientKey}.${formatter}(${resultVariable});`
         );
         resultVariable = "formattedResult";
       }
@@ -227,7 +223,7 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
 
 function addScannerSpecificImports(
   sourceFile: SourceFile,
-  config: ScannerBase
+  config: BaseScannerDefinition
 ): void {
   const commandImports = config.getters.flatMap(({ fn }) =>
     Object.values(generateFunctionImports(fn))
@@ -271,8 +267,8 @@ function addScannerSpecificImports(
   );
   if (hasOutputFormatters) {
     sourceFile.addImportDeclaration({
-      namespaceImport: "formatters",
-      moduleSpecifier: "../helpers/formatters",
+      namedImports: ["Formatters"],
+      moduleSpecifier: "@infrascan/config",
     });
   }
 }
@@ -370,7 +366,7 @@ const FORMATTER_CONFIG: Readonly<FormatCodeSettings> = {
 export function generateService(
   project: Project,
   basePath: string,
-  config: ScannerBase,
+  config: BaseScannerDefinition,
   overwrite: boolean,
   verbose: boolean
 ) {

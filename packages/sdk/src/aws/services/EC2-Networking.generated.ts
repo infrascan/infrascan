@@ -1,7 +1,7 @@
 import { EC2Client, DescribeVpcsCommandInput, DescribeVpcsCommandOutput, DescribeVpcsCommand, DescribeAvailabilityZonesCommandInput, DescribeAvailabilityZonesCommandOutput, DescribeAvailabilityZonesCommand, DescribeSubnetsCommandInput, DescribeSubnetsCommandOutput, DescribeSubnetsCommand } from "@aws-sdk/client-ec2";
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -15,7 +15,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const DescribeVpcsCmd = new DescribeVpcsCommand({} as DescribeVpcsCommandInput);
       const result: DescribeVpcsCommandOutput = await EC2.send(DescribeVpcsCmd);
-      const formattedResult = formatters.EC2.describeVPCs(result);
+      const formattedResult = Formatters.EC2.describeVPCs(result);
       DescribeVpcsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (DescribeVpcsPagingToken != null);
   }
@@ -33,7 +33,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const DescribeAvailabilityZonesCmd = new DescribeAvailabilityZonesCommand({} as DescribeAvailabilityZonesCommandInput);
       const result: DescribeAvailabilityZonesCommandOutput = await EC2.send(DescribeAvailabilityZonesCmd);
-      const formattedResult = formatters.EC2.describeAvailabilityZones(result);
+      const formattedResult = Formatters.EC2.describeAvailabilityZones(result);
       DescribeAvailabilityZonesState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (DescribeAvailabilityZonesPagingToken != null);
   }
@@ -51,7 +51,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const DescribeSubnetsCmd = new DescribeSubnetsCommand({} as DescribeSubnetsCommandInput);
       const result: DescribeSubnetsCommandOutput = await EC2.send(DescribeSubnetsCmd);
-      const formattedResult = formatters.EC2.describeSubnets(result);
+      const formattedResult = Formatters.EC2.describeSubnets(result);
       DescribeSubnetsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (DescribeSubnetsPagingToken != null);
   }

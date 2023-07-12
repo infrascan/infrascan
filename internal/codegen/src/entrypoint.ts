@@ -1,5 +1,5 @@
 import { Project, SourceFile, VariableDeclarationKind } from "ts-morph";
-import type { ScannerBase } from "@infrascan/shared-types";
+import type { BaseScannerDefinition } from "@infrascan/shared-types";
 
 function kebabCaseToCamelCase(val: string): string {
   const tokens = val.split("-");
@@ -16,7 +16,10 @@ function addServiceScannerImport(sourceFile: SourceFile, service: string) {
   });
 }
 
-function createExportObjectForKey(services: ScannerBase[], key: string) {
+function createExportObjectForKey(
+  services: BaseScannerDefinition[],
+  key: string
+) {
   const preparedServices = services.reduce(
     (scannersByService, currentService) => {
       if (scannersByService[currentService.service]) {
@@ -56,13 +59,13 @@ function createConst(
   });
 }
 
-function createScannerExportObject(services: ScannerBase[]) {
+function createScannerExportObject(services: BaseScannerDefinition[]) {
   return createExportObjectForKey(services, "performScan");
 }
 
 function createNodeSelectorExport(
   sourceFile: SourceFile,
-  services: ScannerBase[],
+  services: BaseScannerDefinition[],
   variableName: string
 ) {
   const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
@@ -71,7 +74,7 @@ function createNodeSelectorExport(
 
 function createEdgeSelectorExport(
   sourceFile: SourceFile,
-  services: ScannerBase[],
+  services: BaseScannerDefinition[],
   variableName: string
 ) {
   const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
@@ -80,7 +83,7 @@ function createEdgeSelectorExport(
 
 function declareScannerListAsConstant(
   sourceFile: SourceFile,
-  services: ScannerBase[]
+  services: BaseScannerDefinition[]
 ) {
   const globalServices = services.filter((service) => service.isGlobal);
   const globalScannersExport = createScannerExportObject(globalServices);
@@ -163,7 +166,7 @@ function declareScannerListAsConstant(
 export function generateEntrypoint(
   project: Project,
   basePath: string,
-  services: ScannerBase[],
+  services: BaseScannerDefinition[],
   overwrite: boolean,
   verbose: boolean
 ) {

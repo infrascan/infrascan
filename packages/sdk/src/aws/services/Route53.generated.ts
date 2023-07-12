@@ -2,7 +2,7 @@ import { Route53Client, ListHostedZonesByNameCommandInput, ListHostedZonesByName
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListHostedZonesByNameCmd = new ListHostedZonesByNameCommand({} as ListHostedZonesByNameCommandInput);
       const result: ListHostedZonesByNameCommandOutput = await Route53.send(ListHostedZonesByNameCmd);
-      const formattedResult = formatters.Route53.listHostedZonesByName(result);
+      const formattedResult = Formatters.Route53.listHostedZonesByName(result);
       ListHostedZonesByNameState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListHostedZonesByNamePagingToken != null);
   }
@@ -37,7 +37,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       do {
         const ListResourceRecordSetsCmd = new ListResourceRecordSetsCommand(requestParameters);
         const result: ListResourceRecordSetsCommandOutput = await Route53.send(ListResourceRecordSetsCmd);
-        const formattedResult = formatters.Route53.listResourceRecordSets(result);
+        const formattedResult = Formatters.Route53.listResourceRecordSets(result);
         ListResourceRecordSetsState.push({ _metadata: { account, region }, _parameters: requestParameters, _result: formattedResult });
       } while (ListResourceRecordSetsPagingToken != null);
     }

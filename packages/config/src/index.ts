@@ -1,4 +1,6 @@
-import type { ScannerDefinition } from "@infrascan/shared-types";
+import type { ScannerDefinition } from "./types";
+
+export * as Formatters from "./formatters";
 
 type S3Functions =
   | "ListBuckets"
@@ -14,7 +16,7 @@ const S3Scanner: ScannerDefinition<"S3", S3Functions> = {
   getters: [
     {
       fn: "ListBuckets",
-      formatter: "formatters.S3.listBuckets",
+      formatter: "listBuckets",
     },
     {
       fn: "GetBucketTagging",
@@ -83,7 +85,7 @@ const CloudfrontScanner: ScannerDefinition<"CloudFront", CloudFrontFunctions> =
     getters: [
       {
         fn: "ListDistributions",
-        formatter: "formatters.Cloudfront.listDistributions",
+        formatter: "listDistributions",
       },
     ],
     nodes: [
@@ -100,7 +102,7 @@ const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
   getters: [
     {
       fn: "ListHostedZonesByName",
-      formatter: "formatters.Route53.listHostedZonesByName",
+      formatter: "listHostedZonesByName",
     },
     {
       fn: "ListResourceRecordSets",
@@ -110,7 +112,7 @@ const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
           Selector: "Route53|ListHostedZonesByName|[]._result[].Id",
         },
       ],
-      formatter: "formatters.Route53.listResourceRecordSets",
+      formatter: "listResourceRecordSets",
     },
   ],
   nodes: [
@@ -129,11 +131,11 @@ const ApiGatewayScanner: ScannerDefinition<
   getters: [
     {
       fn: "GetApis",
-      formatter: "formatters.ApiGateway.getApis",
+      formatter: "getApis",
     },
     {
       fn: "GetDomainNames",
-      formatter: "formatters.ApiGateway.getDomainNames",
+      formatter: "getDomainNames",
     },
   ],
   nodes: ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"],
@@ -150,7 +152,7 @@ const AutoScalingScanner: ScannerDefinition<
   getters: [
     {
       fn: "DescribeAutoScalingGroups",
-      formatter: "formatters.AutoScaling.describeAutoScalingGroups",
+      formatter: "describeAutoScalingGroups",
     },
   ],
 };
@@ -210,7 +212,7 @@ const DynamoDbScanner: ScannerDefinition<"DynamoDB", DynamoDbFunctions> = {
   getters: [
     {
       fn: "ListTables",
-      formatter: "formatters.DynamoDB.listTables",
+      formatter: "listTables",
     },
     {
       fn: "DescribeTable",
@@ -220,7 +222,7 @@ const DynamoDbScanner: ScannerDefinition<"DynamoDB", DynamoDbFunctions> = {
           Selector: "DynamoDB|ListTables|[]._result[]",
         },
       ],
-      formatter: "formatters.DynamoDB.describeTable",
+      formatter: "describeTable",
     },
   ],
   nodes: ["DynamoDB|DescribeTable|[].{id:_result.TableArn}"],
@@ -238,15 +240,15 @@ const EC2Scanner: ScannerDefinition<"EC2", EC2Functions> = {
   getters: [
     {
       fn: "DescribeVpcs",
-      formatter: "formatters.EC2.describeVPCs",
+      formatter: "describeVPCs",
     },
     {
       fn: "DescribeAvailabilityZones",
-      formatter: "formatters.EC2.describeAvailabilityZones",
+      formatter: "describeAvailabilityZones",
     },
     {
       fn: "DescribeSubnets",
-      formatter: "formatters.EC2.describeSubnets",
+      formatter: "describeSubnets",
     },
   ],
 };
@@ -407,7 +409,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
   getters: [
     {
       fn: "DescribeLoadBalancers",
-      formatter: "formatters.ElasticLoadBalancing.describeLoadBalancers",
+      formatter: "describeLoadBalancers",
     },
     {
       fn: "DescribeTargetGroups",
@@ -418,7 +420,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
             "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
         },
       ],
-      formatter: "formatters.ElasticLoadBalancing.describeTargetGroups",
+      formatter: "describeTargetGroups",
     },
     {
       fn: "DescribeListeners",
@@ -429,7 +431,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
             "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
         },
       ],
-      formatter: "formatters.ElasticLoadBalancing.describeListeners",
+      formatter: "describeListeners",
     },
     {
       fn: "DescribeRules",
@@ -440,7 +442,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
             "ElasticLoadBalancingV2|DescribeListeners|[]._result[].ListenerArn",
         },
       ],
-      formatter: "formatters.ElasticLoadBalancing.describeRules",
+      formatter: "describeRules",
     },
   ],
   nodes: [
@@ -489,7 +491,7 @@ const RDSScanner: ScannerDefinition<"RDS", RDSFunctions> = {
   getters: [
     {
       fn: "DescribeDBInstances",
-      formatter: "formatters.RDS.describeDBInstances",
+      formatter: "describeDBInstances",
     },
   ],
   nodes: [
@@ -509,7 +511,7 @@ const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
   getters: [
     {
       fn: "ListTopics",
-      formatter: "formatters.SNS.listTopics",
+      formatter: "listTopics",
     },
     {
       fn: "GetTopicAttributes",
@@ -519,7 +521,7 @@ const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
           Selector: "SNS|ListTopics|[]._result[].TopicArn",
         },
       ],
-      formatter: "formatters.SNS.getTopicAttributes",
+      formatter: "getTopicAttributes",
     },
     {
       fn: "ListSubscriptionsByTopic",
@@ -529,7 +531,7 @@ const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
           Selector: "SNS|ListTopics|[]._result[].TopicArn",
         },
       ],
-      formatter: "formatters.SNS.listSubscriptionByTopic",
+      formatter: "listSubscriptionByTopic",
     },
     {
       fn: "ListTagsForResource",
@@ -560,7 +562,7 @@ const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
   getters: [
     {
       fn: "ListQueues",
-      formatter: "formatters.SQS.listQueues",
+      formatter: "listQueues",
     },
     {
       fn: "ListQueueTags",
@@ -570,7 +572,7 @@ const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
           Selector: "SQS|ListQueues|[]._result[].QueueUrl",
         },
       ],
-      formatter: "formatters.SQS.listQueueTags",
+      formatter: "listQueueTags",
     },
     {
       fn: "GetQueueAttributes",
@@ -584,7 +586,7 @@ const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
           Value: ["All"],
         },
       ],
-      formatter: "formatters.SQS.getQueueAttributes",
+      formatter: "getQueueAttributes",
     },
   ],
   nodes: ["SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"],

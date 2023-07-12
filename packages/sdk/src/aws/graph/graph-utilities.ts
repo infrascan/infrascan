@@ -8,7 +8,7 @@ import type { StoredRole } from "../helpers/iam";
 import type {
   GraphEdge,
   GetGlobalStateForServiceAndFunction,
-  ScannerBase,
+  BaseScannerDefinition,
 } from "@infrascan/shared-types";
 const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
 
@@ -150,7 +150,7 @@ export async function resolveResourceGlob({
 }
 
 async function findNodesForService(
-  serviceConfig: ScannerBase,
+  serviceConfig: BaseScannerDefinition,
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
 ) {
   const { nodes, arnLabel, service } = serviceConfig;

@@ -1,7 +1,7 @@
 import { CloudFrontClient, ListDistributionsCommandInput, ListDistributionsCommandOutput, ListDistributionsCommand } from "@aws-sdk/client-cloudfront";
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -15,7 +15,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListDistributionsCmd = new ListDistributionsCommand({} as ListDistributionsCommandInput);
       const result: ListDistributionsCommandOutput = await CloudFront.send(ListDistributionsCmd);
-      const formattedResult = formatters.Cloudfront.listDistributions(result);
+      const formattedResult = Formatters.CloudFront.listDistributions(result);
       ListDistributionsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListDistributionsPagingToken != null);
   }

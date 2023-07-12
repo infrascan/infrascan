@@ -2,7 +2,7 @@ import { S3Client, ListBucketsCommandInput, ListBucketsCommandOutput, ListBucket
 import { scanIamRole, IAMStorage } from "../helpers/iam";
 import { IAM } from "@aws-sdk/client-iam";
 import { resolveFunctionCallParameters } from "../helpers/state";
-import * as formatters from "../helpers/formatters";
+import { Formatters } from "@infrascan/config";
 import type { ServiceScanCompleteCallbackFn, ResolveStateFromServiceFn, GenericState } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
@@ -16,7 +16,7 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     do {
       const ListBucketsCmd = new ListBucketsCommand({} as ListBucketsCommandInput);
       const result: ListBucketsCommandOutput = await S3.send(ListBucketsCmd);
-      const formattedResult = formatters.S3.listBuckets(result);
+      const formattedResult = Formatters.S3.listBuckets(result);
       ListBucketsState.push({ _metadata: { account, region }, _parameters: {}, _result: formattedResult });
     } while (ListBucketsPagingToken != null);
   }

@@ -52,7 +52,7 @@ function formatCloudfrontListDistributions({
   }).filter((distributionItem) => distributionItem != null);
 }
 
-export const Cloudfront = {
+export const CloudFront = {
   listDistributions: formatCloudfrontListDistributions,
 };
 
@@ -188,7 +188,7 @@ import type {
   GetDomainNamesCommandOutput,
 } from "@aws-sdk/client-apigatewayv2";
 
-export const ApiGateway = {
+export const ApiGatewayV2 = {
   getApis: simpleLookupFactory<GetApisCommandOutput, "Items">("Items"),
   getDomainNames: simpleLookupFactory<GetDomainNamesCommandOutput, "Items">(
     "Items"
@@ -219,7 +219,7 @@ import type {
   DescribeTargetGroupsOutput,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
 
-export const ElasticLoadBalancing = {
+export const ElasticLoadBalancingV2 = {
   describeLoadBalancers: simpleLookupFactory<
     DescribeLoadBalancersOutput,
     "LoadBalancers"
