@@ -11,6 +11,7 @@ import {
 } from "./aws/helpers/state";
 import {
   formatEdge,
+  formatS3NodeId,
   generateEdgesForRole,
   sanitizeId,
 } from "./aws/graph/graph-utilities";
@@ -30,11 +31,15 @@ function formatIdAsNode(
   resourceId: string,
   metadata = {}
 ): GraphNode {
+  let formattedId = resourceId;
+  if (serviceKey.toLowerCase() === "s3") {
+    formattedId = formatS3NodeId(resourceId);
+  }
   return {
     group: "nodes",
-    id: sanitizeId(resourceId),
+    id: sanitizeId(formattedId),
     data: {
-      id: resourceId,
+      id: formattedId,
       type: serviceKey,
     },
     metadata,
@@ -181,7 +186,7 @@ export async function generateGraph({
       "IAM",
       "roles"
     );
-    hydrateRoleStorage(iamState);
+    hydrateRoleStorage(iamStorage, iamState);
 
     // Generate nodes for each global service
     for (const service of GLOBAL_SERVICES) {

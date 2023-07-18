@@ -93,39 +93,50 @@ export async function generateEdgesForECSResources(
   );
 
   // Step over every load balanced ECS Service
-  const ecsLoadBalancingEdges = loadBalancedECSServices.flatMap(
-    ({ loadBalancers, taskDefinition }) => {
-      // For each of their load balancer configs:
-      // - Find the relevant target group
-      // - Find the relevant task definition (down to the specific container)
-      // - Create an edge from each of the target group's load balancers, to the task node
-      return loadBalancers?.flatMap(({ targetGroupArn, containerName }) => {
-        const targetGroup = elbTargetGroups.find(
-          ({ TargetGroupArn }) => targetGroupArn === TargetGroupArn
-        );
-        const matchedTaskDef = ecsTaskDefinitionRecords.find(
-          ({ taskDefinitionArn, containerDefinitions }) => {
-            const isLoadBalancedTask = taskDefinitionArn === taskDefinition;
-            const loadBalancedContainer = containerDefinitions?.find(
-              ({ name: taskContainerName }) =>
-                containerName === taskContainerName
-            );
-            return isLoadBalancedTask && loadBalancedContainer;
-          }
-        );
-        if (!matchedTaskDef) {
-          return [];
-        }
-        return targetGroup?.LoadBalancerArns?.map((loadBalancerArn) => {
-          return formatEdge(
-            loadBalancerArn,
-            matchedTaskDef.taskDefinitionArn as string,
-            `${containerName}-LoadBalancing`
+  let ecsLoadBalancingEdges: GraphEdge[] = [];
+  // For each of their load balancer configs:
+  // - Find the relevant target group
+  // - Find the relevant task definition (down to the specific container)
+  // - Create an edge from each of the target group's load balancers, to the task node
+  for (const service of loadBalancedECSServices) {
+    const { loadBalancers, taskDefinition } = service;
+    if (loadBalancers != null) {
+      const loadBalancingEdges = loadBalancers.flatMap(
+        ({ targetGroupArn, containerName }) => {
+          const targetGroup = elbTargetGroups.find(
+            ({ TargetGroupArn }) => targetGroupArn === TargetGroupArn
           );
-        });
-      });
+          if (!targetGroup) {
+            return [];
+          }
+
+          const matchedTaskDef = ecsTaskDefinitionRecords.find(
+            ({ taskDefinitionArn, containerDefinitions }) => {
+              const isLoadBalancedTask = taskDefinitionArn === taskDefinition;
+              const loadBalancedContainer = containerDefinitions?.find(
+                ({ name: taskContainerName }) =>
+                  containerName === taskContainerName
+              );
+              return isLoadBalancedTask && loadBalancedContainer;
+            }
+          );
+          if (!matchedTaskDef) {
+            return [];
+          }
+
+          const targetGroupLoadBalancers = targetGroup.LoadBalancerArns ?? [];
+          return targetGroupLoadBalancers.map((loadBalancerArn) => {
+            return formatEdge(
+              loadBalancerArn,
+              matchedTaskDef.taskDefinitionArn as string,
+              `${containerName}-LoadBalancing`
+            );
+          });
+        }
+      );
+      ecsLoadBalancingEdges = ecsLoadBalancingEdges.concat(loadBalancingEdges);
     }
-  ) as GraphEdge[];
+  }
 
   return taskRoleEdges.concat(ecsLoadBalancingEdges);
 }

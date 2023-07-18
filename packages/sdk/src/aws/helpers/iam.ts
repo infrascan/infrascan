@@ -50,8 +50,10 @@ export class IAMStorage {
   }
 }
 
-export function hydrateRoleStorage(roles: StoredRole[]): IAMStorage {
-  const storage = new IAMStorage();
+export function hydrateRoleStorage(
+  storage: IAMStorage,
+  roles: StoredRole[]
+): IAMStorage {
   for (const role of roles) {
     storage.setRole(role.roleArn, role);
   }

@@ -9,7 +9,7 @@ import {
   GetGlobalStateForServiceAndFunction,
 } from "@infrascan/shared-types";
 import { State } from "@infrascan/shared-types";
-import { formatEdge } from "./graph-utilities";
+import { formatEdge, formatS3NodeId } from "./graph-utilities";
 import minimatch from "minimatch";
 import { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
 import { LoadBalancer } from "@aws-sdk/client-elastic-load-balancing-v2";
@@ -87,7 +87,8 @@ export async function generateEdgesForRoute53Resources(
         return `${_parameters.Bucket}.` === Name;
       });
       if (s3Bucket && Name) {
-        return formatEdge(Name, s3Bucket._parameters.Bucket, Name);
+        const formattedS3Arn = formatS3NodeId(s3Bucket._parameters.Bucket);
+        return formatEdge(Name, formattedS3Arn, Name);
       }
     })
     .filter((edge) => edge != null) as GraphEdge[];

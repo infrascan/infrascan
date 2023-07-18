@@ -2,7 +2,8 @@
   "packageManager": "npm",
   "workspaces": [
     "internal/*",
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "devDependencies": {
     "turbo": "^1.9.9"

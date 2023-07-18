@@ -10,7 +10,7 @@ import type {
 import type { State } from "@infrascan/shared-types";
 import type { Formatters } from "@infrascan/config";
 import type { Bucket } from "@aws-sdk/client-s3";
-import { formatEdge } from "./graph-utilities";
+import { formatEdge, formatS3NodeId } from "./graph-utilities";
 
 type GlobalCloudFrontState = State<Formatters.CloudfrontDistributionSummary[]>;
 type GlobalS3State = State<Bucket[]>;
@@ -70,7 +70,8 @@ export async function generateEdgesForCloudfrontResources(
         return Boolean(relevantOrigin);
       });
       return matchedBuckets.map(({ Name }) => {
-        return formatEdge(ARN as string, Name as string, ARN as string);
+        const formattedS3Node = formatS3NodeId(Name as string);
+        return formatEdge(ARN as string, formattedS3Node as string, ARN as string);
       });
     })
     .filter(Boolean);

@@ -6,12 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\""
   },
+  "bin": "src/index.js",
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/credential-providers": "^3.370.0",
     "@infrascan/sdk": "*",
-    "aws-sdk": "^2.1309.0",
     "minimatch": "^6.1.6"
   },
   "publishConfig": {

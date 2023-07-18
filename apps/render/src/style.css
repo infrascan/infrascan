@@ -1,0 +1,197 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0 auto;
+}
+
+.island {
+  position: absolute;
+  height: 32px;
+  width: 128px;
+  border-radius: 16px;
+  top: 25px;
+  left: calc(50% - 64px);
+  z-index: 1000;
+  background-color: #fff;
+  color: #000;
+  filter: drop-shadow(0 0 0.25rem rgba(255, 255, 255, 0.4));
+
+  transition: all 0.3s ease-in-out;
+}
+
+.icons-container {
+  height: 32px;
+  width: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 auto;
+}
+
+.island.expanded {
+  width: 384px;
+  height: 256px;
+  left: calc(50% - 192px);
+}
+
+.island > * > #edit-icon,
+.island > * > #link-icon {
+  transition: all 0.3s ease-in-out;
+}
+.island.info > * > #edit-icon,
+.island.info > * > #link-icon {
+  opacity: 0;
+}
+
+.island.edit {
+  animation-name: editMode;
+  animation-duration: 0.5s;
+}
+.island.edit > .icons-container {
+  animation-name: editMode;
+  animation-duration: 0.5s;
+}
+.island.edit > * > #info-icon,
+.island.edit > * > #link-icon {
+  opacity: 0;
+  display: none;
+}
+
+.side-drawer {
+  position: absolute;
+  top: calc(50% - (50% - 60px));
+  left: -320px;
+  width: 320px;
+  height: calc(100% - 120px);
+  border-radius: 0 32px 32px 0;
+  margin: auto 0;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+}
+
+.side-drawer.show {
+  transform: translateX(320px);
+}
+
+#graph-input {
+  width: 100%;
+  height: 100%;
+  border-radius: 0 32px 32px 0;
+  background-color: #242424;
+  resize: none;
+}
+
+#graph-canvas {
+  width: 100vw;
+  height: 100vh;
+  background-image: radial-gradient(
+    circle at 20px 20px,
+    rgba(255, 255, 255, 0.3) 1px,
+    transparent 0px
+  );
+  background-size: 40px 40px;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.vanilla:hover {
+  filter: drop-shadow(0 0 2em #3178c6aa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+@keyframes editMode {
+  from {
+    width: 128px;
+  }
+
+  50% {
+    width: 40px;
+  }
+
+  to {
+    width: 128px;
+  }
+}

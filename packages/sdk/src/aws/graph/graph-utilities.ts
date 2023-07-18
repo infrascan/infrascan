@@ -114,11 +114,11 @@ export async function resolveResourceGlob({
       .map((node) => {
         // Because of S3 bucket names being converted into ARNs above
         // we need to split out the name from the ARN to get the correct edge
-        if (resourceService === "s3") {
-          return node.split(":").pop();
-        } else {
-          return node;
-        }
+        // if (resourceService === "s3") {
+        //   return node.split(":").pop();
+        // } else {
+        return node;
+        // }
       })
       .filter((nodeId) => {
         return nodeId != null;
@@ -178,10 +178,14 @@ async function findNodesForService(
   // This means we need to build the ARN on the fly when matching in resource policies to allow partial
   // matches of <bucket-name> to <bucket-arn>/<object-path>
   if (resourceService === "s3") {
-    return globalState?.map((node) => `arn:aws:s3:::${node}`);
+    return globalState?.map((node) => formatS3NodeId(node));
   } else {
     return globalState;
   }
+}
+
+export function formatS3NodeId(nodeId: string): string {
+  return `arn:aws:s3:::${nodeId}`;
 }
 
 export type EdgeResource = {

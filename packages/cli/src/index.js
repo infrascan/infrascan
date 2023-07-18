@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { runGraph, runScan } = require("./commands");
 
 async function main() {

@@ -6,7 +6,10 @@ const {
   resolveStateForServiceCall,
   writeScanMetadata,
 } = require("../utils");
-const AWS = require("aws-sdk");
+const {
+  fromIni,
+  fromTemporaryCredentials,
+} = require("@aws-sdk/credential-providers");
 const DEFAULT_CONFIG_PATH = "config.default.json";
 
 function getConfig() {
@@ -26,9 +29,16 @@ function writeStateToFs(account, region, service, functionName, functionState) {
 
 function resolveCredentials(profile, roleToAssume) {
   if (profile) {
-    return new AWS.SharedIniFileCredentials({ profile });
+    return fromIni({
+      profile,
+    });
   } else if (roleToAssume) {
-    return new AWS.TemporaryCredentials({ RoleArn: roleToAssume });
+    return fromTemporaryCredentials({
+      params: {
+        RoleArn: roleToAssume,
+        RoleSessionName: "infrascan-cli-scan",
+      },
+    });
   }
 }
 
