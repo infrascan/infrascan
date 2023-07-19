@@ -29,7 +29,7 @@ import type { ScanMetadata } from "./scan";
 function formatIdAsNode(
   serviceKey: string,
   resourceId: string,
-  metadata = {}
+  metadata: Record<string, any> = {}
 ): GraphNode {
   let formattedId = resourceId;
   if (serviceKey.toLowerCase() === "s3") {
@@ -41,6 +41,7 @@ function formatIdAsNode(
     data: {
       id: formattedId,
       type: serviceKey,
+      parent: metadata?.parent,
     },
     metadata,
   };
