@@ -1,6 +1,6 @@
 export type GraphNode = {
   group: "nodes";
-  id: string;
+  id?: string;
   data: {
     id: string;
     type: string;
@@ -11,7 +11,7 @@ export type GraphNode = {
 
 export type GraphEdge = {
   group: "edges";
-  id: string;
+  id?: string;
   data: {
     id: string;
     name: string;

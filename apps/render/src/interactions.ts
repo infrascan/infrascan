@@ -55,7 +55,7 @@ export function setupInfoIconInteraction(iconId: string, islandId: string) {
   const escListener = (e: KeyboardEvent): void => {
     if (e.key === "Escape") {
       toggleInfoMode(islandId);
-      if (keyPressListener) {
+      if (keyPressListener != null) {
         document.removeEventListener("keydown", keyPressListener);
         keyPressListener = null;
       }
@@ -64,7 +64,7 @@ export function setupInfoIconInteraction(iconId: string, islandId: string) {
   iconElem.addEventListener("click", () => {
     if (keyPressListener != null) {
       document.removeEventListener("keydown", keyPressListener);
-      keyPressListener = escListener;
+      keyPressListener = null;
     } else {
       document.addEventListener("keydown", escListener);
       keyPressListener = escListener;

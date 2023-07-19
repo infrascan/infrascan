@@ -53,7 +53,21 @@ h1 {
   color: #000;
   filter: drop-shadow(0 0 0.25rem rgba(255, 255, 255, 0.4));
 
-  transition: all 0.3s ease-in-out;
+  transition: all 200ms ease-in-out;
+}
+
+.island > .info-content {
+  height: 0;
+  width: 320px;
+  overflow: hidden;
+  opacity: 0;
+  margin: auto auto;
+  transition: all 300ms ease-in-out 75ms;
+}
+
+.info-content > p,
+.info-content > * > p {
+  text-align: center;
 }
 
 .icons-container {
@@ -67,31 +81,31 @@ h1 {
 
 .island.expanded {
   width: 384px;
-  height: 256px;
+  height: 192px;
   left: calc(50% - 192px);
 }
 
 .island > * > #edit-icon,
 .island > * > #link-icon {
-  transition: all 0.3s ease-in-out;
+  transition: all 100ms ease-in-out;
 }
 .island.info > * > #edit-icon,
 .island.info > * > #link-icon {
-  opacity: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.island.info > .info-content {
+  opacity: 1;
+  height: auto;
+  width: 320px;
+  overflow: hidden;
+  padding: 0 15px;
 }
 
-.island.edit {
-  animation-name: editMode;
-  animation-duration: 0.5s;
-}
-.island.edit > .icons-container {
-  animation-name: editMode;
-  animation-duration: 0.5s;
-}
 .island.edit > * > #info-icon,
 .island.edit > * > #link-icon {
-  opacity: 0;
-  display: none;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .side-drawer {
@@ -129,44 +143,32 @@ h1 {
   background-size: 40px 40px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #3178c6aa);
-}
+#powered-by {
+  height: 32px;
+  width: 128px;
+  border-radius: 32px;
 
-.card {
-  padding: 2em;
-}
+  display: flex;
+  align-items: center;
 
-.read-the-docs {
-  color: #888;
+  background-color: #fff;
+  position: absolute;
+  top: calc(100vh - 64px);
+  left: calc(100vw - 192px);
 }
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+#powered-by > img {
+  padding-left: 8px;
 }
-button:hover {
-  border-color: #646cff;
+#powered-by > div {
+  padding-left: 8px;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+#powered-by > * > p {
+  font-size: 0.5rem;
+}
+#powered-by > * > p,
+#powered-by > * > h5 {
+  margin: 0;
+  color: #000;
 }
 
 @media (prefers-color-scheme: light) {
@@ -182,16 +184,14 @@ button:focus-visible {
   }
 }
 
-@keyframes editMode {
-  from {
-    width: 128px;
+@media (prefers-reduced-motion: reduce) {
+  .side-drawer {
+    transition: none !important;
   }
-
-  50% {
-    width: 40px;
+  .island > .info-content {
+    transition: none !important;
   }
-
-  to {
-    width: 128px;
+  .island {
+    transition: none !important;
   }
 }

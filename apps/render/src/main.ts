@@ -1,6 +1,6 @@
 import "./style.css";
 import { setupGraphEntryListener, DEFAULT_GRAPH_CONTENT } from "./graph.ts";
-import { Edit, ExternalLink, Information } from "./icons.ts";
+import { Edit, Information, ExternalLink } from "./icons.ts";
 import {
   setupEditIconInteraction,
   setupInfoIconInteraction,
@@ -15,9 +15,19 @@ const NODES: Record<string, string> = {
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="island" id="island">
     <div class="icons-container">
-      ${Edit("edit-icon", false)}
+      ${Edit("edit-icon")}
       ${Information("info-icon")}
       ${ExternalLink("link-icon")}
+    </div>
+    <div class="info-content">
+      <p>Infrascan is an open source toolkit which scans your AWS infrastructure and auto-generates system diagrams.</p>
+      <div>
+        <p>
+          <a href="https://github.com/infrascan/infrascan">GitHub</a>
+           // 
+          <a href="https://infrascan.io">Infrascan.io</a>
+        </p>
+      </div>
     </div>
   </div>
   <div class="side-drawer" id="graph-side-drawer">
@@ -28,6 +38,13 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 )}</textarea>
   </div>
   <div id="${NODES.GraphCanvas}"></div>
+  <div id="powered-by">
+    <img src="/logo.svg" alt="Infrascan.io logo" />
+    <div>
+      <p>Powered By:</p>
+      <h5>Infrascan.io</h5>
+    </div>
+  </div>
 `;
 
 setupGraphEntryListener(

@@ -14,7 +14,6 @@ function buildNode(id: string): GraphNode {
 
 function buildEdge(id: string, source: string, target: string): GraphEdge {
   return {
-    id,
     group: "edges",
     data: { id, name: id, source, target, type: "edge" },
   };
