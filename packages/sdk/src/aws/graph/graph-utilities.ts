@@ -133,7 +133,7 @@ export async function resolveResourceGlob({
       ({ service }) => service.toLowerCase() === resourceService.toLowerCase()
     );
     if (serviceConfig == null) {
-      console.warn("Unsupported service found in role policy");
+      console.warn("Unsupported service found in role policy", resourceService);
       return [];
     }
     const { nodes } = serviceConfig;

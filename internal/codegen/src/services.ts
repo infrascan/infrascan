@@ -177,6 +177,9 @@ function implementFunctionCallForScanner(
       writer.writeLine("if(err?.retryable)").block(() => {
         writer.writeLine('console.log("Encountered retryable error", err);');
       });
+      writer.writeLine("else").block(() => {
+        writer.writeLine('console.log("Encountered unretryable error", err);');
+      });
     });
   }
 

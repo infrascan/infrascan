@@ -23,6 +23,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
+    else {
+      console.log("Encountered unretryable error", err);
+    }
   }
   await onServiceCallComplete(account, region, "ApiGatewayV2", "GetApis", GetApisState);
 
@@ -40,6 +43,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
   catch (err: any) {
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
+    }
+    else {
+      console.log("Encountered unretryable error", err);
     }
   }
   await onServiceCallComplete(account, region, "ApiGatewayV2", "GetDomainNames", GetDomainNamesState);

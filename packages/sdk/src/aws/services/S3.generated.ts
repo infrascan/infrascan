@@ -24,6 +24,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     if (err?.retryable) {
       console.log("Encountered retryable error", err);
     }
+    else {
+      console.log("Encountered unretryable error", err);
+    }
   }
   await onServiceCallComplete(account, region, "S3", "ListBuckets", ListBucketsState);
 
@@ -43,6 +46,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     catch (err: any) {
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
+      }
+      else {
+        console.log("Encountered unretryable error", err);
       }
     }
   }
@@ -65,6 +71,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
       }
+      else {
+        console.log("Encountered unretryable error", err);
+      }
     }
   }
   await onServiceCallComplete(account, region, "S3", "GetBucketNotificationConfiguration", GetBucketNotificationConfigurationState);
@@ -86,6 +95,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
       }
+      else {
+        console.log("Encountered unretryable error", err);
+      }
     }
   }
   await onServiceCallComplete(account, region, "S3", "GetBucketWebsite", GetBucketWebsiteState);
@@ -106,6 +118,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     catch (err: any) {
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
+      }
+      else {
+        console.log("Encountered unretryable error", err);
       }
     }
   }

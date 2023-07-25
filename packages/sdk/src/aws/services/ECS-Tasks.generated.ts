@@ -26,6 +26,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
       }
+      else {
+        console.log("Encountered unretryable error", err);
+      }
     }
   }
   await onServiceCallComplete(account, region, "ECS", "ListTasks", ListTasksState);
@@ -46,6 +49,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     catch (err: any) {
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
+      }
+      else {
+        console.log("Encountered unretryable error", err);
       }
     }
   }
@@ -79,6 +85,9 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
     catch (err: any) {
       if (err?.retryable) {
         console.log("Encountered retryable error", err);
+      }
+      else {
+        console.log("Encountered unretryable error", err);
       }
     }
   }
