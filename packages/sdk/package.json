@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/sdk",
-  "version": "0.3.20",
+  "version": "0.3.21",
   "description": "Tool to generate a system map by connecting to your AWS account.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

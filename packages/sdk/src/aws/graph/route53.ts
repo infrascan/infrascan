@@ -119,7 +119,7 @@ export async function generateEdgesForRoute53Resources(
 
   const elbState: State<LoadBalancer[]>[] =
     await getGlobalStateForServiceAndFunction(
-      "ElasticLoadBalancingv2",
+      "ElasticLoadBalancingV2",
       "DescribeLoadBalancers"
     );
   const elbs = elbState.flatMap(({ _result }) => _result);

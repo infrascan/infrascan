@@ -85,7 +85,7 @@ export async function generateEdgesForECSResources(
 
   const elbTargetGroupsState: ELBTargetGroupState[] =
     await getGlobalStateForServiceAndFunction(
-      "ElasticLoadBalancingv2",
+      "ElasticLoadBalancingV2",
       "DescribeTargetGroups"
     );
   const elbTargetGroups = elbTargetGroupsState.flatMap(
