@@ -1,0 +1,16 @@
+{
+  "name": "@infrascan/render",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@infrascan/shared-types": "^0.1.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.0"
+  }
+}

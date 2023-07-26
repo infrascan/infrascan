@@ -1,9 +1,18 @@
 {
-	"packageManager": "npm",
-	"workspaces": [
-		"packages/*"
-	],
-	"devDependencies": {
-		"turbo": "^1.9.9"
-	}
+  "packageManager": "npm",
+  "workspaces": [
+    "internal/*",
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "turbo": "^1.9.9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "codegen": "turbo run codegen",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  }
 }
