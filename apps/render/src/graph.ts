@@ -54,23 +54,24 @@ type CytoscapeGraphOptions = {
 };
 type CytoscapeGraphBuilder = (opts: CytoscapeGraphOptions) => void;
 type RenderWindow = Window & { cytoscape?: CytoscapeGraphBuilder };
+let stylesheet = [
+  {
+    selector: "edge",
+    style: {
+      width: "1px",
+      "background-color": "#000",
+      "curve-style": "bezier",
+      "target-arrow-shape": "triangle",
+    },
+  },
+];
 function updateRenderedGraph(graphContent: GraphElement[]) {
   const _window = window as RenderWindow;
   if (_window.cytoscape != null) {
     _window.cytoscape({
       container: document.getElementById("graph-canvas") as HTMLDivElement,
       elements: graphContent,
-      style: [
-        {
-          selector: "edge",
-          style: {
-            width: "1px",
-            "background-color": "#000",
-            "curve-style": "bezier",
-            "target-arrow-shape": "triangle",
-          },
-        },
-      ],
+      style: stylesheet,
     });
   }
 }
@@ -80,6 +81,13 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
     checksum: await getChecksum(JSON.stringify(DEFAULT_GRAPH_CONTENT)),
     graphData: DEFAULT_GRAPH_CONTENT,
   };
+
+  fetch("https://d3flxncytuj99u.cloudfront.net/graph-styles/default.json")
+    .then((response) => response.json())
+    .then((stylesheetPayload) => {
+      stylesheet = stylesheetPayload;
+    });
+
   // seed graph
   updateRenderedGraph(graphContent.graphData);
 
