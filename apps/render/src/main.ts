@@ -53,3 +53,4 @@ setupGraphEntryListener(
 setupEditIconInteraction("edit-icon", "graph-side-drawer", "island");
 setupInfoIconInteraction("info-icon", "island");
 setupLinkInteraction("link-icon", "https://infrascan.io");
+setupLinkInteraction("powered-by", "https://infrascan.io");
