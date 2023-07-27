@@ -42,6 +42,7 @@ function formatIdAsNode(
       id: formattedId,
       type: serviceKey,
       parent: metadata?.parent,
+      name: metadata?.name,
     },
     metadata,
   };

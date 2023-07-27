@@ -5,6 +5,7 @@ export type GraphNode = {
     id: string;
     type: string;
     parent?: string;
+    name?: string;
   };
   metadata?: any;
 };
