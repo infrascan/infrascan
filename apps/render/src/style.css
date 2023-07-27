@@ -155,6 +155,8 @@ h1 {
   position: absolute;
   top: calc(100vh - 64px);
   left: calc(100vw - 192px);
+
+  cursor: pointer;
 }
 #powered-by > img {
   padding-left: 8px;
