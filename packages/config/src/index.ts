@@ -386,6 +386,7 @@ const ECSTaskScanner: ScannerDefinition<
   ],
   nodes: [
     "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
+    "ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn}",
   ],
   iamRoles: [
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",

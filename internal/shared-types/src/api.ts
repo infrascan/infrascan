@@ -4,11 +4,11 @@ export type ServiceScanCompleteCallbackFn = (
   service: string,
   functionName: string,
   functionState: any
-) => void;
+) => Promise<void>;
 
 export type ResolveStateFromServiceFn = (
   account: string,
   region: string,
   service: string,
   functionName: string
-) => void;
+) => Promise<any>;
