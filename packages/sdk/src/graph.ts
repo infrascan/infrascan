@@ -73,7 +73,9 @@ async function generateNodesForService({
   isGlobal,
   resolveStateForServiceCall,
 }: GenerateNodesForServiceOptions): Promise<GraphNode[]> {
-  let accumulatedNodes: GraphNode[] = [];
+  // Track nodes in a map to dedup
+  // Mainly for cases where a node could have more than one valid parent (e.g. ECS task to Service & Cluster)
+  let accumulatedNodes: Record<string, GraphNode> = {};
   for (const currentSelector of nodes) {
     const selectedNodes = await evaluateSelector(
       account,
@@ -96,9 +98,13 @@ async function generateNodesForService({
         });
       }
     );
-    accumulatedNodes = accumulatedNodes.concat(formattedNodes);
+    for (const formattedNode of formattedNodes) {
+      if (accumulatedNodes[formattedNode.id] == null) {
+        accumulatedNodes[formattedNode.id] = formattedNode;
+      }
+    }
   }
-  return accumulatedNodes;
+  return Object.values(accumulatedNodes);
 }
 
 type GenerateEdgesForServiceGloballyOptions = {
@@ -219,13 +225,6 @@ export async function generateGraph({
       console.log(`Generating Nodes for ${account} in ${region}`);
       // generate nodes for each regional service in this region
       for (const regionalService of REGIONAL_SERVICES) {
-        // if (regionalService.key === "EC2-Networking") {
-        //   const ec2NetworkingNodes = generateNodesForEc2Networking(
-        //     account,
-        //     region
-        //   );
-        //   graphNodes = graphNodes.concat(ec2NetworkingNodes);
-        // }
         if (regionalService.nodes) {
           console.log(`Generating graph nodes for ${regionalService.key}`);
           const initialLength = graphNodes.length;

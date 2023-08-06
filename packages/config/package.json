@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/config",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Package containing the typed service definitions for generating scanners",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
