@@ -13,7 +13,7 @@
       "inputs": ["src/**/*.ts", "test/**/*.ts"]
     },
     "build": {
-      "dependsOn": ["lint","^build"],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
     "test": {
