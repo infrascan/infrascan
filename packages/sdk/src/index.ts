@@ -1,2 +1,2 @@
-export { performScan } from "./scan";
-export { generateGraph } from "./graph";
+export { performScan } from './scan';
+export { generateGraph } from './graph';

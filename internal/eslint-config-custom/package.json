@@ -1,0 +1,15 @@
+{
+  "name": "eslint-config-custom",
+  "main": "index.js",
+  "version": "1.0.0",
+  "dependencies": {
+    "eslint": "latest",
+    "eslint-config-prettier": "latest",
+    "eslint-config-turbo": "latest"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "eslint-config-airbnb-typescript": "^17.1.0"
+  }
+}

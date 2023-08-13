@@ -1,7 +1,9 @@
+/* eslint-disable import/first */
 /**
  * Generic Formatting Utilities
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function optJSONParse(text?: string): any | undefined {
   if (text == null) {
     return undefined;
@@ -41,6 +43,7 @@ function formatCloudfrontListDistributions({
 }: ListDistributionsResult): CloudfrontDistributionSummary[] | undefined {
   return DistributionList?.Items?.map((distribution) => {
     const distributionQuantity = distribution?.Aliases?.Quantity ?? 0;
+    /* eslint-disable @typescript-eslint/naming-convention */
     const _infrascanLabel =
       distributionQuantity > 0
         ? distribution?.Aliases?.Items?.[0]
@@ -103,6 +106,7 @@ type SQSAttributes = {
   QueueArn?: string;
   Policy?: string;
   RedrivePolicy?: string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   [Key: string]: any;
 };
 

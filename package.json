@@ -6,6 +6,7 @@
     "apps/*"
   ],
   "devDependencies": {
+    "eslint": "^8.47.0",
     "turbo": "^1.9.9"
   },
   "scripts": {

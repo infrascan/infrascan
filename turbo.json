@@ -8,15 +8,16 @@
       "dependsOn": ["codegen"],
       "cache": false
     },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "inputs": ["src/**/*.ts", "test/**/*.ts"]
+    },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["lint","^build"],
       "outputs": ["dist/**"]
     },
     "test": {
       "dependsOn": ["build"],
-      "inputs": ["src/**/*.ts", "test/**/*.ts"]
-    },
-    "lint": {
       "inputs": ["src/**/*.ts", "test/**/*.ts"]
     }
   }

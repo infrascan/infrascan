@@ -1,12 +1,12 @@
-import { Project, SourceFile, VariableDeclarationKind } from "ts-morph";
-import type { BaseScannerDefinition } from "@infrascan/shared-types";
+import { Project, SourceFile, VariableDeclarationKind } from 'ts-morph';
+import type { BaseScannerDefinition } from '@infrascan/shared-types';
 
 function kebabCaseToCamelCase(val: string): string {
-  const tokens = val.split("-");
+  const tokens = val.split('-');
   const capitalisedTokens = tokens
     .slice(1)
     .map((token) => token.charAt(0).toUpperCase() + token.slice(1));
-  return [tokens[0], ...capitalisedTokens].join("");
+  return [tokens[0], ...capitalisedTokens].join('');
 }
 
 function addServiceScannerImport(sourceFile: SourceFile, service: string) {
@@ -18,27 +18,29 @@ function addServiceScannerImport(sourceFile: SourceFile, service: string) {
 
 function createExportObjectForKey(
   services: BaseScannerDefinition[],
-  key: string
+  key: string,
 ) {
   const preparedServices = services.reduce(
     (scannersByService, currentService) => {
       if (scannersByService[currentService.service]) {
         scannersByService[currentService.service].push(currentService.key);
-      } else {
-        scannersByService[currentService.service] = [currentService.key];
-      }
-      return scannersByService;
+        return scannersByService;
+      } 
+      return {
+        ...scannersByService,
+        [currentService.service]: [currentService.key]
+      };
     },
-    {} as Record<string, string[]>
+    {} as Record<string, string[]>,
   );
   const keyValuePairs = Object.entries(preparedServices)
     .map(([serviceName, scanners]) => {
       const scannersFnList = scanners
         .map((clientKey) => `${kebabCaseToCamelCase(clientKey)}.${key}`)
-        .join(", ");
+        .join(', ');
       return `"${serviceName}": [${scannersFnList}]`;
     })
-    .join(",\n");
+    .join(',\n');
 
   return `{\n${keyValuePairs}\n}`;
 }
@@ -46,7 +48,7 @@ function createExportObjectForKey(
 function createConst(
   sourceFile: SourceFile,
   variableName: string,
-  value: string
+  value: string,
 ) {
   sourceFile.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
@@ -60,34 +62,34 @@ function createConst(
 }
 
 function createScannerExportObject(services: BaseScannerDefinition[]) {
-  return createExportObjectForKey(services, "performScan");
+  return createExportObjectForKey(services, 'performScan');
 }
 
 function createNodeSelectorExport(
   sourceFile: SourceFile,
   services: BaseScannerDefinition[],
-  variableName: string
+  variableName: string,
 ) {
-  const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
+  const exportObject = createExportObjectForKey(services, 'NODE_SELECTORS');
   createConst(sourceFile, variableName, exportObject);
 }
 
 function createEdgeSelectorExport(
   sourceFile: SourceFile,
   services: BaseScannerDefinition[],
-  variableName: string
+  variableName: string,
 ) {
-  const exportObject = createExportObjectForKey(services, "NODE_SELECTORS");
+  const exportObject = createExportObjectForKey(services, 'NODE_SELECTORS');
   createConst(sourceFile, variableName, exportObject);
 }
 
 function declareScannerListAsConstant(
   sourceFile: SourceFile,
-  services: BaseScannerDefinition[]
+  services: BaseScannerDefinition[],
 ) {
   const globalServices = services.filter((service) => service.isGlobal);
   const globalScannersExport = createScannerExportObject(globalServices);
-  const globalScannersVariable = "GLOBAL_SERVICE_SCANNERS";
+  const globalScannersVariable = 'GLOBAL_SERVICE_SCANNERS';
   sourceFile.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
     declarations: [
@@ -99,28 +101,28 @@ function declareScannerListAsConstant(
   });
 
   const globalServicesWithNodeSelectors = globalServices.filter(
-    (service) => service.nodes != null
+    (service) => service.nodes != null,
   );
-  const globalNodeSelectorsVariable = "GLOBAL_NODE_SELECTORS";
+  const globalNodeSelectorsVariable = 'GLOBAL_NODE_SELECTORS';
   createNodeSelectorExport(
     sourceFile,
     globalServicesWithNodeSelectors,
-    globalNodeSelectorsVariable
+    globalNodeSelectorsVariable,
   );
 
   const globalServicesWithEdgeSelectors = globalServices.filter(
-    (service) => service.edges != null
+    (service) => service.edges != null,
   );
-  const globalEdgeSelectorsVariable = "GLOBAL_EDGE_SELECTORS";
+  const globalEdgeSelectorsVariable = 'GLOBAL_EDGE_SELECTORS';
   createEdgeSelectorExport(
     sourceFile,
     globalServicesWithEdgeSelectors,
-    globalEdgeSelectorsVariable
+    globalEdgeSelectorsVariable,
   );
 
   const regionalServices = services.filter((service) => !service.isGlobal);
   const regionalScannersExport = createScannerExportObject(regionalServices);
-  const regionalScannersVariable = "REGIONAL_SERVICE_SCANNERS";
+  const regionalScannersVariable = 'REGIONAL_SERVICE_SCANNERS';
   sourceFile.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
     declarations: [
@@ -132,23 +134,23 @@ function declareScannerListAsConstant(
   });
 
   const regionalServicesWithNodeSelectors = regionalServices.filter(
-    (service) => service.nodes != null
+    (service) => service.nodes != null,
   );
-  const regionalNodeSelectorsVariable = "REGIONAL_NODE_SELECTORS";
+  const regionalNodeSelectorsVariable = 'REGIONAL_NODE_SELECTORS';
   createNodeSelectorExport(
     sourceFile,
     regionalServicesWithNodeSelectors,
-    regionalNodeSelectorsVariable
+    regionalNodeSelectorsVariable,
   );
 
   const regionalServicesWithEdgeSelectors = regionalServices.filter(
-    (service) => service.edges != null
+    (service) => service.edges != null,
   );
-  const regionalEdgeSelectorsVariable = "REGIONAL_EDGE_SELECTORS";
+  const regionalEdgeSelectorsVariable = 'REGIONAL_EDGE_SELECTORS';
   createNodeSelectorExport(
     sourceFile,
     regionalServicesWithEdgeSelectors,
-    regionalEdgeSelectorsVariable
+    regionalEdgeSelectorsVariable,
   );
 
   sourceFile.addExportDeclaration({
@@ -168,21 +170,22 @@ export function generateEntrypoint(
   basePath: string,
   services: BaseScannerDefinition[],
   overwrite: boolean,
-  verbose: boolean
+  verbose: boolean,
 ) {
   const sourceFile = project.createSourceFile(
     `./${basePath}/index.generated.ts`,
-    "",
-    { overwrite }
+    '',
+    { overwrite },
   );
 
   sourceFile.insertText(
     0,
-    "// This file is autogenerated using infrascan-codegen. Do not manually edit this file.\n"
+    '// This file is autogenerated using infrascan-codegen. Do not manually edit this file.\n',
   );
-  for (let service of services) {
+  services.forEach((service) => {
     addServiceScannerImport(sourceFile, service.key);
-  }
+  });
+
   // Create list of service modules imported
   declareScannerListAsConstant(sourceFile, services);
 

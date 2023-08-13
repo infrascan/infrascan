@@ -1,32 +1,31 @@
-import { EC2 } from "@aws-sdk/client-ec2";
-import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
-import {
-  REGIONAL_SERVICE_SCANNERS,
-  GLOBAL_SERVICE_SCANNERS,
-} from "./aws/services/index.generated";
-import { IAMStorage } from "./aws/helpers/iam";
-import { IAM } from "@aws-sdk/client-iam";
-import { AWS_DEFAULT_REGION } from "./aws/defaults";
-
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import { EC2 } from '@aws-sdk/client-ec2';
+import { GetCallerIdentityCommandOutput, STS } from '@aws-sdk/client-sts';
+import { IAM } from '@aws-sdk/client-iam';
+import type { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import type {
   ServiceScanCompleteCallbackFn,
   ResolveStateFromServiceFn,
-} from "@infrascan/shared-types";
+} from '@infrascan/shared-types';
+import {
+  REGIONAL_SERVICE_SCANNERS,
+  GLOBAL_SERVICE_SCANNERS,
+} from './aws/services/index.generated';
+import { IAMStorage } from './aws/helpers/iam';
+import { AWS_DEFAULT_REGION } from './aws/defaults';
 
 async function whoami(
   credentials: AwsCredentialIdentityProvider,
-  region: string
+  region: string,
 ): Promise<GetCallerIdentityCommandOutput> {
   const stsClient = new STS({
     credentials,
     region,
   });
-  return await stsClient.getCallerIdentity({});
+  return stsClient.getCallerIdentity({});
 }
 
 async function getAllRegions(
-  credentials: AwsCredentialIdentityProvider
+  credentials: AwsCredentialIdentityProvider,
 ): Promise<string[]> {
   const ec2Client = new EC2({ region: AWS_DEFAULT_REGION, credentials });
   const { Regions } = await ec2Client.describeRegions({ AllRegions: true });
@@ -60,7 +59,7 @@ export async function performScan({
   const globalCaller = await whoami(credentials, AWS_DEFAULT_REGION);
 
   if (globalCaller?.Account == null) {
-    throw new Error("Failed to get caller identity");
+    throw new Error('Failed to get caller identity');
   }
 
   const scanMetadata: ScanMetadata = {
@@ -73,11 +72,11 @@ export async function performScan({
   console.log(`Scanning global resources in ${globalCaller.Account}`);
 
   let globalServicesToScan = Object.keys(
-    GLOBAL_SERVICE_SCANNERS
+    GLOBAL_SERVICE_SCANNERS,
   ) as GlobalService[];
   if (services?.length != null) {
     globalServicesToScan = Object.keys(GLOBAL_SERVICE_SCANNERS).filter(
-      (service) => services.includes(service)
+      (service) => services.includes(service),
     ) as GlobalService[];
   }
 
@@ -90,7 +89,7 @@ export async function performScan({
         iamClient,
         iamStorage,
         onServiceScanComplete,
-        resolveStateForServiceCall
+        resolveStateForServiceCall,
       );
     }
   }
@@ -100,18 +99,18 @@ export async function performScan({
   for (const region of regionsToScan) {
     const caller = await whoami(credentials, region);
     if (caller.Account == null) {
-      throw new Error("Failed to get caller identity");
+      throw new Error('Failed to get caller identity');
     }
     console.log(`Beginning scan of ${caller.Account} in ${region}`);
     let regionalServicesToScan = Object.keys(
-      REGIONAL_SERVICE_SCANNERS
+      REGIONAL_SERVICE_SCANNERS,
     ) as RegionalService[];
     if (services?.length != null) {
-      console.log(`Filtering services according to supplied list`, {
+      console.log('Filtering services according to supplied list', {
         services,
       });
       regionalServicesToScan = Object.keys(REGIONAL_SERVICE_SCANNERS).filter(
-        (service) => services.includes(service)
+        (service) => services.includes(service),
       ) as RegionalService[];
     }
 
@@ -124,7 +123,7 @@ export async function performScan({
           iamClient,
           iamStorage,
           onServiceScanComplete,
-          resolveStateForServiceCall
+          resolveStateForServiceCall,
         );
       }
     }
@@ -136,9 +135,9 @@ export async function performScan({
   await onServiceScanComplete(
     globalCaller.Account,
     AWS_DEFAULT_REGION,
-    "IAM",
-    "roles",
-    iamStorage.getAllRoles()
+    'IAM',
+    'roles',
+    iamStorage.getAllRoles(),
   );
   return scanMetadata;
 }

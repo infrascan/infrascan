@@ -4,7 +4,9 @@ export type State<T> = {
     region: string;
   };
   _result: T;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   _parameters?: any;
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type GenericState = State<any>;

@@ -7,6 +7,7 @@ export type GraphNode = {
     parent?: string;
     name?: string;
   };
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   metadata?: any;
 };
 
@@ -23,12 +24,14 @@ export type GraphEdge = {
   metadata?: {
     label: string;
     roleArn?: string;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     statement: any;
   };
 };
 
 export type GraphElement = GraphNode | GraphEdge;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type GetGlobalStateForServiceAndFunction = (
   service: string,
   functionName: string

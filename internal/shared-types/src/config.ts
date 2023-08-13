@@ -1,6 +1,7 @@
 export type BaseParameterResolver = {
   Key: string;
   Selector?: string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   Value?: any;
 };
 

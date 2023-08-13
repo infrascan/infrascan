@@ -1,20 +1,19 @@
-import * as ServiceClients from "./services";
-import * as Formatters from "./formatters";
-import type { GlobalClient } from "./services";
 import type {
   BaseEdgeResolver,
   BaseGetter,
   BaseParameterResolver,
   BaseScannerDefinition,
+  ServiceClients,
+  GlobalClient
 } from "@infrascan/shared-types";
 
-export type { PaginationToken } from "@infrascan/shared-types";
+import * as Formatters from "./formatters";
 
-export type SupportedClient = keyof typeof ServiceClients;
+export type SupportedClient = keyof ServiceClients;
 export type ServiceCommand<
   S extends SupportedClient,
   T extends string
-> = AsCommand<T> extends `${infer P}Command` & keyof (typeof ServiceClients)[S]
+> = AsCommand<T> extends `${infer P}Command` & keyof ServiceClients[S]
   ? P
   : never;
 
