@@ -45,7 +45,7 @@
     "@aws-sdk/client-sqs": "^3.341.0",
     "@aws-sdk/client-sts": "^3.341.0",
     "@aws-sdk/config-resolver": "^3.341.0",
-    "@infrascan/config": "^0.1.6",
+    "@infrascan/config": "^0.1.7",
     "jmespath": "^0.16.0",
     "minimatch": "^5.1.0"
   },
