@@ -5,15 +5,16 @@ import {
   FunctionDeclaration,
   FormatCodeSettings,
   VariableDeclarationKind,
-} from "ts-morph";
-import { SemicolonPreference } from "typescript";
+} from 'ts-morph';
+
+import { SemicolonPreference } from 'typescript';
 
 import type {
   PaginationToken,
   BaseScannerDefinition,
   BaseGetter,
   BaseEdgeResolver,
-} from "@infrascan/shared-types";
+} from '@infrascan/shared-types';
 
 type ServiceFunctionImports = {
   input: string;
@@ -22,7 +23,7 @@ type ServiceFunctionImports = {
 };
 
 function generateFunctionImports(
-  serviceFunction: string
+  serviceFunction: string,
 ): ServiceFunctionImports {
   return {
     input: `${serviceFunction}CommandInput`,
@@ -38,18 +39,18 @@ function performParameterisedFunctionCall(
   pagingTokenVariableName: string,
   resultVariableName: string,
   clientVariableName: string,
-  paginationToken?: PaginationToken
+  paginationToken?: PaginationToken,
 ): void {
   if (paginationToken?.request != null) {
     writer.writeLine(
-      `requestParameters["${paginationToken.request}"] = ${pagingTokenVariableName};`
+      `requestParameters["${paginationToken.request}"] = ${pagingTokenVariableName};`,
     );
   }
   writer.writeLine(
-    `const ${parameterVariableName} = new ${serviceFunction.command}(requestParameters);`
+    `const ${parameterVariableName} = new ${serviceFunction.command}(requestParameters);`,
   );
   writer.writeLine(
-    `const ${resultVariableName}: ${serviceFunction.output} = await ${clientVariableName}.send(${parameterVariableName});`
+    `const ${resultVariableName}: ${serviceFunction.output} = await ${clientVariableName}.send(${parameterVariableName});`,
   );
 }
 
@@ -60,42 +61,42 @@ function performNonParameterisedFunctionCall(
   pagingTokenVariableName: string,
   resultVariableName: string,
   clientVariableName: string,
-  paginationToken?: PaginationToken
+  paginationToken?: PaginationToken,
 ): void {
   if (paginationToken?.request != null) {
     writer.writeLine(
-      `const ${parameterVariableName} = new ${serviceFunction.command}({ "${paginationToken.request}": ${pagingTokenVariableName} } as ${serviceFunction.input});`
+      `const ${parameterVariableName} = new ${serviceFunction.command}({ "${paginationToken.request}": ${pagingTokenVariableName} } as ${serviceFunction.input});`,
     );
   } else {
     writer.writeLine(
-      `const ${parameterVariableName} = new ${serviceFunction.command}({} as ${serviceFunction.input});`
+      `const ${parameterVariableName} = new ${serviceFunction.command}({} as ${serviceFunction.input});`,
     );
   }
   writer.writeLine(
-    `const ${resultVariableName}: ${serviceFunction.output} = await ${clientVariableName}.send(${parameterVariableName});`
+    `const ${resultVariableName}: ${serviceFunction.output} = await ${clientVariableName}.send(${parameterVariableName});`,
   );
 }
 
 function scanIAMRolesFromState(
   writer: CodeBlockWriter,
-  iamRoleSelectors: string[]
+  iamRoleSelectors: string[],
 ) {
   const serializedIAMSelectors = iamRoleSelectors
     .map((selector) => `"${selector}"`)
-    .join(",");
+    .join(',');
   writer.writeLine(`const iamRoleSelectors = [${serializedIAMSelectors}]`);
-  writer.writeLine("for(const selector of iamRoleSelectors)").block(() => {
+  writer.writeLine('for(const selector of iamRoleSelectors)').block(() => {
     writer.writeLine(
-      "const selectionResult = jmespath.search(result, selector);"
+      'const selectionResult = jmespath.search(result, selector);',
     );
     writer.writeLine(`if(Array.isArray(selectionResult))`).block(() => {
       writer.writeLine(`for(const roleArn of selectionResult)`).block(() => {
-        writer.writeLine("await scanIamRole(iamStorage, iamClient, roleArn);");
+        writer.writeLine('await scanIamRole(iamStorage, iamClient, roleArn);');
       });
     });
-    writer.writeLine("else if(selectionResult != null)").block(() => {
+    writer.writeLine('else if(selectionResult != null)').block(() => {
       writer.writeLine(
-        "await scanIamRole(iamStorage, iamClient, selectionResult);"
+        'await scanIamRole(iamStorage, iamClient, selectionResult);',
       );
     });
   });
@@ -106,7 +107,7 @@ function implementFunctionCallForScanner(
   clientVariableName: string,
   service: string,
   clientKey: string,
-  getter: BaseGetter
+  getter: BaseGetter,
 ): CodeBlockWriter {
   const { fn, paginationToken, parameters, formatter, iamRoleSelectors } =
     getter;
@@ -117,15 +118,15 @@ function implementFunctionCallForScanner(
 
   // impls service scan, added as a function to allow for looping vs one off calls
   function scanResource(hasParameters: boolean): void {
-    writer.writeLine("try").block(() => {
+    writer.writeLine('try').block(() => {
       writer.writeLine(`console.log("${service} ${fn}");`);
       const pagingTokenVariable = `${fn}PagingToken`;
       writer.writeLine(
-        `let ${pagingTokenVariable}: string | undefined = undefined;`
+        `let ${pagingTokenVariable}: string | undefined = undefined;`,
       );
-      writer.writeLine("do {");
+      writer.writeLine('do {');
 
-      let resultVariable = "result";
+      let resultVariable = 'result';
 
       const parameterVariableName = `${fn}Cmd`;
       if (hasParameters) {
@@ -136,7 +137,7 @@ function implementFunctionCallForScanner(
           pagingTokenVariable,
           resultVariable,
           clientVariableName,
-          paginationToken
+          paginationToken,
         );
       } else {
         performNonParameterisedFunctionCall(
@@ -146,25 +147,25 @@ function implementFunctionCallForScanner(
           pagingTokenVariable,
           resultVariable,
           clientVariableName,
-          paginationToken
+          paginationToken,
         );
       }
       if (formatter != null) {
         writer.writeLine(
-          `const formattedResult = Formatters.${clientKey}.${formatter}(${resultVariable});`
+          `const formattedResult = Formatters.${clientKey}.${formatter}(${resultVariable});`,
         );
-        resultVariable = "formattedResult";
+        resultVariable = 'formattedResult';
       }
 
       writer.writeLine(
         `${fn}State.push({ _metadata: { account, region }, _parameters: ${
-          hasParameters ? "requestParameters" : "{}"
-        }, _result: ${resultVariable} });`
+          hasParameters ? 'requestParameters' : '{}'
+        }, _result: ${resultVariable} });`,
       );
 
       if (paginationToken?.response != null) {
         writer.writeLine(
-          `${pagingTokenVariable} = result["${paginationToken.response}"]`
+          `${pagingTokenVariable} = result["${paginationToken.response}"]`,
         );
       }
 
@@ -173,11 +174,11 @@ function implementFunctionCallForScanner(
       }
       writer.writeLine(`} while(${pagingTokenVariable} != null);`);
     });
-    writer.writeLine("catch(err: any)").block(() => {
-      writer.writeLine("if(err?.retryable)").block(() => {
+    writer.writeLine('catch(err: any)').block(() => {
+      writer.writeLine('if(err?.retryable)').block(() => {
         writer.writeLine('console.log("Encountered retryable error", err);');
       });
-      writer.writeLine("else").block(() => {
+      writer.writeLine('else').block(() => {
         writer.writeLine('console.log("Encountered unretryable error", err);');
       });
     });
@@ -187,11 +188,11 @@ function implementFunctionCallForScanner(
   if (hasParameters) {
     // TODO: add types here
     writer.writeLine(
-      `const ${fn}ParameterResolvers = ${JSON.stringify(parameters)};`
+      `const ${fn}ParameterResolvers = ${JSON.stringify(parameters)};`,
     );
     const parametersVariable = `${fn}Parameters`;
     writer.writeLine(
-      `const ${parametersVariable} = (await resolveFunctionCallParameters(account, region, ${fn}ParameterResolvers, resolveStateForServiceCall)) as ${fn}CommandInput[];`
+      `const ${parametersVariable} = (await resolveFunctionCallParameters(account, region, ${fn}ParameterResolvers, resolveStateForServiceCall)) as ${fn}CommandInput[];`,
     );
     writer
       .writeLine(`for(const requestParameters of ${parametersVariable})`)
@@ -201,7 +202,7 @@ function implementFunctionCallForScanner(
   }
 
   writer.writeLine(
-    `await onServiceCallComplete(account, region, "${clientKey}", "${fn}", ${fn}State);`
+    `await onServiceCallComplete(account, region, "${clientKey}", "${fn}", ${fn}State);`,
   );
   return writer;
 }
@@ -211,25 +212,25 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
   sourceFile.addImportDeclaration({
     isTypeOnly: true,
     namedImports: [
-      "ServiceScanCompleteCallbackFn",
-      "ResolveStateFromServiceFn",
-      "GenericState",
+      'ServiceScanCompleteCallbackFn',
+      'ResolveStateFromServiceFn',
+      'GenericState',
     ],
-    moduleSpecifier: "@infrascan/shared-types",
+    moduleSpecifier: '@infrascan/shared-types',
   });
   sourceFile.addImportDeclaration({
     isTypeOnly: true,
-    namedImports: ["AwsCredentialIdentityProvider"],
-    moduleSpecifier: "@aws-sdk/types",
+    namedImports: ['AwsCredentialIdentityProvider'],
+    moduleSpecifier: '@aws-sdk/types',
   });
 }
 
 function addScannerSpecificImports(
   sourceFile: SourceFile,
-  config: BaseScannerDefinition
+  config: BaseScannerDefinition,
 ): void {
   const commandImports = config.getters.flatMap(({ fn }) =>
-    Object.values(generateFunctionImports(fn))
+    Object.values(generateFunctionImports(fn)),
   );
   // Import service from AWS
   sourceFile.addImportDeclaration({
@@ -239,39 +240,39 @@ function addScannerSpecificImports(
 
   // If service contains references to IAM roles, import the IAM client and jmespath selector
   sourceFile.addImportDeclaration({
-    namedImports: ["scanIamRole", "IAMStorage"],
-    moduleSpecifier: "../helpers/iam",
+    namedImports: ['scanIamRole', 'IAMStorage'],
+    moduleSpecifier: '../helpers/iam',
   });
   sourceFile.addImportDeclaration({
-    namedImports: ["IAM"],
-    moduleSpecifier: "@aws-sdk/client-iam",
+    namedImports: ['IAM'],
+    moduleSpecifier: '@aws-sdk/client-iam',
   });
   const hasIAMRoles = config.getters.some(
-    ({ iamRoleSelectors }) => iamRoleSelectors != null
+    ({ iamRoleSelectors }) => iamRoleSelectors != null,
   );
   if (hasIAMRoles) {
     sourceFile.addImportDeclaration({
-      defaultImport: "jmespath",
-      moduleSpecifier: "jmespath",
+      defaultImport: 'jmespath',
+      moduleSpecifier: 'jmespath',
     });
   }
 
   const hasParams = config.getters.some(({ parameters }) => parameters != null);
   if (hasParams) {
     sourceFile.addImportDeclaration({
-      namedImports: ["resolveFunctionCallParameters"],
-      moduleSpecifier: "../helpers/state",
+      namedImports: ['resolveFunctionCallParameters'],
+      moduleSpecifier: '../helpers/state',
     });
   }
 
   // If service contains formatters, import the formatters module
   const hasOutputFormatters = config.getters.some(
-    ({ formatter }) => formatter != null
+    ({ formatter }) => formatter != null,
   );
   if (hasOutputFormatters) {
     sourceFile.addImportDeclaration({
-      namedImports: ["Formatters"],
-      moduleSpecifier: "@infrascan/config",
+      namedImports: ['Formatters'],
+      moduleSpecifier: '@infrascan/config',
     });
   }
 }
@@ -279,36 +280,36 @@ function addScannerSpecificImports(
 function createScanEntrypoint(sourceFile: SourceFile): FunctionDeclaration {
   // Create top level scan function
   return sourceFile.addFunction({
-    name: "performScan",
+    name: 'performScan',
     isAsync: true,
     parameters: [
       {
-        name: "credentials",
-        type: "AwsCredentialIdentityProvider",
+        name: 'credentials',
+        type: 'AwsCredentialIdentityProvider',
       },
       {
-        name: "account",
-        type: "string",
+        name: 'account',
+        type: 'string',
       },
       {
-        name: "region",
-        type: "string",
+        name: 'region',
+        type: 'string',
       },
       {
-        name: "iamClient",
-        type: "IAM",
+        name: 'iamClient',
+        type: 'IAM',
       },
       {
-        name: "iamStorage",
-        type: "IAMStorage",
+        name: 'iamStorage',
+        type: 'IAMStorage',
       },
       {
-        name: "onServiceCallComplete",
-        type: "ServiceScanCompleteCallbackFn",
+        name: 'onServiceCallComplete',
+        type: 'ServiceScanCompleteCallbackFn',
       },
       {
-        name: "resolveStateForServiceCall",
-        type: "ResolveStateFromServiceFn",
+        name: 'resolveStateForServiceCall',
+        type: 'ResolveStateFromServiceFn',
       },
     ],
   });
@@ -317,16 +318,16 @@ function createScanEntrypoint(sourceFile: SourceFile): FunctionDeclaration {
 function addGeneratedFileNotice(sourceFile: SourceFile): void {
   sourceFile.insertText(
     0,
-    "// This file is autogenerated using infrascan-codegen. Do not manually edit this file.\n"
+    '// This file is autogenerated using infrascan-codegen. Do not manually edit this file.\n',
   );
 }
 
 function addNodeSelectorVariable(
   sourceFile: SourceFile,
-  nodeSelectors: string[]
+  nodeSelectors: string[],
 ): string {
-  const nodeSelectorVariable = "NODE_SELECTORS";
-  const formattedSelectors = nodeSelectors.map((node) => `"${node}"`).join(",");
+  const nodeSelectorVariable = 'NODE_SELECTORS';
+  const formattedSelectors = nodeSelectors.map((node) => `"${node}"`).join(',');
   sourceFile.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
     declarations: [
@@ -341,12 +342,12 @@ function addNodeSelectorVariable(
 
 function addEdgeSelectorVariable(
   sourceFile: SourceFile,
-  edgeSelectors: BaseEdgeResolver[]
+  edgeSelectors: BaseEdgeResolver[],
 ): string {
-  const edgeSelectorVariable = "EDGE_SELECTORS";
+  const edgeSelectorVariable = 'EDGE_SELECTORS';
   const formattedSelectors = edgeSelectors
     .map((edge) => JSON.stringify(edge))
-    .join(",");
+    .join(',');
   sourceFile.addVariableStatement({
     declarationKind: VariableDeclarationKind.Const,
     declarations: [
@@ -371,12 +372,12 @@ export function generateService(
   basePath: string,
   config: BaseScannerDefinition,
   overwrite: boolean,
-  verbose: boolean
+  verbose: boolean,
 ) {
   const sourceFile = project.createSourceFile(
     `./${basePath}/${config.key}.generated.ts`,
-    "",
-    { overwrite }
+    '',
+    { overwrite },
   );
   addGeneratedFileNotice(sourceFile);
   addScannerSpecificImports(sourceFile, config);
@@ -386,18 +387,18 @@ export function generateService(
   scanEntrypointFunction.setBodyText((writer) => {
     const clientVariableName = config.clientKey;
     writer.writeLine(
-      `const ${clientVariableName} = new ${config.clientKey}Client({ region, credentials });`
+      `const ${clientVariableName} = new ${config.clientKey}Client({ region, credentials });`,
     );
-    for (const getter of config.getters) {
+    config.getters.forEach((getter) => {
       implementFunctionCallForScanner(
         writer,
         clientVariableName,
         config.service,
         config.clientKey,
-        getter
+        getter,
       );
       writer.blankLine();
-    }
+    });
   });
 
   const exportedVars = [scanEntrypointFunction.getName() as string];
@@ -405,7 +406,7 @@ export function generateService(
   if (config.nodes != null) {
     const nodeSelectorVariable = addNodeSelectorVariable(
       sourceFile,
-      config.nodes
+      config.nodes,
     );
     exportedVars.push(nodeSelectorVariable);
   }
@@ -413,7 +414,7 @@ export function generateService(
   if (config.edges != null) {
     const edgeSelectorVariable = addEdgeSelectorVariable(
       sourceFile,
-      config.edges
+      config.edges,
     );
     exportedVars.push(edgeSelectorVariable);
   }

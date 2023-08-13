@@ -1,16 +1,36 @@
-import jmespath from "jmespath";
+import jmespath from 'jmespath';
 
 import type {
   ResolveStateFromServiceFn,
   GetGlobalStateForServiceAndFunction,
   BaseParameterResolver,
-} from "@infrascan/shared-types";
+  Service
+} from '@infrascan/shared-types';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function evaluateSelector(
+  account: string,
+  region: string,
+  rawSelector: string,
+  resolveStateForServiceCall: ResolveStateFromServiceFn,
+): Promise<any[]> {
+  const [service, functionCall, ...selector] = rawSelector.split('|');
+
+  const state = await resolveStateForServiceCall(
+    account,
+    region,
+    service as Service,
+    functionCall,
+  );
+  return jmespath.search(state, selector.join('|'));
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function resolveFunctionCallParameters(
   account: string,
   region: string,
   parameters: BaseParameterResolver[],
-  resolveStateForServiceCall: ResolveStateFromServiceFn
+  resolveStateForServiceCall: ResolveStateFromServiceFn,
 ): Promise<Record<string, any>[]> {
   const allParamObjects: Record<string, string>[] = [];
   for (const { Key, Selector, Value } of parameters) {
@@ -19,7 +39,7 @@ export async function resolveFunctionCallParameters(
         account,
         region,
         Selector,
-        resolveStateForServiceCall
+        resolveStateForServiceCall,
       );
       for (let idx = 0; idx < parameterValues.length; idx++) {
         if (allParamObjects[idx] == null) {
@@ -38,38 +58,20 @@ export async function resolveFunctionCallParameters(
     }
   }
   const validatedParamObjects = allParamObjects.filter((obj) => {
-    const allParamsPresent = parameters.every(({ Key }) =>
-      Object.keys(obj).includes(Key)
-    );
+    const allParamsPresent = parameters.every(({ Key }) => Object.keys(obj).includes(Key));
     return allParamsPresent;
   });
   return validatedParamObjects;
 }
 
-export async function evaluateSelector(
-  account: string,
-  region: string,
-  rawSelector: string,
-  resolveStateForServiceCall: ResolveStateFromServiceFn
-): Promise<any[]> {
-  const [service, functionCall, ...selector] = rawSelector.split("|");
-  const state = await resolveStateForServiceCall(
-    account,
-    region,
-    service,
-    functionCall
-  );
-  return jmespath.search(state, selector.join("|"));
-}
-
 export async function evaluateSelectorGlobally(
   rawSelector: string,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
 ) {
-  const [service, functionCall, ...selector] = rawSelector.split("|");
+  const [service, functionCall, ...selector] = rawSelector.split('|');
   const aggregateState = await getGlobalStateForServiceAndFunction(
     service,
-    functionCall
+    functionCall,
   );
-  return jmespath.search(aggregateState, selector.join("|"));
+  return jmespath.search(aggregateState, selector.join('|'));
 }

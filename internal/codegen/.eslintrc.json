@@ -1,0 +1,12 @@
+{
+  "extends": ["custom"],
+  "root": true,
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "no-console": "off",
+    "no-await-in-loop": "off"
+  },
+  "ignorePatterns": ["dist/**"]
+}

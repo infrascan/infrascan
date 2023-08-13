@@ -9,3 +9,5 @@ dumps
 .DS_Store
 .turbo
 dist
+.vscode
+docs

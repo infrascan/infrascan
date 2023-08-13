@@ -2,7 +2,7 @@ import type { ScannerDefinition } from "./types";
 
 export * as Formatters from "./formatters";
 
-type S3Functions =
+export type S3Functions =
   | "ListBuckets"
   | "GetBucketTagging"
   | "GetBucketNotificationConfiguration"
@@ -75,7 +75,7 @@ const S3Scanner: ScannerDefinition<"S3", S3Functions> = {
   ],
 };
 
-type CloudFrontFunctions = "ListDistributions";
+export type CloudFrontFunctions = "ListDistributions";
 const CloudfrontScanner: ScannerDefinition<"CloudFront", CloudFrontFunctions> =
   {
     service: "cloudfront",
@@ -93,7 +93,7 @@ const CloudfrontScanner: ScannerDefinition<"CloudFront", CloudFrontFunctions> =
     ],
   };
 
-type Route53Functions = "ListHostedZonesByName" | "ListResourceRecordSets";
+export type Route53Functions = "ListHostedZonesByName" | "ListResourceRecordSets";
 const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
   service: "route-53",
   clientKey: "Route53",
@@ -120,7 +120,7 @@ const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
   ],
 };
 
-type ApiGatewayFunctions = "GetApis" | "GetDomainNames";
+export type ApiGatewayFunctions = "GetApis" | "GetDomainNames";
 const ApiGatewayScanner: ScannerDefinition<
   "ApiGatewayV2",
   ApiGatewayFunctions
@@ -141,7 +141,7 @@ const ApiGatewayScanner: ScannerDefinition<
   nodes: ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"],
 };
 
-type AutoScalingFunctions = "DescribeAutoScalingGroups";
+export type AutoScalingFunctions = "DescribeAutoScalingGroups";
 const AutoScalingScanner: ScannerDefinition<
   "AutoScaling",
   AutoScalingFunctions
@@ -157,7 +157,7 @@ const AutoScalingScanner: ScannerDefinition<
   ],
 };
 
-type CloudWatchLogsFunctions =
+export type CloudWatchLogsFunctions =
   | "DescribeLogGroups"
   | "DescribeSubscriptionFilters";
 const CloudWatchLogsScanner: ScannerDefinition<
@@ -204,7 +204,7 @@ const CloudWatchLogsScanner: ScannerDefinition<
   ],
 };
 
-type DynamoDbFunctions = "ListTables" | "DescribeTable";
+export type DynamoDbFunctions = "ListTables" | "DescribeTable";
 const DynamoDbScanner: ScannerDefinition<"DynamoDB", DynamoDbFunctions> = {
   service: "dynamodb",
   clientKey: "DynamoDB",
@@ -228,7 +228,7 @@ const DynamoDbScanner: ScannerDefinition<"DynamoDB", DynamoDbFunctions> = {
   nodes: ["DynamoDB|DescribeTable|[].{id:_result.TableArn}"],
 };
 
-type EC2Functions =
+export type EC2Functions =
   | "DescribeVpcs"
   | "DescribeAvailabilityZones"
   | "DescribeSubnets";
@@ -253,7 +253,7 @@ const EC2Scanner: ScannerDefinition<"EC2", EC2Functions> = {
   ],
 };
 
-type ECSClusterFunctions = "ListClusters" | "DescribeClusters";
+export type ECSClusterFunctions = "ListClusters" | "DescribeClusters";
 const ECSClusterScanner: ScannerDefinition<"ECS", ECSClusterFunctions> = {
   service: "ecs",
   key: "ECS-Cluster",
@@ -287,7 +287,7 @@ const ECSClusterScanner: ScannerDefinition<"ECS", ECSClusterFunctions> = {
   ],
 };
 
-type ECSServiceFunctions = "ListServices" | "DescribeServices";
+export type ECSServiceFunctions = "ListServices" | "DescribeServices";
 const ECSServiceScanner: ScannerDefinition<
   "ECS",
   ECSServiceFunctions | ECSClusterFunctions
@@ -332,7 +332,7 @@ const ECSServiceScanner: ScannerDefinition<
   ],
 };
 
-type ECSTaskFunctions =
+export type ECSTaskFunctions =
   | "ListTasks"
   | "DescribeTasks"
   | "DescribeTaskDefinition";
@@ -394,12 +394,11 @@ const ECSTaskScanner: ScannerDefinition<
   ],
 };
 
-type ElasticLoadBalancingFunctions =
+export type ElasticLoadBalancingFunctions =
   | "DescribeLoadBalancers"
   | "DescribeTargetGroups"
   | "DescribeListeners"
   | "DescribeRules";
-
 const ElasticLoadBalancingScanner: ScannerDefinition<
   "ElasticLoadBalancingV2",
   ElasticLoadBalancingFunctions
@@ -451,7 +450,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
   ],
 };
 
-type LambdaFunctions = "ListFunctions" | "GetFunction";
+export type LambdaFunctions = "ListFunctions" | "GetFunction";
 const LambdaScanner: ScannerDefinition<"Lambda", LambdaFunctions> = {
   service: "lambda",
   clientKey: "Lambda",
@@ -484,7 +483,7 @@ const LambdaScanner: ScannerDefinition<"Lambda", LambdaFunctions> = {
   ],
 };
 
-type RDSFunctions = "DescribeDBInstances";
+export type RDSFunctions = "DescribeDBInstances";
 const RDSScanner: ScannerDefinition<"RDS", RDSFunctions> = {
   service: "rds",
   clientKey: "RDS",
@@ -500,7 +499,7 @@ const RDSScanner: ScannerDefinition<"RDS", RDSFunctions> = {
   ],
 };
 
-type SNSFunctions =
+export type SNSFunctions =
   | "ListTopics"
   | "GetTopicAttributes"
   | "ListSubscriptionsByTopic"
@@ -554,7 +553,7 @@ const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
   ],
 };
 
-type SQSFunctions = "ListQueues" | "ListQueueTags" | "GetQueueAttributes";
+export type SQSFunctions = "ListQueues" | "ListQueueTags" | "GetQueueAttributes";
 const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
   service: "sqs",
   key: "SQS",

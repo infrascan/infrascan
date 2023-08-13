@@ -4,7 +4,8 @@
   "description": "Shared types for multiple infrascan packages",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
@@ -26,5 +27,10 @@
     "@aws-sdk/client-sns": "^3.341.0",
     "@aws-sdk/client-sqs": "^3.341.0",
     "@aws-sdk/client-sts": "^3.341.0"
+  },
+  "devDependencies": {
+    "eslint-config-custom": "*",
+    "tsconfig": "*",
+    "typescript": "^5.1.6"
   }
 }

@@ -10,14 +10,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist ; tsc",
-    "prepublish": "rm -rf dist ; tsc"
+    "prepublish": "rm -rf dist ; tsc",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "ISC",
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.369.0",
     "@infrascan/shared-types": "^0.1.0",
+    "eslint-config-custom": "*",
     "tsconfig": "*",
     "typescript": "^5.1.6"
   }
