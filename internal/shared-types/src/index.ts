@@ -1,6 +1,7 @@
-import * as Services from "./services";
+import { GlobalServiceClients, RegionalServiceClients, ServiceClients } from "./services";
+import type { GlobalService, RegionalService, Service } from "./services";
 
-export type ServiceClients = typeof Services;
+export { ServiceClients, GlobalServiceClients, RegionalServiceClients, GlobalService, RegionalService, Service }; 
 export * from "./api";
 export * from "./config";
 export * from "./graph";

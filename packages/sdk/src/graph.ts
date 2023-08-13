@@ -118,11 +118,8 @@ type EdgeTarget = {
 
 /**
  * Pull in global state and use it to generate edges
- * @param {Object[]} edges
- * @param {string} edges[].from
- * @param {string} edges[].to
- * @param {string} edges[].name
- * @returns {Object[]} list of edge objects
+ * 
+ * @returns list of edges
  */
 async function generateEdgesForServiceGlobally({
   serviceEdges,
@@ -160,17 +157,29 @@ async function generateEdgesForServiceGlobally({
   return edges;
 }
 
-type GenerateGraphOptions = {
+// Parameters required to convert a scan output into an infrastructure graph.
+export type GenerateGraphOptions = {
+  // A list of scan outputs. This allows scans over many accounts to be composed into a single graph.
   scanMetadata: ScanMetadata[];
+  // Function used to retrieve the state from the scan.
+  // This should be the same as the corresponding callback given to scan.
   resolveStateForServiceCall: ResolveStateFromServiceFn;
+  // Callback to retrieve global state for a service and function. This allows for links to be resolved
+  // across account boundaries.
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
 };
 
-export async function generateGraph({
-  scanMetadata,
-  resolveStateForServiceCall,
-  getGlobalStateForServiceAndFunction,
-}: GenerateGraphOptions): Promise<GraphElement[]> {
+/**
+ * Entrypoint function to convert one or more scans into an infrastructure graph. 
+ * 
+ * @returns The infrastructure graph.
+ */ 
+export async function generateGraph(graphOptions: GenerateGraphOptions): Promise<GraphElement[]> {
+  const {
+    scanMetadata,
+    resolveStateForServiceCall,
+    getGlobalStateForServiceAndFunction,
+  } = graphOptions;
   const iamStorage = new IAMStorage();
   console.log('Generating graph based on scan metadata', {
     scanMetadata,
@@ -335,3 +344,10 @@ export async function generateGraph({
     .concat(cloudfrontEdges)
     .concat(ecsEdges);
 }
+
+export {
+  GraphEdge,
+  GraphNode,
+  GraphElement,
+  GetGlobalStateForServiceAndFunction,
+};

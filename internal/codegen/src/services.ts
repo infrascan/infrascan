@@ -6,7 +6,7 @@ import {
   FormatCodeSettings,
   VariableDeclarationKind,
 } from 'ts-morph';
-// some really long lines some really long lines some really long lines some really long lines some really long lines some really long lines some really long lines
+
 import { SemicolonPreference } from 'typescript';
 
 import type {

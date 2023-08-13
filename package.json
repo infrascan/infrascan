@@ -7,13 +7,15 @@
   ],
   "devDependencies": {
     "eslint": "^8.47.0",
-    "turbo": "^1.9.9"
+    "turbo": "^1.9.9",
+    "typedoc": "^0.24.8"
   },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "codegen": "turbo run codegen",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/codegen"
   }
 }

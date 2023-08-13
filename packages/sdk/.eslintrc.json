@@ -16,5 +16,5 @@
     "no-plusplus": "off",
     "no-underscore-dangle": "off"
   },
-  "ignorePatterns": ["src/**/*.generated.ts", "scripts/**", "dist/**"]
+  "ignorePatterns": ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**"]
 }

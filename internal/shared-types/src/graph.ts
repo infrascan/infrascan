@@ -1,9 +1,15 @@
+/**
+ * A node on the graph
+ */
 export type GraphNode = {
   group: "nodes";
   id: string;
   data: {
     id: string;
     type: string;
+    /**
+     * Parent node (account, region etc)
+     */
     parent?: string;
     name?: string;
   };
@@ -11,13 +17,25 @@ export type GraphNode = {
   metadata?: any;
 };
 
+/**
+ * An edge connecting two nodes within a graph
+ */
 export type GraphEdge = {
   group: "edges";
+  /**
+   * Unique ID for the edge
+   */
   id?: string;
   data: {
     id: string;
     name: string;
+    /**
+     * Source Node
+     */ 
     source: string;
+    /**
+     * Target Node
+     */
     target: string;
     type: string;
   };
@@ -29,6 +47,9 @@ export type GraphEdge = {
   };
 };
 
+/**
+ * Generic type for elements in a graph
+ */
 export type GraphElement = GraphNode | GraphEdge;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

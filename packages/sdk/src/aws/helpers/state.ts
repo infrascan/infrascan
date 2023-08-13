@@ -1,10 +1,16 @@
 import jmespath from 'jmespath';
 
-import type {
+import {
   ResolveStateFromServiceFn,
   GetGlobalStateForServiceAndFunction,
   BaseParameterResolver,
+  Service,
+  ServiceClients
 } from '@infrascan/shared-types';
+
+function isSupportedService(service: string): service is Service {
+  return service in ServiceClients;
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluateSelector(
@@ -14,10 +20,15 @@ export async function evaluateSelector(
   resolveStateForServiceCall: ResolveStateFromServiceFn,
 ): Promise<any[]> {
   const [service, functionCall, ...selector] = rawSelector.split('|');
+
+  if(!isSupportedService(service)) {
+    throw new Error('Invalid service given in selector');
+  }
+
   const state = await resolveStateForServiceCall(
     account,
     region,
-    service,
+    service as Service,
     functionCall,
   );
   return jmespath.search(state, selector.join('|'));

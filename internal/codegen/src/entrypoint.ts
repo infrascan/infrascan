@@ -28,7 +28,7 @@ function createExportObjectForKey(
       } 
       return {
         ...scannersByService,
-        [currentService.service]: [currentService.key]
+        [currentService.clientKey]: [currentService.key]
       };
     },
     {} as Record<string, string[]>,

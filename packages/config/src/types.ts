@@ -3,51 +3,51 @@ import type {
   BaseGetter,
   BaseParameterResolver,
   BaseScannerDefinition,
-  ServiceClients,
-  GlobalClient
+  Service,
+  GlobalService,
+  ServiceClients
 } from "@infrascan/shared-types";
 
 import * as Formatters from "./formatters";
 
-export type SupportedClient = keyof ServiceClients;
+type AsCommand<T extends string> = `${T}Command`;
+
 export type ServiceCommand<
-  S extends SupportedClient,
+  S extends Service,
   T extends string
-> = AsCommand<T> extends `${infer P}Command` & keyof ServiceClients[S]
+> = AsCommand<T> extends `${infer P}Command` & keyof typeof ServiceClients[S]
   ? P
   : never;
 
-type AsCommand<T extends string> = `${T}Command`;
-
 export type StateSelector<
-  S extends SupportedClient,
+  S extends Service,
   T extends string
 > = `${S}|${ServiceCommand<S, T>}|${string}`;
 
 export type ParameterResolver<
-  Serv extends SupportedClient,
+  Serv extends Service,
   T extends string
 > = {
   Selector?: StateSelector<Serv, T>;
 } & BaseParameterResolver;
 
-export type EdgeResolver<Serv extends SupportedClient, T extends string> = {
+export type EdgeResolver<Serv extends Service, T extends string> = {
   state: StateSelector<Serv, T>;
 } & BaseEdgeResolver;
 
-type ImplementedFormatter<Serv extends SupportedClient> =
+type ImplementedFormatter<Serv extends Service> =
   Serv extends keyof typeof Formatters
     ? keyof (typeof Formatters)[Serv]
     : never;
 
-export type ServiceGetter<Serv extends SupportedClient, T extends string> = {
+export type ServiceGetter<Serv extends Service, T extends string> = {
   fn: ServiceCommand<Serv, T>;
   parameters?: ParameterResolver<Serv, T>[];
   formatter?: ImplementedFormatter<Serv>;
 } & BaseGetter;
 
 export type ScannerDefinition<
-  Serv extends SupportedClient,
+  Serv extends Service,
   T extends string
 > = {
   clientKey: Serv;
@@ -55,5 +55,5 @@ export type ScannerDefinition<
   nodes?: StateSelector<Serv, T>[];
   edges?: EdgeResolver<Serv, T>[];
   iamRoles?: StateSelector<Serv, T>[];
-  isGlobal?: Serv extends GlobalClient ? true : false;
+  isGlobal?: Serv extends GlobalService ? true : false;
 } & BaseScannerDefinition;
