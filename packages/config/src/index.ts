@@ -446,7 +446,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn}",
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn,name:LoadBalancerName}",
   ],
 };
 
