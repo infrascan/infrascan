@@ -6,7 +6,7 @@ This repo contains the Infrascan SDK, Config, and CLI, as well as private packag
 
 ## Project Structure
 
-The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. Apps contains publicly available webapps, internal contains unpublished devDependencies of the main projects, and packages are the published typescript packages.
+The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. 
 
 ### apps
 - `render` — a playground for quickly visualizing Infrascan graph outputs, available at [render.infrascan.io](https://render.infrascan.io).
