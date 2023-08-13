@@ -2,11 +2,16 @@
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
     "codegen": {
+      "dependsOn": ["^build"],
       "cache": false
     },
     "dev": {
       "dependsOn": ["codegen"],
       "cache": false
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "inputs": ["src/**/*.ts", "test/**/*.ts"]
     },
     "build": {
       "dependsOn": ["^build"],
@@ -14,9 +19,6 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "inputs": ["src/**/*.ts", "test/**/*.ts"]
-    },
-    "lint": {
       "inputs": ["src/**/*.ts", "test/**/*.ts"]
     }
   }

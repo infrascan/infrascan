@@ -107,6 +107,6 @@ async function performScan(credentials: AwsCredentialIdentityProvider, account: 
 
 }
 
-const NODE_SELECTORS = ["ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn}"];
+const NODE_SELECTORS = ["ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn,name:LoadBalancerName}"];
 
 export { performScan, NODE_SELECTORS };

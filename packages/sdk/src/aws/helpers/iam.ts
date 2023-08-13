@@ -1,10 +1,11 @@
-import { IAM, Policy, PolicyVersion } from "@aws-sdk/client-iam";
+import { IAM, Policy, PolicyVersion } from '@aws-sdk/client-iam';
 
 export function parseRoleName(roleArn: string): string | undefined {
-  const lastToken = roleArn.split(":").pop();
-  return lastToken?.split("/").pop();
+  const lastToken = roleArn.split(':').pop();
+  return lastToken?.split('/').pop();
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function decodePolicy(policyDoc: string): any {
   const decodedPolicy = decodeURIComponent(policyDoc);
   return JSON.parse(decodedPolicy);
@@ -13,14 +14,17 @@ export function decodePolicy(policyDoc: string): any {
 export type StoredRole = {
   roleArn: string;
   roleName: string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   role?: any;
   inlinePolicies?: InlinePolicy[];
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   attachedPolicies?: any;
 };
 
 export type InlinePolicy = {
   RoleName: string | undefined;
   PolicyName: string | undefined;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   PolicyDocument: any;
 };
 
@@ -29,6 +33,7 @@ export type AttachedPolicy = Policy | VersionedPolicy;
 
 export class IAMStorage {
   private data: Record<string, StoredRole>;
+
   constructor() {
     this.data = {};
   }
@@ -52,7 +57,7 @@ export class IAMStorage {
 
 export function hydrateRoleStorage(
   storage: IAMStorage,
-  roles: StoredRole[]
+  roles: StoredRole[],
 ): IAMStorage {
   for (const role of roles) {
     storage.setRole(role.roleArn, role);
@@ -60,48 +65,9 @@ export function hydrateRoleStorage(
   return storage;
 }
 
-export async function scanIamRole(
-  iamStorage: IAMStorage,
-  iamClient: IAM,
-  roleArn: string
-) {
-  const prescannedRole = iamStorage.getRole(roleArn);
-  if (prescannedRole != null) {
-    return;
-  }
-  const roleName = parseRoleName(roleArn);
-  if (roleName == null) {
-    throw new Error("Failed to parse IAM Role");
-  }
-
-  // Retrieve base info about Role, main insight being the trust relationship
-  const baseRoleInfo = await iamClient.getRole({ RoleName: roleName });
-  if (baseRoleInfo?.Role?.AssumeRolePolicyDocument) {
-    baseRoleInfo.Role.AssumeRolePolicyDocument = decodePolicy(
-      baseRoleInfo.Role.AssumeRolePolicyDocument
-    );
-  }
-  // Init role state
-  const iamState: StoredRole = {
-    roleArn,
-    roleName,
-    role: baseRoleInfo?.Role,
-  };
-
-  const inlinePolicies = await scanInlinePoliciesForRole(iamClient, roleName);
-  iamState.inlinePolicies = inlinePolicies;
-
-  const attachedPolicies = await scanAttachedPoliciesForRole(
-    iamClient,
-    roleName
-  );
-  iamState.attachedPolicies = attachedPolicies;
-  iamStorage.setRole(roleArn, iamState);
-}
-
 async function scanInlinePoliciesForRole(
   iamClient: IAM,
-  roleName: string
+  roleName: string,
 ): Promise<InlinePolicy[]> {
   // Pull info about the role's inline policies
   const rolePolicies = await iamClient.listRolePolicies({
@@ -128,7 +94,7 @@ async function scanInlinePoliciesForRole(
 
 async function scanAttachedPoliciesForRole(
   iamClient: IAM,
-  roleName: string
+  roleName: string,
 ): Promise<AttachedPolicy[]> {
   // Pull info about the role's attached policies
   const attachedPolicies = [];
@@ -161,4 +127,43 @@ async function scanAttachedPoliciesForRole(
     }
   }
   return attachedPolicies;
+}
+
+export async function scanIamRole(
+  iamStorage: IAMStorage,
+  iamClient: IAM,
+  roleArn: string,
+) {
+  const prescannedRole = iamStorage.getRole(roleArn);
+  if (prescannedRole != null) {
+    return;
+  }
+  const roleName = parseRoleName(roleArn);
+  if (roleName == null) {
+    throw new Error('Failed to parse IAM Role');
+  }
+
+  // Retrieve base info about Role, main insight being the trust relationship
+  const baseRoleInfo = await iamClient.getRole({ RoleName: roleName });
+  if (baseRoleInfo?.Role?.AssumeRolePolicyDocument) {
+    baseRoleInfo.Role.AssumeRolePolicyDocument = decodePolicy(
+      baseRoleInfo.Role.AssumeRolePolicyDocument,
+    );
+  }
+  // Init role state
+  const iamState: StoredRole = {
+    roleArn,
+    roleName,
+    role: baseRoleInfo?.Role,
+  };
+
+  const inlinePolicies = await scanInlinePoliciesForRole(iamClient, roleName);
+  iamState.inlinePolicies = inlinePolicies;
+
+  const attachedPolicies = await scanAttachedPoliciesForRole(
+    iamClient,
+    roleName,
+  );
+  iamState.attachedPolicies = attachedPolicies;
+  iamStorage.setRole(roleArn, iamState);
 }

@@ -1,0 +1,7 @@
+{
+  "extends": ["custom"],
+  "root": true,
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  }
+}

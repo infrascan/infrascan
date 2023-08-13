@@ -1,0 +1,20 @@
+{
+  "extends": ["custom"],
+  "root": true,
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "no-console": "off",
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": [
+      "warn",
+      "ForInStatement",
+      "LabeledStatement",
+      "WithStatement"
+    ],
+    "no-plusplus": "off",
+    "no-underscore-dangle": "off"
+  },
+  "ignorePatterns": ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**"]
+}
