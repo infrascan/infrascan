@@ -1,4 +1,6 @@
-name: Publish
+name: Publish Docs
+permissions:
+  contents: write
 on:
   push:
   #   branches:
