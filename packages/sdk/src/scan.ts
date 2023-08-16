@@ -87,6 +87,32 @@ export type ScanMetadata = {
  * and retrieve ({@link resolveStateForServiceCall}) state as needed.
  * 
  * When the account scan is complete, the {@link ScanMetadata} will be returned.
+ * 
+ * Example Code:
+ * ```ts
+ * import { performScan } from "@infrascan/sdk";
+ * import { 
+ *  onServiceScanComplete, 
+ *  resolveStateForServiceCall 
+ * } from "@infrascan/fs-connector";
+ * import { fromIni } from "@aws-sdk/credential-providers";
+ * 
+ * const credentials = fromIni({ profile: "dev" });
+ * const regions = ["us-east-1","us-west-1"];
+ * const services = ["SNS","Lambda","S3"];
+ * 
+ * performScan({
+ *  credentials,
+ *  regions,
+ *  services,
+ *  onServiceScanComplete,
+ *  resolveStateForServiceCall
+ * }).then(function (scanMetadata) {
+ *  console.log("Scan Complete!", scanMetadata);
+ * }).catch(function (err) {
+ *  console.error("Failed to scan", err);
+ * });
+ * ```
  */
 export async function performScan(scanOptions: PerformScanOptions) {
   const {

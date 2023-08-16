@@ -1,8 +1,9 @@
-{
-  "extends": ["custom"],
-  "root": true,
-  "parserOptions": {
-    "project": "./tsconfig.json"
+export default {
+  extends: ["custom"],
+  root: true,
+  parserOptions: {
+    project: "./tsconfig.json",
+    tsconfigRootDir: __dirname
   },
   "rules": {
     "no-console": "off",
@@ -16,5 +17,5 @@
     "no-plusplus": "off",
     "no-underscore-dangle": "off"
   },
-  "ignorePatterns": ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**"]
-}
+  ignorePatterns: ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**"]
+};
