@@ -17,17 +17,31 @@
 <li><a href="_infrascan_sdk.GenerateGraphOptions.html">GenerateGraphOptions</a></li></ul>
 <h1>Type alias GenerateGraphOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-kind-type-alias">Generate<wbr/>Graph<wbr/>Options</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">getGlobalStateForServiceAndFunction</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.GetGlobalStateForServiceAndFunction.html" class="tsd-signature-type tsd-kind-type-alias">GetGlobalStateForServiceAndFunction</a><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">resolveStateForServiceCall</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ResolveStateFromServiceFn.html" class="tsd-signature-type tsd-kind-type-alias">ResolveStateFromServiceFn</a><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">scanMetadata</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ScanMetadata.html" class="tsd-signature-type tsd-kind-type-alias">ScanMetadata</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
+<div class="tsd-comment tsd-typography"><p>Parameters required to convert a scan output into an infrastructure graph.</p>
+</div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter">
-<h5><span class="tsd-kind-property">get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>And<wbr/>Function</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.GetGlobalStateForServiceAndFunction.html" class="tsd-signature-type tsd-kind-type-alias">GetGlobalStateForServiceAndFunction</a></h5></li>
+<h5><span class="tsd-kind-property">get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>And<wbr/>Function</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.GetGlobalStateForServiceAndFunction.html" class="tsd-signature-type tsd-kind-type-alias">GetGlobalStateForServiceAndFunction</a></h5>
+<div class="tsd-comment tsd-typography"><p>Callback to retrieve global state for a service and function. This allows for links to be resolved
+across account boundaries.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
 <li class="tsd-parameter">
-<h5><span class="tsd-kind-property">resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Call</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ResolveStateFromServiceFn.html" class="tsd-signature-type tsd-kind-type-alias">ResolveStateFromServiceFn</a></h5></li>
+<h5><span class="tsd-kind-property">resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Call</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ResolveStateFromServiceFn.html" class="tsd-signature-type tsd-kind-type-alias">ResolveStateFromServiceFn</a></h5>
+<div class="tsd-comment tsd-typography"><p>Function used to retrieve the state from the scan.
+This should be the same as the corresponding callback given to scan.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li>
 <li class="tsd-parameter">
-<h5><span class="tsd-kind-property">scan<wbr/>Metadata</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ScanMetadata.html" class="tsd-signature-type tsd-kind-type-alias">ScanMetadata</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div><aside class="tsd-sources">
+<h5><span class="tsd-kind-property">scan<wbr/>Metadata</span><span class="tsd-signature-symbol">: </span><a href="_infrascan_sdk.ScanMetadata.html" class="tsd-signature-type tsd-kind-type-alias">ScanMetadata</a><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>A list of scan outputs. This allows scans over many accounts to be composed into a single graph.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/16cca0b/packages/sdk/src/graph.ts#L161">packages/sdk/src/graph.ts:161</a></li></ul></aside></div>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/a344a0f/packages/sdk/src/graph.ts#L163">packages/sdk/src/graph.ts:163</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
