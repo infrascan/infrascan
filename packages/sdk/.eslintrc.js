@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   extends: ["custom"],
   root: true,
   parserOptions: {
@@ -17,5 +17,5 @@ export default {
     "no-plusplus": "off",
     "no-underscore-dangle": "off"
   },
-  ignorePatterns: ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**"]
+  ignorePatterns: ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**", ".eslintrc.js"]
 };

@@ -5,8 +5,5 @@ module.exports = {
     project: "./tsconfig.json",
     tsconfigRootDir: __dirname
   },
-  rules: {
-    "no-underscore-dangle": "off"
-  },
-  ignorePatterns: ["dist/**", ".eslintrc.js"]
+  ignorePatterns: [".eslintrc.js"]
 }
