@@ -1,5 +1,11 @@
 import type { ScannerDefinition } from "./types";
 
+export type { ScannerDefinition } from "./types";
+
+/**
+ * Utility functions for removing unnecessary data from scan 
+ * results, and adding useful attributes to index by.
+ */
 export * as Formatters from "./formatters";
 
 export type S3Functions =
@@ -599,6 +605,11 @@ const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
   ],
 };
 
+/**
+ * Union type for all legitimate and supported scanners. 
+ * 
+ * Used to type the exposed config.
+ */
 export type GenericScanner =
   | ScannerDefinition<"S3", S3Functions>
   | ScannerDefinition<"CloudFront", "ListDistributions">

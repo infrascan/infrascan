@@ -157,22 +157,49 @@ async function generateEdgesForServiceGlobally({
   return edges;
 }
 
-// Parameters required to convert a scan output into an infrastructure graph.
+/**
+ * Parameters required to convert a scan output into an infrastructure graph.
+ */ 
 export type GenerateGraphOptions = {
-  // A list of scan outputs. This allows scans over many accounts to be composed into a single graph.
+  /**
+   * A list of scan outputs. This allows scans over many accounts to be composed into a single graph.
+   */ 
   scanMetadata: ScanMetadata[];
-  // Function used to retrieve the state from the scan.
-  // This should be the same as the corresponding callback given to scan.
+  /**
+   * Function used to retrieve the state from the scan.
+   * This should be the same as the corresponding callback given to scan.
+   */
   resolveStateForServiceCall: ResolveStateFromServiceFn;
-  // Callback to retrieve global state for a service and function. This allows for links to be resolved
-  // across account boundaries.
+  /**
+   * Callback to retrieve global state for a service and function. This allows for links to be resolved
+   * across account boundaries.
+   */
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
 };
 
 /**
  * Entrypoint function to convert one or more scans into an infrastructure graph. 
  * 
- * @returns The infrastructure graph.
+ * * Example Code:
+ * ```ts
+ * import { generateGraph, performScan } from "@infrascan/sdk";
+ * import { 
+ *  resolveStateForServiceCall, 
+ *  getGlobalStateForServiceAndFunction
+ * } from "@infrascan/fs-connector";
+ * 
+ * 
+ * const scanMetadata = await performScan({ ... });
+ * generateGraph({
+ *  scanMetadata,
+ *  resolveStateForServiceCall,
+ *  getGlobalStateForServiceAndFunction,
+ * }).then(function (graphData) {
+ *  console.log("Graph Complete!", graphData);
+ * }).catch(function (err) {
+ *  console.error("Failed to create graph", err);
+ * });
+ * ```
  */ 
 export async function generateGraph(graphOptions: GenerateGraphOptions): Promise<GraphElement[]> {
   const {

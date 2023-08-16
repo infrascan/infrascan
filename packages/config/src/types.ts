@@ -46,6 +46,12 @@ export type ServiceGetter<Serv extends Service, T extends string> = {
   formatter?: ImplementedFormatter<Serv>;
 } & BaseGetter;
 
+/**
+ * Type definition for a service scanner within the Infrascan Config.
+ * 
+ * Adds type checking to guarantee the service is supported, the functions are 
+ * exposed in the service's SDK, and that the selectors are referencing scanned functions.
+ */
 export type ScannerDefinition<
   Serv extends Service,
   T extends string
