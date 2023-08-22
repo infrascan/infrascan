@@ -11,10 +11,11 @@ import type {
   TaskDefinition,
 } from '@aws-sdk/client-ecs';
 import type {
-  GetGlobalStateForServiceAndFunction,
+  GetGlobalStateForServiceFunction,
   GraphNode,
   GraphEdge,
-  State, ResolveStateFromServiceFn,
+  State, 
+  ResolveStateForServiceFunction,
 } from '@infrascan/shared-types';
 
 import { TargetGroup } from '@aws-sdk/client-elastic-load-balancing-v2';
@@ -32,7 +33,7 @@ type ELBTargetGroupState = State<TargetGroup>;
 
 export async function generateEdgesForECSResources(
   iamStorage: IAMStorage,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ): Promise<GraphEdge[]> {
   const ecsServiceState: ECSServiceState[] = await getGlobalStateForServiceAndFunction('ECS', 'DescribeServices');
   const ecsServiceRecords = ecsServiceState
@@ -135,7 +136,7 @@ export async function generateEdgesForECSResources(
 export async function generateNodesForECSTasks(
   account: string,
   region: string,
-  resolveStateForServiceCall: ResolveStateFromServiceFn,
+  resolveStateForServiceCall: ResolveStateForServiceFunction,
 ): Promise<GraphNode[]> {
   const servicesState: Service[] = await evaluateSelector(
     account,

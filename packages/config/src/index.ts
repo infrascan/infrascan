@@ -1,6 +1,10 @@
 import type { ScannerDefinition } from "./types";
 
-export type { ScannerDefinition } from "./types";
+/**
+ * Type bounds to ensure that the config is referring to supported functions,
+ * and reading from knonw state
+ */
+export * as ConfigTypes from './types';
 
 /**
  * Utility functions for removing unnecessary data from scan 

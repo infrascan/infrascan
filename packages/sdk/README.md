@@ -7,29 +7,31 @@ The SDK exposes two functions, `performScan` and `generateGraph` which are desig
 ## Quickstart
 ```ts
  import { performScan, generateGraph } from "@infrascan/sdk";
- import { 
-  onServiceScanComplete, 
-  resolveStateForServiceCall,
-  getGlobalStateForServiceAndFunction
- } from "@infrascan/fs-connector";
+ import buildFsConnector from "@infrascan/fs-connector";
  import { fromIni } from "@aws-sdk/credential-providers";
  
  const credentials = fromIni({ profile: "dev" });
  const regions = ["us-east-1","us-west-1"];
  const services = ["SNS","Lambda","S3"];
 
+ const {
+  onServiceScanComplete,
+  resolveStateForServiceFunction,
+  getGlobalStateForServiceFunction
+ } = buildFsConnector('state');
+
  performScan({
   credentials,
   regions,
   services,
   onServiceScanComplete,
-  resolveStateForServiceCall
+  resolveStateForServiceCall: resolveStateForServiceFunction
  }).then(function (scanMetadata) {
   console.log("Scan Complete!", scanMetadata);
   return generateGraph({
     scanMetadata,
     resolveStateForServiceCall,
-    getGlobalStateForServiceAndFunction
+    getGlobalStateForServiceFunction
   });
  }).then(function (graphData) {
   console.log("Graph generated!", graphData);

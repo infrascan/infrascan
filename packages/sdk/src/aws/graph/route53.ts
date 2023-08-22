@@ -6,7 +6,7 @@
 import { ResourceRecordSet } from '@aws-sdk/client-route-53';
 import type {
   GraphEdge,
-  GetGlobalStateForServiceAndFunction,
+  GetGlobalStateForServiceFunction,
   State,
 } from '@infrascan/shared-types';
 import minimatch from 'minimatch';
@@ -17,7 +17,7 @@ import type { Formatters } from '@infrascan/config';
 import { formatEdge, formatS3NodeId } from './graph-utilities';
 
 export async function generateEdgesForRoute53Resources(
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
   const route53State: State<ResourceRecordSet[]>[] =
     await getGlobalStateForServiceAndFunction(

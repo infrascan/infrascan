@@ -213,7 +213,7 @@ function addStandardScannerImports(sourceFile: SourceFile): void {
     isTypeOnly: true,
     namedImports: [
       'ServiceScanCompleteCallbackFn',
-      'ResolveStateFromServiceFn',
+      'ResolveStateForServiceFunction',
       'GenericState',
     ],
     moduleSpecifier: '@infrascan/shared-types',
@@ -309,7 +309,7 @@ function createScanEntrypoint(sourceFile: SourceFile): FunctionDeclaration {
       },
       {
         name: 'resolveStateForServiceCall',
-        type: 'ResolveStateFromServiceFn',
+        type: 'ResolveStateForServiceFunction',
       },
     ],
   });

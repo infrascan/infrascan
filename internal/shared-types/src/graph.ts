@@ -51,9 +51,3 @@ export type GraphEdge = {
  * Generic type for elements in a graph
  */
 export type GraphElement = GraphNode | GraphEdge;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type GetGlobalStateForServiceAndFunction = (
-  service: string,
-  functionName: string
-) => any;

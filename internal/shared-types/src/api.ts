@@ -36,7 +36,7 @@ export type ServiceScanCompleteCallbackFn = (
  * This is used by the scan function pull back parameters for future function calls
  * A common pattern is to have resources listed, and then described.
  */ 
-export type ResolveStateFromServiceFn = (
+export type ResolveStateForServiceFunction = (
   /**
    * The AWS account that was scanned
    */
@@ -54,3 +54,15 @@ export type ResolveStateFromServiceFn = (
    */ 
   functionName: string
 ) => Promise<any>;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type GetGlobalStateForServiceFunction = (
+  service: string,
+  functionName: string
+) => any;
+
+export type Connector = {
+  onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn,
+  resolveStateForServiceFunction: ResolveStateForServiceFunction,
+  getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction,
+}

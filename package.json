@@ -17,6 +17,6 @@
     "codegen": "turbo run codegen",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/codegen"
+    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/codegen ; cp -r assets/* docs/assets"
   }
 }
