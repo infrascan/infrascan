@@ -4,7 +4,7 @@
  */
 
 import type {
-  GetGlobalStateForServiceAndFunction,
+  GetGlobalStateForServiceFunction,
   GraphEdge,
   State,
 } from '@infrascan/shared-types';
@@ -15,7 +15,7 @@ import { formatEdge, formatS3NodeId } from './graph-utilities';
 type GlobalCloudFrontState = State<Formatters.CloudfrontDistributionSummary[]>;
 type GlobalS3State = State<Bucket[]>;
 export async function generateEdgesForCloudfrontResources(
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
   const cloudfrontRecords: GlobalCloudFrontState[] = await getGlobalStateForServiceAndFunction(
     'CloudFront',

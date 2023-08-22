@@ -1,8 +1,8 @@
 import jmespath from 'jmespath';
 
 import type {
-  ResolveStateFromServiceFn,
-  GetGlobalStateForServiceAndFunction,
+  ResolveStateForServiceFunction,
+  GetGlobalStateForServiceFunction,
   BaseParameterResolver,
   Service
 } from '@infrascan/shared-types';
@@ -12,7 +12,7 @@ export async function evaluateSelector(
   account: string,
   region: string,
   rawSelector: string,
-  resolveStateForServiceCall: ResolveStateFromServiceFn,
+  resolveStateForServiceCall: ResolveStateForServiceFunction,
 ): Promise<any[]> {
   const [service, functionCall, ...selector] = rawSelector.split('|');
 
@@ -30,7 +30,7 @@ export async function resolveFunctionCallParameters(
   account: string,
   region: string,
   parameters: BaseParameterResolver[],
-  resolveStateForServiceCall: ResolveStateFromServiceFn,
+  resolveStateForServiceCall: ResolveStateForServiceFunction,
 ): Promise<Record<string, any>[]> {
   const allParamObjects: Record<string, string>[] = [];
   for (const { Key, Selector, Value } of parameters) {
@@ -66,7 +66,7 @@ export async function resolveFunctionCallParameters(
 
 export async function evaluateSelectorGlobally(
   rawSelector: string,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
   const [service, functionCall, ...selector] = rawSelector.split('|');
   const aggregateState = await getGlobalStateForServiceAndFunction(

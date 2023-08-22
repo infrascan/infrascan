@@ -1,0 +1,28 @@
+{
+  "name": "@infrascan/fs-connector",
+  "version": "0.1.0",
+  "description": "Connector for the Infrascan SDK to read and write state to the local filesystem",
+  "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist ; tsc",
+    "prepublish": "rm -rf dist ; tsc",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "ISC",
+  "devDependencies": {
+    "@infrascan/shared-types": "^0.1.0",
+    "eslint-config-custom": "*",
+    "tsconfig": "*",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "minimatch": "^9.0.3"
+  }
+}

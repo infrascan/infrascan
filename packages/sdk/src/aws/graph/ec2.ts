@@ -2,7 +2,7 @@
  * Handles the custom logic for generating EC2 networking nodes
  */
 
-import type { ResolveStateFromServiceFn, GraphNode, State } from '@infrascan/shared-types';
+import type { ResolveStateForServiceFunction, GraphNode, State } from '@infrascan/shared-types';
 import type { AvailabilityZone, Subnet, Vpc } from '@aws-sdk/client-ec2';
 import { sanitizeId } from './graph-utilities';
 import { evaluateSelector } from '../helpers/state';
@@ -13,7 +13,7 @@ type EC2SubnetState = State<Subnet[]>;
 export async function generateNodesForEc2Networking(
   account: string,
   region: string,
-  resolveStateForServiceCall: ResolveStateFromServiceFn,
+  resolveStateForServiceCall: ResolveStateForServiceFunction,
 ) {
   let ec2NetworkingState: GraphNode[] = [];
   const vpcsState: EC2VpcState[] = await evaluateSelector(

@@ -3,7 +3,7 @@ import minimatch from 'minimatch';
 import { REGIONAL_SERVICES, GLOBAL_SERVICES } from '@infrascan/config';
 import type {
   GraphEdge,
-  GetGlobalStateForServiceAndFunction,
+  GetGlobalStateForServiceFunction,
   BaseScannerDefinition,
 } from '@infrascan/shared-types';
 import { IAMStorage } from '../helpers/iam';
@@ -67,7 +67,7 @@ export function formatS3NodeId(nodeId: string): string {
 
 async function findNodesForService(
   serviceConfig: BaseScannerDefinition,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
   const { nodes, arnLabel, service } = serviceConfig;
   const resourceService = arnLabel ?? service;
@@ -121,7 +121,7 @@ export function getStatementsForRole(role: StoredRole) {
 
 export type ResolveResourceGlobOptions = {
   resourceArnFromPolicy: string;
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
 };
 
 /**
@@ -207,7 +207,7 @@ export type EdgeResource = {
  */
 export async function generateEdgesForPolicyStatements(
   policyStatements: PolicyStatement[],
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ): Promise<EdgeResource[]> {
   let resources: EdgeResource[] = [];
   for (const { label, statements } of policyStatements) {
@@ -254,7 +254,7 @@ export async function generateEdgesForRole(
   iamStorage: IAMStorage,
   arn: string,
   executor: string,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction,
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ): Promise<GraphEdge[]> {
   const iamRole = iamStorage.getRole(arn);
   if (iamRole == null) {

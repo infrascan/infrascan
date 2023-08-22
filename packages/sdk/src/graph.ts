@@ -5,8 +5,8 @@ import type {
   GraphEdge,
   GraphNode,
   GraphElement,
-  GetGlobalStateForServiceAndFunction,
-  ResolveStateFromServiceFn,
+  GetGlobalStateForServiceFunction,
+  ResolveStateForServiceFunction,
 } from '@infrascan/shared-types';
 import { AWS_DEFAULT_REGION } from './aws/defaults';
 import { generateEdgesForCloudfrontResources } from './aws/graph/cloudfront';
@@ -56,7 +56,7 @@ type GenerateNodesForServiceOptions = {
   serviceKey: string;
   nodes: string[];
   isGlobal: boolean;
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
+  resolveStateForServiceCall: ResolveStateForServiceFunction;
 };
 
 type SelectedNode = {
@@ -108,7 +108,7 @@ async function generateNodesForService({
 
 type GenerateEdgesForServiceGloballyOptions = {
   serviceEdges: BaseEdgeResolver[];
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
 };
 
 type EdgeTarget = {
@@ -169,12 +169,12 @@ export type GenerateGraphOptions = {
    * Function used to retrieve the state from the scan.
    * This should be the same as the corresponding callback given to scan.
    */
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
+  resolveStateForServiceCall: ResolveStateForServiceFunction;
   /**
    * Callback to retrieve global state for a service and function. This allows for links to be resolved
    * across account boundaries.
    */
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceAndFunction;
+  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
 };
 
 /**
@@ -376,5 +376,5 @@ export {
   GraphEdge,
   GraphNode,
   GraphElement,
-  GetGlobalStateForServiceAndFunction,
+  GetGlobalStateForServiceFunction,
 };

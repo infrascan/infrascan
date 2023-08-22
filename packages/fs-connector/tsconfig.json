@@ -1,0 +1,10 @@
+{
+  "extends": "tsconfig/base.json",
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "Node16",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "baseUrl": "index.ts"
+  }
+}

@@ -4,7 +4,7 @@ import { IAM } from '@aws-sdk/client-iam';
 import type { AwsCredentialIdentityProvider } from '@aws-sdk/types';
 import type {
   ServiceScanCompleteCallbackFn,
-  ResolveStateFromServiceFn,
+  ResolveStateForServiceFunction,
   RegionalService,
   GlobalService,
   Service
@@ -55,7 +55,7 @@ export type PerformScanOptions = {
   /**
    * Callback for querying scan state
    */ 
-  resolveStateForServiceCall: ResolveStateFromServiceFn;
+  resolveStateForServiceCall: ResolveStateForServiceFunction;
   /**
    * An optional list of regions to scan. Defaults to all available regions for an account.
    */ 
@@ -210,5 +210,5 @@ export async function performScan(scanOptions: PerformScanOptions) {
 
 export {
   ServiceScanCompleteCallbackFn,
-  ResolveStateFromServiceFn
+  ResolveStateForServiceFunction
 };
