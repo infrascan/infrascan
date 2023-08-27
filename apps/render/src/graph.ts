@@ -2,30 +2,30 @@ import type {
   GraphEdge,
   GraphElement,
   GraphNode,
-} from '@infrascan/shared-types';
+} from "@infrascan/shared-types";
 
 function buildNode(id: string): GraphNode {
   return {
     id,
-    group: 'nodes',
-    data: { id, type: 'node' },
+    group: "nodes",
+    data: { id, type: "node" },
   };
 }
 
 function buildEdge(id: string, source: string, target: string): GraphEdge {
   return {
-    group: 'edges',
-    data: { id, name: id, source, target, type: 'edge' },
+    group: "edges",
+    data: { id, name: id, source, target, type: "edge" },
   };
 }
 
 export const DEFAULT_GRAPH_CONTENT: GraphElement[] = [
-  buildNode('node-1'),
-  buildNode('node-2'),
-  buildNode('node-3'),
-  buildEdge('edge-1', 'node-1', 'node-2'),
-  buildEdge('edge-2', 'node-2', 'node-3'),
-  buildEdge('edge-3', 'node-3', 'node-1'),
+  buildNode("node-1"),
+  buildNode("node-2"),
+  buildNode("node-3"),
+  buildEdge("edge-1", "node-1", "node-2"),
+  buildEdge("edge-2", "node-2", "node-3"),
+  buildEdge("edge-3", "node-3", "node-1"),
 ];
 
 type GraphCache = {
@@ -38,7 +38,7 @@ const decoder = new TextDecoder();
 async function getChecksum(content: string): Promise<string> {
   const bufferedGraphContent = encoder.encode(content);
   const graphHashBuffer = await window.crypto.subtle.digest(
-    'SHA-256',
+    "SHA-256",
     bufferedGraphContent,
   );
   return decoder.decode(graphHashBuffer);
@@ -56,12 +56,12 @@ type CytoscapeGraphBuilder = (opts: CytoscapeGraphOptions) => void;
 type RenderWindow = Window & { cytoscape?: CytoscapeGraphBuilder };
 let stylesheet = [
   {
-    selector: 'edge',
+    selector: "edge",
     style: {
-      width: '1px',
-      'background-color': '#000',
-      'curve-style': 'bezier',
-      'target-arrow-shape': 'triangle',
+      width: "1px",
+      "background-color": "#000",
+      "curve-style": "bezier",
+      "target-arrow-shape": "triangle",
     },
   },
 ];
@@ -69,7 +69,7 @@ function updateRenderedGraph(graphContent: GraphElement[]) {
   const _window = window as RenderWindow;
   if (_window.cytoscape != null) {
     _window.cytoscape({
-      container: document.getElementById('graph-canvas') as HTMLDivElement,
+      container: document.getElementById("graph-canvas") as HTMLDivElement,
       elements: graphContent,
       style: stylesheet,
     });
@@ -82,7 +82,7 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
     graphData: DEFAULT_GRAPH_CONTENT,
   };
 
-  fetch('https://d3flxncytuj99u.cloudfront.net/graph-styles/default.json')
+  fetch("https://d3flxncytuj99u.cloudfront.net/graph-styles/default.json")
     .then((response) => response.json())
     .then((stylesheetPayload) => {
       stylesheet = stylesheetPayload;
@@ -91,7 +91,7 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
   // seed graph
   updateRenderedGraph(graphContent.graphData);
 
-  textArea.addEventListener('input', async () => {
+  textArea.addEventListener("input", async () => {
     const currentContent = textArea.value.trim();
     try {
       const parsedGraphData = JSON.parse(currentContent);
@@ -106,7 +106,7 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
         updateRenderedGraph(graphContent.graphData);
       }
     } catch (err) {
-      console.error('Failed to parse input as JSON: ', (err as Error).message);
+      console.error("Failed to parse input as JSON: ", (err as Error).message);
     }
   });
 }
