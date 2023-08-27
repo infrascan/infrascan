@@ -1,0 +1,12 @@
+name: Release SDK
+on:
+  push:
+    tags:
+      - "@infrascan/sdk@*"
+jobs:
+  release-sdk:
+    uses: ./release.yml
+    with:
+      package: sdk
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

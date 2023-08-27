@@ -1,0 +1,31 @@
+on:
+  workflow_call:
+    inputs:
+      package:
+        required: true
+        type: string
+    secrets:
+      NPM_TOKEN: 
+        required: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install
+        run: npm ci 
+      - name: Build
+        run: npm run build -w packages/${{ inputs.package }}
+      - name: Lint
+        run: npm run lint -w packages/${{ inputs.package }}
+      - name: Test
+        run: npm run test -w packages/${{ inputs.package }}
+      - name: Release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish -w packages/${{ inputs.package }}

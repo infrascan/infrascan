@@ -1,0 +1,12 @@
+name: Release Config
+on:
+  push:
+    tags:
+      - "@infrascan/config@*"
+jobs:
+  release-config:
+    uses: ./release.yml
+    with:
+      package: config
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

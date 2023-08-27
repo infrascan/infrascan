@@ -1,0 +1,12 @@
+name: Release CLI
+on:
+  push:
+    tags:
+      - "@infrascan/cli@*"
+jobs:
+  release-cli:
+    uses: ./release.yml
+    with:
+      package: cli
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
