@@ -12,6 +12,7 @@ export type GraphNode = {
      */
     parent?: string;
     name?: string;
+    service?: string;
   };
   /* eslint-disable @typescript-eslint/no-explicit-any */
   metadata?: any;
