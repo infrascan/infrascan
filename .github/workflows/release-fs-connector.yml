@@ -5,7 +5,7 @@ on:
       - "@infrascan/fs-connector@*"
 jobs:
   release-fs-connector:
-    uses: ./release.yml
+    uses: ./.github/workflows/release.yml
     with:
       package: fs-connector
     secrets:

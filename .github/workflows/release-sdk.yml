@@ -5,7 +5,7 @@ on:
       - "@infrascan/sdk@*"
 jobs:
   release-sdk:
-    uses: ./release.yml
+    uses: ./.github/workflows/release.yml
     with:
       package: sdk
     secrets:

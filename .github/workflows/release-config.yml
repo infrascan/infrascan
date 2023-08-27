@@ -5,7 +5,7 @@ on:
       - "@infrascan/config@*"
 jobs:
   release-config:
-    uses: ./release.yml
+    uses: ./.github/workflows/release.yml
     with:
       package: config
     secrets:

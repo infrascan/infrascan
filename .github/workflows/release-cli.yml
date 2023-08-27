@@ -5,7 +5,7 @@ on:
       - "@infrascan/cli@*"
 jobs:
   release-cli:
-    uses: ./release.yml
+    uses: ./.github/workflows/release.yml
     with:
       package: cli
     secrets:
