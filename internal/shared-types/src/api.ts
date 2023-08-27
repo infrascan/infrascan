@@ -1,8 +1,8 @@
-import type { Service } from './services';
+import type { Service } from "./services";
 
 /**
  * Callback to store state from a specific function call
- * 
+ *
  * This is callback is invoked after every full scan of a service endpoint.
  */
 export type ServiceScanCompleteCallbackFn = (
@@ -12,12 +12,12 @@ export type ServiceScanCompleteCallbackFn = (
   account: string,
   /**
    * The region being scanned
-   */ 
+   */
   region: string,
   /**
    * The service being scanned
    */
-  service: Service | 'IAM',
+  service: Service | "IAM",
   /**
    * The specific function called during scanning
    */
@@ -26,16 +26,16 @@ export type ServiceScanCompleteCallbackFn = (
   /**
    * The state retrieved from the function call
    */
-  functionState: any
+  functionState: any,
 ) => Promise<void>;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Callback to load scan state from a specific service call.
- * 
+ *
  * This is used by the scan function pull back parameters for future function calls
  * A common pattern is to have resources listed, and then described.
- */ 
+ */
 export type ResolveStateForServiceFunction = (
   /**
    * The AWS account that was scanned
@@ -51,18 +51,18 @@ export type ResolveStateForServiceFunction = (
   service: Service,
   /**
    * The specific function called during the scan e.g. GetFunction
-   */ 
-  functionName: string
+   */
+  functionName: string,
 ) => Promise<any>;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type GetGlobalStateForServiceFunction = (
   service: string,
-  functionName: string
+  functionName: string,
 ) => any;
 
 export type Connector = {
-  onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn,
-  resolveStateForServiceFunction: ResolveStateForServiceFunction,
-  getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction,
-}
+  onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn;
+  resolveStateForServiceFunction: ResolveStateForServiceFunction;
+  getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction;
+};

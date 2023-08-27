@@ -1,5 +1,5 @@
-import jmespath from 'jmespath';
-import { GLOBAL_SERVICES, REGIONAL_SERVICES } from '@infrascan/config';
+import jmespath from "jmespath";
+import { GLOBAL_SERVICES, REGIONAL_SERVICES } from "@infrascan/config";
 import type {
   BaseEdgeResolver,
   GraphEdge,
@@ -7,24 +7,24 @@ import type {
   GraphElement,
   GetGlobalStateForServiceFunction,
   ResolveStateForServiceFunction,
-} from '@infrascan/shared-types';
-import { AWS_DEFAULT_REGION } from './aws/defaults';
-import { generateEdgesForCloudfrontResources } from './aws/graph/cloudfront';
-import { generateEdgesForECSResources } from './aws/graph/ecs';
-import { generateEdgesForRoute53Resources } from './aws/graph/route53';
-import { IAMStorage, StoredRole, hydrateRoleStorage } from './aws/helpers/iam';
+} from "@infrascan/shared-types";
+import { AWS_DEFAULT_REGION } from "./aws/defaults";
+import { generateEdgesForCloudfrontResources } from "./aws/graph/cloudfront";
+import { generateEdgesForECSResources } from "./aws/graph/ecs";
+import { generateEdgesForRoute53Resources } from "./aws/graph/route53";
+import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
 import {
   evaluateSelector,
   evaluateSelectorGlobally,
-} from './aws/helpers/state';
+} from "./aws/helpers/state";
 import {
   formatEdge,
   formatS3NodeId,
   generateEdgesForRole,
   sanitizeId,
-} from './aws/graph/graph-utilities';
+} from "./aws/graph/graph-utilities";
 
-import type { ScanMetadata } from './scan';
+import type { ScanMetadata } from "./scan";
 
 function formatIdAsNode(
   serviceKey: string,
@@ -33,11 +33,11 @@ function formatIdAsNode(
   metadata: Record<string, any> = {},
 ): GraphNode {
   let formattedId = resourceId;
-  if (serviceKey.toLowerCase() === 's3') {
+  if (serviceKey.toLowerCase() === "s3") {
     formattedId = formatS3NodeId(resourceId);
   }
   return {
-    group: 'nodes',
+    group: "nodes",
     id: sanitizeId(formattedId),
     data: {
       id: formattedId,
@@ -89,7 +89,8 @@ async function generateNodesForService({
     console.log(account, region, currentSelector);
     const formattedNodes = selectedNodes.flatMap(
       ({ id, parent, ...metadata }: SelectedNode) => {
-        const parentId = parent || (isGlobal ? account : `${account}-${region}`);
+        const parentId =
+          parent || (isGlobal ? account : `${account}-${region}`);
         return formatIdAsNode(serviceKey, id, {
           parent: parentId,
           service: serviceName,
@@ -118,7 +119,7 @@ type EdgeTarget = {
 
 /**
  * Pull in global state and use it to generate edges
- * 
+ *
  * @returns list of edges
  */
 async function generateEdgesForServiceGlobally({
@@ -140,11 +141,9 @@ async function generateEdgesForServiceGlobally({
         to,
       );
       if (Array.isArray(target)) {
-        return target.map((edgeTargetInfo) => formatEdge(
-          sourceNode,
-          edgeTargetInfo.target,
-          edgeTargetInfo.name,
-        ));
+        return target.map((edgeTargetInfo) =>
+          formatEdge(sourceNode, edgeTargetInfo.target, edgeTargetInfo.name),
+        );
       }
       if (target) {
         return formatEdge(sourceNode, target.target, target.name);
@@ -159,11 +158,11 @@ async function generateEdgesForServiceGlobally({
 
 /**
  * Parameters required to convert a scan output into an infrastructure graph.
- */ 
+ */
 export type GenerateGraphOptions = {
   /**
    * A list of scan outputs. This allows scans over many accounts to be composed into a single graph.
-   */ 
+   */
   scanMetadata: ScanMetadata[];
   /**
    * Function used to retrieve the state from the scan.
@@ -178,17 +177,17 @@ export type GenerateGraphOptions = {
 };
 
 /**
- * Entrypoint function to convert one or more scans into an infrastructure graph. 
- * 
+ * Entrypoint function to convert one or more scans into an infrastructure graph.
+ *
  * * Example Code:
  * ```ts
  * import { generateGraph, performScan } from "@infrascan/sdk";
- * import { 
- *  resolveStateForServiceCall, 
+ * import {
+ *  resolveStateForServiceCall,
  *  getGlobalStateForServiceAndFunction
  * } from "@infrascan/fs-connector";
- * 
- * 
+ *
+ *
  * const scanMetadata = await performScan({ ... });
  * generateGraph({
  *  scanMetadata,
@@ -200,34 +199,38 @@ export type GenerateGraphOptions = {
  *  console.error("Failed to create graph", err);
  * });
  * ```
- */ 
-export async function generateGraph(graphOptions: GenerateGraphOptions): Promise<GraphElement[]> {
+ */
+export async function generateGraph(
+  graphOptions: GenerateGraphOptions,
+): Promise<GraphElement[]> {
   const {
     scanMetadata,
     resolveStateForServiceCall,
     getGlobalStateForServiceAndFunction,
   } = graphOptions;
   const iamStorage = new IAMStorage();
-  console.log('Generating graph based on scan metadata', {
+  console.log("Generating graph based on scan metadata", {
     scanMetadata,
   });
   let graphNodes: GraphNode[] = [];
   // Generate root nodes — Accounts and regions
   for (const { account, regions } of scanMetadata) {
     console.log(`Generating Nodes for ${account}`);
-    const accountNode = formatIdAsNode('AWS-Account', account, {
+    const accountNode = formatIdAsNode("AWS-Account", account, {
       name: `AWS Account ${account}`,
     });
     graphNodes.push(accountNode);
-    const regionNodes = regions.map((region) => formatIdAsNode('AWS-Region', `${account}-${region}`, {
-      parent: account,
-      name: `${region} (${account})`,
-    }));
+    const regionNodes = regions.map((region) =>
+      formatIdAsNode("AWS-Region", `${account}-${region}`, {
+        parent: account,
+        name: `${region} (${account})`,
+      }),
+    );
     graphNodes = graphNodes.concat(regionNodes);
     // Only read IAM data from default region (global service)
     const iamState: StoredRole[] = await getGlobalStateForServiceAndFunction(
-      'IAM',
-      'roles',
+      "IAM",
+      "roles",
     );
     hydrateRoleStorage(iamStorage, iamState);
 
@@ -344,19 +347,19 @@ export async function generateGraph(graphOptions: GenerateGraphOptions): Promise
   }
 
   // Generate edges manually for services which are too complex to configure in the json file
-  console.log('Manually generating edges for route 53 resources');
+  console.log("Manually generating edges for route 53 resources");
   const route53Edges = await generateEdgesForRoute53Resources(
     getGlobalStateForServiceAndFunction,
   );
   console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
-  console.log('Manually generating edges for cloudfront resources');
+  console.log("Manually generating edges for cloudfront resources");
   const cloudfrontEdges = await generateEdgesForCloudfrontResources(
     getGlobalStateForServiceAndFunction,
   );
   console.log(
     `Generated ${cloudfrontEdges.length} edges for cloudfront resources`,
   );
-  console.log('Manually generating edges for ECS resources');
+  console.log("Manually generating edges for ECS resources");
   const ecsEdges = await generateEdgesForECSResources(
     iamStorage,
     getGlobalStateForServiceAndFunction,
@@ -372,9 +375,4 @@ export async function generateGraph(graphOptions: GenerateGraphOptions): Promise
     .concat(ecsEdges);
 }
 
-export {
-  GraphEdge,
-  GraphNode,
-  GraphElement,
-  GetGlobalStateForServiceFunction,
-};
+export { GraphEdge, GraphNode, GraphElement, GetGlobalStateForServiceFunction };

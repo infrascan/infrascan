@@ -4,10 +4,10 @@ import type { ScannerDefinition } from "./types";
  * Type bounds to ensure that the config is referring to supported functions,
  * and reading from knonw state
  */
-export * as ConfigTypes from './types';
+export * as ConfigTypes from "./types";
 
 /**
- * Utility functions for removing unnecessary data from scan 
+ * Utility functions for removing unnecessary data from scan
  * results, and adding useful attributes to index by.
  */
 export * as Formatters from "./formatters";
@@ -103,7 +103,9 @@ const CloudfrontScanner: ScannerDefinition<"CloudFront", CloudFrontFunctions> =
     ],
   };
 
-export type Route53Functions = "ListHostedZonesByName" | "ListResourceRecordSets";
+export type Route53Functions =
+  | "ListHostedZonesByName"
+  | "ListResourceRecordSets";
 const Route53Scanner: ScannerDefinition<"Route53", Route53Functions> = {
   service: "route-53",
   clientKey: "Route53",
@@ -563,7 +565,10 @@ const SNSScanner: ScannerDefinition<"SNS", SNSFunctions> = {
   ],
 };
 
-export type SQSFunctions = "ListQueues" | "ListQueueTags" | "GetQueueAttributes";
+export type SQSFunctions =
+  | "ListQueues"
+  | "ListQueueTags"
+  | "GetQueueAttributes";
 const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
   service: "sqs",
   key: "SQS",
@@ -610,8 +615,8 @@ const SQSScanner: ScannerDefinition<"SQS", SQSFunctions> = {
 };
 
 /**
- * Union type for all legitimate and supported scanners. 
- * 
+ * Union type for all legitimate and supported scanners.
+ *
  * Used to type the exposed config.
  */
 export type GenericScanner =
@@ -653,9 +658,9 @@ const SERVICE_SCANNERS: GenericScanner[] = [
 ];
 
 export const GLOBAL_SERVICES = SERVICE_SCANNERS.filter(
-  (scanner) => scanner.isGlobal
+  (scanner) => scanner.isGlobal,
 );
 export const REGIONAL_SERVICES = SERVICE_SCANNERS.filter(
-  (scanner) => !scanner.isGlobal
+  (scanner) => !scanner.isGlobal,
 );
 export default SERVICE_SCANNERS;

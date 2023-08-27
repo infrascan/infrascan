@@ -32,7 +32,7 @@ export type GraphEdge = {
     name: string;
     /**
      * Source Node
-     */ 
+     */
     source: string;
     /**
      * Target Node

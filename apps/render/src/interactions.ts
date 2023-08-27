@@ -1,6 +1,6 @@
 function toggleEditMode(graphEntryContainerId: string, islandId: string) {
   const container = document.getElementById(
-    graphEntryContainerId
+    graphEntryContainerId,
   ) as HTMLDivElement;
   container.classList.toggle("show");
   const islandDiv = document.getElementById(islandId) as HTMLDivElement;
@@ -10,7 +10,7 @@ function toggleEditMode(graphEntryContainerId: string, islandId: string) {
 export function setupEditIconInteraction(
   iconId: string,
   graphEntryContainerId: string,
-  islandId: string
+  islandId: string,
 ) {
   const iconElem = document.getElementById(iconId);
   if (!iconElem) {

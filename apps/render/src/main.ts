@@ -34,7 +34,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <textarea id="${NODES.GraphInput}">${JSON.stringify(
   DEFAULT_GRAPH_CONTENT,
   undefined,
-  2
+  2,
 )}</textarea>
   </div>
   <div id="${NODES.GraphCanvas}"></div>
@@ -48,7 +48,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 setupGraphEntryListener(
-  document.querySelector<HTMLTextAreaElement>(`#${NODES.GraphInput}`)!
+  document.querySelector<HTMLTextAreaElement>(`#${NODES.GraphInput}`)!,
 );
 setupEditIconInteraction("edit-icon", "graph-side-drawer", "island");
 setupInfoIconInteraction("info-icon", "island");

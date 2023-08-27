@@ -39,7 +39,7 @@ async function getChecksum(content: string): Promise<string> {
   const bufferedGraphContent = encoder.encode(content);
   const graphHashBuffer = await window.crypto.subtle.digest(
     "SHA-256",
-    bufferedGraphContent
+    bufferedGraphContent,
   );
   return decoder.decode(graphHashBuffer);
 }
@@ -96,7 +96,7 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
     try {
       const parsedGraphData = JSON.parse(currentContent);
       const newGraphChecksum = await getChecksum(
-        JSON.stringify(parsedGraphData)
+        JSON.stringify(parsedGraphData),
       );
       if (graphContent.checksum !== newGraphChecksum) {
         graphContent = {

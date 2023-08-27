@@ -162,7 +162,7 @@ import type {
 export const EC2 = {
   describeVPCs: simpleLookupFactory<DescribeVpcsResult, "Vpcs">("Vpcs"),
   describeSubnets: simpleLookupFactory<DescribeSubnetsResult, "Subnets">(
-    "Subnets"
+    "Subnets",
   ),
   describeAvailabilityZones: simpleLookupFactory<
     DescribeAvailabilityZonesResult,
@@ -195,7 +195,7 @@ import type {
 export const ApiGatewayV2 = {
   getApis: simpleLookupFactory<GetApisCommandOutput, "Items">("Items"),
   getDomainNames: simpleLookupFactory<GetDomainNamesCommandOutput, "Items">(
-    "Items"
+    "Items",
   ),
 };
 
@@ -233,7 +233,7 @@ export const ElasticLoadBalancingV2 = {
     "TargetGroups"
   >("TargetGroups"),
   describeListeners: simpleLookupFactory<DescribeListenersOutput, "Listeners">(
-    "Listeners"
+    "Listeners",
   ),
   describeRules: simpleLookupFactory<DescribeRulesOutput, "Rules">("Rules"),
 };

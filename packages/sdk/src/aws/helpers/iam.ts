@@ -1,8 +1,8 @@
-import { IAM, Policy, PolicyVersion } from '@aws-sdk/client-iam';
+import { IAM, Policy, PolicyVersion } from "@aws-sdk/client-iam";
 
 export function parseRoleName(roleArn: string): string | undefined {
-  const lastToken = roleArn.split(':').pop();
-  return lastToken?.split('/').pop();
+  const lastToken = roleArn.split(":").pop();
+  return lastToken?.split("/").pop();
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -140,7 +140,7 @@ export async function scanIamRole(
   }
   const roleName = parseRoleName(roleArn);
   if (roleName == null) {
-    throw new Error('Failed to parse IAM Role');
+    throw new Error("Failed to parse IAM Role");
   }
 
   // Retrieve base info about Role, main insight being the trust relationship

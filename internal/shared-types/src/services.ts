@@ -20,7 +20,7 @@ import * as SQS from "@aws-sdk/client-sqs";
 export const GlobalServiceClients = {
   S3,
   CloudFront,
-  Route53
+  Route53,
 };
 
 /**
@@ -37,23 +37,23 @@ export const RegionalServiceClients = {
   Lambda,
   RDS,
   SNS,
-  SQS
+  SQS,
 };
 
-/** 
+/**
  * Clients for every service
- */ 
+ */
 export const ServiceClients = {
   ...GlobalServiceClients,
-  ...RegionalServiceClients
+  ...RegionalServiceClients,
 };
 
-/** 
+/**
  * Type for Global Services
  */
 export type GlobalService = keyof typeof GlobalServiceClients;
 
-/** 
+/**
  * Type for Regional Services
  */
 export type RegionalService = keyof typeof RegionalServiceClients;
