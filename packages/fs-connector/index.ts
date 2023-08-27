@@ -15,14 +15,14 @@ export type FsResolverConfig = {
   /**
    * Pretty print state when writing to the fs.
    */
-  prettyPrint: boolean;
+  prettyPrint?: boolean;
   /**
    * Force creation of the target directory. Note: this will enable recursive creation.
    */
-  createTargetDirectory: boolean;
+  createTargetDirectory?: boolean;
 };
 
-export const DEFAULT_CONFIG: FsResolverConfig = {
+export const DEFAULT_CONFIG: Required<FsResolverConfig> = {
   prettyPrint: true,
   createTargetDirectory: false
 };
@@ -75,6 +75,7 @@ function serializeState(state: any, prettyPrint: boolean): string {
  * @throws {Error} Errors from readDir, and readFile calls.
  */
 export default function buildFsConnector(basePath: string, config: FsResolverConfig = DEFAULT_CONFIG): Connector {
+  const resolvedConfig: Required<FsResolverConfig> = Object.assign(DEFAULT_CONFIG, config);
   const absoluteBasePath = resolve(basePath);
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -97,9 +98,9 @@ export default function buildFsConnector(basePath: string, config: FsResolverCon
     functionState: any
   ): Promise<void> {
     const filePath = buildFilePathForServiceCall(absoluteBasePath, account, region, service, functionName);
-    await ensureBasePathExists(absoluteBasePath, config.createTargetDirectory);
+    await ensureBasePathExists(absoluteBasePath, resolvedConfig.createTargetDirectory);
 
-    await writeFile(filePath, serializeState(functionState, config.prettyPrint));
+    await writeFile(filePath, serializeState(functionState, resolvedConfig.prettyPrint));
   }
 
   async function resolveStateForServiceFunction(
