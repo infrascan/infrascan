@@ -8,7 +8,8 @@ class InfrascanCLI extends CommandLineParser {
   public constructor() {
     super({
       toolFilename: 'infrascan',
-      toolDescription: 'The "infrascan" tool helps you stay on top of your cloud infrastructure.'
+      toolDescription:
+        'The "infrascan" tool helps you stay on top of your cloud infrastructure.',
     });
 
     this.addAction(new ScanCmd());

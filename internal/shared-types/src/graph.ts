@@ -2,7 +2,7 @@
  * A node on the graph
  */
 export type GraphNode = {
-  group: "nodes";
+  group: 'nodes';
   id: string;
   data: {
     id: string;
@@ -22,7 +22,7 @@ export type GraphNode = {
  * An edge connecting two nodes within a graph
  */
 export type GraphEdge = {
-  group: "edges";
+  group: 'edges';
   /**
    * Unique ID for the edge
    */
@@ -32,7 +32,7 @@ export type GraphEdge = {
     name: string;
     /**
      * Source Node
-     */ 
+     */
     source: string;
     /**
      * Target Node

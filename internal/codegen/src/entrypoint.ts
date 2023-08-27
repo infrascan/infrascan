@@ -25,10 +25,10 @@ function createExportObjectForKey(
       if (scannersByService[currentService.service]) {
         scannersByService[currentService.service].push(currentService.key);
         return scannersByService;
-      } 
+      }
       return {
         ...scannersByService,
-        [currentService.clientKey]: [currentService.key]
+        [currentService.clientKey]: [currentService.key],
       };
     },
     {} as Record<string, string[]>,

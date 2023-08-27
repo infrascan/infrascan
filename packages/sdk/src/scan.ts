@@ -7,7 +7,7 @@ import type {
   ResolveStateForServiceFunction,
   RegionalService,
   GlobalService,
-  Service
+  Service,
 } from '@infrascan/shared-types';
 import {
   REGIONAL_SERVICE_SCANNERS,
@@ -44,7 +44,7 @@ export type ServiceList = Service[];
 // Parameters required to perform a scan
 export type PerformScanOptions = {
   /**
-   * An [AWSCredentialIdentityProvider](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-smithy-types/TypeAlias/AwsCredentialIdentityProvider/) instance for 
+   * An [AWSCredentialIdentityProvider](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-smithy-types/TypeAlias/AwsCredentialIdentityProvider/) instance for
    * the account to be scanned
    */
   credentials: AwsCredentialIdentityProvider;
@@ -54,15 +54,15 @@ export type PerformScanOptions = {
   onServiceScanComplete: ServiceScanCompleteCallbackFn;
   /**
    * Callback for querying scan state
-   */ 
+   */
   resolveStateForServiceCall: ResolveStateForServiceFunction;
   /**
    * An optional list of regions to scan. Defaults to all available regions for an account.
-   */ 
+   */
   regions?: string[];
   /**
    * An optional list of services to scan. Defaults to all defined services within Infrascan's Config.
-   */ 
+   */
   services?: ServiceList;
 };
 
@@ -72,35 +72,35 @@ export type PerformScanOptions = {
 export type ScanMetadata = {
   /**
    * The account ID scanned
-   */ 
+   */
   account: string;
   /**
    * The regions scanned
-   */ 
+   */
   regions: string[];
 };
 
 /**
  * Entrypoint for scanning an account. This is a long running async function.
- * 
- * The callbacks given in the {@link scanOptions} are invoked to store ({@link onServiceScanComplete}) 
+ *
+ * The callbacks given in the {@link scanOptions} are invoked to store ({@link onServiceScanComplete})
  * and retrieve ({@link resolveStateForServiceCall}) state as needed.
- * 
+ *
  * When the account scan is complete, the {@link ScanMetadata} will be returned.
- * 
+ *
  * Example Code:
  * ```ts
  * import { performScan } from "@infrascan/sdk";
- * import { 
- *  onServiceScanComplete, 
- *  resolveStateForServiceCall 
+ * import {
+ *  onServiceScanComplete,
+ *  resolveStateForServiceCall
  * } from "@infrascan/fs-connector";
  * import { fromIni } from "@aws-sdk/credential-providers";
- * 
+ *
  * const credentials = fromIni({ profile: "dev" });
  * const regions = ["us-east-1","us-west-1"];
  * const services = ["SNS","Lambda","S3"];
- * 
+ *
  * performScan({
  *  credentials,
  *  regions,
@@ -141,8 +141,8 @@ export async function performScan(scanOptions: PerformScanOptions) {
     GLOBAL_SERVICE_SCANNERS,
   ) as GlobalService[];
   if (services?.length != null) {
-    globalServicesToScan = globalServicesToScan.filter(
-      (service) => services.includes(service),
+    globalServicesToScan = globalServicesToScan.filter((service) =>
+      services.includes(service),
     ) as GlobalService[];
   }
 
@@ -175,8 +175,8 @@ export async function performScan(scanOptions: PerformScanOptions) {
       console.log('Filtering services according to supplied list', {
         services,
       });
-      regionalServicesToScan = regionalServicesToScan.filter(
-        (service) => services.includes(service),
+      regionalServicesToScan = regionalServicesToScan.filter((service) =>
+        services.includes(service),
       ) as RegionalService[];
     }
 
@@ -208,7 +208,4 @@ export async function performScan(scanOptions: PerformScanOptions) {
   return scanMetadata;
 }
 
-export {
-  ServiceScanCompleteCallbackFn,
-  ResolveStateForServiceFunction
-};
+export { ServiceScanCompleteCallbackFn, ResolveStateForServiceFunction };

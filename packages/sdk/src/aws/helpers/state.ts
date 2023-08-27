@@ -4,7 +4,7 @@ import type {
   ResolveStateForServiceFunction,
   GetGlobalStateForServiceFunction,
   BaseParameterResolver,
-  Service
+  Service,
 } from '@infrascan/shared-types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -58,7 +58,9 @@ export async function resolveFunctionCallParameters(
     }
   }
   const validatedParamObjects = allParamObjects.filter((obj) => {
-    const allParamsPresent = parameters.every(({ Key }) => Object.keys(obj).includes(Key));
+    const allParamsPresent = parameters.every(({ Key }) =>
+      Object.keys(obj).includes(Key),
+    );
     return allParamsPresent;
   });
   return validatedParamObjects;

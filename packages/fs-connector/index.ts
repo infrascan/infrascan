@@ -6,7 +6,7 @@ import type { Connector, Service } from '@infrascan/shared-types';
 
 type FsError = {
   code?: string;
-}
+};
 
 /**
  * Config for the file system resolver.
@@ -24,20 +24,32 @@ export type FsResolverConfig = {
 
 export const DEFAULT_CONFIG: Required<FsResolverConfig> = {
   prettyPrint: true,
-  createTargetDirectory: false
+  createTargetDirectory: false,
 };
 
-async function ensureBasePathExists(absoluteBasePath: string, createTargetDirectory: boolean) {
+async function ensureBasePathExists(
+  absoluteBasePath: string,
+  createTargetDirectory: boolean,
+) {
   const basePathExists = existsSync(absoluteBasePath);
-  if(!basePathExists && createTargetDirectory) {
-    mkdir(absoluteBasePath, { 
-      recursive: true 
+  if (!basePathExists && createTargetDirectory) {
+    mkdir(absoluteBasePath, {
+      recursive: true,
     });
   }
 }
 
-function buildFilePathForServiceCall(absoluteBasePath: string, account: string, region: string, service: string, functionName: string) {
-  return join(absoluteBasePath, `${account}-${region}-${service}-${functionName}.json`);
+function buildFilePathForServiceCall(
+  absoluteBasePath: string,
+  account: string,
+  region: string,
+  service: string,
+  functionName: string,
+) {
+  return join(
+    absoluteBasePath,
+    `${account}-${region}-${service}-${functionName}.json`,
+  );
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -53,7 +65,7 @@ async function readStateFromFile(filePath: string): Promise<any[]> {
     return JSON.parse(state);
   } catch (err) {
     const readError = err as FsError;
-    if(readError?.code === 'ENOENT') {
+    if (readError?.code === 'ENOENT') {
       return [];
     }
     throw err as Error;
@@ -61,7 +73,7 @@ async function readStateFromFile(filePath: string): Promise<any[]> {
 }
 
 function serializeState(state: any, prettyPrint: boolean): string {
-  if(prettyPrint) {
+  if (prettyPrint) {
     return JSON.stringify(state, undefined, 2);
   }
   return JSON.stringify(state);
@@ -74,47 +86,74 @@ function serializeState(state: any, prettyPrint: boolean): string {
  * @returns {Connector} Infrascan Connector
  * @throws {Error} Errors from readDir, and readFile calls.
  */
-export default function buildFsConnector(basePath: string, config: FsResolverConfig = DEFAULT_CONFIG): Connector {
-  const resolvedConfig: Required<FsResolverConfig> = Object.assign(DEFAULT_CONFIG, config);
+export default function buildFsConnector(
+  basePath: string,
+  config: FsResolverConfig = DEFAULT_CONFIG,
+): Connector {
+  const resolvedConfig: Required<FsResolverConfig> = Object.assign(
+    DEFAULT_CONFIG,
+    config,
+  );
   const absoluteBasePath = resolve(basePath);
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  async function getGlobalStateForServiceFunction(service: string, functionName: string): Promise<any[]> {
+  async function getGlobalStateForServiceFunction(
+    service: string,
+    functionName: string,
+  ): Promise<any[]> {
     const fileFilter = buildGlobFilter(`*-*-${service}-${functionName}.json`);
 
     const directoryContents = await readdir(basePath);
-    const matchingFileNames = directoryContents.filter((stateFile) => fileFilter(stateFile));
+    const matchingFileNames = directoryContents.filter((stateFile) =>
+      fileFilter(stateFile),
+    );
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    const allRelevantState: any[][] = await Promise.all(matchingFileNames.map(async (fileName) => readStateFromFile(join(basePath, fileName))));
+    const allRelevantState: any[][] = await Promise.all(
+      matchingFileNames.map(async (fileName) =>
+        readStateFromFile(join(basePath, fileName)),
+      ),
+    );
     return allRelevantState.flatMap((state) => state);
   }
 
   async function onServiceScanCompleteCallback(
-    account: string, 
-    region: string, 
+    account: string,
+    region: string,
     service: Service | 'IAM',
     functionName: string,
-    functionState: any
+    functionState: any,
   ): Promise<void> {
-    const filePath = buildFilePathForServiceCall(absoluteBasePath, account, region, service, functionName);
-    await ensureBasePathExists(absoluteBasePath, resolvedConfig.createTargetDirectory);
+    const filePath = buildFilePathForServiceCall(
+      absoluteBasePath,
+      account,
+      region,
+      service,
+      functionName,
+    );
+    await ensureBasePathExists(
+      absoluteBasePath,
+      resolvedConfig.createTargetDirectory,
+    );
 
-    await writeFile(filePath, serializeState(functionState, resolvedConfig.prettyPrint));
+    await writeFile(
+      filePath,
+      serializeState(functionState, resolvedConfig.prettyPrint),
+    );
   }
 
   async function resolveStateForServiceFunction(
-    account: string, 
-    region: string, 
-    service: Service, 
-    functionName: string
+    account: string,
+    region: string,
+    service: Service,
+    functionName: string,
   ): Promise<any> {
     const filePath = buildFilePathForServiceCall(
       absoluteBasePath,
       account,
       region,
       service,
-      functionName
+      functionName,
     );
 
     return readStateFromFile(filePath);
@@ -123,6 +162,6 @@ export default function buildFsConnector(basePath: string, config: FsResolverCon
   return {
     onServiceScanCompleteCallback,
     resolveStateForServiceFunction,
-    getGlobalStateForServiceFunction
+    getGlobalStateForServiceFunction,
   };
 }

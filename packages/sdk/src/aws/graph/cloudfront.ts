@@ -17,27 +17,30 @@ type GlobalS3State = State<Bucket[]>;
 export async function generateEdgesForCloudfrontResources(
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
-  const cloudfrontRecords: GlobalCloudFrontState[] = await getGlobalStateForServiceAndFunction(
-    'CloudFront',
-    'ListDistributions',
-  );
+  const cloudfrontRecords: GlobalCloudFrontState[] =
+    await getGlobalStateForServiceAndFunction(
+      'CloudFront',
+      'ListDistributions',
+    );
 
   // Not handling OriginGroups currently
   const originDistributions = cloudfrontRecords.flatMap(
-    ({ _result: records }) => records.filter(({ Origins }) => Origins?.Items && Origins?.Items.length > 0),
+    ({ _result: records }) =>
+      records.filter(
+        ({ Origins }) => Origins?.Items && Origins?.Items.length > 0,
+      ),
   );
 
   // Split the alias records by the AWS service they sit in front of
   const initialValue = { cloudfrontS3Connections: [] } as Record<
-  string,
-  Formatters.CloudfrontDistributionSummary[]
+    string,
+    Formatters.CloudfrontDistributionSummary[]
   >;
   const { cloudfrontS3Connections } = originDistributions.reduce(
     (distributionsByType, currentDistribution) => {
       const hasS3Origin = currentDistribution?.Origins?.Items?.find(
-        ({ S3OriginConfig, DomainName }) => (
-          Boolean(S3OriginConfig) && DomainName?.endsWith('.s3.amazonaws.com')
-        ),
+        ({ S3OriginConfig, DomainName }) =>
+          Boolean(S3OriginConfig) && DomainName?.endsWith('.s3.amazonaws.com'),
       );
       if (hasS3Origin) {
         distributionsByType.cloudfrontS3Connections.push(currentDistribution);
@@ -65,7 +68,11 @@ export async function generateEdgesForCloudfrontResources(
       });
       return matchedBuckets.map(({ Name }) => {
         const formattedS3Node = formatS3NodeId(Name as string);
-        return formatEdge(ARN as string, formattedS3Node as string, ARN as string);
+        return formatEdge(
+          ARN as string,
+          formattedS3Node as string,
+          ARN as string,
+        );
       });
     })
     .filter(Boolean);

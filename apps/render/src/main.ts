@@ -1,23 +1,23 @@
-import "./style.css";
-import { setupGraphEntryListener, DEFAULT_GRAPH_CONTENT } from "./graph.ts";
-import { Edit, Information, ExternalLink } from "./icons.ts";
+import './style.css';
+import { setupGraphEntryListener, DEFAULT_GRAPH_CONTENT } from './graph.ts';
+import { Edit, Information, ExternalLink } from './icons.ts';
 import {
   setupEditIconInteraction,
   setupInfoIconInteraction,
   setupLinkInteraction,
-} from "./interactions.ts";
+} from './interactions.ts';
 
 const NODES: Record<string, string> = {
-  GraphInput: "graph-input",
-  GraphCanvas: "graph-canvas",
+  GraphInput: 'graph-input',
+  GraphCanvas: 'graph-canvas',
 };
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="island" id="island">
     <div class="icons-container">
-      ${Edit("edit-icon")}
-      ${Information("info-icon")}
-      ${ExternalLink("link-icon")}
+      ${Edit('edit-icon')}
+      ${Information('info-icon')}
+      ${ExternalLink('link-icon')}
     </div>
     <div class="info-content">
       <p>Infrascan is an open source toolkit which scans your AWS infrastructure and auto-generates system diagrams.</p>
@@ -34,7 +34,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <textarea id="${NODES.GraphInput}">${JSON.stringify(
   DEFAULT_GRAPH_CONTENT,
   undefined,
-  2
+  2,
 )}</textarea>
   </div>
   <div id="${NODES.GraphCanvas}"></div>
@@ -48,9 +48,9 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 setupGraphEntryListener(
-  document.querySelector<HTMLTextAreaElement>(`#${NODES.GraphInput}`)!
+  document.querySelector<HTMLTextAreaElement>(`#${NODES.GraphInput}`)!,
 );
-setupEditIconInteraction("edit-icon", "graph-side-drawer", "island");
-setupInfoIconInteraction("info-icon", "island");
-setupLinkInteraction("link-icon", "https://infrascan.io");
-setupLinkInteraction("powered-by", "https://infrascan.io");
+setupEditIconInteraction('edit-icon', 'graph-side-drawer', 'island');
+setupInfoIconInteraction('info-icon', 'island');
+setupLinkInteraction('link-icon', 'https://infrascan.io');
+setupLinkInteraction('powered-by', 'https://infrascan.io');

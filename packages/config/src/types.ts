@@ -5,21 +5,21 @@ import type {
   BaseScannerDefinition,
   Service,
   GlobalService,
-  ServiceClients
-} from "@infrascan/shared-types";
+  ServiceClients,
+} from '@infrascan/shared-types';
 
-import * as Formatters from "./formatters";
+import * as Formatters from './formatters';
 
 type AsCommand<T extends string> = `${T}Command`;
 
 /**
- * Type bound to map the function defined in a config to an AWS SDK 
+ * Type bound to map the function defined in a config to an AWS SDK
  * command in a supported client. If no match is found, the type is invalid.
  */
 export type ServiceCommand<
   S extends Service,
-  T extends string
-> = AsCommand<T> extends `${infer P}Command` & keyof typeof ServiceClients[S]
+  T extends string,
+> = AsCommand<T> extends `${infer P}Command` & keyof (typeof ServiceClients)[S]
   ? P
   : never;
 
@@ -28,16 +28,13 @@ export type ServiceCommand<
  */
 export type StateSelector<
   S extends Service,
-  T extends string
+  T extends string,
 > = `${S}|${ServiceCommand<S, T>}|${string}`;
 
 /**
  * Type bound to allow parameter resolvers to read from state.
  */
-export type ParameterResolver<
-  Serv extends Service,
-  T extends string
-> = {
+export type ParameterResolver<Serv extends Service, T extends string> = {
   Selector?: StateSelector<Serv, T>;
 } & BaseParameterResolver;
 
@@ -68,14 +65,11 @@ export type ServiceGetter<Serv extends Service, T extends string> = {
 
 /**
  * Type definition for a service scanner within the Infrascan Config.
- * 
- * Adds type checking to guarantee the service is supported, the functions are 
+ *
+ * Adds type checking to guarantee the service is supported, the functions are
  * exposed in the service's SDK, and that the selectors are referencing scanned functions.
  */
-export type ScannerDefinition<
-  Serv extends Service,
-  T extends string
-> = {
+export type ScannerDefinition<Serv extends Service, T extends string> = {
   clientKey: Serv;
   getters: ServiceGetter<Serv, T>[];
   nodes?: StateSelector<Serv, T>[];

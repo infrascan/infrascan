@@ -4,7 +4,6 @@ import type { BaseScannerDefinition } from '@infrascan/shared-types';
 import { generateService } from './services';
 import { generateEntrypoint } from './entrypoint';
 
-
 export function generateScannerImplementations(
   config: BaseScannerDefinition[],
   basePath: string,

@@ -19,10 +19,10 @@ function simpleLookupFactory<T, K extends keyof T>(key: K): (value: T) => T[K] {
  * S3 Formatters
  */
 
-import type { ListBucketsOutput } from "@aws-sdk/client-s3";
+import type { ListBucketsOutput } from '@aws-sdk/client-s3';
 
 export const S3 = {
-  listBuckets: simpleLookupFactory<ListBucketsOutput, "Buckets">("Buckets"),
+  listBuckets: simpleLookupFactory<ListBucketsOutput, 'Buckets'>('Buckets'),
 };
 
 /**
@@ -32,7 +32,7 @@ export const S3 = {
 import type {
   DistributionSummary,
   ListDistributionsResult,
-} from "@aws-sdk/client-cloudfront";
+} from '@aws-sdk/client-cloudfront';
 
 export type CloudfrontDistributionSummary = {
   _infrascanLabel?: string;
@@ -66,17 +66,17 @@ export const CloudFront = {
 import type {
   ListHostedZonesByNameResponse,
   ListResourceRecordSetsResponse,
-} from "@aws-sdk/client-route-53";
+} from '@aws-sdk/client-route-53';
 
 export const Route53 = {
   listHostedZonesByName: simpleLookupFactory<
     ListHostedZonesByNameResponse,
-    "HostedZones"
-  >("HostedZones"),
+    'HostedZones'
+  >('HostedZones'),
   listResourceRecordSets: simpleLookupFactory<
     ListResourceRecordSetsResponse,
-    "ResourceRecordSets"
-  >("ResourceRecordSets"),
+    'ResourceRecordSets'
+  >('ResourceRecordSets'),
 };
 
 /**
@@ -87,7 +87,7 @@ import type {
   ListQueuesResult,
   ListQueueTagsResult,
   GetQueueAttributesResult,
-} from "@aws-sdk/client-sqs";
+} from '@aws-sdk/client-sqs';
 
 export type SQSQueue = {
   QueueUrl: string;
@@ -98,7 +98,7 @@ export function formatSQSListQueues({
 }: ListQueuesResult): SQSQueue[] | undefined {
   return QueueUrls?.map((queueUrl: string) => ({
     QueueUrl: queueUrl,
-    Name: queueUrl.split("/").pop(),
+    Name: queueUrl.split('/').pop(),
   }));
 }
 
@@ -115,7 +115,7 @@ function formatSQSGetQueueAttributes({ Attributes }: GetQueueAttributesResult) {
     Attributes as SQSAttributes;
   return {
     QueueArn,
-    QueueName: QueueArn?.split(":").pop(),
+    QueueName: QueueArn?.split(':').pop(),
     Policy: optJSONParse(Policy),
     RedrivePolicy: optJSONParse(RedrivePolicy),
     ...remainingAttributes,
@@ -124,7 +124,7 @@ function formatSQSGetQueueAttributes({ Attributes }: GetQueueAttributesResult) {
 
 export const SQS = {
   listQueues: formatSQSListQueues,
-  listQueueTags: simpleLookupFactory<ListQueueTagsResult, "Tags">("Tags"),
+  listQueueTags: simpleLookupFactory<ListQueueTagsResult, 'Tags'>('Tags'),
   getQueueAttributes: formatSQSGetQueueAttributes,
 };
 
@@ -136,18 +136,18 @@ import type {
   ListTopicsResponse,
   GetTopicAttributesResponse,
   ListSubscriptionsByTopicResponse,
-} from "@aws-sdk/client-sns";
+} from '@aws-sdk/client-sns';
 
 export const SNS = {
-  listTopics: simpleLookupFactory<ListTopicsResponse, "Topics">("Topics"),
+  listTopics: simpleLookupFactory<ListTopicsResponse, 'Topics'>('Topics'),
   getTopicAttributes: simpleLookupFactory<
     GetTopicAttributesResponse,
-    "Attributes"
-  >("Attributes"),
+    'Attributes'
+  >('Attributes'),
   listSubscriptionByTopic: simpleLookupFactory<
     ListSubscriptionsByTopicResponse,
-    "Subscriptions"
-  >("Subscriptions"),
+    'Subscriptions'
+  >('Subscriptions'),
 };
 
 /**
@@ -157,30 +157,30 @@ import type {
   DescribeAvailabilityZonesResult,
   DescribeSubnetsResult,
   DescribeVpcsResult,
-} from "@aws-sdk/client-ec2";
+} from '@aws-sdk/client-ec2';
 
 export const EC2 = {
-  describeVPCs: simpleLookupFactory<DescribeVpcsResult, "Vpcs">("Vpcs"),
-  describeSubnets: simpleLookupFactory<DescribeSubnetsResult, "Subnets">(
-    "Subnets"
+  describeVPCs: simpleLookupFactory<DescribeVpcsResult, 'Vpcs'>('Vpcs'),
+  describeSubnets: simpleLookupFactory<DescribeSubnetsResult, 'Subnets'>(
+    'Subnets',
   ),
   describeAvailabilityZones: simpleLookupFactory<
     DescribeAvailabilityZonesResult,
-    "AvailabilityZones"
-  >("AvailabilityZones"),
+    'AvailabilityZones'
+  >('AvailabilityZones'),
 };
 
 /**
  * Autoscaling Formatters
  */
 
-import type { DescribeAutoScalingGroupsCommandOutput } from "@aws-sdk/client-auto-scaling";
+import type { DescribeAutoScalingGroupsCommandOutput } from '@aws-sdk/client-auto-scaling';
 
 export const AutoScaling = {
   describeAutoScalingGroups: simpleLookupFactory<
     DescribeAutoScalingGroupsCommandOutput,
-    "AutoScalingGroups"
-  >("AutoScalingGroups"),
+    'AutoScalingGroups'
+  >('AutoScalingGroups'),
 };
 
 /**
@@ -190,12 +190,12 @@ export const AutoScaling = {
 import type {
   GetApisCommandOutput,
   GetDomainNamesCommandOutput,
-} from "@aws-sdk/client-apigatewayv2";
+} from '@aws-sdk/client-apigatewayv2';
 
 export const ApiGatewayV2 = {
-  getApis: simpleLookupFactory<GetApisCommandOutput, "Items">("Items"),
-  getDomainNames: simpleLookupFactory<GetDomainNamesCommandOutput, "Items">(
-    "Items"
+  getApis: simpleLookupFactory<GetApisCommandOutput, 'Items'>('Items'),
+  getDomainNames: simpleLookupFactory<GetDomainNamesCommandOutput, 'Items'>(
+    'Items',
   ),
 };
 
@@ -203,13 +203,13 @@ export const ApiGatewayV2 = {
  * RDS Formatters
  */
 
-import type { DescribeDBInstancesCommandOutput } from "@aws-sdk/client-rds";
+import type { DescribeDBInstancesCommandOutput } from '@aws-sdk/client-rds';
 
 export const RDS = {
   describeDBInstances: simpleLookupFactory<
     DescribeDBInstancesCommandOutput,
-    "DBInstances"
-  >("DBInstances"),
+    'DBInstances'
+  >('DBInstances'),
 };
 
 /**
@@ -221,21 +221,21 @@ import type {
   DescribeLoadBalancersOutput,
   DescribeRulesOutput,
   DescribeTargetGroupsOutput,
-} from "@aws-sdk/client-elastic-load-balancing-v2";
+} from '@aws-sdk/client-elastic-load-balancing-v2';
 
 export const ElasticLoadBalancingV2 = {
   describeLoadBalancers: simpleLookupFactory<
     DescribeLoadBalancersOutput,
-    "LoadBalancers"
-  >("LoadBalancers"),
+    'LoadBalancers'
+  >('LoadBalancers'),
   describeTargetGroups: simpleLookupFactory<
     DescribeTargetGroupsOutput,
-    "TargetGroups"
-  >("TargetGroups"),
-  describeListeners: simpleLookupFactory<DescribeListenersOutput, "Listeners">(
-    "Listeners"
+    'TargetGroups'
+  >('TargetGroups'),
+  describeListeners: simpleLookupFactory<DescribeListenersOutput, 'Listeners'>(
+    'Listeners',
   ),
-  describeRules: simpleLookupFactory<DescribeRulesOutput, "Rules">("Rules"),
+  describeRules: simpleLookupFactory<DescribeRulesOutput, 'Rules'>('Rules'),
 };
 
 /**
@@ -245,9 +245,9 @@ export const ElasticLoadBalancingV2 = {
 import type {
   DescribeTableOutput,
   ListTablesOutput,
-} from "@aws-sdk/client-dynamodb";
+} from '@aws-sdk/client-dynamodb';
 
 export const DynamoDB = {
-  listTables: simpleLookupFactory<ListTablesOutput, "TableNames">("TableNames"),
-  describeTable: simpleLookupFactory<DescribeTableOutput, "Table">("Table"),
+  listTables: simpleLookupFactory<ListTablesOutput, 'TableNames'>('TableNames'),
+  describeTable: simpleLookupFactory<DescribeTableOutput, 'Table'>('Table'),
 };

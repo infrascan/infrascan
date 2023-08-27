@@ -18,7 +18,8 @@ type MinimatchOptions = {
 };
 
 function curryMinimatch(glob: string, opts?: MinimatchOptions) {
-  return (comparisonString: string) => minimatch(comparisonString, glob, opts ?? {});
+  return (comparisonString: string) =>
+    minimatch(comparisonString, glob, opts ?? {});
 }
 
 function getServiceFromArn(arn: string): string | undefined {
@@ -105,14 +106,16 @@ type PolicyStatement = {
 };
 
 export function getStatementsForRole(role: StoredRole) {
-  const inlineStatements: PolicyStatement[] = jmespath.search(
-    role,
-    'inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}',
-  ) ?? [];
-  const attachedStatements: PolicyStatement[] = jmespath.search(
-    role,
-    'attachedPolicies[].{label:PolicyName,statements:Document.Statement}',
-  ) ?? [];
+  const inlineStatements: PolicyStatement[] =
+    jmespath.search(
+      role,
+      'inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}',
+    ) ?? [];
+  const attachedStatements: PolicyStatement[] =
+    jmespath.search(
+      role,
+      'attachedPolicies[].{label:PolicyName,statements:Document.Statement}',
+    ) ?? [];
   return {
     inlineStatements: inlineStatements.flatMap((stmt) => stmt),
     attachedStatements: attachedStatements.flatMap((stmt) => stmt),
@@ -145,7 +148,8 @@ export async function resolveResourceGlob({
       return [];
     }
     const serviceConfig = ALL_SERVICES.find(
-      ({ service, arnLabel }) => (arnLabel ?? service).toLowerCase() === resourceService.toLowerCase(),
+      ({ service, arnLabel }) =>
+        (arnLabel ?? service).toLowerCase() === resourceService.toLowerCase(),
     );
     if (serviceConfig == null) {
       return [];
@@ -262,22 +266,27 @@ export async function generateEdgesForRole(
     return [];
   }
   // Get role's policy statements
-  const { inlineStatements, attachedStatements } = getStatementsForRole(iamRole);
+  const { inlineStatements, attachedStatements } =
+    getStatementsForRole(iamRole);
 
   // Compute edges for inline policy statements
-  const effectedResourcesForInlineStatements = await generateEdgesForPolicyStatements(
-    inlineStatements,
-    getGlobalStateForServiceAndFunction,
-  );
+  const effectedResourcesForInlineStatements =
+    await generateEdgesForPolicyStatements(
+      inlineStatements,
+      getGlobalStateForServiceAndFunction,
+    );
 
   // Compute edges for attached policy statements
-  const effectedResourcesForAttachedStatements = await generateEdgesForPolicyStatements(
-    attachedStatements,
-    getGlobalStateForServiceAndFunction,
-  );
+  const effectedResourcesForAttachedStatements =
+    await generateEdgesForPolicyStatements(
+      attachedStatements,
+      getGlobalStateForServiceAndFunction,
+    );
 
   // Iterate over the computed edges and format them
   return effectedResourcesForInlineStatements
     .concat(effectedResourcesForAttachedStatements)
-    .map(({ label, node, statement }) => formatEdge(executor, node, label, statement, arn));
+    .map(({ label, node, statement }) =>
+      formatEdge(executor, node, label, statement, arn),
+    );
 }
