@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@infrascan/shared-types": "^0.1.0",
     "eslint-config-custom": "*",
