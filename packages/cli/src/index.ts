@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import { CommandLineParser } from '@rushstack/ts-command-line';
-import GraphCmd from './commands/graph';
-import ScanCmd from './commands/scan';
+import { CommandLineParser } from "@rushstack/ts-command-line";
+import GraphCmd from "./commands/graph";
+import ScanCmd from "./commands/scan";
 
 class InfrascanCLI extends CommandLineParser {
   public constructor() {
     super({
-      toolFilename: 'infrascan',
+      toolFilename: "infrascan",
       toolDescription:
         'The "infrascan" tool helps you stay on top of your cloud infrastructure.',
     });

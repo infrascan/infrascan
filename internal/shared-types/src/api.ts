@@ -1,4 +1,4 @@
-import type { Service } from './services';
+import type { Service } from "./services";
 
 /**
  * Callback to store state from a specific function call
@@ -17,7 +17,7 @@ export type ServiceScanCompleteCallbackFn = (
   /**
    * The service being scanned
    */
-  service: Service | 'IAM',
+  service: Service | "IAM",
   /**
    * The specific function called during scanning
    */

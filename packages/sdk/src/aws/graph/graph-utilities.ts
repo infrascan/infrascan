@@ -1,15 +1,15 @@
-import jmespath from 'jmespath';
-import minimatch from 'minimatch';
-import { REGIONAL_SERVICES, GLOBAL_SERVICES } from '@infrascan/config';
+import jmespath from "jmespath";
+import minimatch from "minimatch";
+import { REGIONAL_SERVICES, GLOBAL_SERVICES } from "@infrascan/config";
 import type {
   GraphEdge,
   GetGlobalStateForServiceFunction,
   BaseScannerDefinition,
-} from '@infrascan/shared-types';
-import { IAMStorage } from '../helpers/iam';
-import { evaluateSelectorGlobally } from '../helpers/state';
+} from "@infrascan/shared-types";
+import { IAMStorage } from "../helpers/iam";
+import { evaluateSelectorGlobally } from "../helpers/state";
 
-import type { StoredRole } from '../helpers/iam';
+import type { StoredRole } from "../helpers/iam";
 
 const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
 
@@ -23,16 +23,16 @@ function curryMinimatch(glob: string, opts?: MinimatchOptions) {
 }
 
 function getServiceFromArn(arn: string): string | undefined {
-  const [, , service] = arn.split(':');
+  const [, , service] = arn.split(":");
   return service;
 }
 
 export function sanitizeId(id: string): string {
   return id
-    .replace(/:/g, '-')
-    .replace(/\//g, '')
-    .replace(/\\/g, '')
-    .replace(/\./g, '_');
+    .replace(/:/g, "-")
+    .replace(/\//g, "")
+    .replace(/\\/g, "")
+    .replace(/\./g, "_");
 }
 
 export function formatEdge(
@@ -45,14 +45,14 @@ export function formatEdge(
 ): GraphEdge {
   const edgeId = `${source}:${target}`;
   return {
-    group: 'edges',
+    group: "edges",
     id: sanitizeId(edgeId),
     data: {
       id: edgeId,
       name,
       source,
       target,
-      type: 'edge',
+      type: "edge",
     },
     metadata: {
       roleArn,
@@ -93,7 +93,7 @@ async function findNodesForService(
   // S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
   // This means we need to build the ARN on the fly when matching in resource policies to allow partial
   // matches of <bucket-name> to <bucket-arn>/<object-path>
-  if (resourceService === 's3') {
+  if (resourceService === "s3") {
     return globalState?.map((node) => formatS3NodeId(node));
   }
   return globalState;
@@ -109,12 +109,12 @@ export function getStatementsForRole(role: StoredRole) {
   const inlineStatements: PolicyStatement[] =
     jmespath.search(
       role,
-      'inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}',
+      "inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}",
     ) ?? [];
   const attachedStatements: PolicyStatement[] =
     jmespath.search(
       role,
-      'attachedPolicies[].{label:PolicyName,statements:Document.Statement}',
+      "attachedPolicies[].{label:PolicyName,statements:Document.Statement}",
     ) ?? [];
   return {
     inlineStatements: inlineStatements.flatMap((stmt) => stmt),
@@ -136,15 +136,15 @@ export async function resolveResourceGlob({
   resourceArnFromPolicy,
   getGlobalStateForServiceAndFunction,
 }: ResolveResourceGlobOptions): Promise<string[]> {
-  if (resourceArnFromPolicy === '*') {
+  if (resourceArnFromPolicy === "*") {
     // TODO: use actions to infer which resources are impacted by a wildcard
     // E.g. Actions: [s3:GetObject], Resources: [*]
     return [];
   }
-  if (resourceArnFromPolicy.includes('*')) {
+  if (resourceArnFromPolicy.includes("*")) {
     const resourceService = getServiceFromArn(resourceArnFromPolicy);
     if (resourceService == null) {
-      console.warn('Failed to parse service from resource arn');
+      console.warn("Failed to parse service from resource arn");
       return [];
     }
     const serviceConfig = ALL_SERVICES.find(
@@ -174,14 +174,14 @@ export async function resolveResourceGlob({
   }
   const resourceService = getServiceFromArn(resourceArnFromPolicy);
   if (resourceService == null) {
-    console.warn('Failed to parse service from resource arn');
+    console.warn("Failed to parse service from resource arn");
     return [];
   }
   const serviceConfig = ALL_SERVICES.find(
     ({ service }) => service.toLowerCase() === resourceService.toLowerCase(),
   );
   if (serviceConfig == null) {
-    console.warn('Unsupported service found in role policy', resourceService);
+    console.warn("Unsupported service found in role policy", resourceService);
     return [];
   }
   const { nodes } = serviceConfig;
@@ -262,7 +262,7 @@ export async function generateEdgesForRole(
 ): Promise<GraphEdge[]> {
   const iamRole = iamStorage.getRole(arn);
   if (iamRole == null) {
-    console.warn('Unknown role arn given to generate edges');
+    console.warn("Unknown role arn given to generate edges");
     return [];
   }
   // Get role's policy statements

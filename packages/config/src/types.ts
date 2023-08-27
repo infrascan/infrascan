@@ -6,9 +6,9 @@ import type {
   Service,
   GlobalService,
   ServiceClients,
-} from '@infrascan/shared-types';
+} from "@infrascan/shared-types";
 
-import * as Formatters from './formatters';
+import * as Formatters from "./formatters";
 
 type AsCommand<T extends string> = `${T}Command`;
 

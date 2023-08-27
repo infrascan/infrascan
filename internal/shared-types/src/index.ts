@@ -2,8 +2,8 @@ import {
   GlobalServiceClients,
   RegionalServiceClients,
   ServiceClients,
-} from './services';
-import type { GlobalService, RegionalService, Service } from './services';
+} from "./services";
+import type { GlobalService, RegionalService, Service } from "./services";
 
 export {
   ServiceClients,
@@ -13,7 +13,7 @@ export {
   RegionalService,
   Service,
 };
-export * from './api';
-export * from './config';
-export * from './graph';
-export * from './scan';
+export * from "./api";
+export * from "./config";
+export * from "./graph";
+export * from "./scan";

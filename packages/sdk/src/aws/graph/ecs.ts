@@ -9,23 +9,23 @@ import type {
   DescribeTaskDefinitionResponse,
   Service,
   TaskDefinition,
-} from '@aws-sdk/client-ecs';
+} from "@aws-sdk/client-ecs";
 import type {
   GetGlobalStateForServiceFunction,
   GraphNode,
   GraphEdge,
   State,
   ResolveStateForServiceFunction,
-} from '@infrascan/shared-types';
+} from "@infrascan/shared-types";
 
-import { TargetGroup } from '@aws-sdk/client-elastic-load-balancing-v2';
+import { TargetGroup } from "@aws-sdk/client-elastic-load-balancing-v2";
 import {
   generateEdgesForRole,
   formatEdge,
   sanitizeId,
-} from './graph-utilities';
-import { evaluateSelector } from '../helpers/state';
-import { IAMStorage } from '../helpers/iam';
+} from "./graph-utilities";
+import { evaluateSelector } from "../helpers/state";
+import { IAMStorage } from "../helpers/iam";
 
 type ECSServiceState = State<DescribeServicesResponse>;
 type ECSTaskState = State<DescribeTaskDefinitionResponse>;
@@ -36,13 +36,13 @@ export async function generateEdgesForECSResources(
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ): Promise<GraphEdge[]> {
   const ecsServiceState: ECSServiceState[] =
-    await getGlobalStateForServiceAndFunction('ECS', 'DescribeServices');
+    await getGlobalStateForServiceAndFunction("ECS", "DescribeServices");
   const ecsServiceRecords = ecsServiceState
     .flatMap(({ _result }) => _result.services)
     .filter(Boolean) as Service[];
 
   const ecsTaskDefinitionState: ECSTaskState[] =
-    await getGlobalStateForServiceAndFunction('ECS', 'DescribeTaskDefinition');
+    await getGlobalStateForServiceAndFunction("ECS", "DescribeTaskDefinition");
   const ecsTaskDefinitionRecords = ecsTaskDefinitionState
     .flatMap(({ _result }) => _result.taskDefinition)
     .filter((taskDef) => taskDef != null) as TaskDefinition[];
@@ -83,8 +83,8 @@ export async function generateEdgesForECSResources(
 
   const elbTargetGroupsState: ELBTargetGroupState[] =
     await getGlobalStateForServiceAndFunction(
-      'ElasticLoadBalancingV2',
-      'DescribeTargetGroups',
+      "ElasticLoadBalancingV2",
+      "DescribeTargetGroups",
     );
   const elbTargetGroups = elbTargetGroupsState.flatMap(
     ({ _result }) => _result,
@@ -147,7 +147,7 @@ export async function generateNodesForECSTasks(
   const servicesState: Service[] = await evaluateSelector(
     account,
     region,
-    'ECS|DescribeServices|[]._result.services[]',
+    "ECS|DescribeServices|[]._result.services[]",
     resolveStateForServiceCall,
   );
 
@@ -155,10 +155,10 @@ export async function generateNodesForECSTasks(
     .flatMap(
       ({ serviceName, clusterArn, taskDefinition, networkConfiguration }) =>
         networkConfiguration?.awsvpcConfiguration?.subnets?.map((subnet) => ({
-          group: 'nodes',
+          group: "nodes",
           id: sanitizeId(`${taskDefinition}-${subnet}`),
           data: {
-            type: 'ECS-Tasks',
+            type: "ECS-Tasks",
             id: `${taskDefinition}-${subnet}`,
             parent: subnet,
             ecsService: serviceName,

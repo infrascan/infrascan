@@ -1,8 +1,8 @@
-import { existsSync } from 'fs';
-import { mkdir, readFile, readdir, writeFile } from 'fs/promises';
-import { join, resolve } from 'path';
-import { filter as buildGlobFilter } from 'minimatch';
-import type { Connector, Service } from '@infrascan/shared-types';
+import { existsSync } from "fs";
+import { mkdir, readFile, readdir, writeFile } from "fs/promises";
+import { join, resolve } from "path";
+import { filter as buildGlobFilter } from "minimatch";
+import type { Connector, Service } from "@infrascan/shared-types";
 
 type FsError = {
   code?: string;
@@ -61,11 +61,11 @@ function buildFilePathForServiceCall(
  */
 async function readStateFromFile(filePath: string): Promise<any[]> {
   try {
-    const state = await readFile(filePath, 'utf8');
+    const state = await readFile(filePath, "utf8");
     return JSON.parse(state);
   } catch (err) {
     const readError = err as FsError;
-    if (readError?.code === 'ENOENT') {
+    if (readError?.code === "ENOENT") {
       return [];
     }
     throw err as Error;
@@ -120,7 +120,7 @@ export default function buildFsConnector(
   async function onServiceScanCompleteCallback(
     account: string,
     region: string,
-    service: Service | 'IAM',
+    service: Service | "IAM",
     functionName: string,
     functionState: any,
   ): Promise<void> {

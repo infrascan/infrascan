@@ -1,11 +1,11 @@
-import jmespath from 'jmespath';
+import jmespath from "jmespath";
 
 import type {
   ResolveStateForServiceFunction,
   GetGlobalStateForServiceFunction,
   BaseParameterResolver,
   Service,
-} from '@infrascan/shared-types';
+} from "@infrascan/shared-types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluateSelector(
@@ -14,7 +14,7 @@ export async function evaluateSelector(
   rawSelector: string,
   resolveStateForServiceCall: ResolveStateForServiceFunction,
 ): Promise<any[]> {
-  const [service, functionCall, ...selector] = rawSelector.split('|');
+  const [service, functionCall, ...selector] = rawSelector.split("|");
 
   const state = await resolveStateForServiceCall(
     account,
@@ -22,7 +22,7 @@ export async function evaluateSelector(
     service as Service,
     functionCall,
   );
-  return jmespath.search(state, selector.join('|'));
+  return jmespath.search(state, selector.join("|"));
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -70,10 +70,10 @@ export async function evaluateSelectorGlobally(
   rawSelector: string,
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ) {
-  const [service, functionCall, ...selector] = rawSelector.split('|');
+  const [service, functionCall, ...selector] = rawSelector.split("|");
   const aggregateState = await getGlobalStateForServiceAndFunction(
     service,
     functionCall,
   );
-  return jmespath.search(aggregateState, selector.join('|'));
+  return jmespath.search(aggregateState, selector.join("|"));
 }
