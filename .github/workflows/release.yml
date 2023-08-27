@@ -4,6 +4,10 @@ on:
       package:
         required: true
         type: string
+      test:
+        default: true
+        required: false
+        type: boolean
     secrets:
       NPM_TOKEN: 
         required: true
@@ -24,6 +28,7 @@ jobs:
       - name: Lint
         run: npm run lint -w packages/${{ inputs.package }}
       - name: Test
+        if: ${{ inputs.test }}
         run: npm run test -w packages/${{ inputs.package }}
       - name: Release
         env:
