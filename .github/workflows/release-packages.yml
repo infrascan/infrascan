@@ -1,0 +1,46 @@
+name: Version Packages
+
+on:
+  release:
+    types: [published]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs: 
+  publish-cli:
+    if: ${{ contains('@infrascan/cli', github.ref) }}
+    uses: ./.github/workflows/release.yml
+    with:
+      package: cli
+      workspace: packages/cli
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-config:
+    if: ${{ contains('@infrascan/config', github.ref) }}
+    uses: ./.github/workflows/release.yml
+    with:
+      package: config
+      workspace: packages/config
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-fs-connector:
+    if: ${{ contains('@infrascan/fs-connector', github.ref) }}
+    uses: ./.github/workflows/release.yml
+    with:
+      package: fs-connector
+      workspace: packages/fs-connector
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+         
+  publish-sdk:
+    if: ${{ contains('@infrascan/sdk', github.ref) }}
+    uses: ./.github/workflows/release.yml
+    with:
+      package: sdk
+      workspace: packages/sdk
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    

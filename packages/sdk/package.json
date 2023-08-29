@@ -14,7 +14,8 @@
     "prepublish": "rm -rf dist ; tsc --project tsconfig.json",
     "test": "echo \"Error: no test specified\"",
     "lint": "prettier src/**/*.ts -c ; eslint .",
-    "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix"
+    "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
+    "clean": "rm -rf dist node_modules"
   },
   "repository": {
     "type": "git",

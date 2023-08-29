@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\"",
     "build": "rm -rf dist ; tsc",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "rm -rf dist node_modules"
   },
   "bin": "dist/index.js",
   "files": [

@@ -11,7 +11,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist ; tsc",
     "prepublish": "rm -rf dist ; tsc",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "rm -rf dist node_modules"
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
