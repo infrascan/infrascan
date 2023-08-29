@@ -20,6 +20,9 @@
     "test": {
       "dependsOn": ["build"],
       "inputs": ["src/**/*.ts", "test/**/*.ts"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

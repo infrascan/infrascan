@@ -1,37 +1,32 @@
 on:
   workflow_call:
     inputs:
-      package:
-        required: true
+      package: 
         type: string
-      test:
-        default: true
-        required: false
-        type: boolean
-    secrets:
-      NPM_TOKEN: 
         required: true
+        description: 'Package to release'
+      workspace:
+        type: string
+        required: true
+        description: 'Node workspace containing package to publish'
+    secrets:
+      NPM_TOKEN:
+        required: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up Node
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "18"
-          registry-url: "https://registry.npmjs.org"
-      - name: Install
-        run: npm ci 
-      - name: Build
-        run: npm run build -w packages/${{ inputs.package }}
-      - name: Lint
-        run: npm run lint -w packages/${{ inputs.package }}
-      - name: Test
-        if: ${{ inputs.test }}
-        run: npm run test -w packages/${{ inputs.package }}
-      - name: Release
+          version: "18"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build and test
+        run: npm run test -- --filter=${{ inputs.package }}...
+      - name: Release ${{ inputs.package }}
+        run: npm publish -w ${{ inputs.workspace }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish -w packages/${{ inputs.package }} --access public
+        

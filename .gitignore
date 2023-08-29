@@ -2,7 +2,6 @@ node_modules
 state
 test-state
 static
-config.json
 meilisearch
 data.ms
 dumps
