@@ -9,6 +9,9 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   version-packages:
+    permissions:
+      contents: write
+      
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -29,6 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Push version tags
+        # Changesets 
         if: ${{ steps.changeset-version.outputs.hasChangesets == 'false' }}
         run: npx changeset tag ; git push --tags
         env:
