@@ -28,6 +28,6 @@ jobs:
       - name: Build and test
         run: npm run test -- --filter=${{ inputs.package }}...
       - name: Release ${{ inputs.package }}
-        run: npm publish -w ${{ inputs.workspace }}
+        run: npm publish -w ${{ inputs.workspace }} --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
