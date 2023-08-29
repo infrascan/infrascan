@@ -23,11 +23,13 @@ jobs:
         run: npm run test
 
       - name: Create Release PR
+        id: changeset-version
         uses: changesets/action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Push version tags
+        if: ${{ steps.changeset-version.outputs.hasChangesets == 'false' }}
         run: npx changeset tag ; git push --tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
