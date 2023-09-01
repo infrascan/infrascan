@@ -17,6 +17,7 @@ export type PaginationToken = {
 };
 
 export type BaseGetter = {
+  id?: string;
   fn: string;
   parameters?: BaseParameterResolver[];
   formatter?: string;
@@ -25,6 +26,7 @@ export type BaseGetter = {
 };
 
 export type BaseScannerDefinition = {
+  provider?: string;
   service: string;
   clientKey: string;
   key: string;

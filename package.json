@@ -1,9 +1,10 @@
 {
   "packageManager": "npm",
   "workspaces": [
+    "apps/*",
+    "aws-scanners/*",
     "internal/*",
-    "packages/*",
-    "apps/*"
+    "packages/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
