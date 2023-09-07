@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "codegen": "npx ts-node ./codegen.ts ; npm run fmt",
+    "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
     "build": "rm -rf dist ; tsc --project tsconfig.json",
     "prepublish": "rm -rf dist ; tsc --project tsconfig.json",
     "test": "echo \"Error: no test specified\"",
@@ -31,11 +31,12 @@
   "devDependencies": {
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/shared-types": "^0.1.0",
-    "eslint-config-custom": "^1.0.0",
+    "eslint-config-codegen": "^1.0.0",
     "tsconfig": "^0.0.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.398.0"
+    "@aws-sdk/client-lambda": "^3.398.0",
+    "@infrascan/core": "0.1.0"
   }
 }

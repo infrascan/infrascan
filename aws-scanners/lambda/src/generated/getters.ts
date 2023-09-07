@@ -1,7 +1,19 @@
-import * as Lambda from "@aws-sdk/client-lambda";
+import {
+  LambdaClient,
+  ListFunctionsCommand,
+  GetFunctionCommand,
+} from "@aws-sdk/client-lambda";
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import type { Connector, GenericState } from "@infrascan/shared-types";
+import type {
+  ListFunctionsCommandInput,
+  ListFunctionsCommandOutput,
+  GetFunctionCommandInput,
+  GetFunctionCommandOutput,
+} from "@aws-sdk/client-lambda";
+
 export async function ListFunctions(
-  client: Lambda.LambdaClient,
+  client: LambdaClient,
   stateConnector: Connector,
   account: string,
   region: string,
@@ -11,16 +23,16 @@ export async function ListFunctions(
     console.log("lambda ListFunctions");
     let pagingToken: string | undefined = undefined;
     do {
-      const preparedParams: Lambda.ListFunctionsCommandInput = {};
-      preparedParams["Marker"] = pagingToken;
-      const cmd = new Lambda.ListFunctionsCommand(preparedParams);
-      const result: Lambda.ListFunctionsCommandOutput = await client.send(cmd);
+      const preparedParams: ListFunctionsCommandInput = {};
+      preparedParams.Marker = pagingToken;
+      const cmd = new ListFunctionsCommand(preparedParams);
+      const result: ListFunctionsCommandOutput = await client.send(cmd);
       state.push({
         _metadata: { account, region },
         _parameters: preparedParams,
         _result: result,
       });
-      pagingToken = result["NextMarker"];
+      pagingToken = result.NextMarker;
     } while (pagingToken != null);
   } catch (err: any) {
     if (err?.retryable) {
@@ -37,8 +49,9 @@ export async function ListFunctions(
     state,
   );
 }
+
 export async function GetFunction(
-  client: Lambda.LambdaClient,
+  client: LambdaClient,
   stateConnector: Connector,
   account: string,
   region: string,
@@ -52,17 +65,16 @@ export async function GetFunction(
         Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
       },
     ];
-    const parameterQueue: Lambda.GetFunctionCommandInput[] =
-      await resolveFunctionCallParameters(
-        account,
-        region,
-        resolvers,
-        stateConnector.resolveStateForServiceFunction,
-      );
+    const parameterQueue = (await resolveFunctionCallParameters(
+      account,
+      region,
+      resolvers,
+      stateConnector,
+    )) as GetFunctionCommandInput[];
     for (const parameters of parameterQueue) {
-      const preparedParams: Lambda.GetFunctionCommandInput = parameters;
-      const cmd = new Lambda.GetFunctionCommand(preparedParams);
-      const result: Lambda.GetFunctionCommandOutput = await client.send(cmd);
+      const preparedParams: GetFunctionCommandInput = parameters;
+      const cmd = new GetFunctionCommand(preparedParams);
+      const result: GetFunctionCommandOutput = await client.send(cmd);
       state.push({
         _metadata: { account, region },
         _parameters: preparedParams,

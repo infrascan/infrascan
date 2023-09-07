@@ -7,7 +7,6 @@
   "private": true,
   "scripts": {
     "build": "rm -rf dist ; tsc",
-    "lint": "eslint .",
     "clean": "rm -rf node_modules dist"
   },
   "keywords": [],

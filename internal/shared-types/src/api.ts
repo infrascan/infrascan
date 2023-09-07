@@ -1,4 +1,7 @@
+import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+
 import type { Service } from "./services";
+import type { BaseEdgeResolver } from "./config";
 
 /**
  * Callback to store state from a specific function call
@@ -61,8 +64,31 @@ export type GetGlobalStateForServiceFunction = (
   functionName: string,
 ) => any;
 
-export type Connector = {
+export interface Connector {
   onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn;
   resolveStateForServiceFunction: ResolveStateForServiceFunction;
   getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction;
 };
+
+type ClientBuilder<T> = (
+  credentials: AwsCredentialIdentityProvider,
+  region: string,
+) => T;
+
+type GetterFn<T> = (
+  client: T,
+  stateConnector: Connector,
+  account: string,
+  region: string,
+) => Promise<void>;
+
+export interface ServiceModule<T> {
+  provider: "aws";
+  service: string;
+  key: string;
+  getClient: ClientBuilder<T>;
+  callPerRegion: boolean;
+  getters: GetterFn<T>[];
+  nodes?: string[],
+  edges?: BaseEdgeResolver[]
+}

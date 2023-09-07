@@ -30,6 +30,7 @@
     "@aws-sdk/client-sts": "^3.341.0"
   },
   "devDependencies": {
+    "@aws-sdk/types": "^3.398.0",
     "eslint-config-custom": "*",
     "tsconfig": "*",
     "typescript": "^5.1.6"

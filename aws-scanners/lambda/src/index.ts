@@ -1,19 +1,20 @@
-import * as Lambda from "@aws-sdk/client-lambda";
-import { ListFunctions, GetFunction } from "./generated/getters.ts";
-import { generateNodes } from "./generated/nodes.ts";
-
+import { LambdaClient } from "@aws-sdk/client-lambda";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import type { ServiceModule } from "@infrascan/shared-types";
+import { ListFunctions, GetFunction } from "./generated/getters";
 
-function getClient(credentials: AwsCredentialIdentityProvider, region: string): Lambda.LambdaClient {
-	return new Lambda.LambdaClient({ credentials, region });
+function getClient(credentials: AwsCredentialIdentityProvider, region: string): LambdaClient {
+	return new LambdaClient({ credentials, region });
 }
 
-export default {
+const LambdaScanner: ServiceModule<LambdaClient> = {
 	provider: "aws",
 	service: "lambda",
 	key: "Lambda",
 	getClient,
 	callPerRegion: true,
 	getters: [ListFunctions, GetFunction],
-	nodes: generateNodes,
+	nodes: ["Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}"],
 }
+
+export default LambdaScanner;
