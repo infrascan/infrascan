@@ -26,7 +26,10 @@ function getServiceClient(scannerDefinition: BaseScannerDefinition): string {
  * ```
  */
 function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: CodeBlockWriter): CodeBlockWriter {
-  return writer.writeLine(`function getClient(credentials: AwsCredentialIdentityProvider, region: string): ${getServiceClient(scannerDefinition)} {`)
+  return writer.writeLine(`import { ${getServiceClient(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
+    .writeLine(`import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";`)
+    .newLine()
+    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, region: string): ${getServiceClient(scannerDefinition)} {`)
     .tab()
     .write(`return new ${getServiceClient(scannerDefinition)}({ credentials, region });`)
     .newLine()
@@ -63,10 +66,8 @@ function createModuleExport(scannerDefinition: BaseScannerDefinition, project: P
       const fileWithImports = writer
         .writeLine(`import { ${getServiceClient(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .writeLine(`import { ${scannerGetterImports} } from "./generated/getters";`)
-        .writeLine(`import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";`)
         .writeLine(`import type { ServiceModule } from "@infrascan/shared-types";`);
-      const fileWithClient = declareClientBuilder(scannerDefinition, fileWithImports);
-      return fileWithClient.writeLine(`const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClient(scannerDefinition)}> = {`)
+      return fileWithImports.writeLine(`const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClient(scannerDefinition)}> = {`)
         .writeLine(`\tprovider: "${scannerDefinition.provider ?? "aws"}",`)
         .writeLine(`\tservice: "${scannerDefinition.service}",`)
         .writeLine(`\tkey: "${scannerDefinition.key}",`)
@@ -97,7 +98,23 @@ function getCommandTypesForServiceGetter(getter: BaseGetter): Commands {
   };
 }
 
-function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGetter, sourceFile: CodeBlockWriter) {
+function declareNodeSelector(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
+  const nodes = scannerDefinition.nodes ?? [];
+  if(nodes.length > 0) {
+    return sourceFile;
+  }
+
+  // TODO: replace account & region with an extendable type which captures partition etc.
+  const getNodesFn = sourceFile.writeLine('export function getNodes(stateConnector: Connector, account: string, region: string): Promise<GenericNode[]> {')
+    .writeLine("\tlet state: GenericState[] = [];");
+  nodes.forEach((selector) => {
+    getNodesFn.writeLine(`\tstate = state.concat(await evaluateSelector(account, region, "${selector}", stateConnector));`)
+  });
+  return getNodesFn.writeLine('\treturn state;')
+    .writeLine('}');
+}
+
+function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGetter, sourceFile: CodeBlockWriter): CodeBlockWriter {
   const commandTypes = getCommandTypesForServiceGetter(getter);
 
   const hasParameters = getter.parameters != null;
@@ -123,7 +140,7 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
     .conditionalWriteLine(hasPaginationTokens, `\t\t} while(pagingToken != null);`)
     // close outer for loop for parameterised scanners
     .conditionalWriteLine(hasParameters, "\t\t}")
-    .writeLine("\t} catch(err: any) {")
+    .writeLine("\t} catch(err: unknown) {")
       // TODO: proper error handling
     .writeLine("\t\tif(err?.retryable) {")
     .writeLine(`\t\t\tconsole.log("Encountered retryable error", err);`)
@@ -161,6 +178,13 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
   );
 
   await getters.save();
+
+  const clientBuilder = project.createSourceFile(
+    join(config.basePath, 'generated/client.ts'),
+    (writer) => declareClientBuilder(scannerDefinition, writer)
+  );
+  await clientBuilder.save();
+
   const indexFile = createModuleExport(scannerDefinition, project, config);
   await indexFile.save();
 }
