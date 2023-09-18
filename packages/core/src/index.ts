@@ -1,7 +1,7 @@
 import jmespath from "jmespath";
 
 import type {
-  BaseParameterResolver,
+  GenericParameterResolver,
   Service,
   Connector,
 } from "@infrascan/shared-types";
@@ -36,7 +36,7 @@ export async function evaluateSelector(
 export async function resolveFunctionCallParameters(
   account: string,
   region: string,
-  parameters: BaseParameterResolver[],
+  parameters: GenericParameterResolver[],
   connector: Connector,
 ): Promise<Record<string, any>[]> {
   const allParamObjects: Record<string, string>[] = [];

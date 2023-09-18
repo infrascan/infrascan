@@ -71,6 +71,10 @@ export type StatefulParameterResolver<
   Selector: StateSelector<ServiceName, Serv, Funcs>;
 } & BaseParameterResolver;
 
+export type GenericStatefulParameterResolver = {
+  Selector: string;
+} & BaseParameterResolver;
+
 export type ParameterResolver<
   ServiceName extends string,
   Serv extends object,
@@ -78,6 +82,11 @@ export type ParameterResolver<
 > =
   | ConstantParameterResolver
   | StatefulParameterResolver<ServiceName, Serv, Funcs>;
+
+export type GenericParameterResolver = BaseParameterResolver & {
+  Selector?: string;
+  Value?: string;
+};
 
 export type ServiceGetter<
   ServiceName extends string,

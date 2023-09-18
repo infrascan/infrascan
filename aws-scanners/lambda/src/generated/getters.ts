@@ -2,6 +2,7 @@ import {
   LambdaClient,
   ListFunctionsCommand,
   GetFunctionCommand,
+  LambdaServiceException,
 } from "@aws-sdk/client-lambda";
 import { resolveFunctionCallParameters } from "@infrascan/core";
 import type { Connector, GenericState } from "@infrascan/shared-types";
@@ -34,11 +35,15 @@ export async function ListFunctions(
       });
       pagingToken = result.NextMarker;
     } while (pagingToken != null);
-  } catch (err: any) {
-    if (err?.retryable) {
-      console.log("Encountered retryable error", err);
+  } catch (err: unknown) {
+    if (err instanceof LambdaServiceException) {
+      if (err?.$retryable) {
+        console.log("Encountered retryable error", err);
+      } else {
+        console.log("Encountered unretryable error", err);
+      }
     } else {
-      console.log("Encountered unretryable error", err);
+      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -81,11 +86,15 @@ export async function GetFunction(
         _result: result,
       });
     }
-  } catch (err: any) {
-    if (err?.retryable) {
-      console.log("Encountered retryable error", err);
+  } catch (err: unknown) {
+    if (err instanceof LambdaServiceException) {
+      if (err?.$retryable) {
+        console.log("Encountered retryable error", err);
+      } else {
+        console.log("Encountered unretryable error", err);
+      }
     } else {
-      console.log("Encountered unretryable error", err);
+      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(

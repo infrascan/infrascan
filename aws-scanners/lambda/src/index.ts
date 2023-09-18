@@ -1,11 +1,7 @@
 import { LambdaClient } from "@aws-sdk/client-lambda";
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import type { ServiceModule } from "@infrascan/shared-types";
 import { ListFunctions, GetFunction } from "./generated/getters";
-
-function getClient(credentials: AwsCredentialIdentityProvider, region: string): LambdaClient {
-	return new LambdaClient({ credentials, region });
-}
+import { getClient } from "./generated/client";
 
 const LambdaScanner: ServiceModule<LambdaClient> = {
 	provider: "aws",

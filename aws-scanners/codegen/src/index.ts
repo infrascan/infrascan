@@ -12,8 +12,12 @@ function getFunctionNameForGetter(getter: BaseGetter): string {
   return getter.id ?? getter.fn;
 }
 
-function getServiceClient(scannerDefinition: BaseScannerDefinition): string {
+function getServiceClientClass(scannerDefinition: BaseScannerDefinition): string {
   return `${scannerDefinition.clientKey}Client`;
+}
+
+function getServiceErrorType(scannerDefinition: BaseScannerDefinition): string {
+  return `${scannerDefinition.clientKey}ServiceException`;
 }
 
 /**
@@ -26,62 +30,51 @@ function getServiceClient(scannerDefinition: BaseScannerDefinition): string {
  * ```
  */
 function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: CodeBlockWriter): CodeBlockWriter {
-  return writer.writeLine(`import { ${getServiceClient(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
+  return writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
     .writeLine(`import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";`)
     .newLine()
-    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, region: string): ${getServiceClient(scannerDefinition)} {`)
+    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, region: string): ${getServiceClientClass(scannerDefinition)} {`)
     .tab()
-    .write(`return new ${getServiceClient(scannerDefinition)}({ credentials, region });`)
+    .write(`return new ${getServiceClientClass(scannerDefinition)}({ credentials, region });`)
     .newLine()
     .writeLine('}\n');
 }
 
-function formatNodesForExport(scannerDefinition: BaseScannerDefinition): string | undefined {
-  return scannerDefinition.nodes?.map((nodeSelector) => `"${nodeSelector}"`).join(',');
-}
-
-function formatEdgesForExport(scannerDefinition: BaseScannerDefinition): string | undefined {
-  return scannerDefinition.edges?.map((edgeSelector) => JSON.stringify(edgeSelector, undefined, 2)).join(',');
-}
-
 /**
- * Implements an index file for the scanner which exposes its interface
+ * Logs a suggested module export. This should be correct for most generated scanners, but will imports
+ * will differ if any step is manually implemented.
  * @param scannerDefinition 
- * @param project 
- * @param config 
- * @returns {SourceFile} Implementation of an index file to expose the service scanner
+ * @returns {void}
  */
-function createModuleExport(scannerDefinition: BaseScannerDefinition, project: Project, config: CodegenConfig): SourceFile {
-  const scannerExportPath: string = join(config.basePath, "index.ts");
-  
+function suggestModuleExport(scannerDefinition: BaseScannerDefinition) {  
   const scannerGetterNames = scannerDefinition.getters.map(getFunctionNameForGetter);
   const scannerGetterImports = scannerGetterNames.join(', ');
 
   const hasNodes = (scannerDefinition.nodes?.length ?? 0) > 0;
   const hasEdges = (scannerDefinition.edges?.length ?? 0) > 0;
 
-  return project.createSourceFile(
-    scannerExportPath, 
-    (writer) => {
-      const fileWithImports = writer
-        .writeLine(`import { ${getServiceClient(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
-        .writeLine(`import { ${scannerGetterImports} } from "./generated/getters";`)
-        .writeLine(`import type { ServiceModule } from "@infrascan/shared-types";`);
-      return fileWithImports.writeLine(`const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClient(scannerDefinition)}> = {`)
-        .writeLine(`\tprovider: "${scannerDefinition.provider ?? "aws"}",`)
-        .writeLine(`\tservice: "${scannerDefinition.service}",`)
-        .writeLine(`\tkey: "${scannerDefinition.key}",`)
-        .writeLine(`\tgetClient,`)
-        .writeLine(`\tcallPerRegion: ${scannerDefinition.isGlobal ? false : true},`)
-        .writeLine(`\tgetters: [${scannerGetterImports}],`)
-        .conditionalWriteLine(hasNodes, `\tnodes: [${formatNodesForExport(scannerDefinition)}],`)
-        .conditionalWriteLine(hasEdges, `\tedges: [${formatEdgesForExport(scannerDefinition)}],`)
-        .writeLine('}')
-        .newLine()
-        .writeLine(`export default ${scannerDefinition.clientKey}Scanner;`);
-    },
-    { overwrite: config.overwrite }
-  );
+  console.log("The expected export for this scanner is below. It should, at a minimum, serve as a strong starting point.")
+  console.log("-----BEGIN EXPECTED EXPORT-----");
+  console.log(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}"; 
+import { getClient } from "./generated/client";
+import { ${scannerGetterImports} } from "./generated/getters";
+${hasEdges ? `import { getEdges } from "./generated/edges";` : ""}
+${hasNodes ? `import { getNodes } from "./generated/nodes";` : ""}
+import type { ServiceModule } from "@infrascan/shared-types";
+
+const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientClass(scannerDefinition)}> = {
+  provider: "${scannerDefinition.provider ?? "aws"}",
+  service: "${scannerDefinition.service}",
+  key: "${scannerDefinition.key}",
+  getClient,
+  callPerRegion: ${scannerDefinition.isGlobal ? false : true},
+  getters: [${scannerGetterImports}],
+  ${hasNodes ? `nodes: getNodes,` : ""}
+  ${hasEdges ? `edges: getEdges,` : ""}
+};
+
+export default ${scannerDefinition.clientKey}Scanner;`);
+console.log("-----END EXPECTED EXPORT-----");
 }
 
 type Commands = {
@@ -100,15 +93,20 @@ function getCommandTypesForServiceGetter(getter: BaseGetter): Commands {
 
 function declareNodeSelector(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
   const nodes = scannerDefinition.nodes ?? [];
-  if(nodes.length > 0) {
+  if(nodes.length === 0) {
     return sourceFile;
   }
 
   // TODO: replace account & region with an extendable type which captures partition etc.
-  const getNodesFn = sourceFile.writeLine('export function getNodes(stateConnector: Connector, account: string, region: string): Promise<GenericNode[]> {')
-    .writeLine("\tlet state: GenericState[] = [];");
-  nodes.forEach((selector) => {
-    getNodesFn.writeLine(`\tstate = state.concat(await evaluateSelector(account, region, "${selector}", stateConnector));`)
+  const getNodesFn = sourceFile.writeLine('import { evaluateSelector } from "@infrascan/core";')
+    .writeLine('import type { Connector, GraphNode } from "@infrascan/shared-types";')
+    .newLine()
+    .writeLine('export async function getNodes(stateConnector: Connector, account: string, region: string): Promise<GraphNode[]> {')
+    .writeLine("\tlet state: GraphNode[] = [];");
+  nodes.forEach((selector, idx) => {
+    getNodesFn
+      .writeLine(`\tconst nodes${idx+1} = await evaluateSelector(account, region, "${selector}", stateConnector);`)
+      .writeLine(`\tstate = state.concat(nodes${idx+1});`)
   });
   return getNodesFn.writeLine('\treturn state;')
     .writeLine('}');
@@ -120,7 +118,7 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
   const hasParameters = getter.parameters != null;
   const hasPaginationTokens = getter.paginationToken != null;
 
-  return sourceFile.write(`export async function ${getFunctionNameForGetter(getter)}(client: ${getServiceClient(scannerDefinition)}, stateConnector: Connector, account: string, region: string): Promise<void> {`)
+  return sourceFile.write(`export async function ${getFunctionNameForGetter(getter)}(client: ${getServiceClientClass(scannerDefinition)}, stateConnector: Connector, account: string, region: string): Promise<void> {`)
     .writeLine(`const state: GenericState[] = [];`)
     .writeLine("try {")
     // TODO: handle verbose logging correctly in generated code
@@ -142,10 +140,14 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
     .conditionalWriteLine(hasParameters, "\t\t}")
     .writeLine("\t} catch(err: unknown) {")
       // TODO: proper error handling
-    .writeLine("\t\tif(err?.retryable) {")
-    .writeLine(`\t\t\tconsole.log("Encountered retryable error", err);`)
-    .writeLine(`\t\t} else {`)
-    .writeLine(`\t\t\tconsole.log("Encountered unretryable error", err);`)
+    .writeLine(`\t\tif(err instanceof ${getServiceErrorType(scannerDefinition)}) {`)
+    .writeLine("\t\t\tif(err?.$retryable) {")
+    .writeLine(`\t\t\t\tconsole.log("Encountered retryable error", err);`)
+    .writeLine(`\t\t\t} else {`)
+    .writeLine(`\t\t\t\tconsole.log("Encountered unretryable error", err);`)
+    .writeLine("\t\t\t}")
+    .writeLine("\t\t} else {")
+    .writeLine('\t\t\tconsole.log("Encountered unexpected error", err);')
     .writeLine("\t\t}")
     .writeLine("\t}")
     .writeLine(`\tawait stateConnector.onServiceScanCompleteCallback(account, region, "${scannerDefinition.clientKey}", "${getFunctionNameForGetter(getter)}", state);`)
@@ -167,10 +169,10 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
       const getterCommands = getterImports.map((types) => types.command).join(', ');
       const getterCommandTypes = getterImports.map((types) => `${types.input}, ${types.output}`).join(', ');
 
-      const sourceWriter = writer.writeLine(`import { ${getServiceClient(scannerDefinition)}, ${getterCommands} } from "@aws-sdk/client-${scannerDefinition.service}";`)
+      const sourceWriter = writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)}, ${getterCommands}, ${getServiceErrorType(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .conditionalWriteLine(hasParameterisedGetter, 'import { resolveFunctionCallParameters } from "@infrascan/core";')
         .writeLine(`import type { Connector, GenericState } from "@infrascan/shared-types";`)
-        .writeLine(`import type { ${getterCommandTypes} } from "@aws-sdk/client-${scannerDefinition.service}";`)
+        .writeLine(`import type { ${getterCommandTypes},  } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .newLine();
       scannerDefinition.getters.forEach((getter) => declareGetter(scannerDefinition, getter, sourceWriter));
     },
@@ -181,10 +183,17 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
 
   const clientBuilder = project.createSourceFile(
     join(config.basePath, 'generated/client.ts'),
-    (writer) => declareClientBuilder(scannerDefinition, writer)
+    (writer) => declareClientBuilder(scannerDefinition, writer),
+    { overwrite: config.overwrite }
   );
   await clientBuilder.save();
 
-  const indexFile = createModuleExport(scannerDefinition, project, config);
-  await indexFile.save();
+  const nodesSelectors = project.createSourceFile(
+    join(config.basePath, 'generated/nodes.ts'),
+    (writer) => declareNodeSelector(scannerDefinition, writer),
+    { overwrite: config.overwrite }
+  );
+  await nodesSelectors.save();
+
+  suggestModuleExport(scannerDefinition);
 }
