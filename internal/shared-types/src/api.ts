@@ -2,6 +2,8 @@ import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
 import type { Service } from "./services";
 import type { BaseEdgeResolver } from "./config";
+import type { GraphEdge, GraphNode } from "./graph";
+
 
 /**
  * Callback to store state from a specific function call
@@ -70,25 +72,61 @@ export interface Connector {
   getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction;
 };
 
-type ClientBuilder<T> = (
+type ClientBuilder<T, P extends Provider> = (
   credentials: AwsCredentialIdentityProvider,
-  region: string,
+  context: ProviderContextMap[P],
 ) => T;
 
-type GetterFn<T> = (
+type GetterFn<T, P extends Provider> = (
   client: T,
   stateConnector: Connector,
-  account: string,
-  region: string,
+  context: ProviderContextMap[P]
 ) => Promise<void>;
 
-export interface ServiceModule<T> {
-  provider: "aws";
+type GetNodeFn<T extends Provider> = (
+  stateConnector: Connector,
+  context: ProviderContextMap[T]
+) => Promise<GraphNode[]>;
+
+type GetEdgeFn<T extends Provider> = (
+  stateConnector: Connector,
+  context: ProviderContextMap[T]
+) => Promise<GraphEdge[]>;
+
+export type Provider = "aws";
+
+export type AwsContext = {
+  account: string;
+  region: string;
+  partition?: string;
+};
+
+type ProviderContextMap = {
+  aws: AwsContext
+}
+
+export type ProviderContext<T extends Provider> = {
+  provider: T;
+  context: ProviderContextMap[T];
+};
+
+type FormatNodeFn<P extends Provider> = (node: GraphNode, context: ProviderContextMap[P]) => GraphNode;
+type FormatEdgeFn<P extends Provider> = (
+  node: GraphEdge,
+  context: ProviderContextMap[P]
+) => GraphEdge;
+
+export interface ServiceModule<T, P extends Provider> {
+  provider: P;
   service: string;
   key: string;
-  getClient: ClientBuilder<T>;
+  getClient: ClientBuilder<T, P>;
   callPerRegion: boolean;
-  getters: GetterFn<T>[];
-  nodes?: string[],
-  edges?: BaseEdgeResolver[]
-}
+  getters: GetterFn<T, P>[];
+  nodes?: string[];
+  getNodes?: GetNodeFn<P>;
+  formatNode?: FormatNodeFn<P>;
+  edges?: BaseEdgeResolver[];
+  getEdges?: GetEdgeFn<P>;
+  formatEdge?: FormatEdgeFn<P>;
+};

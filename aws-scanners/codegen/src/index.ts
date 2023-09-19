@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CodeBlockWriter, Project, SourceFile } from "ts-morph";
+import { CodeBlockWriter, Project } from "ts-morph";
 
 import type { BaseScannerDefinition, BaseGetter } from "@infrascan/shared-types";
 
@@ -32,10 +32,11 @@ function getServiceErrorType(scannerDefinition: BaseScannerDefinition): string {
 function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: CodeBlockWriter): CodeBlockWriter {
   return writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
     .writeLine(`import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";`)
+    .writeLine(`import type { AwsContext } from "@infrascan/shared-types";`)
     .newLine()
-    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, region: string): ${getServiceClientClass(scannerDefinition)} {`)
+    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, context: AwsContext): ${getServiceClientClass(scannerDefinition)} {`)
     .tab()
-    .write(`return new ${getServiceClientClass(scannerDefinition)}({ credentials, region });`)
+    .write(`return new ${getServiceClientClass(scannerDefinition)}({ credentials, region: context.region });`)
     .newLine()
     .writeLine('}\n');
 }
@@ -58,19 +59,18 @@ function suggestModuleExport(scannerDefinition: BaseScannerDefinition) {
   console.log(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}"; 
 import { getClient } from "./generated/client";
 import { ${scannerGetterImports} } from "./generated/getters";
-${hasEdges ? `import { getEdges } from "./generated/edges";` : ""}
-${hasNodes ? `import { getNodes } from "./generated/nodes";` : ""}
+${hasNodes || hasEdges ? `import { ${hasNodes ? "getNodes," : ""} ${hasEdges ? "getEdges" : ""} } from "./generated/graph";` : ""}
 import type { ServiceModule } from "@infrascan/shared-types";
 
-const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientClass(scannerDefinition)}> = {
+const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientClass(scannerDefinition)}, "aws"> = {
   provider: "${scannerDefinition.provider ?? "aws"}",
   service: "${scannerDefinition.service}",
   key: "${scannerDefinition.key}",
   getClient,
   callPerRegion: ${scannerDefinition.isGlobal ? false : true},
   getters: [${scannerGetterImports}],
-  ${hasNodes ? `nodes: getNodes,` : ""}
-  ${hasEdges ? `edges: getEdges,` : ""}
+  ${hasNodes ? `getNodes: getNodes,` : ""}
+  ${hasEdges ? `getEdges: getEdges,` : ""}
 };
 
 export default ${scannerDefinition.clientKey}Scanner;`);
@@ -91,25 +91,74 @@ function getCommandTypesForServiceGetter(getter: BaseGetter): Commands {
   };
 }
 
-function declareNodeSelector(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
+function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
   const nodes = scannerDefinition.nodes ?? [];
-  if(nodes.length === 0) {
+  const hasNodes = nodes.length > 0;
+
+  const edges = scannerDefinition.edges ?? [];
+  const hasEdges = edges.length > 0;
+
+  if(!hasEdges && !hasNodes) {
     return sourceFile;
   }
 
-  // TODO: replace account & region with an extendable type which captures partition etc.
-  const getNodesFn = sourceFile.writeLine('import { evaluateSelector } from "@infrascan/core";')
-    .writeLine('import type { Connector, GraphNode } from "@infrascan/shared-types";')
+  const coreImports = [];
+  if(hasNodes) {
+    coreImports.push("evaluateSelector");
+  } 
+  if(hasEdges) {
+    coreImports.push("evaluateSelectorGlobally");
+    coreImports.push("filterState");
+    coreImports.push("formatEdge");
+  }
+
+  const typeImports = [];
+  if(hasNodes) {
+    typeImports.push("GraphNode");
+  }
+  if(hasEdges) {
+    typeImports.push("GraphEdge");
+    typeImports.push("EdgeTarget");
+  }
+
+
+  return sourceFile.writeLine(`import { ${coreImports.join(', ')} } from "@infrascan/core";`)
+    .writeLine(`import type { Connector, AwsContext, ${typeImports.join(', ')} } from "@infrascan/shared-types";`)
     .newLine()
-    .writeLine('export async function getNodes(stateConnector: Connector, account: string, region: string): Promise<GraphNode[]> {')
-    .writeLine("\tlet state: GraphNode[] = [];");
-  nodes.forEach((selector, idx) => {
-    getNodesFn
-      .writeLine(`\tconst nodes${idx+1} = await evaluateSelector(account, region, "${selector}", stateConnector);`)
-      .writeLine(`\tstate = state.concat(nodes${idx+1});`)
-  });
-  return getNodesFn.writeLine('\treturn state;')
-    .writeLine('}');
+    .conditionalWriteLine(hasNodes, "export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<GraphNode[]> {")
+    .conditionalWriteLine(hasNodes, "\tlet state: GraphNode[] = [];")
+    .conditionalWrite(hasNodes, () => nodes.map((selector) => {
+      const fnLabel = selector.split('|')[1];
+      const evaluateNodes = `\tconst ${fnLabel}Nodes = await evaluateSelector(context.account, context.region, "${selector}", stateConnector);`;
+      const extendState = `\tstate = state.concat(${fnLabel}Nodes);`;
+      return evaluateNodes + "\n" + extendState;
+    }).join('\n'))
+    .conditionalWriteLine(hasNodes, '\treturn state;')
+    .conditionalWriteLine(hasNodes, '}')
+    .conditionalNewLine(hasNodes)
+    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector, context: AwsContext): Promise<GraphEdge[]> {")
+    .conditionalWriteLine(hasEdges, "\tlet edges: GraphEdge[] = [];")
+    .conditionalWrite(hasEdges, () => edges.map(({ state, from, to }, idx) => {
+      const fnLabel = state.split('|')[1];
+      const edgesState = `\tconst ${fnLabel}State${idx+1} = await evaluateSelectorGlobally("${state}", stateConnector);`;
+      const evaluateEdges = `\tconst ${fnLabel}Edges${idx+1} = ${fnLabel}State${idx+1}.flatMap((state: any) => {
+    const source = filterState(state, "${from}");
+    const target: EdgeTarget | EdgeTarget[] | null = filterState(state, "${to}");
+    if(!target || !source) {
+      return [];
+    }
+    // Handle case of one to many edges
+    if (Array.isArray(target)) {
+      return target.map((edgeTarget) => formatEdge(source, edgeTarget));
+    } else {
+      return formatEdge(source, target);
+    }
+  });`
+      const extendEdgeState = `\tedges = edges.concat(${fnLabel}Edges${idx+1});`
+      return edgesState + "\n" + evaluateEdges + "\n" + extendEdgeState;
+    }).join('\n'))
+    .conditionalWriteLine(hasEdges, "\treturn edges;")
+    .conditionalWriteLine(hasEdges, "}");
 }
 
 function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGetter, sourceFile: CodeBlockWriter): CodeBlockWriter {
@@ -118,13 +167,13 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
   const hasParameters = getter.parameters != null;
   const hasPaginationTokens = getter.paginationToken != null;
 
-  return sourceFile.write(`export async function ${getFunctionNameForGetter(getter)}(client: ${getServiceClientClass(scannerDefinition)}, stateConnector: Connector, account: string, region: string): Promise<void> {`)
+  return sourceFile.write(`export async function ${getFunctionNameForGetter(getter)}(client: ${getServiceClientClass(scannerDefinition)}, stateConnector: Connector, context: AwsContext): Promise<void> {`)
     .writeLine(`const state: GenericState[] = [];`)
     .writeLine("try {")
     // TODO: handle verbose logging correctly in generated code
     .writeLine(`\tconsole.log("${scannerDefinition.service} ${getFunctionNameForGetter(getter)}");`)
     .conditionalWriteLine(hasParameters, `\tconst resolvers = ${JSON.stringify(getter.parameters)};`)
-    .conditionalWriteLine(hasParameters, `\tconst parameterQueue = await resolveFunctionCallParameters(account, region, resolvers, stateConnector) as ${commandTypes.input}[];`)
+    .conditionalWriteLine(hasParameters, `\tconst parameterQueue = await resolveFunctionCallParameters(context.account, context.region, resolvers, stateConnector) as ${commandTypes.input}[];`)
     .conditionalWriteLine(hasParameters, `\tfor(const parameters of parameterQueue) {`)
     .conditionalWriteLine(hasPaginationTokens, `\t\tlet pagingToken: string | undefined = undefined;`)
     .conditionalWriteLine(hasPaginationTokens, "\t\tdo {")
@@ -133,7 +182,7 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
     .conditionalWriteLine(hasPaginationTokens, `\t\t\tpreparedParams["${getter.paginationToken?.request}"] = pagingToken;`)
     .writeLine(`\t\t\tconst cmd = new ${commandTypes.command}(preparedParams);`)
     .writeLine(`\t\t\tconst result: ${commandTypes.output} = await client.send(cmd);`)
-    .writeLine(`\t\t\tstate.push({ _metadata: { account, region }, _parameters: preparedParams, _result: result })`)
+    .writeLine(`\t\t\tstate.push({ _metadata: { account: context.account, region: context.region }, _parameters: preparedParams, _result: result })`)
     .conditionalWriteLine(hasPaginationTokens, `\t\t\tpagingToken = result["${getter.paginationToken?.response}"];`)
     .conditionalWriteLine(hasPaginationTokens, `\t\t} while(pagingToken != null);`)
     // close outer for loop for parameterised scanners
@@ -150,7 +199,7 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
     .writeLine('\t\t\tconsole.log("Encountered unexpected error", err);')
     .writeLine("\t\t}")
     .writeLine("\t}")
-    .writeLine(`\tawait stateConnector.onServiceScanCompleteCallback(account, region, "${scannerDefinition.clientKey}", "${getFunctionNameForGetter(getter)}", state);`)
+    .writeLine(`\tawait stateConnector.onServiceScanCompleteCallback(context.account, context.region, "${scannerDefinition.clientKey}", "${getFunctionNameForGetter(getter)}", state);`)
     .writeLine("}")
     .newLine();
 }
@@ -171,7 +220,7 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
 
       const sourceWriter = writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)}, ${getterCommands}, ${getServiceErrorType(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .conditionalWriteLine(hasParameterisedGetter, 'import { resolveFunctionCallParameters } from "@infrascan/core";')
-        .writeLine(`import type { Connector, GenericState } from "@infrascan/shared-types";`)
+        .writeLine(`import type { Connector, GenericState, AwsContext } from "@infrascan/shared-types";`)
         .writeLine(`import type { ${getterCommandTypes},  } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .newLine();
       scannerDefinition.getters.forEach((getter) => declareGetter(scannerDefinition, getter, sourceWriter));
@@ -189,8 +238,8 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
   await clientBuilder.save();
 
   const nodesSelectors = project.createSourceFile(
-    join(config.basePath, 'generated/nodes.ts'),
-    (writer) => declareNodeSelector(scannerDefinition, writer),
+    join(config.basePath, 'generated/graph.ts'),
+    (writer) => declareGraphSelector(scannerDefinition, writer),
     { overwrite: config.overwrite }
   );
   await nodesSelectors.save();

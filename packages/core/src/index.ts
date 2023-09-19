@@ -4,6 +4,8 @@ import type {
   GenericParameterResolver,
   Service,
   Connector,
+  EdgeTarget,
+  GraphEdge,
 } from "@infrascan/shared-types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -83,4 +85,25 @@ export async function evaluateSelectorGlobally(
     functionCall,
   );
   return jmespath.search(aggregateState, selector.join("|"));
+}
+
+export function formatEdge(source: string, target: EdgeTarget): GraphEdge {
+  const edgeId = `${source}:${target.target}`;
+  return {
+    group: "edges",
+    data: {
+      id: edgeId,
+      name: target.name,
+      source,
+      target: target.target,
+      type: "edge",
+    },
+    metadata: {
+      label: target.name,
+    },
+  };
+}
+
+export function filterState(state: any, selector: string): any {
+  return jmespath.search(state, selector);
 }

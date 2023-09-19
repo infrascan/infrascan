@@ -1,5 +1,7 @@
+export type GenericEdgeSelector = `${string}|${string}`;
+
 export type BaseEdgeResolver = {
-  state: string;
+  state: GenericEdgeSelector;
   from: string;
   to: string;
 };
@@ -19,6 +21,8 @@ export type BaseGetter = {
   iamRoleSelectors?: string[];
 };
 
+export type GenericNodeSelector = `${string}|${string}|${string}`;
+
 export type BaseScannerDefinition = {
   provider?: string;
   service: string;
@@ -26,7 +30,7 @@ export type BaseScannerDefinition = {
   key: string;
   arnLabel?: string;
   getters: BaseGetter[];
-  nodes?: string[];
+  nodes?: GenericNodeSelector[];
   edges?: BaseEdgeResolver[];
   iamRoles?: string[];
   isGlobal?: boolean;

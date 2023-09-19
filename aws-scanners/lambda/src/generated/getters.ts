@@ -5,7 +5,11 @@ import {
   LambdaServiceException,
 } from "@aws-sdk/client-lambda";
 import { resolveFunctionCallParameters } from "@infrascan/core";
-import type { Connector, GenericState } from "@infrascan/shared-types";
+import type {
+  Connector,
+  GenericState,
+  AwsContext,
+} from "@infrascan/shared-types";
 import type {
   ListFunctionsCommandInput,
   ListFunctionsCommandOutput,
@@ -16,8 +20,7 @@ import type {
 export async function ListFunctions(
   client: LambdaClient,
   stateConnector: Connector,
-  account: string,
-  region: string,
+  context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
   try {
@@ -29,7 +32,7 @@ export async function ListFunctions(
       const cmd = new ListFunctionsCommand(preparedParams);
       const result: ListFunctionsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account, region },
+        _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,
         _result: result,
       });
@@ -47,8 +50,8 @@ export async function ListFunctions(
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
-    account,
-    region,
+    context.account,
+    context.region,
     "Lambda",
     "ListFunctions",
     state,
@@ -58,8 +61,7 @@ export async function ListFunctions(
 export async function GetFunction(
   client: LambdaClient,
   stateConnector: Connector,
-  account: string,
-  region: string,
+  context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
   try {
@@ -71,8 +73,8 @@ export async function GetFunction(
       },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
-      account,
-      region,
+      context.account,
+      context.region,
       resolvers,
       stateConnector,
     )) as GetFunctionCommandInput[];
@@ -81,7 +83,7 @@ export async function GetFunction(
       const cmd = new GetFunctionCommand(preparedParams);
       const result: GetFunctionCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account, region },
+        _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,
         _result: result,
       });
@@ -98,8 +100,8 @@ export async function GetFunction(
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
-    account,
-    region,
+    context.account,
+    context.region,
     "Lambda",
     "GetFunction",
     state,

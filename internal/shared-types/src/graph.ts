@@ -44,7 +44,7 @@ export type GraphEdge = {
     label: string;
     roleArn?: string;
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    statement: any;
+    statement?: any;
   };
 };
 
@@ -52,3 +52,8 @@ export type GraphEdge = {
  * Generic type for elements in a graph
  */
 export type GraphElement = GraphNode | GraphEdge;
+
+export type EdgeTarget = {
+  name: string;
+  target: string;
+};
