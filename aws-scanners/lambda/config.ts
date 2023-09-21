@@ -32,7 +32,7 @@ const LambdaScanner: ScannerDefinition<"Lambda", typeof Lambda, LambdaFunctions>
     "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
   ],
   iamRoles: [
-    "Lambda|GetFunction|[]._result.Configuration | [].{arn:Role,executor:FunctionArn}",
+    "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
   ],
 };
 

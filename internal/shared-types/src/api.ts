@@ -116,6 +116,12 @@ type FormatEdgeFn<P extends Provider> = (
   context: ProviderContextMap[P]
 ) => GraphEdge;
 
+export type EntityRoleData = {
+  roleArn: string;
+  executor: string;
+};
+type GetIamRoleFn = (stateConnector: Connector) => Promise<EntityRoleData[]>;
+
 export interface ServiceModule<T, P extends Provider> {
   provider: P;
   service: string;
@@ -129,4 +135,5 @@ export interface ServiceModule<T, P extends Provider> {
   edges?: BaseEdgeResolver[];
   getEdges?: GetEdgeFn<P>;
   formatEdge?: FormatEdgeFn<P>;
+  getIamRoles?: GetIamRoleFn;
 };

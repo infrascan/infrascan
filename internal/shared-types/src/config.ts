@@ -32,7 +32,7 @@ export type BaseScannerDefinition = {
   getters: BaseGetter[];
   nodes?: GenericNodeSelector[];
   edges?: BaseEdgeResolver[];
-  iamRoles?: string[];
+  iamRoles?: GenericNodeSelector[];
   isGlobal?: boolean;
 };
 

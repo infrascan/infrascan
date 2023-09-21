@@ -4,11 +4,15 @@ import {
   GetFunctionCommand,
   LambdaServiceException,
 } from "@aws-sdk/client-lambda";
-import { resolveFunctionCallParameters } from "@infrascan/core";
+import {
+  evaluateSelectorGlobally,
+  resolveFunctionCallParameters,
+} from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
+  EntityRoleData,
 } from "@infrascan/shared-types";
 import type {
   ListFunctionsCommandInput,
@@ -106,4 +110,16 @@ export async function GetFunction(
     "GetFunction",
     state,
   );
+}
+
+export async function getIamRoles(
+  stateConnector: Connector,
+): Promise<EntityRoleData[]> {
+  let state: EntityRoleData[] = [];
+  const GetFunctionRoleState = await evaluateSelectorGlobally(
+    "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
+    stateConnector,
+  );
+  state = state.concat(GetFunctionRoleState);
+  return state;
 }

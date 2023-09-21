@@ -49,17 +49,28 @@ function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: 
  */
 function suggestModuleExport(scannerDefinition: BaseScannerDefinition) {  
   const scannerGetterNames = scannerDefinition.getters.map(getFunctionNameForGetter);
+  if(scannerDefinition.iamRoles != null) {
+    scannerGetterNames.push('getIamRoles');
+  }
   const scannerGetterImports = scannerGetterNames.join(', ');
 
   const hasNodes = (scannerDefinition.nodes?.length ?? 0) > 0;
   const hasEdges = (scannerDefinition.edges?.length ?? 0) > 0;
+
+  const graphImports = [];
+  if(hasNodes) {
+    graphImports.push('getNodes');
+  }
+  if(hasEdges) {
+    graphImports.push('getEdges');
+  }
 
   console.log("The expected export for this scanner is below. It should, at a minimum, serve as a strong starting point.")
   console.log("-----BEGIN EXPECTED EXPORT-----");
   console.log(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}"; 
 import { getClient } from "./generated/client";
 import { ${scannerGetterImports} } from "./generated/getters";
-${hasNodes || hasEdges ? `import { ${hasNodes ? "getNodes," : ""} ${hasEdges ? "getEdges" : ""} } from "./generated/graph";` : ""}
+${graphImports.length ? `import { ${graphImports.join(',')} } from "./generated/graph";` : ""}
 import type { ServiceModule } from "@infrascan/shared-types";
 
 const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientClass(scannerDefinition)}, "aws"> = {
@@ -91,6 +102,12 @@ function getCommandTypesForServiceGetter(getter: BaseGetter): Commands {
   };
 }
 
+/**
+ * Handles logic to scrape nodes and edges from state. Converts config selectors into explicit queries via the state connector to load and format the data.
+ * @param scannerDefinition
+ * @param sourceFile 
+ * @returns Updated code block writer
+ */
 function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
   const nodes = scannerDefinition.nodes ?? [];
   const hasNodes = nodes.length > 0;
@@ -161,6 +178,34 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     .conditionalWriteLine(hasEdges, "}");
 }
 
+/**
+ * Returns references to IAM Role Arns and the ID of the Node that will take them. This roles are considered within the global context based on AWS' tenancy model.
+ * @param scannerDefinition 
+ * @param sourceFile 
+ * @returns Updated code block writer
+ */
+function declareIamRoleGetter(scannerDefinition: BaseScannerDefinition, sourceFile: CodeBlockWriter): CodeBlockWriter {
+  const iamRoles = scannerDefinition.iamRoles ?? [];
+  if(iamRoles.length === 0) {
+    return sourceFile;
+  }
+
+  const iamRoleGetterFunc = sourceFile.writeLine(`export async function getIamRoles(stateConnector: Connector): Promise<EntityRoleData[]> {`)
+    .writeLine(`\tlet state: EntityRoleData[] = [];`);
+
+  iamRoles.forEach((selector) => {
+    const [_, func] = selector.split('|');
+    iamRoleGetterFunc
+      .writeLine(`\tconst ${func}RoleState = (await evaluateSelectorGlobally("${selector}", stateConnector)) as EntityRoleData[];`)
+      .writeLine(`\tstate = state.concat(${func}RoleState);`);
+  });
+  
+  return iamRoleGetterFunc
+    .writeLine('\treturn state;')
+    .writeLine('}')
+    .newLine();
+}
+
 function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGetter, sourceFile: CodeBlockWriter): CodeBlockWriter {
   const commandTypes = getCommandTypesForServiceGetter(getter);
 
@@ -211,6 +256,7 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
     join(config.basePath, "generated/getters.ts"),
     (writer) => {
       const hasParameterisedGetter = scannerDefinition.getters.some((getter) => getter.parameters != null);
+      const hasRoles = (scannerDefinition.iamRoles ?? []).length > 0;
       
       // Get all of the `Command` types required for this scanner
       const getterImports = scannerDefinition.getters.map(getCommandTypesForServiceGetter);
@@ -218,12 +264,26 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
       const getterCommands = getterImports.map((types) => types.command).join(', ');
       const getterCommandTypes = getterImports.map((types) => `${types.input}, ${types.output}`).join(', ');
 
+      const coreImports = [];
+      const typeImports = ["Connector", "GenericState", "AwsContext"];
+      if(hasRoles) {
+        typeImports.push("EntityRoleData");
+        coreImports.push('evaluateSelectorGlobally');
+      }
+      if(hasParameterisedGetter) {
+        coreImports.push('resolveFunctionCallParameters');
+      }
+
+
       const sourceWriter = writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)}, ${getterCommands}, ${getServiceErrorType(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
-        .conditionalWriteLine(hasParameterisedGetter, 'import { resolveFunctionCallParameters } from "@infrascan/core";')
-        .writeLine(`import type { Connector, GenericState, AwsContext } from "@infrascan/shared-types";`)
-        .writeLine(`import type { ${getterCommandTypes},  } from "@aws-sdk/client-${scannerDefinition.service}";`)
+        .conditionalWriteLine(coreImports.length > 0, `import { ${coreImports.join(', ')} } from "@infrascan/core";`)
+        .writeLine(`import type { ${typeImports.join(', ')} } from "@infrascan/shared-types";`)
+        .writeLine(`import type { ${getterCommandTypes} } from "@aws-sdk/client-${scannerDefinition.service}";`)
         .newLine();
       scannerDefinition.getters.forEach((getter) => declareGetter(scannerDefinition, getter, sourceWriter));
+      if(hasRoles){
+        declareIamRoleGetter(scannerDefinition, sourceWriter);
+      }
     },
     { overwrite: config.overwrite },
   );
