@@ -107,3 +107,7 @@ export function formatEdge(source: string, target: EdgeTarget): GraphEdge {
 export function filterState(state: any, selector: string): any {
   return jmespath.search(state, selector);
 }
+
+export function formatS3NodeId(id: string): string {
+  return `arn:aws:s3:::${id}`;
+}
