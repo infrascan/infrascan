@@ -1,0 +1,42 @@
+{
+  "name": "@infrascan/aws-ecs-scanner",
+  "version": "0.1.0",
+  "description": "Infrascan scanner definition for AWS ECS",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
+    "build": "rm -rf dist ; tsc --project tsconfig.json",
+    "prepublish": "rm -rf dist ; tsc --project tsconfig.json",
+    "test": "echo \"Error: no test specified\"",
+    "lint": "prettier src/**/*.ts -c ; eslint .",
+    "lint:fix": "eslint . --fix",
+    "fmt": "prettier src/**/*.ts -w",
+    "clean": "rm -rf dist node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
+  "keywords": [],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/infrascan/infrascan/issues"
+  },
+  "homepage": "https://github.com/infrascan/infrascan#readme",
+  "devDependencies": {
+    "@infrascan/aws-codegen": "^0.1.0",
+    "@infrascan/shared-types": "^0.1.0",
+    "eslint-config-codegen": "^1.0.0",
+    "tsconfig": "^0.0.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ecs": "^3.421.0",
+    "@infrascan/core": "0.1.0"
+  }
+}

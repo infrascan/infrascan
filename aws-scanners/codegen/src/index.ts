@@ -138,16 +138,23 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     typeImports.push("EdgeTarget");
   }
 
-
+  let lastFnLabel: string | null;
   return sourceFile.writeLine(`import { ${coreImports.join(', ')} } from "@infrascan/core";`)
     .writeLine(`import type { Connector, AwsContext, ${typeImports.join(', ')} } from "@infrascan/shared-types";`)
     .newLine()
     .conditionalWriteLine(hasNodes, "export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<GraphNode[]> {")
     .conditionalWriteLine(hasNodes, "\tlet state: GraphNode[] = [];")
-    .conditionalWrite(hasNodes, () => nodes.map((selector) => {
+    .conditionalWrite(hasNodes, () => nodes.map((selector,idx) => {
       const fnLabel = selector.split('|')[1];
-      const evaluateNodes = `\tconst ${fnLabel}Nodes = await evaluateSelector(context.account, context.region, "${selector}", stateConnector);`;
-      const extendState = `\tstate = state.concat(${fnLabel}Nodes);`;
+      let nodesVariable = `${fnLabel}Nodes`;
+      if(fnLabel == lastFnLabel) {
+        nodesVariable += `${idx+1}`;
+      }
+      const evaluateNodes = `\tconst ${nodesVariable} = await evaluateSelector(context.account, context.region, "${selector}", stateConnector);`;
+      const extendState = `\tstate = state.concat(${nodesVariable});`;
+      if(fnLabel != lastFnLabel) {
+        lastFnLabel = fnLabel;
+      }
       return evaluateNodes + "\n" + extendState;
     }).join('\n'))
     .conditionalWriteLine(hasNodes, '\treturn state;')
@@ -193,11 +200,19 @@ function declareIamRoleGetter(scannerDefinition: BaseScannerDefinition, sourceFi
   const iamRoleGetterFunc = sourceFile.writeLine(`export async function getIamRoles(stateConnector: Connector): Promise<EntityRoleData[]> {`)
     .writeLine(`\tlet state: EntityRoleData[] = [];`);
 
-  iamRoles.forEach((selector) => {
+  let lastStateSelector: string | null;
+  iamRoles.forEach((selector, idx) => {
     const [_, func] = selector.split('|');
+    let iamRoleState = `${func}RoleState`;
+    if(lastStateSelector == iamRoleState) {
+      iamRoleState += `${idx+1}`;
+    }
     iamRoleGetterFunc
-      .writeLine(`\tconst ${func}RoleState = (await evaluateSelectorGlobally("${selector}", stateConnector)) as EntityRoleData[];`)
-      .writeLine(`\tstate = state.concat(${func}RoleState);`);
+      .writeLine(`\tconst ${iamRoleState} = (await evaluateSelectorGlobally("${selector}", stateConnector)) as EntityRoleData[];`)
+      .writeLine(`\tstate = state.concat(${iamRoleState});`);
+    if(lastStateSelector != iamRoleState) {
+      lastStateSelector = iamRoleState;
+    }
   });
   
   return iamRoleGetterFunc
