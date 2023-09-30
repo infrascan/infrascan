@@ -80,8 +80,8 @@ const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientCla
   getClient,
   callPerRegion: ${scannerDefinition.isGlobal ? false : true},
   getters: [${scannerGetterImports}],
-  ${hasNodes ? `getNodes: getNodes,` : ""}
-  ${hasEdges ? `getEdges: getEdges,` : ""}
+  ${hasNodes ? `getNodes,` : ""}
+  ${hasEdges ? `getEdges,` : ""}
 };
 
 export default ${scannerDefinition.clientKey}Scanner;`);
