@@ -12,7 +12,7 @@ const ApiGatewayScanner: ScannerDefinition<
   service: "apigatewayv2",
   clientKey: "ApiGatewayV2",
   key: "ApiGateway",
-  callPerRegion: false,
+  callPerRegion: true,
   getters: [
     {
       fn: "GetApis",
