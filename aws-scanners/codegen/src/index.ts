@@ -148,7 +148,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
       const fnLabel = selector.split('|')[1];
       let nodesVariable = `${fnLabel}Nodes`;
       if(fnLabel == lastFnLabel) {
-        nodesVariable += `${idx+1}`;
+        nodesVariable += idx;
       }
       const evaluateNodes = `\tconst ${nodesVariable} = await evaluateSelector(context.account, context.region, "${selector}", stateConnector);`;
       const extendState = `\tstate = state.concat(${nodesVariable});`;
@@ -205,7 +205,7 @@ function declareIamRoleGetter(scannerDefinition: BaseScannerDefinition, sourceFi
     const [_, func] = selector.split('|');
     let iamRoleState = `${func}RoleState`;
     if(lastStateSelector == iamRoleState) {
-      iamRoleState += `${idx+1}`;
+      iamRoleState += idx;
     }
     iamRoleGetterFunc
       .writeLine(`\tconst ${iamRoleState} = (await evaluateSelectorGlobally("${selector}", stateConnector)) as EntityRoleData[];`)
