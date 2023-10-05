@@ -3,21 +3,25 @@ import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import { IAM } from "@aws-sdk/client-iam";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import type {
+  AwsContext,
+  Connector, 
   ServiceScanCompleteCallbackFn,
   ResolveStateForServiceFunction,
   RegionalService,
   GlobalService,
   Service,
+  ServiceModule, 
 } from "@infrascan/shared-types";
 import {
   REGIONAL_SERVICE_SCANNERS,
   GLOBAL_SERVICE_SCANNERS,
 } from "./aws/services/index.generated";
-import { IAMStorage } from "./aws/helpers/iam";
+import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
+
 import { AWS_DEFAULT_REGION } from "./aws/defaults";
 
 // Rather than relying on an account id being supplied, we fetch it from STS before scanning.
-async function whoami(
+export async function whoami(
   credentials: AwsCredentialIdentityProvider,
   region: string,
 ): Promise<GetCallerIdentityCommandOutput> {
@@ -30,7 +34,7 @@ async function whoami(
 
 // If no regions are given for a scan, we retrieve all supported regions in this account.
 // This is exposed in the EC2 API.
-async function getAllRegions(
+export async function getAllRegions(
   credentials: AwsCredentialIdentityProvider,
 ): Promise<string[]> {
   const ec2Client = new EC2({ region: AWS_DEFAULT_REGION, credentials });
@@ -206,6 +210,28 @@ export async function performScan(scanOptions: PerformScanOptions) {
     iamStorage.getAllRoles(),
   );
   return scanMetadata;
+}
+
+export async function scanService(
+  serviceScanner: ServiceModule<unknown, "aws">,
+  credentials: AwsCredentialIdentityProvider,
+  connector: Connector,
+  iamStorage: IAMStorage,
+  iamClient: IAM,
+  context: AwsContext,
+): Promise<void> {
+  const serviceClient = serviceScanner.getClient(credentials, context);
+  for (const scannerFn of serviceScanner.getters) {
+    await scannerFn(serviceClient, connector, context);
+  }
+  if (serviceScanner.getIamRoles != null) {
+    const iamRoles = await serviceScanner.getIamRoles(connector);
+    await Promise.all(
+      iamRoles.map(({ roleArn }) =>
+        scanIamRole(iamStorage, iamClient, roleArn),
+      ),
+    );
+  }
 }
 
 export { ServiceScanCompleteCallbackFn, ResolveStateForServiceFunction };

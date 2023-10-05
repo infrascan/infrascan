@@ -376,3 +376,39 @@ export async function generateGraph(
 }
 
 export { GraphEdge, GraphNode, GraphElement, GetGlobalStateForServiceFunction };
+
+const AWS_ACCOUNT_SERVICE_KEY = "AWS-Account";
+export function buildAccountNode(account: string): GraphNode {
+  const humanReadableAccountName = `AWS Account ${account}`;
+  return {
+    group: "nodes",
+    id: account,
+    data: {
+      id: account,
+      type: AWS_ACCOUNT_SERVICE_KEY,
+      name: humanReadableAccountName,
+    },
+    metadata: {
+      name: humanReadableAccountName,
+    },
+  };
+}
+
+const AWS_REGION_SERVICE_KEY = "AWS-Region";
+export function buildRegionNode(account: string, region: string): GraphNode {
+  const humanReadableRegionName = `${region} (${account})`;
+  return {
+    group: "nodes",
+    id: region,
+    data: {
+      id: region,
+      type: AWS_REGION_SERVICE_KEY,
+      parent: account,
+      name: humanReadableRegionName,
+    },
+    metadata: {
+      parent: account,
+      name: humanReadableRegionName,
+    },
+  };
+}

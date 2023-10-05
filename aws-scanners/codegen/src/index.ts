@@ -160,7 +160,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     .conditionalWriteLine(hasNodes, '\treturn state;')
     .conditionalWriteLine(hasNodes, '}')
     .conditionalNewLine(hasNodes)
-    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector, context: AwsContext): Promise<GraphEdge[]> {")
+    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {")
     .conditionalWriteLine(hasEdges, "\tlet edges: GraphEdge[] = [];")
     .conditionalWrite(hasEdges, () => edges.map(({ state, from, to }, idx) => {
       const fnLabel = state.split('|')[1];

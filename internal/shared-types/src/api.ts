@@ -88,10 +88,8 @@ type GetNodeFn<T extends Provider> = (
   context: ProviderContextMap[T]
 ) => Promise<GraphNode[]>;
 
-type GetEdgeFn<T extends Provider> = (
-  stateConnector: Connector,
-  context: ProviderContextMap[T]
-) => Promise<GraphEdge[]>;
+type GetEdgeFn = (stateConnector: Connector) => Promise<GraphEdge[]>;
+
 
 export type Provider = "aws";
 
@@ -133,7 +131,7 @@ export interface ServiceModule<T, P extends Provider> {
   getNodes?: GetNodeFn<P>;
   formatNode?: FormatNodeFn<P>;
   edges?: BaseEdgeResolver[];
-  getEdges?: GetEdgeFn<P>;
+  getEdges?: GetEdgeFn;
   formatEdge?: FormatEdgeFn<P>;
   getIamRoles?: GetIamRoleFn;
 };
