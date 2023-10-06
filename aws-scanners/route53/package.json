@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-route-53": "^3.421.0",
-    "@infrascan/core": "0.1.0"
+    "@infrascan/core": "0.1.0",
+    "minimatch": "^9.0.3"
   }
 }

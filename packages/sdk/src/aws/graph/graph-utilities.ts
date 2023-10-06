@@ -1,17 +1,17 @@
 import jmespath from "jmespath";
 import minimatch from "minimatch";
-import { REGIONAL_SERVICES, GLOBAL_SERVICES } from "@infrascan/config";
+
 import type {
+  Connector,
   GraphEdge,
-  GetGlobalStateForServiceFunction,
-  BaseScannerDefinition,
+  ServiceModule,
 } from "@infrascan/shared-types";
+import { evaluateSelectorGlobally } from "@infrascan/core";
+
 import { IAMStorage } from "../helpers/iam";
-import { evaluateSelectorGlobally } from "../helpers/state";
+
 
 import type { StoredRole } from "../helpers/iam";
-
-const ALL_SERVICES = REGIONAL_SERVICES.concat(GLOBAL_SERVICES);
 
 type MinimatchOptions = {
   partial?: boolean;
@@ -27,14 +27,6 @@ function getServiceFromArn(arn: string): string | undefined {
   return service;
 }
 
-export function sanitizeId(id: string): string {
-  return id
-    .replace(/:/g, "-")
-    .replace(/\//g, "")
-    .replace(/\\/g, "")
-    .replace(/\./g, "_");
-}
-
 export function formatEdge(
   source: string,
   target: string,
@@ -46,7 +38,7 @@ export function formatEdge(
   const edgeId = `${source}:${target}`;
   return {
     group: "edges",
-    id: sanitizeId(edgeId),
+    id: edgeId,
     data: {
       id: edgeId,
       name,
@@ -67,11 +59,11 @@ export function formatS3NodeId(nodeId: string): string {
 }
 
 async function findNodesForService(
-  serviceConfig: BaseScannerDefinition,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
+  serviceConfig: ServiceModule<unknown, "aws">,
+  connector: Connector
 ) {
-  const { nodes, arnLabel, service } = serviceConfig;
-  const resourceService = arnLabel ?? service;
+const { nodes, service } = serviceConfig;
+
   if (!nodes || nodes.length === 0) {
     return [];
   }
@@ -80,7 +72,7 @@ async function findNodesForService(
   for (const selector of nodes) {
     const selectedState = (await evaluateSelectorGlobally(
       selector,
-      getGlobalStateForServiceAndFunction,
+      connector,
     )) as { id: string }[] | { id: string }[][];
     const nodeIds = selectedState.flatMap((resource) => {
       if (Array.isArray(resource)) {
@@ -93,7 +85,7 @@ async function findNodesForService(
   // S3 Nodes use bucket names as they're globally unique, and the S3 API doesn't return ARNs
   // This means we need to build the ARN on the fly when matching in resource policies to allow partial
   // matches of <bucket-name> to <bucket-arn>/<object-path>
-  if (resourceService === "s3") {
+  if (service === "s3") {
     return globalState?.map((node) => formatS3NodeId(node));
   }
   return globalState;
@@ -123,8 +115,9 @@ export function getStatementsForRole(role: StoredRole) {
 }
 
 export type ResolveResourceGlobOptions = {
+  serviceModules: ServiceModule<unknown, "aws">[],
   resourceArnFromPolicy: string;
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
+  connector: Connector;
 };
 
 /**
@@ -133,51 +126,22 @@ export type ResolveResourceGlobOptions = {
  * @returns {string[]} relevant arns
  */
 export async function resolveResourceGlob({
+  serviceModules,
   resourceArnFromPolicy,
-  getGlobalStateForServiceAndFunction,
+  connector,
 }: ResolveResourceGlobOptions): Promise<string[]> {
   if (resourceArnFromPolicy === "*") {
     // TODO: use actions to infer which resources are impacted by a wildcard
     // E.g. Actions: [s3:GetObject], Resources: [*]
     return [];
   }
-  if (resourceArnFromPolicy.includes("*")) {
-    const resourceService = getServiceFromArn(resourceArnFromPolicy);
-    if (resourceService == null) {
-      console.warn("Failed to parse service from resource arn");
-      return [];
-    }
-    const serviceConfig = ALL_SERVICES.find(
-      ({ service, arnLabel }) =>
-        (arnLabel ?? service).toLowerCase() === resourceService.toLowerCase(),
-    );
-    if (serviceConfig == null) {
-      return [];
-    }
-    const serviceArns = await findNodesForService(
-      serviceConfig,
-      getGlobalStateForServiceAndFunction,
-    );
-    return serviceArns
-      .filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
-      .map(
-        (node) =>
-          // Because of S3 bucket names being converted into ARNs above
-          // we need to split out the name from the ARN to get the correct edge
-          // if (resourceService === "s3") {
-          //   return node.split(":").pop();
-          // } else {
-          node,
-        // }
-      )
-      .filter((nodeId) => nodeId != null) as string[];
-  }
   const resourceService = getServiceFromArn(resourceArnFromPolicy);
   if (resourceService == null) {
     console.warn("Failed to parse service from resource arn");
     return [];
   }
-  const serviceConfig = ALL_SERVICES.find(
+
+  const serviceConfig = serviceModules.find(
     ({ service }) => service.toLowerCase() === resourceService.toLowerCase(),
   );
   if (serviceConfig == null) {
@@ -188,10 +152,18 @@ export async function resolveResourceGlob({
   if (nodes == null) {
     return [];
   }
-
+  if (resourceArnFromPolicy.includes("*")) {
+    const serviceArns = await findNodesForService(
+      serviceConfig,
+      connector,
+    );
+    return serviceArns
+      .filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
+      .filter((nodeId) => nodeId != null) as string[];
+  }
   const nodeIds = await findNodesForService(
     serviceConfig,
-    getGlobalStateForServiceAndFunction,
+    connector,
   );
   return nodeIds.filter((knownArn) => knownArn === resourceArnFromPolicy);
 }
@@ -210,8 +182,9 @@ export type EdgeResource = {
  * @returns {string[]}
  */
 export async function generateEdgesForPolicyStatements(
+  serviceModules: ServiceModule<unknown, "aws">[],
   policyStatements: PolicyStatement[],
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
+  connector: Connector,
 ): Promise<EdgeResource[]> {
   let resources: EdgeResource[] = [];
   for (const { label, statements } of policyStatements) {
@@ -220,8 +193,9 @@ export async function generateEdgesForPolicyStatements(
       if (Array.isArray(Resource)) {
         for (const resourceGlobs of Resource) {
           const resolvedResources = await resolveResourceGlob({
+            serviceModules,
             resourceArnFromPolicy: resourceGlobs,
-            getGlobalStateForServiceAndFunction,
+            connector,
           });
           const formattedResources = resolvedResources.map((node) => ({
             label,
@@ -232,8 +206,9 @@ export async function generateEdgesForPolicyStatements(
         }
       } else {
         const matchedResources = await resolveResourceGlob({
+          serviceModules,
           resourceArnFromPolicy: Resource,
-          getGlobalStateForServiceAndFunction,
+          connector,
         });
         const formattedResources = matchedResources.map((node) => ({
           label,
@@ -255,10 +230,11 @@ export async function generateEdgesForPolicyStatements(
  * @returns {Object[]} list of edge objects
  */
 export async function generateEdgesForRole(
+  serviceModules: ServiceModule<unknown, "aws">[],
+  connector: Connector,
   iamStorage: IAMStorage,
   arn: string,
   executor: string,
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction,
 ): Promise<GraphEdge[]> {
   const iamRole = iamStorage.getRole(arn);
   if (iamRole == null) {
@@ -272,15 +248,17 @@ export async function generateEdgesForRole(
   // Compute edges for inline policy statements
   const effectedResourcesForInlineStatements =
     await generateEdgesForPolicyStatements(
+      serviceModules,
       inlineStatements,
-      getGlobalStateForServiceAndFunction,
+      connector,
     );
 
   // Compute edges for attached policy statements
   const effectedResourcesForAttachedStatements =
     await generateEdgesForPolicyStatements(
+      serviceModules,
       attachedStatements,
-      getGlobalStateForServiceAndFunction,
+      connector,
     );
 
   // Iterate over the computed edges and format them

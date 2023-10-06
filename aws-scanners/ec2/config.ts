@@ -20,12 +20,19 @@ const CloudWatchLogsScanner: ScannerDefinition<
       fn: "DescribeVpcs",
     },
     {
-      fn: "DescribeAvailabilityZones",
-    },
-    {
       fn: "DescribeSubnets",
+      parameters: [
+        {
+          Key: "Filters",
+          Selector: "EC2|DescribeVpcs|[]._result[]|[].VpcId"
+        }
+      ],
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken"
+      }
     },
-  ],
+  ]
 };
 
 export default CloudWatchLogsScanner;

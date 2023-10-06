@@ -89,7 +89,7 @@ export type ParameterResolver<
 
 export type GenericParameterResolver = BaseParameterResolver & {
   Selector?: string;
-  Value?: string;
+  Value?: any;
 };
 
 export type ServiceGetter<

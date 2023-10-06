@@ -29,7 +29,6 @@ export async function getNodes(
 
 export async function getEdges(
   stateConnector: Connector,
-  context: AwsContext,
 ): Promise<GraphEdge[]> {
   let edges: GraphEdge[] = [];
   const ListSubscriptionsByTopicState1 = await evaluateSelectorGlobally(

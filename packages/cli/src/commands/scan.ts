@@ -4,14 +4,14 @@ import {
   CommandLineAction,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
-import { performScan } from "@infrascan/sdk";
 import buildFsConnector from "@infrascan/fs-connector";
 import {
   fromIni,
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
-
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+
+import { buildInfrascanClient } from "../client";
 
 function getConfig(path: string) {
   const resolvedConfigPath = resolve(path);
@@ -81,23 +81,20 @@ export default class ScanCmd extends CommandLineAction {
 
   protected async onExecute(): Promise<void> {
     const scanConfig = getConfig(this._config.value as string);
-    const { onServiceScanCompleteCallback, resolveStateForServiceFunction } =
-      buildFsConnector(this._outputDirectory.value as string, {
-        createTargetDirectory: true,
-      });
+    const connector = buildFsConnector(this._outputDirectory.value as string, {
+      createTargetDirectory: true,
+    });
 
     const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const { profile, roleToAssume, regions, services } = accountConfig;
       const credentials = resolveCredentials(profile, roleToAssume);
-      const accountMetadata = await performScan({
+      const client = buildInfrascanClient();
+      const accountMetadata = await client.performScan(
         credentials,
-        regions,
-        services,
-        onServiceScanComplete: onServiceScanCompleteCallback,
-        resolveStateForServiceCall: resolveStateForServiceFunction,
-      });
+        connector
+      );
       metadata.push(accountMetadata);
     }
     return writeScanMetadata(this._outputDirectory.value as string, metadata);

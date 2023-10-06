@@ -1,16 +1,17 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
-import {
+import type {
   GraphElement,
   GraphNode,
-  ScanMetadata,
-  generateGraph,
-} from "@infrascan/sdk";
+} from "@infrascan/shared-types";
+import type { ScanMetadata } from "@infrascan/sdk";
 import {
   CommandLineAction,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
+import { buildInfrascanClient } from "../client";
+
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
   const scanMetadata = readFileSync(
@@ -54,14 +55,9 @@ export default class ScanCmd extends CommandLineAction {
     const scanMetadata = readScanMetadata(
       this._outputDirectory.value as string,
     );
-    const { resolveStateForServiceFunction, getGlobalStateForServiceFunction } =
-      buildFsConnector(this._outputDirectory.value as string);
-
-    const graphData = await generateGraph({
-      scanMetadata,
-      resolveStateForServiceCall: resolveStateForServiceFunction,
-      getGlobalStateForServiceAndFunction: getGlobalStateForServiceFunction,
-    });
+    const connector = buildFsConnector(this._outputDirectory.value as string);
+    const client = buildInfrascanClient();
+    const graphData = await client.generateGraph(scanMetadata, connector);
     const graphNodes = graphData.filter(
       (elem) => elem.group === "nodes",
     ) as GraphNode[];

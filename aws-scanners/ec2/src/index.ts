@@ -6,6 +6,8 @@ import {
   DescribeAvailabilityZones,
   DescribeSubnets,
 } from "./generated/getters";
+import { getNodes } from "./graph";
+
 
 const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   provider: "aws",
@@ -14,6 +16,7 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [DescribeVpcs, DescribeAvailabilityZones, DescribeSubnets],
+  getNodes,
 };
 
 export default EC2Scanner;

@@ -159,10 +159,7 @@ export async function resolveSnsEdges(
     .filter((edge) => edge != null) as GraphEdge[];
 }
 
-export async function getEdges(
-  stateConnector: Connector,
-  context: AwsContext,
-): Promise<GraphEdge[]> {
+export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {
   const route53State: State<ResourceRecordSet[]>[] =
     await evaluateSelectorGlobally(
       "Route53|ListResourceRecordSets",

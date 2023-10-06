@@ -7,18 +7,10 @@ import type {
   Connector, 
   ServiceScanCompleteCallbackFn,
   ResolveStateForServiceFunction,
-  RegionalService,
-  GlobalService,
   Service,
   ServiceModule, 
 } from "@infrascan/shared-types";
-import {
-  REGIONAL_SERVICE_SCANNERS,
-  GLOBAL_SERVICE_SCANNERS,
-} from "./aws/services/index.generated";
 import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
-
-import { AWS_DEFAULT_REGION } from "./aws/defaults";
 
 // Rather than relying on an account id being supplied, we fetch it from STS before scanning.
 export async function whoami(
@@ -36,8 +28,9 @@ export async function whoami(
 // This is exposed in the EC2 API.
 export async function getAllRegions(
   credentials: AwsCredentialIdentityProvider,
+  region: string
 ): Promise<string[]> {
-  const ec2Client = new EC2({ region: AWS_DEFAULT_REGION, credentials });
+  const ec2Client = new EC2({ region, credentials });
   const { Regions } = await ec2Client.describeRegions({ AllRegions: true });
   return Regions?.map(({ RegionName }) => RegionName as string) ?? [];
 }
@@ -83,134 +76,6 @@ export type ScanMetadata = {
    */
   regions: string[];
 };
-
-/**
- * Entrypoint for scanning an account. This is a long running async function.
- *
- * The callbacks given in the {@link scanOptions} are invoked to store ({@link onServiceScanComplete})
- * and retrieve ({@link resolveStateForServiceCall}) state as needed.
- *
- * When the account scan is complete, the {@link ScanMetadata} will be returned.
- *
- * Example Code:
- * ```ts
- * import { performScan } from "@infrascan/sdk";
- * import {
- *  onServiceScanComplete,
- *  resolveStateForServiceCall
- * } from "@infrascan/fs-connector";
- * import { fromIni } from "@aws-sdk/credential-providers";
- *
- * const credentials = fromIni({ profile: "dev" });
- * const regions = ["us-east-1","us-west-1"];
- * const services = ["SNS","Lambda","S3"];
- *
- * performScan({
- *  credentials,
- *  regions,
- *  services,
- *  onServiceScanComplete,
- *  resolveStateForServiceCall
- * }).then(function (scanMetadata) {
- *  console.log("Scan Complete!", scanMetadata);
- * }).catch(function (err) {
- *  console.error("Failed to scan", err);
- * });
- * ```
- */
-export async function performScan(scanOptions: PerformScanOptions) {
-  const {
-    credentials,
-    regions,
-    services,
-    onServiceScanComplete,
-    resolveStateForServiceCall,
-  } = scanOptions;
-  const globalCaller = await whoami(credentials, AWS_DEFAULT_REGION);
-
-  if (globalCaller?.Account == null) {
-    throw new Error("Failed to get caller identity");
-  }
-
-  const scanMetadata: ScanMetadata = {
-    account: globalCaller?.Account,
-    regions: [],
-  };
-
-  const iamClient = new IAM({ credentials });
-  const iamStorage = new IAMStorage();
-  console.log(`Scanning global resources in ${globalCaller.Account}`);
-
-  let globalServicesToScan = Object.keys(
-    GLOBAL_SERVICE_SCANNERS,
-  ) as GlobalService[];
-  if (services?.length != null) {
-    globalServicesToScan = globalServicesToScan.filter((service) =>
-      services.includes(service),
-    ) as GlobalService[];
-  }
-
-  for (const globalServiceScanner of globalServicesToScan) {
-    for (const scanner of GLOBAL_SERVICE_SCANNERS[globalServiceScanner]) {
-      await scanner(
-        credentials,
-        globalCaller.Account as string,
-        AWS_DEFAULT_REGION,
-        iamClient,
-        iamStorage,
-        onServiceScanComplete,
-        resolveStateForServiceCall,
-      );
-    }
-  }
-
-  const regionsToScan = regions ?? (await getAllRegions(credentials));
-
-  for (const region of regionsToScan) {
-    const caller = await whoami(credentials, region);
-    if (caller.Account == null) {
-      throw new Error("Failed to get caller identity");
-    }
-    console.log(`Beginning scan of ${caller.Account} in ${region}`);
-    let regionalServicesToScan = Object.keys(
-      REGIONAL_SERVICE_SCANNERS,
-    ) as RegionalService[];
-    if (services?.length != null) {
-      console.log("Filtering services according to supplied list", {
-        services,
-      });
-      regionalServicesToScan = regionalServicesToScan.filter((service) =>
-        services.includes(service),
-      ) as RegionalService[];
-    }
-
-    for (const regionalService of regionalServicesToScan) {
-      for (const scanner of REGIONAL_SERVICE_SCANNERS[regionalService]) {
-        await scanner(
-          credentials,
-          globalCaller.Account as string,
-          region,
-          iamClient,
-          iamStorage,
-          onServiceScanComplete,
-          resolveStateForServiceCall,
-        );
-      }
-    }
-
-    console.log(`Scan of ${caller.Account} in ${region} complete`);
-    scanMetadata.regions.push(region);
-  }
-
-  await onServiceScanComplete(
-    globalCaller.Account,
-    AWS_DEFAULT_REGION,
-    "IAM",
-    "roles",
-    iamStorage.getAllRoles(),
-  );
-  return scanMetadata;
-}
 
 export async function scanService(
   serviceScanner: ServiceModule<unknown, "aws">,
