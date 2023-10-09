@@ -36,7 +36,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.425.0",
+    "@aws-sdk/client-sqs": "3.425.0",
     "@infrascan/core": "0.1.0"
   }
 }

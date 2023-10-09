@@ -21,7 +21,7 @@ const ApiGatewayScanner: ScannerDefinition<
       fn: "GetDomainNames",
     },
   ],
-  nodes: ["ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}"],
+  nodes: ["ApiGatewayV2|GetApis|[]._result.Items | [].{id:ApiEndpoint}"],
 };
 
 export default ApiGatewayScanner;

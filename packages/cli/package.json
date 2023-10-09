@@ -17,7 +17,7 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/credential-providers": "^3.370.0",
+    "@aws-sdk/credential-providers": "3.425.0",
     "@infrascan/aws-api-gateway-scanner": "^0.1.0",
     "@infrascan/aws-autoscaling-scanner": "^0.1.0",
     "@infrascan/aws-cloudfront-scanner": "^0.1.0",
@@ -41,7 +41,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
-    "@aws-sdk/types": "^3.398.0",
+    "@aws-sdk/types": "3.425.0",
     "@infrascan/shared-types": "^0.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.3"

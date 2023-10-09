@@ -29,10 +29,10 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@aws-sdk/client-cloudfront": "^3.421.0",
-    "@aws-sdk/client-elastic-load-balancing-v2": "^3.421.0",
-    "@aws-sdk/client-s3": "^3.421.0",
-    "@aws-sdk/client-sns": "^3.421.0",
+    "@aws-sdk/client-cloudfront": "3.425.0",
+    "@aws-sdk/client-elastic-load-balancing-v2": "3.425.0",
+    "@aws-sdk/client-s3": "3.425.0",
+    "@aws-sdk/client-sns": "3.425.0",
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/shared-types": "^0.1.0",
     "eslint-config-codegen": "^1.0.0",
@@ -40,7 +40,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@aws-sdk/client-route-53": "^3.421.0",
+    "@aws-sdk/client-route-53": "3.425.0",
     "@infrascan/core": "0.1.0",
     "minimatch": "^9.0.3"
   }

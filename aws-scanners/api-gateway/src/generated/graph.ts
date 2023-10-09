@@ -9,7 +9,7 @@ export async function getNodes(
   const GetApisNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ApiGatewayV2|GetApis|[]._result | [].{id:ApiEndpoint}",
+    "ApiGatewayV2|GetApis|[]._result.Items | [].{id:ApiEndpoint}",
     stateConnector,
   );
   state = state.concat(GetApisNodes);
