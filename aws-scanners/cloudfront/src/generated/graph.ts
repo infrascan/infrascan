@@ -9,7 +9,7 @@ export async function getNodes(
   const ListDistributionsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "CloudFront|ListDistributions|[]._result[].{id:ARN,name:_infrascanLabel}",
+    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:_infrascanLabel}",
     stateConnector,
   );
   state = state.concat(ListDistributionsNodes);

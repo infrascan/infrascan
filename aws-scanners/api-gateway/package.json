@@ -34,7 +34,6 @@
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.1.0",
     "@infrascan/shared-types": "^0.1.0",
-    "@infrascan/test-connector": "^0.1.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
     "tap": "^18.4.5",

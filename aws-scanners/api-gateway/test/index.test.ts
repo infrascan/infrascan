@@ -19,10 +19,10 @@ t.test(
       region: "us-east-1",
       account: "0".repeat(8),
     };
-    const apiGatewayClient = ApiGatewayScanner.getClient(fromProcess(), {
-      region: "us-east-1",
-      account: "0".repeat(8),
-    });
+    const apiGatewayClient = ApiGatewayScanner.getClient(
+      fromProcess(),
+      testContext,
+    );
 
     const mockedApiGatewayClient = mockClient(apiGatewayClient);
 
