@@ -1,8 +1,9 @@
 import { AutoScalingClient } from "@aws-sdk/client-auto-scaling"; 
+import type { ServiceModule } from "@infrascan/shared-types";
+
 import { getClient } from "./generated/client";
 import { DescribeAutoScalingGroups } from "./generated/getters";
 
-import type { ServiceModule } from "@infrascan/shared-types";
 
 const AutoScalingScanner: ServiceModule<AutoScalingClient, "aws"> = {
   provider: "aws",

@@ -4,11 +4,11 @@ import { IAM } from "@aws-sdk/client-iam";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import type {
   AwsContext,
-  Connector, 
+  Connector,
   ServiceScanCompleteCallbackFn,
   ResolveStateForServiceFunction,
   Service,
-  ServiceModule, 
+  ServiceModule,
 } from "@infrascan/shared-types";
 import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
 
@@ -28,11 +28,17 @@ export async function whoami(
 // This is exposed in the EC2 API.
 export async function getAllRegions(
   credentials: AwsCredentialIdentityProvider,
-  region: string
+  region: string,
+  regionFilter?: string[],
 ): Promise<string[]> {
   const ec2Client = new EC2({ region, credentials });
   const { Regions } = await ec2Client.describeRegions({ AllRegions: true });
-  return Regions?.map(({ RegionName }) => RegionName as string) ?? [];
+  const awsRegions =
+    Regions?.map(({ RegionName }) => RegionName as string) ?? [];
+  if (regionFilter != null) {
+    return awsRegions.filter((awsRegion) => regionFilter.includes(awsRegion));
+  }
+  return awsRegions;
 }
 
 // All supported services

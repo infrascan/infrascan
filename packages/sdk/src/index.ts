@@ -75,6 +75,7 @@ export default class Infrascan {
   async performScan(
     credentials: AwsCredentialIdentityProvider,
     connector: Connector,
+    opts?: { regions?: string[] },
   ): Promise<ScanMetadata> {
     const globalCaller = await whoami(credentials, AWS_DEFAULT_REGION);
     if (globalCaller?.Account == null) {
@@ -111,7 +112,11 @@ export default class Infrascan {
     }
 
     // Get all available regions for this account from the AWS API
-    const regionsToScan = await getAllRegions(credentials, AWS_DEFAULT_REGION);
+    const regionsToScan = await getAllRegions(
+      credentials,
+      AWS_DEFAULT_REGION,
+      opts?.regions,
+    );
     const regionalServiceEntries = Object.entries(this.regionalScannerRegistry);
     for (const region of regionsToScan) {
       scanContext.region = region;
@@ -143,27 +148,27 @@ export default class Infrascan {
     return scanMetadata;
   }
 
-/**
- * Entrypoint function to convert one or more scans into an infrastructure graph.
- *
- * * Example Code:
- * ```ts
- * import Infrascan from "@infrascan/sdk";
- * import BuildFsConnector from "@infrascan/fs-connector";
- *
- * const connector = BuildFsConnector();
- * const infrascan = new Infrascan(...);
- * const scanMetadata = await infrascan.performScan({ ... });
- * infrascan.generateGraph(
- *  scanMetadata,
- *  connector
- * ).then(function (graphData) {
- *  console.log("Graph Complete!", graphData);
- * }).catch(function (err) {
- *  console.error("Failed to create graph", err);
- * });
- * ```
- */
+  /**
+   * Entrypoint function to convert one or more scans into an infrastructure graph.
+   *
+   * * Example Code:
+   * ```ts
+   * import Infrascan from "@infrascan/sdk";
+   * import BuildFsConnector from "@infrascan/fs-connector";
+   *
+   * const connector = BuildFsConnector();
+   * const infrascan = new Infrascan(...);
+   * const scanMetadata = await infrascan.performScan({ ... });
+   * infrascan.generateGraph(
+   *  scanMetadata,
+   *  connector
+   * ).then(function (graphData) {
+   *  console.log("Graph Complete!", graphData);
+   * }).catch(function (err) {
+   *  console.error("Failed to create graph", err);
+   * });
+   * ```
+   */
 
   async generateGraph(
     scanMetadata: ScanMetadata[],
@@ -179,7 +184,6 @@ export default class Infrascan {
     const globalServiceEntries = Object.values(this.globalScannerRegistry);
     const regionalServiceEntries = Object.values(this.regionalScannerRegistry);
 
-
     for (const { account, regions } of scanMetadata) {
       const context = { account, region: AWS_DEFAULT_REGION };
       const accountNode = buildAccountNode(account);
@@ -193,7 +197,9 @@ export default class Infrascan {
           );
           if (serviceScanner.formatNode != null) {
             /* eslint-disable @typescript-eslint/no-non-null-assertion */
-            const formattedNodes = serviceNodes.map((node) => serviceScanner.formatNode!(node, context));
+            const formattedNodes = serviceNodes.map((node) =>
+              serviceScanner.formatNode!(node, context),
+            );
             graphElements.push(...formattedNodes);
           } else {
             graphElements.push(...serviceNodes);
@@ -211,9 +217,11 @@ export default class Infrascan {
               connector,
               context,
             );
-            if(regionalServiceScanner.formatNode != null) {
+            if (regionalServiceScanner.formatNode != null) {
               /* eslint-disable @typescript-eslint/no-non-null-assertion */
-              const formattedNodes = regionalNodes.map((node) => regionalServiceScanner.formatNode!(node, context));
+              const formattedNodes = regionalNodes.map((node) =>
+                regionalServiceScanner.formatNode!(node, context),
+              );
               graphElements.push(...formattedNodes);
             } else {
               graphElements.push(...regionalNodes);

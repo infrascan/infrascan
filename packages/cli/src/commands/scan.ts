@@ -88,12 +88,13 @@ export default class ScanCmd extends CommandLineAction {
     const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
-      const { profile, roleToAssume, regions, services } = accountConfig;
+      const { profile, roleToAssume, regions } = accountConfig;
       const credentials = resolveCredentials(profile, roleToAssume);
       const client = buildInfrascanClient();
       const accountMetadata = await client.performScan(
         credentials,
-        connector
+        connector,
+        { regions }
       );
       metadata.push(accountMetadata);
     }
