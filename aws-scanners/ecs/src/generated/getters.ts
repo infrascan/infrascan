@@ -4,6 +4,7 @@ import {
   DescribeClustersCommand,
   ListServicesCommand,
   DescribeServicesCommand,
+  ListTasksCommand,
   DescribeTasksCommand,
   DescribeTaskDefinitionCommand,
   ECSServiceException,
@@ -27,6 +28,8 @@ import type {
   ListServicesCommandOutput,
   DescribeServicesCommandInput,
   DescribeServicesCommandOutput,
+  ListTasksCommandInput,
+  ListTasksCommandOutput,
   DescribeTasksCommandInput,
   DescribeTasksCommandOutput,
   DescribeTaskDefinitionCommandInput,
@@ -223,6 +226,53 @@ export async function DescribeServices(
   );
 }
 
+export async function ListTasks(
+  client: ECSClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const state: GenericState[] = [];
+  try {
+    console.log("ecs ListTasks");
+    const resolvers = [
+      { Key: "cluster", Selector: "ECS|ListClusters|[]._result.clusterArns[]" },
+    ];
+    const parameterQueue = (await resolveFunctionCallParameters(
+      context.account,
+      context.region,
+      resolvers,
+      stateConnector,
+    )) as ListTasksCommandInput[];
+    for (const parameters of parameterQueue) {
+      const preparedParams: ListTasksCommandInput = parameters;
+      const cmd = new ListTasksCommand(preparedParams);
+      const result: ListTasksCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: { account: context.account, region: context.region },
+        _parameters: preparedParams,
+        _result: result,
+      });
+    }
+  } catch (err: unknown) {
+    if (err instanceof ECSServiceException) {
+      if (err?.$retryable) {
+        console.log("Encountered retryable error", err);
+      } else {
+        console.log("Encountered unretryable error", err);
+      }
+    } else {
+      console.log("Encountered unexpected error", err);
+    }
+  }
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "ECS",
+    "ListTasks",
+    state,
+  );
+}
+
 export async function DescribeTasks(
   client: ECSClient,
   stateConnector: Connector,
@@ -333,10 +383,10 @@ export async function getIamRoles(
     stateConnector,
   )) as EntityRoleData[];
   state = state.concat(DescribeTaskDefinitionRoleState);
-  const DescribeTaskDefinitionRoleState2 = (await evaluateSelectorGlobally(
+  const DescribeTaskDefinitionRoleState1 = (await evaluateSelectorGlobally(
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
     stateConnector,
   )) as EntityRoleData[];
-  state = state.concat(DescribeTaskDefinitionRoleState2);
+  state = state.concat(DescribeTaskDefinitionRoleState1);
   return state;
 }

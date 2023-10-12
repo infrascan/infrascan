@@ -72,6 +72,15 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
       ],
     },
     {
+      fn: "ListTasks",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListClusters|[]._result.clusterArns[]",
+        },
+      ],
+    },
+    {
       fn: "DescribeTasks",
       parameters: [
         {

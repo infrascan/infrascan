@@ -6,6 +6,7 @@ import {
   DescribeClusters,
   ListServices,
   DescribeServices,
+  ListTasks,
   DescribeTasks,
   DescribeTaskDefinition,
 } from "./generated/getters";
@@ -22,6 +23,7 @@ const ECSScanner: ServiceModule<ECSClient, "aws"> = {
     DescribeClusters,
     ListServices,
     DescribeServices,
+    ListTasks,
     DescribeTasks,
     DescribeTaskDefinition,
   ],

@@ -20,13 +20,13 @@ export async function getNodes(
     stateConnector,
   );
   state = state.concat(DescribeServicesNodes);
-  const DescribeServicesNodes3 = await evaluateSelector(
+  const DescribeServicesNodes2 = await evaluateSelector(
     context.account,
     context.region,
     "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
     stateConnector,
   );
-  state = state.concat(DescribeServicesNodes3);
+  state = state.concat(DescribeServicesNodes2);
   const DescribeTasksNodes = await evaluateSelector(
     context.account,
     context.region,
