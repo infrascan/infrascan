@@ -9,7 +9,7 @@ export async function getNodes(
   const DescribeTableNodes = await evaluateSelector(
     context.account,
     context.region,
-    "DynamoDB|DescribeTable|[].{id:_result.TableArn}",
+    "DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}",
     stateConnector,
   );
   state = state.concat(DescribeTableNodes);

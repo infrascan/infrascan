@@ -62,7 +62,10 @@ export async function DescribeTable(
   try {
     console.log("dynamodb DescribeTable");
     const resolvers = [
-      { Key: "TableName", Selector: "DynamoDB|ListTables|[]._result[]" },
+      {
+        Key: "TableName",
+        Selector: "DynamoDB|ListTables|[]._result.TableNames[]",
+      },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,

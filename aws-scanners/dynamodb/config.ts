@@ -24,12 +24,12 @@ const DynamoDBScanner: ScannerDefinition<
         {
           Key: "TableName",
           Selector:
-            "DynamoDB|ListTables|[]._result[]",
+            "DynamoDB|ListTables|[]._result.TableNames[]",
         },
       ]
     },
   ],
-  nodes: ["DynamoDB|DescribeTable|[].{id:_result.TableArn}",]
+  nodes: ["DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}"]
 };
 
 export default DynamoDBScanner;
