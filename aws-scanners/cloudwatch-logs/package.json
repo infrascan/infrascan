@@ -11,7 +11,7 @@
     "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
     "build": "rm -rf dist ; tsc --project tsconfig.json",
     "prepublish": "rm -rf dist ; tsc --project tsconfig.json",
-    "test": "echo \"Error: no test specified\"",
+    "test": "tap test/*.test.ts -- --typescript",
     "lint": "prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
@@ -29,9 +29,13 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
+    "@aws-sdk/credential-providers": "^3.428.0",
     "@infrascan/aws-codegen": "^0.1.0",
+    "@infrascan/fs-connector": "^0.1.0",
     "@infrascan/shared-types": "^0.1.0",
+    "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
+    "tap": "^18.5.0",
     "tsconfig": "^0.0.0",
     "typescript": "^5.2.2"
   },
