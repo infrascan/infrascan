@@ -116,10 +116,10 @@ export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
   let state: EntityRoleData[] = [];
-  const GetFunctionRoleState = await evaluateSelectorGlobally(
+  const GetFunctionRoleState = (await evaluateSelectorGlobally(
     "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
     stateConnector,
-  );
+  )) as EntityRoleData[];
   state = state.concat(GetFunctionRoleState);
   return state;
 }

@@ -25,7 +25,6 @@ const LambdaScanner: ScannerDefinition<"Lambda", typeof Lambda, LambdaFunctions>
           Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
         },
       ],
-      iamRoleSelectors: ["Configuration.Role"],
     },
   ],
   nodes: [
