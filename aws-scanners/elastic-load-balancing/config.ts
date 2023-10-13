@@ -26,7 +26,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
         {
           Key: "LoadBalancerArn",
           Selector:
-            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers[].LoadBalancerArn",
         },
       ],
     },
@@ -36,7 +36,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
         {
           Key: "LoadBalancerArn",
           Selector:
-            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+            "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers[].LoadBalancerArn",
         },
       ],
     },
@@ -46,13 +46,13 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
         {
           Key: "ListenerArn",
           Selector:
-            "ElasticLoadBalancingV2|DescribeListeners|[]._result[].ListenerArn",
+            "ElasticLoadBalancingV2|DescribeListeners|[]._result.Listeners[].ListenerArn",
         },
       ],
     },
   ],
   nodes: [
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn,name:LoadBalancerName}",
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
   ],
 };
 

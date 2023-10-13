@@ -71,7 +71,7 @@ export async function DescribeTargetGroups(
       {
         Key: "LoadBalancerArn",
         Selector:
-          "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+          "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers[].LoadBalancerArn",
       },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
@@ -122,7 +122,7 @@ export async function DescribeListeners(
       {
         Key: "LoadBalancerArn",
         Selector:
-          "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result[].LoadBalancerArn",
+          "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers[].LoadBalancerArn",
       },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
@@ -173,7 +173,7 @@ export async function DescribeRules(
       {
         Key: "ListenerArn",
         Selector:
-          "ElasticLoadBalancingV2|DescribeListeners|[]._result[].ListenerArn",
+          "ElasticLoadBalancingV2|DescribeListeners|[]._result.Listeners[].ListenerArn",
       },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(

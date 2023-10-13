@@ -1,17 +1,24 @@
-import { evaluateSelector } from "@infrascan/core";
-import type { Connector, AwsContext, GraphNode } from "@infrascan/shared-types";
+import { evaluateSelector, formatNode } from "@infrascan/core";
+import type {
+  Connector,
+  AwsContext,
+  SelectedNode,
+  GraphNode,
+} from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const DescribeLoadBalancersNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result | [].{id:LoadBalancerArn,name:LoadBalancerName}",
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
     stateConnector,
   );
-  state = state.concat(DescribeLoadBalancersNodes);
-  return state;
+  state.push(...DescribeLoadBalancersNodes);
+  return state.map((node) =>
+    formatNode(node, "elastic-load-balancing-v2", "ELB"),
+  );
 }
