@@ -10,7 +10,6 @@ import { evaluateSelectorGlobally } from "@infrascan/core";
 
 import { IAMStorage } from "../helpers/iam";
 
-
 import type { StoredRole } from "../helpers/iam";
 
 type MinimatchOptions = {
@@ -60,9 +59,9 @@ export function formatS3NodeId(nodeId: string): string {
 
 async function findNodesForService(
   serviceConfig: ServiceModule<unknown, "aws">,
-  connector: Connector
+  connector: Connector,
 ) {
-const { nodes, service } = serviceConfig;
+  const { nodes, service } = serviceConfig;
 
   if (!nodes || nodes.length === 0) {
     return [];
@@ -115,7 +114,7 @@ export function getStatementsForRole(role: StoredRole) {
 }
 
 export type ResolveResourceGlobOptions = {
-  serviceModules: ServiceModule<unknown, "aws">[],
+  serviceModules: ServiceModule<unknown, "aws">[];
   resourceArnFromPolicy: string;
   connector: Connector;
 };
@@ -153,18 +152,12 @@ export async function resolveResourceGlob({
     return [];
   }
   if (resourceArnFromPolicy.includes("*")) {
-    const serviceArns = await findNodesForService(
-      serviceConfig,
-      connector,
-    );
+    const serviceArns = await findNodesForService(serviceConfig, connector);
     return serviceArns
       .filter(curryMinimatch(resourceArnFromPolicy, { partial: true }))
       .filter((nodeId) => nodeId != null) as string[];
   }
-  const nodeIds = await findNodesForService(
-    serviceConfig,
-    connector,
-  );
+  const nodeIds = await findNodesForService(serviceConfig, connector);
   return nodeIds.filter((knownArn) => knownArn === resourceArnFromPolicy);
 }
 
