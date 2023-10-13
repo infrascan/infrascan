@@ -1,12 +1,20 @@
 import { mkdtempSync } from "fs";
 import t from "tap";
+import { env } from "process";
+import { join } from "path";
+import { tmpdir } from "os";
 import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import { ListDistributionsCommand } from "@aws-sdk/client-cloudfront";
 import buildFsConnector from "@infrascan/fs-connector";
 import CloudfrontScanner from "../src";
 
-const tmpDir = mkdtempSync("infrascan-test-state-");
+const stateDirectoryPrefix = "infrascan-test-state-";
+const baseDirectory =
+  env["DEBUG_STATE"] != null
+    ? stateDirectoryPrefix
+    : join(tmpdir(), stateDirectoryPrefix);
+const tmpDir = mkdtempSync(baseDirectory);
 const connector = buildFsConnector(tmpDir);
 
 t.test(

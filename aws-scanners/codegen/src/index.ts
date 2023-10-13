@@ -78,7 +78,7 @@ const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientCla
   service: "${scannerDefinition.service}",
   key: "${scannerDefinition.key}",
   getClient,
-  callPerRegion: ${scannerDefinition.isGlobal ? false : true},
+  callPerRegion: ${scannerDefinition.callPerRegion},
   getters: [${scannerGetterImports}],
   ${hasNodes ? `getNodes,` : ""}
   ${hasEdges ? `getEdges,` : ""}
@@ -122,6 +122,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
   const coreImports = [];
   if(hasNodes) {
     coreImports.push("evaluateSelector");
+    coreImports.push("formatNode");
   } 
   if(hasEdges) {
     coreImports.push("evaluateSelectorGlobally");
@@ -131,10 +132,11 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
 
   const typeImports = [];
   if(hasNodes) {
+    typeImports.push("SelectedNode");
     typeImports.push("GraphNode");
   }
   if(hasEdges) {
-    typeImports.push("GraphEdge");
+    typeImports.push("SelectedEdge");
     typeImports.push("EdgeTarget");
   }
 
@@ -143,25 +145,25 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     .writeLine(`import type { Connector, AwsContext, ${typeImports.join(', ')} } from "@infrascan/shared-types";`)
     .newLine()
     .conditionalWriteLine(hasNodes, "export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<GraphNode[]> {")
-    .conditionalWriteLine(hasNodes, "\tlet state: GraphNode[] = [];")
+    .conditionalWriteLine(hasNodes, "\tconst state: SelectedNode[] = [];")
     .conditionalWrite(hasNodes, () => nodes.map((selector,idx) => {
       const fnLabel = selector.split('|')[1];
       let nodesVariable = `${fnLabel}Nodes`;
       if(fnLabel == lastFnLabel) {
         nodesVariable += idx;
       }
-      const evaluateNodes = `\tconst ${nodesVariable} = await evaluateSelector(context.account, context.region, "${selector}", stateConnector);`;
-      const extendState = `\tstate = state.concat(${nodesVariable});`;
+      const evaluateNodes = `\tconst ${nodesVariable} = await evaluateSelector(context.account, context.region, '${selector}', stateConnector);`;
+      const extendState = `\tstate.push(...${nodesVariable});`;
       if(fnLabel != lastFnLabel) {
         lastFnLabel = fnLabel;
       }
       return evaluateNodes + "\n" + extendState;
     }).join('\n'))
-    .conditionalWriteLine(hasNodes, '\treturn state;')
+    .conditionalWriteLine(hasNodes, `\treturn state.map((node) => formatNode(node, "${scannerDefinition.service}", "${scannerDefinition.key}"));`)
     .conditionalWriteLine(hasNodes, '}')
     .conditionalNewLine(hasNodes)
-    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {")
-    .conditionalWriteLine(hasEdges, "\tlet edges: GraphEdge[] = [];")
+    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[]> {")
+    .conditionalWriteLine(hasEdges, "\tlet edges: SelectedEdge[] = [];")
     .conditionalWrite(hasEdges, () => edges.map(({ state, from, to }, idx) => {
       const fnLabel = state.split('|')[1];
       const edgesState = `\tconst ${fnLabel}State${idx+1} = await evaluateSelectorGlobally("${state}", stateConnector);`;

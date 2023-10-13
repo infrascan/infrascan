@@ -6,6 +6,8 @@ import type {
   Connector,
   EdgeTarget,
   GraphEdge,
+  GraphNode,
+  SelectedNode,
 } from "@infrascan/shared-types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -101,6 +103,25 @@ export function formatEdge(source: string, target: EdgeTarget): GraphEdge {
     metadata: {
       label: target.name,
     },
+  };
+}
+
+export function formatNode(
+  selectedNode: SelectedNode,
+  service: string,
+  defaultType: string,
+): GraphNode {
+  return {
+    group: "nodes",
+    id: selectedNode.id,
+    data: {
+      id: selectedNode.id,
+      name: selectedNode.name,
+      parent: selectedNode.parent,
+      service,
+      type: selectedNode.type ?? defaultType,
+    },
+    metadata: selectedNode.rawState,
   };
 }
 

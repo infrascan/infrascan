@@ -25,15 +25,22 @@ export type GenericNodeSelector = `${string}|${string}|${string}`;
 
 export type BaseScannerDefinition = {
   provider?: string;
+  // Name of the service to be scanned
   service: string;
+  // Key of the client in imported SDK
   clientKey: string;
+  // Default 'type' for the generated graph entities, useful for applying a default style to a service's nodes.
   key: string;
-  arnLabel?: string;
+  // Should this scanner be called in every region, or is it considered global (e.g. S3, Cloudfront, Route53)
+  callPerRegion: boolean;
+  // Scanner functions for pulling state from a service
   getters: BaseGetter[];
+  // Scrapers for pulling Nodes from service state 
   nodes?: GenericNodeSelector[];
+  // Scrapers for pulling Edges from service state
   edges?: BaseEdgeResolver[];
+  // Scrapers for pulling IAM Roles from service state, used to generate permission based edges
   iamRoles?: GenericNodeSelector[];
-  isGlobal?: boolean;
 };
 
 type AsCommand<S extends string> = `${S}Command`;

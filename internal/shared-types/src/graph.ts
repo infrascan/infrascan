@@ -1,4 +1,15 @@
 /**
+ * A node returned from a state selector before its been formatted for a graphing library
+ */
+export type SelectedNode = {
+  id: string;
+  name?: string;
+  parent?: string;
+  type?: string;
+  rawState?: any;
+};
+
+/**
  * A node on the graph
  */
 export type GraphNode = {

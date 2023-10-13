@@ -112,10 +112,10 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
     },
   ],
   nodes: [
-    "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}",
-    "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,info:@}",
-    "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
-    "ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn}",
+    'ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`"ecs-cluster"`,rawState:@}',
+    'ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`"ecs-service"`,rawState:@}',
+    'ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`"ecs-task"`,rawState:@}',
+    'ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`"ecs-task"`,rawState:@}',
   ],
   iamRoles: [
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",

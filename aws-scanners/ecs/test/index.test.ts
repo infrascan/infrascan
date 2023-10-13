@@ -1,4 +1,7 @@
 import { mkdtempSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
+import { env } from "process";
 import t from "tap";
 import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
@@ -14,7 +17,12 @@ import {
 import buildFsConnector from "@infrascan/fs-connector";
 import ECSScanner from "../src";
 
-const tmpDir = mkdtempSync("infrascan-test-state-");
+const stateDirectoryPrefix = "infrascan-test-state-";
+const baseDirectory =
+  env["DEBUG_STATE"] != null
+    ? stateDirectoryPrefix
+    : join(tmpdir(), stateDirectoryPrefix);
+const tmpDir = mkdtempSync(baseDirectory);
 const connector = buildFsConnector(tmpDir);
 
 t.test(
@@ -107,17 +115,37 @@ t.test(
       const nodes = await ECSScanner.getNodes(connector, testContext);
       t.equal(nodes.length, 4);
       // successfully found cluster node
-      t.ok(nodes.find((node) => node.id === clusterArn));
+      t.ok(
+        nodes.find(
+          (node) => node.id === clusterArn && node.data.type === "ecs-cluster",
+        ),
+      );
+
       // successfully found service node with cluster as parent
       t.ok(
         nodes.find(
-          (node) => node.id === serviceArn && node.parent === clusterArn,
+          (node) =>
+            node.id === serviceArn &&
+            node.data.parent === clusterArn &&
+            node.data.type === "ecs-service",
         ),
       );
       // successfully found task node with service as parent
       t.ok(
         nodes.find(
-          (node) => node.id === taskDefArn && node.parent === serviceArn,
+          (node) =>
+            node.id === taskDefArn &&
+            node.data.parent === serviceArn &&
+            node.data.type === "ecs-task",
+        ),
+      );
+      // successfully found task node with cluster as parent
+      t.ok(
+        nodes.find(
+          (node) =>
+            node.id === scheduledTaskDefArn &&
+            node.data.parent === clusterArn &&
+            node.data.type === "ecs-task",
         ),
       );
     }

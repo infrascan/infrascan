@@ -1,38 +1,43 @@
-import { evaluateSelector } from "@infrascan/core";
-import type { Connector, AwsContext, GraphNode } from "@infrascan/shared-types";
+import { evaluateSelector, formatNode } from "@infrascan/core";
+import type {
+  Connector,
+  AwsContext,
+  SelectedNode,
+  GraphNode,
+} from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const DescribeClustersNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,info:@}",
+    'ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`"ecs-cluster"`,rawState:@}',
     stateConnector,
   );
-  state = state.concat(DescribeClustersNodes);
+  state.push(...DescribeClustersNodes);
   const DescribeServicesNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,info:@}",
+    'ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`"ecs-service"`,rawState:@}',
     stateConnector,
   );
-  state = state.concat(DescribeServicesNodes);
+  state.push(...DescribeServicesNodes);
   const DescribeServicesNodes2 = await evaluateSelector(
     context.account,
     context.region,
-    "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn}",
+    'ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`"ecs-task"`,rawState:@}',
     stateConnector,
   );
-  state = state.concat(DescribeServicesNodes2);
+  state.push(...DescribeServicesNodes2);
   const DescribeTasksNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn}",
+    'ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`"ecs-task"`,rawState:@}',
     stateConnector,
   );
-  state = state.concat(DescribeTasksNodes);
-  return state;
+  state.push(...DescribeTasksNodes);
+  return state.map((node) => formatNode(node, "ecs", "ECS"));
 }
