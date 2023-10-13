@@ -92,7 +92,7 @@ t.test(
       taskDefinition: {
         taskRoleArn,
         executionRoleArn,
-        taskDefinitionArn: taskDefArn,
+        taskDefinitionArn: scheduledTaskDefArn,
       },
     });
 
@@ -146,6 +146,26 @@ t.test(
             node.id === scheduledTaskDefArn &&
             node.data.parent === clusterArn &&
             node.data.type === "ecs-task",
+        ),
+      );
+    }
+
+    if (ECSScanner.getIamRoles != null) {
+      const iamRoles = await ECSScanner.getIamRoles(connector);
+      t.equal(iamRoles.length, 2);
+      t.ok(
+        iamRoles.find(
+          (role) =>
+            role.executor === scheduledTaskDefArn &&
+            role.roleArn === taskRoleArn,
+        ),
+      );
+
+      t.ok(
+        iamRoles.find(
+          (role) =>
+            role.executor === scheduledTaskDefArn &&
+            role.roleArn === executionRoleArn,
         ),
       );
     }

@@ -9,6 +9,7 @@ import {
   ListTasks,
   DescribeTasks,
   DescribeTaskDefinition,
+  getIamRoles
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
 
@@ -28,6 +29,7 @@ const ECSScanner: ServiceModule<ECSClient, "aws"> = {
     DescribeTaskDefinition,
   ],
   getNodes,
+  getIamRoles
 };
 
 export default ECSScanner;

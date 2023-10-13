@@ -49,10 +49,11 @@ function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: 
  */
 function suggestModuleExport(scannerDefinition: BaseScannerDefinition) {  
   const scannerGetterNames = scannerDefinition.getters.map(getFunctionNameForGetter);
-  if(scannerDefinition.iamRoles != null) {
-    scannerGetterNames.push('getIamRoles');
+  const hasIamRoles = scannerDefinition.iamRoles != null;
+  let scannerGetterImports = scannerGetterNames.join(', ');
+  if(hasIamRoles) {
+    scannerGetterImports += ', getIamRoles';
   }
-  const scannerGetterImports = scannerGetterNames.join(', ');
 
   const hasNodes = (scannerDefinition.nodes?.length ?? 0) > 0;
   const hasEdges = (scannerDefinition.edges?.length ?? 0) > 0;
@@ -82,6 +83,7 @@ const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientCla
   getters: [${scannerGetterImports}],
   ${hasNodes ? `getNodes,` : ""}
   ${hasEdges ? `getEdges,` : ""}
+  ${hasIamRoles ? "getIamRoles," : "" }
 };
 
 export default ${scannerDefinition.clientKey}Scanner;`);

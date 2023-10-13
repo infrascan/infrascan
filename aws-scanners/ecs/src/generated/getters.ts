@@ -379,12 +379,12 @@ export async function getIamRoles(
 ): Promise<EntityRoleData[]> {
   let state: EntityRoleData[] = [];
   const DescribeTaskDefinitionRoleState = (await evaluateSelectorGlobally(
-    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:taskRoleArn,executor:taskDefinitionArn}",
+    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:taskRoleArn,executor:taskDefinitionArn}",
     stateConnector,
   )) as EntityRoleData[];
   state = state.concat(DescribeTaskDefinitionRoleState);
   const DescribeTaskDefinitionRoleState1 = (await evaluateSelectorGlobally(
-    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{arn:executionRoleArn,executor:taskDefinitionArn}",
+    "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:executionRoleArn,executor:taskDefinitionArn}",
     stateConnector,
   )) as EntityRoleData[];
   state = state.concat(DescribeTaskDefinitionRoleState1);
