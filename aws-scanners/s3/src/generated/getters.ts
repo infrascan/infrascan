@@ -71,7 +71,10 @@ export async function GetBucketTagging(
   try {
     console.log("s3 GetBucketTagging");
     const resolvers = [
-      { Key: "FunctionName", Selector: "S3|ListBuckets|[]._result[].Name" },
+      {
+        Key: "FunctionName",
+        Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
+      },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -118,7 +121,7 @@ export async function GetBucketNotificationConfiguration(
   try {
     console.log("s3 GetBucketNotificationConfiguration");
     const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result[].Name" },
+      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -167,7 +170,7 @@ export async function GetBucketWebsite(
   try {
     console.log("s3 GetBucketWebsite");
     const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result[].Name" },
+      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -214,7 +217,7 @@ export async function GetBucketAcl(
   try {
     console.log("s3 GetBucketAcl");
     const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result[].Name" },
+      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,

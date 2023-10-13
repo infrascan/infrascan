@@ -23,7 +23,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       parameters: [
         {
           Key: "FunctionName",
-          Selector: "S3|ListBuckets|[]._result[].Name",
+          Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
         },
       ],
     },
@@ -32,7 +32,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       parameters: [
         {
           Key: "Bucket",
-          Selector: "S3|ListBuckets|[]._result[].Name",
+          Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
         },
       ],
     },
@@ -41,7 +41,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       parameters: [
         {
           Key: "Bucket",
-          Selector: "S3|ListBuckets|[]._result[].Name",
+          Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
         },
       ],
     },
@@ -50,12 +50,12 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       parameters: [
         {
           Key: "Bucket",
-          Selector: "S3|ListBuckets|[]._result[].Name",
+          Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
         },
       ],
     },
   ],
-  nodes: ["S3|ListBuckets|[]._result[].{id:Name,name:Name}"],
+  nodes: ["S3|ListBuckets|[]._result.Buckets[].{id:Name,name:Name}"],
   edges: [
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
@@ -65,12 +65,12 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
       from: "_parameters.Bucket",
-      to: "_result.QueueConfigurations | [].{target:Queue,name:Id}",
+      to: "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
     },
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
       from: "_parameters.Bucket",
-      to: "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}",
+      to: "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",
     },
   ],
 };

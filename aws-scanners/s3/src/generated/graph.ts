@@ -1,5 +1,6 @@
 import {
   evaluateSelector,
+  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
@@ -7,8 +8,9 @@ import {
 import type {
   Connector,
   AwsContext,
+  SelectedNode,
   GraphNode,
-  GraphEdge,
+  SelectedEdge,
   EdgeTarget,
 } from "@infrascan/shared-types";
 
@@ -16,21 +18,21 @@ export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const ListBucketsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "S3|ListBuckets|[]._result[].{id:Name,name:Name}",
+    "S3|ListBuckets|[]._result.Buckets[].{id:Name,name:Name}",
     stateConnector,
   );
-  state = state.concat(ListBucketsNodes);
-  return state;
+  state.push(...ListBucketsNodes);
+  return state.map((node) => formatNode(node, "s3", "S3"));
 }
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  let edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  let edges: SelectedEdge[] = [];
   const GetBucketNotificationConfigurationState1 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -63,7 +65,7 @@ export async function getEdges(
       const source = filterState(state, "_parameters.Bucket");
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
-        "_result.QueueConfigurations | [].{target:Queue,name:Id}",
+        "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
       );
       if (!target || !source) {
         return [];
@@ -85,7 +87,7 @@ export async function getEdges(
       const source = filterState(state, "_parameters.Bucket");
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
-        "_result.LambdaFunctionConfiguration | [].{target:LambdaFunctionArn,name:Id}",
+        "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",
       );
       if (!target || !source) {
         return [];
