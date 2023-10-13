@@ -24,13 +24,13 @@ const Route53Scanner: ScannerDefinition<
       parameters: [
         {
           Key: "HostedZoneId",
-          Selector: "Route53|ListHostedZonesByName|[]._result[].Id",
+          Selector: "Route53|ListHostedZonesByName|[]._result.HostedZones[].Id",
         },
       ],
     },
   ],
   nodes: [
-    "Route53|ListResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}",
+    "Route53|ListResourceRecordSets|[]._result.ResourceRecordSets[?Type==`A`] | [].{id:Name,name:Name}",
   ],
 };
 

@@ -4,17 +4,24 @@ import {
   formatS3NodeId,
 } from "@infrascan/core";
 import { minimatch } from "minimatch";
-import type { DistributionSummary } from "@aws-sdk/client-cloudfront";
-import type { LoadBalancer } from "@aws-sdk/client-elastic-load-balancing-v2";
-import type { ResourceRecordSet } from "@aws-sdk/client-route-53";
-import type { Subscription } from "@aws-sdk/client-sns";
-import type { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
 import type {
-  AwsContext,
-  Connector,
-  State,
-  GraphEdge,
-} from "@infrascan/shared-types";
+  DistributionSummary,
+  ListDistributionsResult,
+} from "@aws-sdk/client-cloudfront";
+
+import type {
+  DescribeLoadBalancersOutput,
+  LoadBalancer,
+} from "@aws-sdk/client-elastic-load-balancing-v2";
+
+import type { ResourceRecordSet } from "@aws-sdk/client-route-53";
+import type {
+  ListSubscriptionsByTopicCommandOutput,
+  Subscription,
+} from "@aws-sdk/client-sns";
+
+import type { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
+import type { Connector, State, GraphEdge } from "@infrascan/shared-types";
 
 type AliasRecordsByService = {
   cloudfront: ResourceRecordSet[];
@@ -56,13 +63,18 @@ export async function resolveCloudfrontEdges(
   cloudfrontConnectedDomains: ResourceRecordSet[],
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  const cloudfrontState: State<DistributionSummary[]>[] =
+  const cloudfrontState: State<ListDistributionsResult>[] =
     await evaluateSelectorGlobally(
-      "CloudFront|ListDistributions",
+      "CloudFront|ListDistributions|[]",
       stateConnector,
     );
 
-  const cloudfrontRecords = cloudfrontState.flatMap(({ _result }) => _result);
+  const cloudfrontRecords = cloudfrontState
+    .flatMap(({ _result }) => _result?.DistributionList?.Items)
+    .filter((distributionSummary) =>
+      Boolean(distributionSummary),
+    ) as DistributionSummary[];
+
   return cloudfrontConnectedDomains
     .map(({ Name, AliasTarget }) => {
       const target = cloudfrontRecords.find(
@@ -81,7 +93,8 @@ export async function resolveS3Edges(
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
   const s3State: State<GetBucketWebsiteOutput[]>[] =
-    await evaluateSelectorGlobally("S3|GetBucketWebsite", stateConnector);
+    await evaluateSelectorGlobally("S3|GetBucketWebsite|[]", stateConnector);
+
   return s3ConnectedDomains
     .map(({ Name }) => {
       const s3Bucket = s3State.find(
@@ -101,11 +114,16 @@ export async function resolveElbEdges(
   elbConnectedDomains: ResourceRecordSet[],
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  const elbState: State<LoadBalancer[]>[] = await evaluateSelectorGlobally(
-    "ElasticLoadBalancingV2|DescribeLoadBalancers",
-    stateConnector,
-  );
-  const elbs = elbState.flatMap(({ _result }) => _result);
+  const elbState: State<DescribeLoadBalancersOutput>[] =
+    await evaluateSelectorGlobally(
+      "ElasticLoadBalancingV2|DescribeLoadBalancers|[]",
+      stateConnector,
+    );
+
+  const elbs = elbState
+    .flatMap(({ _result }) => _result.LoadBalancers)
+    .filter((lb) => Boolean(lb)) as LoadBalancer[];
+
   return elbConnectedDomains
     .map(({ Name, AliasTarget }) => {
       const loadBalancer = elbs.find(({ DNSName }) =>
@@ -126,14 +144,14 @@ export async function resolveSnsEdges(
   route53Records: ResourceRecordSet[],
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  const snsSubscriptionState: State<Subscription[]>[] =
+  const snsSubscriptionState: State<ListSubscriptionsByTopicCommandOutput>[] =
     await evaluateSelectorGlobally(
-      "SNS|ListSubscriptionsByTopic",
+      "SNS|ListSubscriptionsByTopic|[]",
       stateConnector,
     );
-  const snsSubscriptionInfo = snsSubscriptionState.flatMap(
-    ({ _result }) => _result,
-  );
+  const snsSubscriptionInfo = snsSubscriptionState
+    .flatMap(({ _result }) => _result.Subscriptions)
+    .filter((subscriptions) => Boolean(subscriptions)) as Subscription[];
 
   const webhookSubscriptions = snsSubscriptionInfo.filter(({ Protocol }) =>
     Protocol?.startsWith("http"),
@@ -159,10 +177,12 @@ export async function resolveSnsEdges(
     .filter((edge) => edge != null) as GraphEdge[];
 }
 
-export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {
+export async function getEdges(
+  stateConnector: Connector,
+): Promise<GraphEdge[]> {
   const route53State: State<ResourceRecordSet[]>[] =
     await evaluateSelectorGlobally(
-      "Route53|ListResourceRecordSets",
+      "Route53|ListResourceRecordSets|[]",
       stateConnector,
     );
 

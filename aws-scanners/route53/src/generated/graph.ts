@@ -1,17 +1,22 @@
-import { evaluateSelector } from "@infrascan/core";
-import type { Connector, AwsContext, GraphNode } from "@infrascan/shared-types";
+import { evaluateSelector, formatNode } from "@infrascan/core";
+import type {
+  Connector,
+  AwsContext,
+  SelectedNode,
+  GraphNode,
+} from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const ListResourceRecordSetsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "Route53|ListResourceRecordSets|[]._result[?Type==`A`] | [].{id:Name,name:Name}",
+    "Route53|ListResourceRecordSets|[]._result.ResourceRecordSets[?Type==`A`] | [].{id:Name,name:Name}",
     stateConnector,
   );
-  state = state.concat(ListResourceRecordSetsNodes);
-  return state;
+  state.push(...ListResourceRecordSetsNodes);
+  return state.map((node) => formatNode(node, "route-53", "Route53"));
 }

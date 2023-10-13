@@ -64,7 +64,7 @@ export async function ListResourceRecordSets(
     const resolvers = [
       {
         Key: "HostedZoneId",
-        Selector: "Route53|ListHostedZonesByName|[]._result[].Id",
+        Selector: "Route53|ListHostedZonesByName|[]._result.HostedZones[].Id",
       },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
