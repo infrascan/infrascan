@@ -18,7 +18,7 @@ const RDSScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "RDS|DescribeDBInstances|[]._result | [].{id:DBInstanceIdentifier,name:DBName}",
+    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",
   ]
 };
 
