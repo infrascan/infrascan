@@ -10,7 +10,7 @@ import type {
   AwsContext,
   SelectedNode,
   GraphNode,
-  SelectedEdge,
+  GraphEdge,
   EdgeTarget,
 } from "@infrascan/shared-types";
 
@@ -31,8 +31,8 @@ export async function getNodes(
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<SelectedEdge[]> {
-  let edges: SelectedEdge[] = [];
+): Promise<GraphEdge[]> {
+  const edges: GraphEdge[] = [];
   const GetBucketNotificationConfigurationState1 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -54,7 +54,7 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
-  edges = edges.concat(GetBucketNotificationConfigurationEdges1);
+  edges.push(...GetBucketNotificationConfigurationEdges1);
   const GetBucketNotificationConfigurationState2 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -76,7 +76,7 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
-  edges = edges.concat(GetBucketNotificationConfigurationEdges2);
+  edges.push(...GetBucketNotificationConfigurationEdges2);
   const GetBucketNotificationConfigurationState3 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -98,6 +98,6 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
-  edges = edges.concat(GetBucketNotificationConfigurationEdges3);
+  edges.push(...GetBucketNotificationConfigurationEdges3);
   return edges;
 }

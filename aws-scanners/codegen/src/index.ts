@@ -138,7 +138,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     typeImports.push("GraphNode");
   }
   if(hasEdges) {
-    typeImports.push("SelectedEdge");
+    typeImports.push("GraphEdge");
     typeImports.push("EdgeTarget");
   }
 
@@ -164,8 +164,8 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
     .conditionalWriteLine(hasNodes, `\treturn state.map((node) => formatNode(node, "${scannerDefinition.service}", "${scannerDefinition.key}"));`)
     .conditionalWriteLine(hasNodes, '}')
     .conditionalNewLine(hasNodes)
-    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[]> {")
-    .conditionalWriteLine(hasEdges, "\tlet edges: SelectedEdge[] = [];")
+    .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {")
+    .conditionalWriteLine(hasEdges, "\tconst edges: GraphEdge[] = [];")
     .conditionalWrite(hasEdges, () => edges.map(({ state, from, to }, idx) => {
       const fnLabel = state.split('|')[1];
       const edgesState = `\tconst ${fnLabel}State${idx+1} = await evaluateSelectorGlobally("${state}", stateConnector);`;
@@ -182,7 +182,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
       return formatEdge(source, target);
     }
   });`
-      const extendEdgeState = `\tedges = edges.concat(${fnLabel}Edges${idx+1});`
+      const extendEdgeState = `\tedges.push(...${fnLabel}Edges${idx+1});`
       return edgesState + "\n" + evaluateEdges + "\n" + extendEdgeState;
     }).join('\n'))
     .conditionalWriteLine(hasEdges, "\treturn edges;")
