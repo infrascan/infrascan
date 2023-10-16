@@ -1,5 +1,6 @@
 import {
   evaluateSelector,
+  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
@@ -7,6 +8,7 @@ import {
 import type {
   Connector,
   AwsContext,
+  SelectedNode,
   GraphNode,
   GraphEdge,
   EdgeTarget,
@@ -16,21 +18,21 @@ export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const GetQueueAttributesNodes = await evaluateSelector(
     context.account,
     context.region,
-    "SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}",
+    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueName}",
     stateConnector,
   );
-  state = state.concat(GetQueueAttributesNodes);
-  return state;
+  state.push(...GetQueueAttributesNodes);
+  return state.map((node) => formatNode(node, "sqs", "SQS"));
 }
 
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  let edges: GraphEdge[] = [];
+  const edges: GraphEdge[] = [];
   const GetQueueAttributesState1 = await evaluateSelectorGlobally(
     "SQS|GetQueueAttributes|[]",
     stateConnector,
@@ -52,6 +54,6 @@ export async function getEdges(
       return formatEdge(source, target);
     },
   );
-  edges = edges.concat(GetQueueAttributesEdges1);
+  edges.push(...GetQueueAttributesEdges1);
   return edges;
 }

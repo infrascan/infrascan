@@ -65,7 +65,7 @@ export async function ListQueueTags(
   try {
     console.log("sqs ListQueueTags");
     const resolvers = [
-      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result[].QueueUrl" },
+      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -112,7 +112,7 @@ export async function GetQueueAttributes(
   try {
     console.log("sqs GetQueueAttributes");
     const resolvers = [
-      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result[].QueueUrl" },
+      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
       { Key: "AttributeNames", Value: ["All"] },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(

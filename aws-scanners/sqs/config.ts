@@ -20,7 +20,7 @@ const SQSScanner: ScannerDefinition<"SQS", typeof SQS, SQSFunctions> = {
       parameters: [
         {
           Key: "QueueUrl",
-          Selector: "SQS|ListQueues|[]._result[].QueueUrl",
+          Selector: "SQS|ListQueues|[]._result.QueueUrls[]",
         },
       ],
     },
@@ -29,7 +29,7 @@ const SQSScanner: ScannerDefinition<"SQS", typeof SQS, SQSFunctions> = {
       parameters: [
         {
           Key: "QueueUrl",
-          Selector: "SQS|ListQueues|[]._result[].QueueUrl",
+          Selector: "SQS|ListQueues|[]._result.QueueUrls[]",
         },
         {
           Key: "AttributeNames",
@@ -38,7 +38,7 @@ const SQSScanner: ScannerDefinition<"SQS", typeof SQS, SQSFunctions> = {
       ],
     },
   ],
-  nodes: ["SQS|GetQueueAttributes|[]._result.{id:QueueArn,name:QueueName}"],
+  nodes: ["SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueName}"],
   edges: [
     {
       state: "SQS|GetQueueAttributes|[]",
