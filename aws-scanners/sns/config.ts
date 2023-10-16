@@ -21,7 +21,7 @@ const SNSScanner: ScannerDefinition<"SNS", typeof SNS, SNSFunctions> = {
       parameters: [
         {
           Key: "TopicArn",
-          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+          Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
         },
       ],
     },
@@ -30,7 +30,7 @@ const SNSScanner: ScannerDefinition<"SNS", typeof SNS, SNSFunctions> = {
       parameters: [
         {
           Key: "TopicArn",
-          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+          Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
         },
       ],
     },
@@ -39,17 +39,17 @@ const SNSScanner: ScannerDefinition<"SNS", typeof SNS, SNSFunctions> = {
       parameters: [
         {
           Key: "ResourceArn",
-          Selector: "SNS|ListTopics|[]._result[].TopicArn",
+          Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
         },
       ],
     },
   ],
-  nodes: ["SNS|ListTopics|[]._result[].TopicArn"],
+  nodes: ["SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}"],
   edges: [
     {
       state: "SNS|ListSubscriptionsByTopic|[]",
       from: "_parameters.TopicArn",
-      to: "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
+      to: "_result.Subscriptions[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
     },
   ],
 };

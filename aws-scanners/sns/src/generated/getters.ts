@@ -68,7 +68,10 @@ export async function GetTopicAttributes(
   try {
     console.log("sns GetTopicAttributes");
     const resolvers = [
-      { Key: "TopicArn", Selector: "SNS|ListTopics|[]._result[].TopicArn" },
+      {
+        Key: "TopicArn",
+        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+      },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -115,7 +118,10 @@ export async function ListSubscriptionsByTopic(
   try {
     console.log("sns ListSubscriptionsByTopic");
     const resolvers = [
-      { Key: "TopicArn", Selector: "SNS|ListTopics|[]._result[].TopicArn" },
+      {
+        Key: "TopicArn",
+        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+      },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,
@@ -164,7 +170,10 @@ export async function ListTagsForResource(
   try {
     console.log("sns ListTagsForResource");
     const resolvers = [
-      { Key: "ResourceArn", Selector: "SNS|ListTopics|[]._result[].TopicArn" },
+      {
+        Key: "ResourceArn",
+        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+      },
     ];
     const parameterQueue = (await resolveFunctionCallParameters(
       context.account,

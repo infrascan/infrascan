@@ -1,5 +1,6 @@
 import {
   evaluateSelector,
+  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
@@ -7,6 +8,7 @@ import {
 import type {
   Connector,
   AwsContext,
+  SelectedNode,
   GraphNode,
   GraphEdge,
   EdgeTarget,
@@ -16,21 +18,21 @@ export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const ListTopicsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "SNS|ListTopics|[]._result[].TopicArn",
+    "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
     stateConnector,
   );
-  state = state.concat(ListTopicsNodes);
-  return state;
+  state.push(...ListTopicsNodes);
+  return state.map((node) => formatNode(node, "sns", "SNS"));
 }
 
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  let edges: GraphEdge[] = [];
+  const edges: GraphEdge[] = [];
   const ListSubscriptionsByTopicState1 = await evaluateSelectorGlobally(
     "SNS|ListSubscriptionsByTopic|[]",
     stateConnector,
@@ -40,7 +42,7 @@ export async function getEdges(
       const source = filterState(state, "_parameters.TopicArn");
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
-        "_result[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
+        "_result.Subscriptions[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
       );
       if (!target || !source) {
         return [];
@@ -52,6 +54,6 @@ export async function getEdges(
       return formatEdge(source, target);
     },
   );
-  edges = edges.concat(ListSubscriptionsByTopicEdges1);
+  edges.push(...ListSubscriptionsByTopicEdges1);
   return edges;
 }
