@@ -1,6 +1,6 @@
 {
   "extends": "tsconfig/base.json",
-  "exclude": ["codegen.ts", "config.ts", "index.test.ts"],
+  "exclude": ["codegen.ts", "config.ts", "test/*.test.ts"],
   "compilerOptions": {
     "target": "ES2015",
     "module": "Node16",
