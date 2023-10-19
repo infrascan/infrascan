@@ -15,7 +15,7 @@
     "tsup": "^7.2.0",
     "turbo": "^1.9.9",
     "typedoc": "^0.24.8",
-    "typescript": "^5.2.2"
+    "typescript": "^5.1.6"
   },
   "scripts": {
     "dev": "turbo run dev",
