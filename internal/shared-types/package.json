@@ -5,8 +5,7 @@
   "main": "src/index.ts",
   "private": true,
   "scripts": {
-    "lint": "eslint .",
-    "build": "tsc"
+    "lint": "tsc --noEmit ; eslint ."
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",

@@ -11,8 +11,11 @@
     "@mxssfd/typedoc-theme": "^1.1.2",
     "@turbo/gen": "^1.10.13",
     "eslint": "^8.47.0",
+    "tap": "^18.5.2",
+    "tsup": "^7.2.0",
     "turbo": "^1.9.9",
-    "typedoc": "^0.24.8"
+    "typedoc": "^0.24.8",
+    "typescript": "^5.2.2"
   },
   "scripts": {
     "dev": "turbo run dev",

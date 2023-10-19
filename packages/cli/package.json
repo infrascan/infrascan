@@ -4,9 +4,20 @@
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist ; tsc",
-    "lint": "eslint .",
+    "build": "rm -rf dist ; tsup",
+    "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
+  },
+  "tsup": {
+    "clean": true,
+    "splitting": false,
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "esm"
+    ],
+    "target": "node18"
   },
   "bin": "dist/index.js",
   "files": [

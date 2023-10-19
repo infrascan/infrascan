@@ -28,7 +28,7 @@ function writeGraphOutput(outputPath: string, graphState: GraphElement[]) {
   );
 }
 
-export default class ScanCmd extends CommandLineAction {
+export default class GraphCmd extends CommandLineAction {
   private _outputDirectory: CommandLineStringParameter;
 
   public constructor() {

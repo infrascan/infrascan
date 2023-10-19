@@ -1,8 +1,9 @@
 {
-  "name": "@infrascan/core",
+  "name": "@infrascan/aws",
   "version": "0.1.0",
-  "description": "Core library for use in service scanners and the SDK.",
+  "description": "A convenience package to register all AWS Scanners with an instance of the Infrascan SDK",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
@@ -18,8 +19,8 @@
   "tsup": {
     "clean": true,
     "cjsInterop": true,
-    "splitting": false,
     "dts": true,
+    "splitting": false,
     "entry": [
       "src/index.ts"
     ],
@@ -35,19 +36,29 @@
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/infrascan/infrascan/issues"
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.1.0",
-    "eslint-config-custom": "*",
-    "ts-node": "^10.9.1",
-    "tsconfig": "*",
-    "typescript": "^5.1.3"
+    "@infrascan/sdk": "^0.1.0",
+    "tsconfig": "^0.0.0"
   },
   "dependencies": {
-    "jmespath": "^0.16.0"
+    "@infrascan/aws-api-gateway-scanner": "^0.1.0",
+    "@infrascan/aws-autoscaling-scanner": "^0.1.0",
+    "@infrascan/aws-cloudfront-scanner": "^0.1.0",
+    "@infrascan/aws-cloudwatch-logs-scanner": "^0.1.0",
+    "@infrascan/aws-dynamodb-scanner": "^0.1.0",
+    "@infrascan/aws-ec2-scanner": "^0.1.0",
+    "@infrascan/aws-ecs-scanner": "^0.1.0",
+    "@infrascan/aws-elastic-load-balancing-scanner": "^0.1.0",
+    "@infrascan/aws-lambda-scanner": "^0.1.0",
+    "@infrascan/aws-rds-scanner": "^0.1.0",
+    "@infrascan/aws-route53-scanner": "^0.1.0",
+    "@infrascan/aws-s3-scanner": "^0.1.0",
+    "@infrascan/aws-sns-scanner": "^0.1.0",
+    "@infrascan/aws-sqs-scanner": "^0.1.0"
   }
 }

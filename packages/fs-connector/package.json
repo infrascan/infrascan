@@ -3,15 +3,29 @@
   "version": "0.1.0",
   "description": "Connector for the Infrascan SDK to read and write state to the local filesystem",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; tsc",
-    "prepublish": "rm -rf dist ; tsc",
-    "lint": "eslint .",
+    "build": "rm -rf dist ; tsup",
+    "prepublish": "rm -rf dist ; tsup",
+    "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
+  },
+  "tsup": {
+    "clean": true,
+    "cjsInterop": true,
+    "splitting": false,
+    "entry": [
+      "index.ts"
+    ],
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "target": "node18"
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",

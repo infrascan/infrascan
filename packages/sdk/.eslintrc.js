@@ -17,5 +17,5 @@ module.exports = {
     "no-plusplus": "off",
     "no-underscore-dangle": "off"
   },
-  ignorePatterns: ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**", ".eslintrc.js"]
+  ignorePatterns: ["dist/**", "docs/**", ".eslintrc.js"]
 };

@@ -3,16 +3,39 @@
   "version": "0.1.0",
   "description": "Infrascan scanner definition for AWS Autoscaling",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
+  "tsup": {
+    "clean": true,
+    "cjsInterop": true,
+    "dts": true,
+    "splitting": false,
+    "sourcemap": false,
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "target": "node18"
+  },
   "scripts": {
     "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
-    "build": "rm -rf dist ; tsc --project tsconfig.json",
-    "prepublish": "rm -rf dist ; tsc --project tsconfig.json",
+    "build": "rm -rf dist ; tsup",
+    "prepublish": "rm -rf dist ; tsup",
     "test": "tap test/*.test.ts --allow-incomplete-coverage -- --typescript",
-    "lint": "prettier src/**/*.ts -c ; eslint .",
+    "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
     "clean": "rm -rf dist node_modules"
@@ -35,9 +58,7 @@
     "@infrascan/shared-types": "^0.1.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
-    "tap": "^18.4.5",
-    "tsconfig": "^0.0.0",
-    "typescript": "^5.2.2"
+    "tsconfig": "^0.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-auto-scaling": "3.425.0",
