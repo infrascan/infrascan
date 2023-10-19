@@ -29,7 +29,7 @@
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "devDependencies": {
     "@infrascan/shared-types": "^0.1.0",
     "eslint-config-custom": "*",

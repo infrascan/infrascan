@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "dependencies": {
     "@aws-sdk/client-apigatewayv2": "3.425.0",
     "@aws-sdk/client-auto-scaling": "3.425.0",

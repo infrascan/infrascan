@@ -11,7 +11,7 @@
   },
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "ISC",
+  "license": "MPL-2.0",
   "dependencies": {
     "ts-morph": "^19.0.0",
     "typescript": "^5.1.3"

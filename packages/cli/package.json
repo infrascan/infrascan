@@ -26,7 +26,7 @@
   "types": "dist/index.d.ts",
   "keywords": [],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
-  "license": "MIT",
+  "license": "MPL-2.0",
   "dependencies": {
     "@aws-sdk/credential-providers": "3.425.0",
     "@infrascan/aws-api-gateway-scanner": "^0.1.0",
