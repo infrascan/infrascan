@@ -23,7 +23,7 @@
     "codegen": "turbo run codegen",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/codegen ; cp -r assets/* docs/assets",
+    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/eslint-config-codegen --exclude internal/codegen ; cp -r assets/* docs/assets",
     "clean": "turbo run clean"
   }
 }

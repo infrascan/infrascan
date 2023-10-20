@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.425.0",
+    "@aws-sdk/middleware-sdk-s3": "^3.433.0",
     "@infrascan/core": "0.1.0"
   }
 }
