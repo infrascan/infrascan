@@ -13,7 +13,7 @@ const Route53Scanner: ServiceModule<Route53Client, "aws"> = {
   service: "route-53",
   key: "Route53",
   getClient,
-  callPerRegion: true,
+  callPerRegion: false,
   getters: [ListHostedZonesByName, ListResourceRecordSets],
   getNodes,
   getEdges,

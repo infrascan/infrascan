@@ -13,7 +13,8 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
   service: "s3",
   clientKey: "S3",
   key: "S3",
-  callPerRegion: false,
+  skipClientBuilder: true,
+  callPerRegion: true,
   getters: [
     {
       fn: "ListBuckets",

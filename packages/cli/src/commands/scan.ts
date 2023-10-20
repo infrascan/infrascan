@@ -10,8 +10,7 @@ import {
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
-
-import { buildInfrascanClient } from "../client";
+import Infrascan from "@infrascan/sdk";
 
 function getConfig(path: string) {
   const resolvedConfigPath = resolve(path);
@@ -50,15 +49,18 @@ function resolveCredentials(
 export default class ScanCmd extends CommandLineAction {
   private _config: CommandLineStringParameter;
 
+  private infrascanClient: Infrascan;
+
   private _outputDirectory: CommandLineStringParameter;
 
-  public constructor() {
+  public constructor(infrascanClient: Infrascan) {
     super({
       actionName: "scan",
       summary: "Scans a set of AWS accounts",
       documentation:
         "Reads in config of accounts, regions and services to scans, and executes a scan against each in turn. The ouput is saved to the local filesystem.",
     });
+    this.infrascanClient = infrascanClient;
   }
 
   protected onDefineParameters(): void {
@@ -90,8 +92,7 @@ export default class ScanCmd extends CommandLineAction {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const { profile, roleToAssume, regions } = accountConfig;
       const credentials = resolveCredentials(profile, roleToAssume);
-      const client = buildInfrascanClient();
-      const accountMetadata = await client.performScan(
+      const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
         { regions }

@@ -69,7 +69,7 @@ function suggestModuleExport(scannerDefinition: BaseScannerDefinition) {
   console.log("The expected export for this scanner is below. It should, at a minimum, serve as a strong starting point.")
   console.log("-----BEGIN EXPECTED EXPORT-----");
   console.log(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}"; 
-import { getClient } from "./generated/client";
+${scannerDefinition.skipClientBuilder ? '' : 'import { getClient } from "./generated/client";'}
 import { ${scannerGetterImports} } from "./generated/getters";
 ${graphImports.length ? `import { ${graphImports.join(',')} } from "./generated/graph";` : ""}
 import type { ServiceModule } from "@infrascan/shared-types";
@@ -309,12 +309,14 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
 
   await getters.save();
 
-  const clientBuilder = project.createSourceFile(
-    join(config.basePath, 'generated/client.ts'),
-    (writer) => declareClientBuilder(scannerDefinition, writer),
-    { overwrite: config.overwrite }
-  );
-  await clientBuilder.save();
+  if(!scannerDefinition.skipClientBuilder) {
+    const clientBuilder = project.createSourceFile(
+      join(config.basePath, 'generated/client.ts'),
+      (writer) => declareClientBuilder(scannerDefinition, writer),
+      { overwrite: config.overwrite }
+    );
+    await clientBuilder.save();
+  }
 
   const nodesSelectors = project.createSourceFile(
     join(config.basePath, 'generated/graph.ts'),

@@ -1,11 +1,17 @@
 import { S3Client } from "@aws-sdk/client-s3";
+import {
+  regionRedirectMiddleware,
+  regionRedirectMiddlewareOptions,
+} from "@aws-sdk/middleware-sdk-s3";
+
 import type {
   AwsContext,
   GraphNode,
   ServiceModule,
 } from "@infrascan/shared-types";
 
-import { getClient } from "./generated/client";
+import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+
 import {
   ListBuckets,
   GetBucketTagging,
@@ -14,6 +20,24 @@ import {
   GetBucketAcl,
 } from "./generated/getters";
 import { getNodes, getEdges } from "./generated/graph";
+
+export function getClient(
+  credentials: AwsCredentialIdentityProvider,
+  context: AwsContext,
+): S3Client {
+  const s3Client = new S3Client({
+    credentials,
+    region: context.region
+  });
+  s3Client.middlewareStack.add(
+    regionRedirectMiddleware({
+      followRegionRedirects: true,
+      ...s3Client.config,
+    }),
+    regionRedirectMiddlewareOptions,
+  );
+  return s3Client;
+}
 
 // Format S3 ID as arn in place of bucket name
 /* eslint-disable @typescript-eslint/no-unused-vars */

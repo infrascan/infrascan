@@ -10,7 +10,7 @@ import {
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
-import { buildInfrascanClient } from "../client";
+import Infrascan from "@infrascan/sdk";
 
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
@@ -31,13 +31,16 @@ function writeGraphOutput(outputPath: string, graphState: GraphElement[]) {
 export default class GraphCmd extends CommandLineAction {
   private _outputDirectory: CommandLineStringParameter;
 
-  public constructor() {
+  private infrascanClient: Infrascan;
+
+  public constructor(infrascanClient: Infrascan) {
     super({
       actionName: "graph",
       summary: "Graphs a set of AWS accounts which have been scanned",
       documentation:
         "Reads in the output of an account scan, and generates an infrastructure diagram from the output. The graph is saved to the local filesystem.",
     });
+    this.infrascanClient = infrascanClient;
   }
 
   protected onDefineParameters(): void {
@@ -56,8 +59,10 @@ export default class GraphCmd extends CommandLineAction {
       this._outputDirectory.value as string,
     );
     const connector = buildFsConnector(this._outputDirectory.value as string);
-    const client = buildInfrascanClient();
-    const graphData = await client.generateGraph(scanMetadata, connector);
+    const graphData = await this.infrascanClient.generateGraph(
+      scanMetadata,
+      connector,
+    );
     const graphNodes = graphData.filter(
       (elem) => elem.group === "nodes",
     ) as GraphNode[];

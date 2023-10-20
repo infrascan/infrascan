@@ -14,7 +14,7 @@ import S3Scanner from "@infrascan/aws-s3-scanner";
 import SNSScanner from "@infrascan/aws-sns-scanner";
 import SQSScanner from "@infrascan/aws-sqs-scanner";
 
-export function registerAwsScanners(infrascanClient: Infrascan): void {
+export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
   infrascanClient.registerScanner(ApiGatewayScanner);
   infrascanClient.registerScanner(AutoscalingScanner);
   infrascanClient.registerScanner(CloudfrontScanner);
@@ -29,4 +29,5 @@ export function registerAwsScanners(infrascanClient: Infrascan): void {
   infrascanClient.registerScanner(S3Scanner);
   infrascanClient.registerScanner(SNSScanner);
   infrascanClient.registerScanner(SQSScanner);
+  return infrascanClient;
 }

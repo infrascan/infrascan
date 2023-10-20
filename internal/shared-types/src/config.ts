@@ -31,6 +31,8 @@ export type BaseScannerDefinition = {
   clientKey: string;
   // Default 'type' for the generated graph entities, useful for applying a default style to a service's nodes.
   key: string;
+  // Should the codegen skip implementing the client builder. Defaults to false.
+  skipClientBuilder?: boolean;
   // Should this scanner be called in every region, or is it considered global (e.g. S3, Cloudfront, Route53)
   callPerRegion: boolean;
   // Scanner functions for pulling state from a service
@@ -120,6 +122,7 @@ export type ScannerDefinition<
   service: string;
   clientKey: ServiceName;
   key: string;
+  skipClientBuilder?: boolean;
   callPerRegion: boolean;
   getters: ServiceGetter<ServiceName, Serv, Funcs>[];
   nodes?: StateSelector<ServiceName, Serv, Funcs>[];
