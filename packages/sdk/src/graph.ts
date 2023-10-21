@@ -64,3 +64,11 @@ export function buildRegionNode(account: string, region: string): GraphNode {
     },
   };
 }
+
+export function addGraphElementToMap<T extends GraphElement>(elementMap: Record<string, T>, element: T) {
+  if(elementMap[element.data.id] == null) {
+    elementMap[element.data.id] = element;
+  } else {
+    console.warn(`Duplicate element found: ${element.data.id}`);
+  }
+}

@@ -3,13 +3,15 @@ import type {
   Provider,
   Connector,
   GraphElement,
+  GraphEdge,
+  GraphNode,
 } from "@infrascan/shared-types";
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import { IAM } from "@aws-sdk/client-iam";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "aws/helpers/iam";
 import { generateEdgesForRole } from "aws/graph/graph-utilities";
 import { whoami, getAllRegions, ScanMetadata, scanService } from "./scan";
-import { buildAccountNode, buildRegionNode } from "./graph";
+import { buildAccountNode, buildRegionNode, addGraphElementToMap } from "./graph";
 
 const AWS_DEFAULT_REGION = "us-east-1";
 
@@ -157,7 +159,7 @@ export default class Infrascan {
    * import BuildFsConnector from "@infrascan/fs-connector";
    *
    * const connector = BuildFsConnector();
-   * const infrascan = new Infrascan(...);
+   * const infrascan = new Infrascan();
    * const scanMetadata = await infrascan.performScan({ ... });
    * infrascan.generateGraph(
    *  scanMetadata,
@@ -179,7 +181,8 @@ export default class Infrascan {
       await connector.getGlobalStateForServiceFunction("IAM", "roles");
     hydrateRoleStorage(iamStorage, iamState);
 
-    const graphElements: GraphElement[] = [];
+    const graphEdges: Record<string, GraphEdge> = {};
+    const graphNodes: Record<string, GraphNode> = {};
 
     const globalServiceEntries = Object.values(this.globalScannerRegistry);
     const regionalServiceEntries = Object.values(this.regionalScannerRegistry);
@@ -187,7 +190,7 @@ export default class Infrascan {
     for (const { account, regions } of scanMetadata) {
       const context = { account, region: AWS_DEFAULT_REGION };
       const accountNode = buildAccountNode(account);
-      graphElements.push(accountNode);
+      addGraphElementToMap(graphNodes, accountNode);
 
       for (const serviceScanner of globalServiceEntries) {
         if (serviceScanner.getNodes != null) {
@@ -200,9 +203,9 @@ export default class Infrascan {
             const formattedNodes = serviceNodes.map((node) =>
               serviceScanner.formatNode!(node, context),
             );
-            graphElements.push(...formattedNodes);
+            formattedNodes.forEach((node) => addGraphElementToMap(graphNodes, node));
           } else {
-            graphElements.push(...serviceNodes);
+            serviceNodes.forEach((node) => addGraphElementToMap(graphNodes, node));
           }
         }
       }
@@ -210,7 +213,7 @@ export default class Infrascan {
       for (const region of regions) {
         context.region = region;
         const regionNode = buildRegionNode(account, region);
-        graphElements.push(regionNode);
+        addGraphElementToMap(graphNodes, regionNode);
         for (const regionalServiceScanner of regionalServiceEntries) {
           if (regionalServiceScanner.getNodes != null) {
             const regionalNodes = await regionalServiceScanner.getNodes(
@@ -222,9 +225,9 @@ export default class Infrascan {
               const formattedNodes = regionalNodes.map((node) =>
                 regionalServiceScanner.formatNode!(node, context),
               );
-              graphElements.push(...formattedNodes);
+              formattedNodes.forEach((node) => addGraphElementToMap(graphNodes, node));
             } else {
-              graphElements.push(...regionalNodes);
+              regionalNodes.forEach((node) => addGraphElementToMap(graphNodes, node));
             }
           }
         }
@@ -235,8 +238,8 @@ export default class Infrascan {
     const allServices = globalServiceEntries.concat(regionalServiceEntries);
     for (const scanner of allServices) {
       if (scanner.getEdges != null) {
-        const scannerEdges: GraphElement[] = await scanner.getEdges(connector);
-        graphElements.push(...scannerEdges);
+        const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
+        scannerEdges.forEach((edge) => addGraphElementToMap(graphEdges, edge));
       }
     }
 
@@ -245,19 +248,21 @@ export default class Infrascan {
       if (scanner.getIamRoles != null) {
         const resolvedRoles = await scanner.getIamRoles(connector);
         for (const { roleArn, executor } of resolvedRoles) {
-          const roleEdges: GraphElement[] = await generateEdgesForRole(
+          const roleEdges: GraphEdge[] = await generateEdgesForRole(
             allServices,
             connector,
             iamStorage,
             roleArn,
             executor,
           );
-          graphElements.push(...roleEdges);
+          roleEdges.forEach((edge) => addGraphElementToMap(graphEdges, edge));
         }
       }
     }
 
-    return graphElements;
+    const nodes: GraphElement[] = Object.values(graphNodes);
+    const edges: GraphElement[] = Object.values(graphEdges);
+    return nodes.concat(edges);
   }
 }
 
