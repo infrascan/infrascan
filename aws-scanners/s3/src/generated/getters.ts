@@ -32,9 +32,9 @@ export async function ListBuckets(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("s3 ListBuckets");
+  const preparedParams: ListBucketsCommandInput = {};
   try {
-    console.log("s3 ListBuckets");
-    const preparedParams: ListBucketsCommandInput = {};
     const cmd = new ListBucketsCommand(preparedParams);
     const result: ListBucketsCommandOutput = await client.send(cmd);
     state.push({
@@ -68,22 +68,19 @@ export async function GetBucketTagging(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("s3 GetBucketTagging");
-    const resolvers = [
-      {
-        Key: "FunctionName",
-        Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetBucketTaggingCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetBucketTaggingCommandInput = parameters;
+  console.log("s3 GetBucketTagging");
+  const resolvers = [
+    { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetBucketTaggingCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetBucketTaggingCommandInput = parameters;
+    try {
       const cmd = new GetBucketTaggingCommand(preparedParams);
       const result: GetBucketTaggingCommandOutput = await client.send(cmd);
       state.push({
@@ -91,16 +88,16 @@ export async function GetBucketTagging(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof S3ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof S3ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -118,20 +115,20 @@ export async function GetBucketNotificationConfiguration(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("s3 GetBucketNotificationConfiguration");
-    const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetBucketNotificationConfigurationCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetBucketNotificationConfigurationCommandInput =
-        parameters;
+  console.log("s3 GetBucketNotificationConfiguration");
+  const resolvers = [
+    { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetBucketNotificationConfigurationCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetBucketNotificationConfigurationCommandInput =
+      parameters;
+    try {
       const cmd = new GetBucketNotificationConfigurationCommand(preparedParams);
       const result: GetBucketNotificationConfigurationCommandOutput =
         await client.send(cmd);
@@ -140,16 +137,16 @@ export async function GetBucketNotificationConfiguration(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof S3ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof S3ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -167,19 +164,19 @@ export async function GetBucketWebsite(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("s3 GetBucketWebsite");
-    const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetBucketWebsiteCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetBucketWebsiteCommandInput = parameters;
+  console.log("s3 GetBucketWebsite");
+  const resolvers = [
+    { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetBucketWebsiteCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetBucketWebsiteCommandInput = parameters;
+    try {
       const cmd = new GetBucketWebsiteCommand(preparedParams);
       const result: GetBucketWebsiteCommandOutput = await client.send(cmd);
       state.push({
@@ -187,16 +184,16 @@ export async function GetBucketWebsite(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof S3ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof S3ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -214,19 +211,19 @@ export async function GetBucketAcl(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("s3 GetBucketAcl");
-    const resolvers = [
-      { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetBucketAclCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetBucketAclCommandInput = parameters;
+  console.log("s3 GetBucketAcl");
+  const resolvers = [
+    { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetBucketAclCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetBucketAclCommandInput = parameters;
+    try {
       const cmd = new GetBucketAclCommand(preparedParams);
       const result: GetBucketAclCommandOutput = await client.send(cmd);
       state.push({
@@ -234,16 +231,16 @@ export async function GetBucketAcl(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof S3ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof S3ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(

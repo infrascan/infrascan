@@ -8,6 +8,7 @@ import {
   DescribeRules,
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
+import { getEdges } from "./edges";
 
 const ElasticLoadBalancingV2Scanner: ServiceModule<
   ElasticLoadBalancingV2Client,
@@ -25,6 +26,7 @@ const ElasticLoadBalancingV2Scanner: ServiceModule<
     DescribeRules,
   ],
   getNodes,
+  getEdges
 };
 
 export default ElasticLoadBalancingV2Scanner;

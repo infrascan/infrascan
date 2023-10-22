@@ -18,5 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListFunctionsNodes);
-  return state.map((node) => formatNode(node, "lambda", "Lambda"));
+  return state.map((node) =>
+    formatNode(node, "lambda", "Lambda", context, true),
+  );
 }

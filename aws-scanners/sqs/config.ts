@@ -38,13 +38,8 @@ const SQSScanner: ScannerDefinition<"SQS", typeof SQS, SQSFunctions> = {
       ],
     },
   ],
-  nodes: ["SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueName}"],
-  edges: [
-    {
-      state: "SQS|GetQueueAttributes|[]",
-      from: "_result.QueueArn",
-      to: "_result.RedrivePolicy.{target:deadLetterTargetArn}",
-    },
+  nodes: [
+    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueArn}",
   ],
 };
 

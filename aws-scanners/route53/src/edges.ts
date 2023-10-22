@@ -6,7 +6,7 @@ import {
 import { minimatch } from "minimatch";
 import type {
   DistributionSummary,
-  ListDistributionsResult,
+  ListDistributionsCommandOutput,
 } from "@aws-sdk/client-cloudfront";
 
 import type {
@@ -14,7 +14,11 @@ import type {
   LoadBalancer,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
 
-import type { ResourceRecordSet } from "@aws-sdk/client-route-53";
+import type {
+  ResourceRecordSet,
+  ListResourceRecordSetsCommandOutput,
+} from "@aws-sdk/client-route-53";
+
 import type {
   ListSubscriptionsByTopicCommandOutput,
   Subscription,
@@ -63,7 +67,7 @@ export async function resolveCloudfrontEdges(
   cloudfrontConnectedDomains: ResourceRecordSet[],
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  const cloudfrontState: State<ListDistributionsResult>[] =
+  const cloudfrontState: State<ListDistributionsCommandOutput>[] =
     await evaluateSelectorGlobally(
       "CloudFront|ListDistributions|[]",
       stateConnector,
@@ -71,8 +75,8 @@ export async function resolveCloudfrontEdges(
 
   const cloudfrontRecords = cloudfrontState
     .flatMap(({ _result }) => _result?.DistributionList?.Items)
-    .filter((distributionSummary) =>
-      Boolean(distributionSummary),
+    .filter(
+      (distributionSummary) => distributionSummary != null,
     ) as DistributionSummary[];
 
   return cloudfrontConnectedDomains
@@ -180,17 +184,18 @@ export async function resolveSnsEdges(
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  const route53State: State<ResourceRecordSet[]>[] =
+  const route53State: State<ListResourceRecordSetsCommandOutput>[] =
     await evaluateSelectorGlobally(
       "Route53|ListResourceRecordSets|[]",
       stateConnector,
     );
 
-  const route53Records = route53State.flatMap(({ _result }) => _result);
+  const route53Records = route53State
+    .flatMap(({ _result }) => _result.ResourceRecordSets)
+    .filter((recordSet) => recordSet != null) as ResourceRecordSet[];
 
   const { cloudfront, s3, elb } =
     await aggregateRoute53RecordsByConnectedService(route53Records);
-
   const cloudfrontEdges = await resolveCloudfrontEdges(
     cloudfront,
     stateConnector,

@@ -79,6 +79,7 @@ const ${scannerDefinition.clientKey}Scanner: ServiceModule<${getServiceClientCla
   service: "${scannerDefinition.service}",
   key: "${scannerDefinition.key}",
   getClient,
+  ${scannerDefinition.arnLabel ? `arnLabel: "${scannerDefinition.arnLabel}",` : ""}
   callPerRegion: ${scannerDefinition.callPerRegion},
   getters: [${scannerGetterImports}],
   ${hasNodes ? `getNodes,` : ""}
@@ -161,7 +162,7 @@ function declareGraphSelector(scannerDefinition: BaseScannerDefinition, sourceFi
       }
       return evaluateNodes + "\n" + extendState;
     }).join('\n'))
-    .conditionalWriteLine(hasNodes, `\treturn state.map((node) => formatNode(node, "${scannerDefinition.service}", "${scannerDefinition.key}"));`)
+    .conditionalWriteLine(hasNodes, `\treturn state.map((node) => formatNode(node, "${scannerDefinition.service}", "${scannerDefinition.key}", context, ${scannerDefinition.callPerRegion}));`)
     .conditionalWriteLine(hasNodes, '}')
     .conditionalNewLine(hasNodes)
     .conditionalWriteLine(hasEdges, "export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {")
@@ -233,36 +234,37 @@ function declareGetter(scannerDefinition: BaseScannerDefinition, getter: BaseGet
 
   return sourceFile.write(`export async function ${getFunctionNameForGetter(getter)}(client: ${getServiceClientClass(scannerDefinition)}, stateConnector: Connector, context: AwsContext): Promise<void> {`)
     .writeLine(`const state: GenericState[] = [];`)
-    .writeLine("try {")
     // TODO: handle verbose logging correctly in generated code
-    .writeLine(`\tconsole.log("${scannerDefinition.service} ${getFunctionNameForGetter(getter)}");`)
-    .conditionalWriteLine(hasParameters, `\tconst resolvers = ${JSON.stringify(getter.parameters)};`)
-    .conditionalWriteLine(hasParameters, `\tconst parameterQueue = await resolveFunctionCallParameters(context.account, context.region, resolvers, stateConnector) as ${commandTypes.input}[];`)
-    .conditionalWriteLine(hasParameters, `\tfor(const parameters of parameterQueue) {`)
-    .conditionalWriteLine(hasPaginationTokens, `\t\tlet pagingToken: string | undefined = undefined;`)
-    .conditionalWriteLine(hasPaginationTokens, "\t\tdo {")
-    .conditionalWriteLine(!hasParameters,`\t\t\tconst preparedParams: ${commandTypes.input} = {};`)
-    .conditionalWriteLine(hasParameters, `\t\t\tconst preparedParams: ${commandTypes.input} = parameters;`)
-    .conditionalWriteLine(hasPaginationTokens, `\t\t\tpreparedParams["${getter.paginationToken?.request}"] = pagingToken;`)
+    .writeLine(`console.log("${scannerDefinition.service} ${getFunctionNameForGetter(getter)}");`)
+    .conditionalWriteLine(hasParameters, `const resolvers = ${JSON.stringify(getter.parameters)};`)
+    .conditionalWriteLine(hasParameters, `const parameterQueue = await resolveFunctionCallParameters(context.account, context.region, resolvers, stateConnector) as ${commandTypes.input}[];`)
+    .conditionalWriteLine(hasParameters, `for(const parameters of parameterQueue) {`)
+    .conditionalWriteLine(hasPaginationTokens, `\tlet pagingToken: string | undefined = undefined;`)
+    .conditionalWriteLine(hasPaginationTokens, "\tdo {")
+    .conditionalWriteLine(!hasParameters,`\t\tconst preparedParams: ${commandTypes.input} = {};`)
+    .conditionalWriteLine(hasParameters, `\t\tconst preparedParams: ${commandTypes.input} = parameters;`)
+    .conditionalWriteLine(hasPaginationTokens, `\t\tpreparedParams["${getter.paginationToken?.request}"] = pagingToken;`)
+    .writeLine("\t\ttry {")
     .writeLine(`\t\t\tconst cmd = new ${commandTypes.command}(preparedParams);`)
     .writeLine(`\t\t\tconst result: ${commandTypes.output} = await client.send(cmd);`)
     .writeLine(`\t\t\tstate.push({ _metadata: { account: context.account, region: context.region }, _parameters: preparedParams, _result: result })`)
     .conditionalWriteLine(hasPaginationTokens, `\t\t\tpagingToken = result["${getter.paginationToken?.response}"];`)
-    .conditionalWriteLine(hasPaginationTokens, `\t\t} while(pagingToken != null);`)
+    .writeLine("\t\t} catch(err: unknown) {")
+      // TODO: proper error handling
+    .writeLine(`\t\t\tif(err instanceof ${getServiceErrorType(scannerDefinition)}) {`)
+    .writeLine("\t\t\t\tif(err?.$retryable) {")
+    .writeLine(`\t\t\t\t\tconsole.log("Encountered retryable error", err);`)
+    .writeLine(`\t\t\t\t} else {`)
+    .writeLine(`\t\t\t\t\tconsole.log("Encountered unretryable error", err);`)
+    .writeLine("\t\t\t\t}")
+    .writeLine("\t\t\t} else {")
+    .writeLine('\t\t\t\tconsole.log("Encountered unexpected error", err);')
+    .writeLine("\t\t\t}")
+    .conditionalWriteLine(hasPaginationTokens, "\t\tpagingToken = undefined;")
+    .writeLine("\t\t}")
+    .conditionalWriteLine(hasPaginationTokens, `\t} while(pagingToken != null);`)
     // close outer for loop for parameterised scanners
     .conditionalWriteLine(hasParameters, "\t\t}")
-    .writeLine("\t} catch(err: unknown) {")
-      // TODO: proper error handling
-    .writeLine(`\t\tif(err instanceof ${getServiceErrorType(scannerDefinition)}) {`)
-    .writeLine("\t\t\tif(err?.$retryable) {")
-    .writeLine(`\t\t\t\tconsole.log("Encountered retryable error", err);`)
-    .writeLine(`\t\t\t} else {`)
-    .writeLine(`\t\t\t\tconsole.log("Encountered unretryable error", err);`)
-    .writeLine("\t\t\t}")
-    .writeLine("\t\t} else {")
-    .writeLine('\t\t\tconsole.log("Encountered unexpected error", err);')
-    .writeLine("\t\t}")
-    .writeLine("\t}")
     .writeLine(`\tawait stateConnector.onServiceScanCompleteCallback(context.account, context.region, "${scannerDefinition.clientKey}", "${getFunctionNameForGetter(getter)}", state);`)
     .writeLine("}")
     .newLine();
@@ -318,12 +320,14 @@ export default async function generateScanner(scannerDefinition: BaseScannerDefi
     await clientBuilder.save();
   }
 
-  const nodesSelectors = project.createSourceFile(
-    join(config.basePath, 'generated/graph.ts'),
-    (writer) => declareGraphSelector(scannerDefinition, writer),
-    { overwrite: config.overwrite }
-  );
-  await nodesSelectors.save();
+  if(scannerDefinition.edges != null || scannerDefinition.nodes != null) {
+    const nodesSelectors = project.createSourceFile(
+      join(config.basePath, 'generated/graph.ts'),
+      (writer) => declareGraphSelector(scannerDefinition, writer),
+      { overwrite: config.overwrite }
+    );
+    await nodesSelectors.save();
+  }
 
   suggestModuleExport(scannerDefinition);
 }

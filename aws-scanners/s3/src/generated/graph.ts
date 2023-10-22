@@ -26,7 +26,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListBucketsNodes);
-  return state.map((node) => formatNode(node, "s3", "S3"));
+  return state.map((node) => formatNode(node, "s3", "S3", context, false));
 }
 
 export async function getEdges(
@@ -40,7 +40,10 @@ export async function getEdges(
     );
   const GetBucketNotificationConfigurationEdges1 =
     GetBucketNotificationConfigurationState1.flatMap((state: any) => {
-      const source = filterState(state, "_parameters.Bucket");
+      const source = filterState(
+        state,
+        "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
+      );
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
         "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
@@ -62,7 +65,10 @@ export async function getEdges(
     );
   const GetBucketNotificationConfigurationEdges2 =
     GetBucketNotificationConfigurationState2.flatMap((state: any) => {
-      const source = filterState(state, "_parameters.Bucket");
+      const source = filterState(
+        state,
+        "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
+      );
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
         "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
@@ -84,7 +90,10 @@ export async function getEdges(
     );
   const GetBucketNotificationConfigurationEdges3 =
     GetBucketNotificationConfigurationState3.flatMap((state: any) => {
-      const source = filterState(state, "_parameters.Bucket");
+      const source = filterState(
+        state,
+        "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
+      );
       const target: EdgeTarget | EdgeTarget[] | null = filterState(
         state,
         "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",

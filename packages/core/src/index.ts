@@ -8,6 +8,7 @@ import type {
   GraphEdge,
   GraphNode,
   SelectedNode,
+  AwsContext,
 } from "@infrascan/shared-types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -106,10 +107,19 @@ export function formatEdge(source: string, target: EdgeTarget): GraphEdge {
   };
 }
 
+function resolveParentForNode(
+  context: AwsContext,
+  isRegionBound: boolean,
+): string {
+  return isRegionBound ? context.region : context.account;
+}
+
 export function formatNode(
   selectedNode: SelectedNode,
   service: string,
   defaultType: string,
+  context: AwsContext,
+  isRegionBound: boolean
 ): GraphNode {
   return {
     group: "nodes",
@@ -117,7 +127,7 @@ export function formatNode(
     data: {
       id: selectedNode.id,
       name: selectedNode.name,
-      parent: selectedNode.parent,
+      parent: selectedNode.parent ?? resolveParentForNode(context, isRegionBound),
       service,
       type: selectedNode.type ?? defaultType,
     },

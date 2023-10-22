@@ -27,12 +27,12 @@ export async function ListFunctions(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("lambda ListFunctions");
-    let pagingToken: string | undefined = undefined;
-    do {
-      const preparedParams: ListFunctionsCommandInput = {};
-      preparedParams.Marker = pagingToken;
+  console.log("lambda ListFunctions");
+  let pagingToken: string | undefined = undefined;
+  do {
+    const preparedParams: ListFunctionsCommandInput = {};
+    preparedParams.Marker = pagingToken;
+    try {
       const cmd = new ListFunctionsCommand(preparedParams);
       const result: ListFunctionsCommandOutput = await client.send(cmd);
       state.push({
@@ -41,18 +41,19 @@ export async function ListFunctions(
         _result: result,
       });
       pagingToken = result.NextMarker;
-    } while (pagingToken != null);
-  } catch (err: unknown) {
-    if (err instanceof LambdaServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof LambdaServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
+      pagingToken = undefined;
     }
-  }
+  } while (pagingToken != null);
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -68,22 +69,22 @@ export async function GetFunction(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("lambda GetFunction");
-    const resolvers = [
-      {
-        Key: "FunctionName",
-        Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetFunctionCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetFunctionCommandInput = parameters;
+  console.log("lambda GetFunction");
+  const resolvers = [
+    {
+      Key: "FunctionName",
+      Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetFunctionCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetFunctionCommandInput = parameters;
+    try {
       const cmd = new GetFunctionCommand(preparedParams);
       const result: GetFunctionCommandOutput = await client.send(cmd);
       state.push({
@@ -91,16 +92,16 @@ export async function GetFunction(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof LambdaServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof LambdaServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(

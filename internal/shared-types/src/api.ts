@@ -64,7 +64,7 @@ export type ResolveStateForServiceFunction = (
 export type GetGlobalStateForServiceFunction = (
   service: string,
   functionName: string,
-) => any;
+) => Promise<any>;
 
 export interface Connector {
   onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn;
@@ -123,6 +123,7 @@ type GetIamRoleFn = (stateConnector: Connector) => Promise<EntityRoleData[]>;
 export interface ServiceModule<T, P extends Provider> {
   provider: P;
   service: string;
+  arnLabel?: string;
   key: string;
   getClient: ClientBuilder<T, P>;
   callPerRegion: boolean;

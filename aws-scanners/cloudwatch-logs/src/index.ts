@@ -11,6 +11,7 @@ const CloudWatchLogsScanner: ServiceModule<CloudWatchLogsClient, "aws"> = {
   provider: "aws",
   service: "cloudwatch-logs",
   key: "CloudWatchLogs",
+  arnLabel: "logs",
   getClient,
   callPerRegion: true,
   getters: [DescribeLogGroups, DescribeSubscriptionFilters],

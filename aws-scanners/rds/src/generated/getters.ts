@@ -19,9 +19,9 @@ export async function DescribeDBInstances(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("rds DescribeDBInstances");
+  const preparedParams: DescribeDBInstancesCommandInput = {};
   try {
-    console.log("rds DescribeDBInstances");
-    const preparedParams: DescribeDBInstancesCommandInput = {};
     const cmd = new DescribeDBInstancesCommand(preparedParams);
     const result: DescribeDBInstancesCommandOutput = await client.send(cmd);
     state.push({

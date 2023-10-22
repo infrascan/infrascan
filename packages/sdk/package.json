@@ -52,7 +52,7 @@
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.428.0",
-    "@aws-sdk/client-iam": "3.425.0",
+    "@aws-sdk/client-iam": "3.428.0",
     "@aws-sdk/client-sts": "^3.428.0",
     "@aws-sdk/config-resolver": "3.369.0",
     "@infrascan/config": "^0.1.0",
@@ -61,7 +61,7 @@
     "minimatch": "^5.1.0"
   },
   "devDependencies": {
-    "@aws-sdk/types": "3.425.0",
+    "@aws-sdk/types": "3.428.0",
     "@infrascan/codegen": "*",
     "@infrascan/shared-types": "*",
     "@types/jmespath": "^0.15.0",

@@ -29,6 +29,8 @@ export type BaseScannerDefinition = {
   service: string;
   // Key of the client in imported SDK
   clientKey: string;
+  // Label used to identify this service within AWS ARNs
+  arnLabel?: string;
   // Default 'type' for the generated graph entities, useful for applying a default style to a service's nodes.
   key: string;
   // Should the codegen skip implementing the client builder. Defaults to false.
@@ -121,6 +123,7 @@ export type ScannerDefinition<
   provider: string;
   service: string;
   clientKey: ServiceName;
+  arnLabel?: string;
   key: string;
   skipClientBuilder?: boolean;
   callPerRegion: boolean;

@@ -22,9 +22,9 @@ export async function GetApis(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("apigatewayv2 GetApis");
+  const preparedParams: GetApisCommandInput = {};
   try {
-    console.log("apigatewayv2 GetApis");
-    const preparedParams: GetApisCommandInput = {};
     const cmd = new GetApisCommand(preparedParams);
     const result: GetApisCommandOutput = await client.send(cmd);
     state.push({
@@ -58,9 +58,9 @@ export async function GetDomainNames(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("apigatewayv2 GetDomainNames");
+  const preparedParams: GetDomainNamesCommandInput = {};
   try {
-    console.log("apigatewayv2 GetDomainNames");
-    const preparedParams: GetDomainNamesCommandInput = {};
     const cmd = new GetDomainNamesCommand(preparedParams);
     const result: GetDomainNamesCommandOutput = await client.send(cmd);
     state.push({

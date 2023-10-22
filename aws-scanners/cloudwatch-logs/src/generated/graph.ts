@@ -1,5 +1,6 @@
 import {
   evaluateSelector,
+  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
@@ -7,6 +8,7 @@ import {
 import type {
   Connector,
   AwsContext,
+  SelectedNode,
   GraphNode,
   GraphEdge,
   EdgeTarget,
@@ -16,21 +18,23 @@ export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const DescribeSubscriptionFiltersNodes = await evaluateSelector(
     context.account,
     context.region,
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
     stateConnector,
   );
-  state = state.concat(DescribeSubscriptionFiltersNodes);
-  return state;
+  state.push(...DescribeSubscriptionFiltersNodes);
+  return state.map((node) =>
+    formatNode(node, "cloudwatch-logs", "CloudWatchLogs", context, true),
+  );
 }
 
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<GraphEdge[]> {
-  let edges: GraphEdge[] = [];
+  const edges: GraphEdge[] = [];
   const DescribeSubscriptionFiltersState1 = await evaluateSelectorGlobally(
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
     stateConnector,
@@ -51,6 +55,6 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
-  edges = edges.concat(DescribeSubscriptionFiltersEdges1);
+  edges.push(...DescribeSubscriptionFiltersEdges1);
   return edges;
 }

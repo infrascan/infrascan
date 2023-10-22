@@ -29,9 +29,9 @@ export async function ListTopics(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("sns ListTopics");
+  const preparedParams: ListTopicsCommandInput = {};
   try {
-    console.log("sns ListTopics");
-    const preparedParams: ListTopicsCommandInput = {};
     const cmd = new ListTopicsCommand(preparedParams);
     const result: ListTopicsCommandOutput = await client.send(cmd);
     state.push({
@@ -65,22 +65,22 @@ export async function GetTopicAttributes(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("sns GetTopicAttributes");
-    const resolvers = [
-      {
-        Key: "TopicArn",
-        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetTopicAttributesCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetTopicAttributesCommandInput = parameters;
+  console.log("sns GetTopicAttributes");
+  const resolvers = [
+    {
+      Key: "TopicArn",
+      Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetTopicAttributesCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetTopicAttributesCommandInput = parameters;
+    try {
       const cmd = new GetTopicAttributesCommand(preparedParams);
       const result: GetTopicAttributesCommandOutput = await client.send(cmd);
       state.push({
@@ -88,16 +88,16 @@ export async function GetTopicAttributes(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof SNSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof SNSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -115,22 +115,22 @@ export async function ListSubscriptionsByTopic(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("sns ListSubscriptionsByTopic");
-    const resolvers = [
-      {
-        Key: "TopicArn",
-        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as ListSubscriptionsByTopicCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: ListSubscriptionsByTopicCommandInput = parameters;
+  console.log("sns ListSubscriptionsByTopic");
+  const resolvers = [
+    {
+      Key: "TopicArn",
+      Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListSubscriptionsByTopicCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: ListSubscriptionsByTopicCommandInput = parameters;
+    try {
       const cmd = new ListSubscriptionsByTopicCommand(preparedParams);
       const result: ListSubscriptionsByTopicCommandOutput = await client.send(
         cmd,
@@ -140,16 +140,16 @@ export async function ListSubscriptionsByTopic(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof SNSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof SNSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -167,22 +167,22 @@ export async function ListTagsForResource(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("sns ListTagsForResource");
-    const resolvers = [
-      {
-        Key: "ResourceArn",
-        Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as ListTagsForResourceCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: ListTagsForResourceCommandInput = parameters;
+  console.log("sns ListTagsForResource");
+  const resolvers = [
+    {
+      Key: "ResourceArn",
+      Selector: "SNS|ListTopics|[]._result.Topics[].TopicArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListTagsForResourceCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: ListTagsForResourceCommandInput = parameters;
+    try {
       const cmd = new ListTagsForResourceCommand(preparedParams);
       const result: ListTagsForResourceCommandOutput = await client.send(cmd);
       state.push({
@@ -190,16 +190,16 @@ export async function ListTagsForResource(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof SNSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof SNSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(

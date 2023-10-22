@@ -1,17 +1,24 @@
-import { evaluateSelector } from "@infrascan/core";
-import type { Connector, AwsContext, GraphNode } from "@infrascan/shared-types";
+import { evaluateSelector, formatNode } from "@infrascan/core";
+import type {
+  Connector,
+  AwsContext,
+  SelectedNode,
+  GraphNode,
+} from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<GraphNode[]> {
-  let state: GraphNode[] = [];
+  const state: SelectedNode[] = [];
   const ListDistributionsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:_infrascanLabel}",
+    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:Aliases.Items[0] || DomainName}",
     stateConnector,
   );
-  state = state.concat(ListDistributionsNodes);
-  return state;
+  state.push(...ListDistributionsNodes);
+  return state.map((node) =>
+    formatNode(node, "cloudfront", "CloudFront", context, false),
+  );
 }

@@ -23,12 +23,12 @@ export async function DescribeLogGroups(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("cloudwatch-logs DescribeLogGroups");
-    let pagingToken: string | undefined = undefined;
-    do {
-      const preparedParams: DescribeLogGroupsCommandInput = {};
-      preparedParams.nextToken = pagingToken;
+  console.log("cloudwatch-logs DescribeLogGroups");
+  let pagingToken: string | undefined = undefined;
+  do {
+    const preparedParams: DescribeLogGroupsCommandInput = {};
+    preparedParams.nextToken = pagingToken;
+    try {
       const cmd = new DescribeLogGroupsCommand(preparedParams);
       const result: DescribeLogGroupsCommandOutput = await client.send(cmd);
       state.push({
@@ -37,18 +37,19 @@ export async function DescribeLogGroups(
         _result: result,
       });
       pagingToken = result.nextToken;
-    } while (pagingToken != null);
-  } catch (err: unknown) {
-    if (err instanceof CloudWatchLogsServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof CloudWatchLogsServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
+      pagingToken = undefined;
     }
-  }
+  } while (pagingToken != null);
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -64,27 +65,27 @@ export async function DescribeSubscriptionFilters(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("cloudwatch-logs DescribeSubscriptionFilters");
-    const resolvers = [
-      {
-        Key: "logGroupName",
-        Selector:
-          "CloudWatchLogs|DescribeLogGroups|[]._result.logGroups[].logGroupName",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as DescribeSubscriptionFiltersCommandInput[];
-    for (const parameters of parameterQueue) {
-      let pagingToken: string | undefined = undefined;
-      do {
-        const preparedParams: DescribeSubscriptionFiltersCommandInput =
-          parameters;
-        preparedParams.nextToken = pagingToken;
+  console.log("cloudwatch-logs DescribeSubscriptionFilters");
+  const resolvers = [
+    {
+      Key: "logGroupName",
+      Selector:
+        "CloudWatchLogs|DescribeLogGroups|[]._result.logGroups[].logGroupName",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as DescribeSubscriptionFiltersCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined = undefined;
+    do {
+      const preparedParams: DescribeSubscriptionFiltersCommandInput =
+        parameters;
+      preparedParams.nextToken = pagingToken;
+      try {
         const cmd = new DescribeSubscriptionFiltersCommand(preparedParams);
         const result: DescribeSubscriptionFiltersCommandOutput =
           await client.send(cmd);
@@ -94,18 +95,19 @@ export async function DescribeSubscriptionFilters(
           _result: result,
         });
         pagingToken = result.nextToken;
-      } while (pagingToken != null);
-    }
-  } catch (err: unknown) {
-    if (err instanceof CloudWatchLogsServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
-      } else {
-        console.log("Encountered unretryable error", err);
+      } catch (err: unknown) {
+        if (err instanceof CloudWatchLogsServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
       }
-    } else {
-      console.log("Encountered unexpected error", err);
-    }
+    } while (pagingToken != null);
   }
   await stateConnector.onServiceScanCompleteCallback(
     context.account,

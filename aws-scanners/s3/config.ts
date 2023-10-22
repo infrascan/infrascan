@@ -14,7 +14,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
   clientKey: "S3",
   key: "S3",
   skipClientBuilder: true,
-  callPerRegion: true,
+  callPerRegion: false,
   getters: [
     {
       fn: "ListBuckets",
@@ -23,7 +23,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       fn: "GetBucketTagging",
       parameters: [
         {
-          Key: "FunctionName",
+          Key: "Bucket",
           Selector: "S3|ListBuckets|[]._result.Buckets[].Name",
         },
       ],
@@ -56,21 +56,24 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
       ],
     },
   ],
+  // Node IDs are formatted through the `formatNode` function which already has context over the service being called,
+  // so Node IDs can be passed as the raw name.
   nodes: ["S3|ListBuckets|[]._result.Buckets[].{id:Name,name:Name}"],
+  // Edge formatting is generic (as edges aren't tailored to the service to which they refer), so bucket names must be formatted here
   edges: [
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
-      from: "_parameters.Bucket",
+      from: "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       to: "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
     },
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
-      from: "_parameters.Bucket",
+      from: "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       to: "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
     },
     {
       state: "S3|GetBucketNotificationConfiguration|[]",
-      from: "_parameters.Bucket",
+      from: "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       to: "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",
     },
   ],

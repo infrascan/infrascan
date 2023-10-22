@@ -20,6 +20,9 @@ const CloudWatchLogsScanner: ScannerDefinition<
       fn: "DescribeVpcs",
     },
     {
+      fn: "DescribeAvailabilityZones",
+    },
+    {
       fn: "DescribeSubnets",
       parameters: [
         {

@@ -19,9 +19,9 @@ export async function DescribeAutoScalingGroups(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("auto-scaling DescribeAutoScalingGroups");
+  const preparedParams: DescribeAutoScalingGroupsCommandInput = {};
   try {
-    console.log("auto-scaling DescribeAutoScalingGroups");
-    const preparedParams: DescribeAutoScalingGroupsCommandInput = {};
     const cmd = new DescribeAutoScalingGroupsCommand(preparedParams);
     const result: DescribeAutoScalingGroupsCommandOutput = await client.send(
       cmd,

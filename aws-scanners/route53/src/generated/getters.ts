@@ -23,9 +23,9 @@ export async function ListHostedZonesByName(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("route-53 ListHostedZonesByName");
+  const preparedParams: ListHostedZonesByNameCommandInput = {};
   try {
-    console.log("route-53 ListHostedZonesByName");
-    const preparedParams: ListHostedZonesByNameCommandInput = {};
     const cmd = new ListHostedZonesByNameCommand(preparedParams);
     const result: ListHostedZonesByNameCommandOutput = await client.send(cmd);
     state.push({
@@ -59,22 +59,22 @@ export async function ListResourceRecordSets(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("route-53 ListResourceRecordSets");
-    const resolvers = [
-      {
-        Key: "HostedZoneId",
-        Selector: "Route53|ListHostedZonesByName|[]._result.HostedZones[].Id",
-      },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as ListResourceRecordSetsCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: ListResourceRecordSetsCommandInput = parameters;
+  console.log("route-53 ListResourceRecordSets");
+  const resolvers = [
+    {
+      Key: "HostedZoneId",
+      Selector: "Route53|ListHostedZonesByName|[]._result.HostedZones[].Id",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListResourceRecordSetsCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: ListResourceRecordSetsCommandInput = parameters;
+    try {
       const cmd = new ListResourceRecordSetsCommand(preparedParams);
       const result: ListResourceRecordSetsCommandOutput = await client.send(
         cmd,
@@ -84,16 +84,16 @@ export async function ListResourceRecordSets(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof Route53ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof Route53ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(

@@ -19,9 +19,9 @@ export async function ListDistributions(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("cloudfront ListDistributions");
+  const preparedParams: ListDistributionsCommandInput = {};
   try {
-    console.log("cloudfront ListDistributions");
-    const preparedParams: ListDistributionsCommandInput = {};
     const cmd = new ListDistributionsCommand(preparedParams);
     const result: ListDistributionsCommandOutput = await client.send(cmd);
     state.push({

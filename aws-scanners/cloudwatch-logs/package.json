@@ -61,7 +61,7 @@
     "tsconfig": "^0.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "3.425.0",
+    "@aws-sdk/client-cloudwatch-logs": "3.428.0",
     "@infrascan/core": "0.1.0"
   }
 }

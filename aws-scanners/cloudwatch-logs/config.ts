@@ -11,6 +11,7 @@ const CloudWatchLogsScanner: ScannerDefinition<
 > = {
   provider: "aws",
   service: "cloudwatch-logs",
+  arnLabel: "logs",
   clientKey: "CloudWatchLogs",
   key: "CloudWatchLogs",
   callPerRegion: true,

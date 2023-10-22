@@ -26,9 +26,9 @@ export async function ListQueues(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
+  console.log("sqs ListQueues");
+  const preparedParams: ListQueuesCommandInput = {};
   try {
-    console.log("sqs ListQueues");
-    const preparedParams: ListQueuesCommandInput = {};
     const cmd = new ListQueuesCommand(preparedParams);
     const result: ListQueuesCommandOutput = await client.send(cmd);
     state.push({
@@ -62,19 +62,19 @@ export async function ListQueueTags(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("sqs ListQueueTags");
-    const resolvers = [
-      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as ListQueueTagsCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: ListQueueTagsCommandInput = parameters;
+  console.log("sqs ListQueueTags");
+  const resolvers = [
+    { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListQueueTagsCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: ListQueueTagsCommandInput = parameters;
+    try {
       const cmd = new ListQueueTagsCommand(preparedParams);
       const result: ListQueueTagsCommandOutput = await client.send(cmd);
       state.push({
@@ -82,16 +82,16 @@ export async function ListQueueTags(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof SQSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof SQSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
@@ -109,20 +109,20 @@ export async function GetQueueAttributes(
   context: AwsContext,
 ): Promise<void> {
   const state: GenericState[] = [];
-  try {
-    console.log("sqs GetQueueAttributes");
-    const resolvers = [
-      { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
-      { Key: "AttributeNames", Value: ["All"] },
-    ];
-    const parameterQueue = (await resolveFunctionCallParameters(
-      context.account,
-      context.region,
-      resolvers,
-      stateConnector,
-    )) as GetQueueAttributesCommandInput[];
-    for (const parameters of parameterQueue) {
-      const preparedParams: GetQueueAttributesCommandInput = parameters;
+  console.log("sqs GetQueueAttributes");
+  const resolvers = [
+    { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
+    { Key: "AttributeNames", Value: ["All"] },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetQueueAttributesCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetQueueAttributesCommandInput = parameters;
+    try {
       const cmd = new GetQueueAttributesCommand(preparedParams);
       const result: GetQueueAttributesCommandOutput = await client.send(cmd);
       state.push({
@@ -130,16 +130,16 @@ export async function GetQueueAttributes(
         _parameters: preparedParams,
         _result: result,
       });
-    }
-  } catch (err: unknown) {
-    if (err instanceof SQSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+    } catch (err: unknown) {
+      if (err instanceof SQSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
       } else {
-        console.log("Encountered unretryable error", err);
+        console.log("Encountered unexpected error", err);
       }
-    } else {
-      console.log("Encountered unexpected error", err);
     }
   }
   await stateConnector.onServiceScanCompleteCallback(
