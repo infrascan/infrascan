@@ -36,6 +36,7 @@ t.test(
 
     // Mock each of the functions used to pull state
     const bucketName = "test-bucket";
+    const bucketArn = `arn:aws:s3:::${bucketName}`;
     mockedS3Client.on(ListBucketsCommand).resolves({
       Buckets: [
         {
@@ -87,8 +88,14 @@ t.test(
     if (S3Scanner.getNodes != null) {
       const nodes = await S3Scanner.getNodes(connector, testContext);
       t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, bucketName);
+      // preformat
+      t.equal(nodes[0].data.id, bucketName);
       t.equal(nodes[0].data.name, bucketName);
+      
+      if(S3Scanner.formatNode != null) {
+        const formattedNode = S3Scanner.formatNode(nodes[0], testContext);
+        t.equal(formattedNode.data.id, bucketArn);
+      }
     }
 
     if (S3Scanner.getEdges != null) {
@@ -98,19 +105,19 @@ t.test(
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === bucketName && edge.data.target === snsTopicArn,
+            edge.data.source === bucketArn && edge.data.target === snsTopicArn,
         ),
       );
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === bucketName && edge.data.target === sqsQueueArn,
+            edge.data.source === bucketArn && edge.data.target === sqsQueueArn,
         ),
       );
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === bucketName &&
+            edge.data.source === bucketArn &&
             edge.data.target === lambdaFunctionArn,
         ),
       );

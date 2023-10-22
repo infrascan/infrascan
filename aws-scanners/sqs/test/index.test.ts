@@ -49,7 +49,6 @@ t.test(
 
     mockedSQSClient.on(GetQueueAttributesCommand).resolves({
       Attributes: {
-        QueueName: queueName,
         QueueArn: queueArn,
       },
     });
@@ -76,7 +75,7 @@ t.test(
       const nodes = await SQSScanner.getNodes(connector, testContext);
       t.equal(nodes.length, 1);
       t.equal(nodes[0].id, queueArn);
-      t.equal(nodes[0].data.name, queueName);
+      t.equal(nodes[0].data.name, queueArn);
     }
   },
 );

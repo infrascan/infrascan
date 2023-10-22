@@ -117,7 +117,7 @@ t.test(
       // successfully found cluster node
       t.ok(
         nodes.find(
-          (node) => node.id === clusterArn && node.data.type === "ecs-cluster",
+          (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
         ),
       );
 
@@ -127,7 +127,7 @@ t.test(
           (node) =>
             node.id === serviceArn &&
             node.data.parent === clusterArn &&
-            node.data.type === "ecs-service",
+            node.data.type === "ECS-Service",
         ),
       );
       // successfully found task node with service as parent
@@ -136,7 +136,7 @@ t.test(
           (node) =>
             node.id === taskDefArn &&
             node.data.parent === serviceArn &&
-            node.data.type === "ecs-task",
+            node.data.type === "ECS-Task",
         ),
       );
       // successfully found task node with cluster as parent
@@ -145,7 +145,7 @@ t.test(
           (node) =>
             node.id === scheduledTaskDefArn &&
             node.data.parent === clusterArn &&
-            node.data.type === "ecs-task",
+            node.data.type === "ECS-Task",
         ),
       );
     }
