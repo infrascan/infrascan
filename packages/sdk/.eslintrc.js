@@ -15,7 +15,8 @@ module.exports = {
       "WithStatement"
     ],
     "no-plusplus": "off",
-    "no-underscore-dangle": "off"
+    "no-underscore-dangle": "off",
+    "no-param-reassign": [2, { "props": false }]
   },
-  ignorePatterns: ["src/**/*.generated.ts", "scripts/**", "dist/**", "docs/**", ".eslintrc.js"]
+  ignorePatterns: ["dist/**", "docs/**", ".eslintrc.js"]
 };

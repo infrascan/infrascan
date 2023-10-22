@@ -4,9 +4,20 @@
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist ; tsc",
-    "lint": "eslint .",
+    "build": "rm -rf dist ; tsup",
+    "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
+  },
+  "tsup": {
+    "clean": true,
+    "splitting": false,
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "esm"
+    ],
+    "target": "node18"
   },
   "bin": "dist/index.js",
   "files": [
@@ -17,7 +28,8 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "dependencies": {
-    "@aws-sdk/credential-providers": "^3.370.0",
+    "@aws-sdk/credential-providers": "3.428.0",
+    "@infrascan/aws": "^0.1.0",
     "@infrascan/fs-connector": "^0.1.0",
     "@infrascan/sdk": "^0.1.0",
     "@rushstack/ts-command-line": "^4.15.2",
@@ -27,7 +39,8 @@
     "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
-    "@aws-sdk/types": "^3.398.0",
+    "@aws-sdk/types": "3.428.0",
+    "@infrascan/shared-types": "^0.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }

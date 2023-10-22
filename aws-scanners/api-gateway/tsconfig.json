@@ -1,0 +1,11 @@
+{
+  "extends": "tsconfig/base.json",
+  "exclude": ["codegen.ts", "config.ts", "test/*.test.ts"],
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "Node16",
+    "outDir": "./dist",
+    "rootDir": "src",
+    "baseUrl": "src"
+  }
+}

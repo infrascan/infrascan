@@ -1,0 +1,12 @@
+{
+  "name": "eslint-config-codegen",
+  "main": "index.js",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "eslint": "latest"
+  },
+  "devDependencies": {
+    "eslint-config-custom": "^1.0.0"
+  }
+}

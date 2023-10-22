@@ -13,21 +13,8 @@ import buildFsConnector from "@infrascan/fs-connector";
 import { performScan } from "@infrascan/sdk";
 import { fromIni } from "@aws-sdk/credential-providers";
 
-const {
-  onServiceScanComplete,
-  resolveStateForServiceFunction,
-  getGlobalStateForServiceFunction
-} = buildFsConnector('state');
+const connector = buildFsConnector('state');
 
 const credentials = fromIni({ profile: "dev" });
-const regions = ["us-east-1","us-west-1"];
-const services = ["SNS","Lambda","S3"];
-
-await performScan({
-  credentials,
-  regions,
-  services,
-  onServiceScanComplete,
-  resolveStateForServiceCall: resolveStateForServiceFunction
-});
+await performScan(credentials, connector);
 ```

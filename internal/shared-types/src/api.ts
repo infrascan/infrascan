@@ -1,4 +1,9 @@
+import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+
 import type { Service } from "./services";
+import type { BaseEdgeResolver } from "./config";
+import type { GraphEdge, GraphNode } from "./graph";
+
 
 /**
  * Callback to store state from a specific function call
@@ -59,10 +64,75 @@ export type ResolveStateForServiceFunction = (
 export type GetGlobalStateForServiceFunction = (
   service: string,
   functionName: string,
-) => any;
+) => Promise<any>;
 
-export type Connector = {
+export interface Connector {
   onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn;
   resolveStateForServiceFunction: ResolveStateForServiceFunction;
   getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction;
+};
+
+type ClientBuilder<T, P extends Provider> = (
+  credentials: AwsCredentialIdentityProvider,
+  context: ProviderContextMap[P],
+) => T;
+
+type GetterFn<T, P extends Provider> = (
+  client: T,
+  stateConnector: Connector,
+  context: ProviderContextMap[P]
+) => Promise<void>;
+
+type GetNodeFn<T extends Provider> = (
+  stateConnector: Connector,
+  context: ProviderContextMap[T]
+) => Promise<GraphNode[]>;
+
+type GetEdgeFn = (stateConnector: Connector) => Promise<GraphEdge[]>;
+
+
+export type Provider = "aws";
+
+export type AwsContext = {
+  account: string;
+  region: string;
+  partition?: string;
+};
+
+type ProviderContextMap = {
+  aws: AwsContext
+}
+
+export type ProviderContext<T extends Provider> = {
+  provider: T;
+  context: ProviderContextMap[T];
+};
+
+type FormatNodeFn<P extends Provider> = (node: GraphNode, context: ProviderContextMap[P]) => GraphNode;
+type FormatEdgeFn<P extends Provider> = (
+  node: GraphEdge,
+  context: ProviderContextMap[P]
+) => GraphEdge;
+
+export type EntityRoleData = {
+  roleArn: string;
+  executor: string;
+};
+type GetIamRoleFn = (stateConnector: Connector) => Promise<EntityRoleData[]>;
+
+export interface ServiceModule<T, P extends Provider> {
+  provider: P;
+  service: string;
+  arnLabel?: string;
+  key: string;
+  getClient: ClientBuilder<T, P>;
+  callPerRegion: boolean;
+  getters: GetterFn<T, P>[];
+  nodes?: string[];
+  getNodes?: GetNodeFn<P>;
+  formatNode?: FormatNodeFn<P>;
+  edges?: BaseEdgeResolver[];
+  getEdges?: GetEdgeFn;
+  formatEdge?: FormatEdgeFn<P>;
+  getIamRoles?: GetIamRoleFn;
 };

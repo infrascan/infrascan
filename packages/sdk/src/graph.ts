@@ -1,160 +1,16 @@
 import jmespath from "jmespath";
-import { GLOBAL_SERVICES, REGIONAL_SERVICES } from "@infrascan/config";
+import minimatch from "minimatch";
 import type {
-  BaseEdgeResolver,
   GraphEdge,
   GraphNode,
   GraphElement,
   GetGlobalStateForServiceFunction,
   ResolveStateForServiceFunction,
 } from "@infrascan/shared-types";
-import { AWS_DEFAULT_REGION } from "./aws/defaults";
-import { generateEdgesForCloudfrontResources } from "./aws/graph/cloudfront";
-import { generateEdgesForECSResources } from "./aws/graph/ecs";
-import { generateEdgesForRoute53Resources } from "./aws/graph/route53";
-import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
-import {
-  evaluateSelector,
-  evaluateSelectorGlobally,
-} from "./aws/helpers/state";
-import {
-  formatEdge,
-  formatS3NodeId,
-  generateEdgesForRole,
-  sanitizeId,
-} from "./aws/graph/graph-utilities";
-
+import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
-
-function formatIdAsNode(
-  serviceKey: string,
-  resourceId: string,
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  metadata: Record<string, any> = {},
-): GraphNode {
-  let formattedId = resourceId;
-  if (serviceKey.toLowerCase() === "s3") {
-    formattedId = formatS3NodeId(resourceId);
-  }
-  return {
-    group: "nodes",
-    id: sanitizeId(formattedId),
-    data: {
-      id: formattedId,
-      type: serviceKey,
-      parent: metadata?.parent,
-      name: metadata?.name,
-    },
-    metadata,
-  };
-}
-
-type GenerateNodesForServiceOptions = {
-  account: string;
-  region: string;
-  serviceName: string;
-  serviceKey: string;
-  nodes: string[];
-  isGlobal: boolean;
-  resolveStateForServiceCall: ResolveStateForServiceFunction;
-};
-
-type SelectedNode = {
-  id: string;
-  parent?: string;
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  [key: string]: any;
-};
-
-async function generateNodesForService({
-  account,
-  region,
-  serviceName,
-  serviceKey,
-  nodes,
-  isGlobal,
-  resolveStateForServiceCall,
-}: GenerateNodesForServiceOptions): Promise<GraphNode[]> {
-  // Track nodes in a map to dedup
-  // Mainly for cases where a node could have more than one valid parent
-  // (e.g. ECS task to Service & Cluster)
-  const accumulatedNodes: Record<string, GraphNode> = {};
-  for (const currentSelector of nodes) {
-    const selectedNodes = await evaluateSelector(
-      account,
-      region,
-      currentSelector,
-      resolveStateForServiceCall,
-    );
-    console.log(account, region, currentSelector);
-    const formattedNodes = selectedNodes.flatMap(
-      ({ id, parent, ...metadata }: SelectedNode) => {
-        const parentId =
-          parent || (isGlobal ? account : `${account}-${region}`);
-        return formatIdAsNode(serviceKey, id, {
-          parent: parentId,
-          service: serviceName,
-          ...metadata,
-        });
-      },
-    );
-    for (const formattedNode of formattedNodes) {
-      if (accumulatedNodes[formattedNode.id] == null) {
-        accumulatedNodes[formattedNode.id] = formattedNode;
-      }
-    }
-  }
-  return Object.values(accumulatedNodes);
-}
-
-type GenerateEdgesForServiceGloballyOptions = {
-  serviceEdges: BaseEdgeResolver[];
-  getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
-};
-
-type EdgeTarget = {
-  name: string;
-  target: string;
-};
-
-/**
- * Pull in global state and use it to generate edges
- *
- * @returns list of edges
- */
-async function generateEdgesForServiceGlobally({
-  serviceEdges,
-  getGlobalStateForServiceAndFunction,
-}: GenerateEdgesForServiceGloballyOptions): Promise<GraphEdge[]> {
-  let edges: GraphEdge[] = [];
-  for (const edge of serviceEdges) {
-    const { state: stateSelector, from, to } = edge;
-
-    const globalState = await evaluateSelectorGlobally(
-      stateSelector,
-      getGlobalStateForServiceAndFunction,
-    );
-    const generatedEdges = globalState.flatMap((state: any) => {
-      const sourceNode: string = jmespath.search(state, from);
-      const target: EdgeTarget | EdgeTarget[] | null = jmespath.search(
-        state,
-        to,
-      );
-      if (Array.isArray(target)) {
-        return target.map((edgeTargetInfo) =>
-          formatEdge(sourceNode, edgeTargetInfo.target, edgeTargetInfo.name),
-        );
-      }
-      if (target) {
-        return formatEdge(sourceNode, target.target, target.name);
-      }
-      return [];
-    });
-
-    edges = edges.concat(generatedEdges);
-  }
-  return edges;
-}
+import type { StoredRole } from "./aws/helpers/iam";
+import type { ServiceNodesMap } from "./index";
 
 /**
  * Parameters required to convert a scan output into an infrastructure graph.
@@ -176,203 +32,231 @@ export type GenerateGraphOptions = {
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
 };
 
-/**
- * Entrypoint function to convert one or more scans into an infrastructure graph.
- *
- * * Example Code:
- * ```ts
- * import { generateGraph, performScan } from "@infrascan/sdk";
- * import {
- *  resolveStateForServiceCall,
- *  getGlobalStateForServiceAndFunction
- * } from "@infrascan/fs-connector";
- *
- *
- * const scanMetadata = await performScan({ ... });
- * generateGraph({
- *  scanMetadata,
- *  resolveStateForServiceCall,
- *  getGlobalStateForServiceAndFunction,
- * }).then(function (graphData) {
- *  console.log("Graph Complete!", graphData);
- * }).catch(function (err) {
- *  console.error("Failed to create graph", err);
- * });
- * ```
- */
-export async function generateGraph(
-  graphOptions: GenerateGraphOptions,
-): Promise<GraphElement[]> {
-  const {
-    scanMetadata,
-    resolveStateForServiceCall,
-    getGlobalStateForServiceAndFunction,
-  } = graphOptions;
-  const iamStorage = new IAMStorage();
-  console.log("Generating graph based on scan metadata", {
-    scanMetadata,
-  });
-  let graphNodes: GraphNode[] = [];
-  // Generate root nodes — Accounts and regions
-  for (const { account, regions } of scanMetadata) {
-    console.log(`Generating Nodes for ${account}`);
-    const accountNode = formatIdAsNode("AWS-Account", account, {
-      name: `AWS Account ${account}`,
-    });
-    graphNodes.push(accountNode);
-    const regionNodes = regions.map((region) =>
-      formatIdAsNode("AWS-Region", `${account}-${region}`, {
-        parent: account,
-        name: `${region} (${account})`,
-      }),
-    );
-    graphNodes = graphNodes.concat(regionNodes);
-    // Only read IAM data from default region (global service)
-    const iamState: StoredRole[] = await getGlobalStateForServiceAndFunction(
-      "IAM",
-      "roles",
-    );
-    hydrateRoleStorage(iamStorage, iamState);
+export { GraphEdge, GraphNode, GraphElement, GetGlobalStateForServiceFunction };
 
-    // Generate nodes for each global service
-    for (const service of GLOBAL_SERVICES) {
-      if (service.nodes) {
-        console.log(`Generating graph nodes for ${service.key} in ${account}`);
-        const initialLength = graphNodes.length;
-        graphNodes = graphNodes.concat(
-          await generateNodesForService({
-            account,
-            region: AWS_DEFAULT_REGION,
-            serviceName: service.service,
-            serviceKey: service.key,
-            nodes: service.nodes,
-            isGlobal: true,
-            resolveStateForServiceCall,
-          }),
-        );
-        console.log(
-          `Generated ${graphNodes.length - initialLength} nodes for ${
-            service.key
-          }`,
-        );
-      }
-    }
-
-    // step through each scaned region
-    for (const region of regions) {
-      console.log(`Generating Nodes for ${account} in ${region}`);
-      // generate nodes for each regional service in this region
-      for (const regionalService of REGIONAL_SERVICES) {
-        if (regionalService.nodes) {
-          console.log(`Generating graph nodes for ${regionalService.key}`);
-          const initialLength = graphNodes.length;
-          graphNodes = graphNodes.concat(
-            await generateNodesForService({
-              account,
-              region,
-              serviceName: regionalService.service,
-              serviceKey: regionalService.key,
-              nodes: regionalService.nodes,
-              isGlobal: false,
-              resolveStateForServiceCall,
-            }),
-          );
-          console.log(
-            `Generated ${graphNodes.length - initialLength} nodes for ${
-              regionalService.key
-            }`,
-          );
-        }
-      }
-    }
-  }
-
-  const ALL_SERVICES = [...GLOBAL_SERVICES, ...REGIONAL_SERVICES];
-  // Step over each service, generate edges for each one based on
-  // global state (all regions, all accounts)
-  let graphEdges: GraphEdge[] = [];
-  for (const service of ALL_SERVICES) {
-    if (service.edges) {
-      console.log(`Generating graph edges for ${service.key}`);
-      const initialLength = graphEdges.length;
-      const serviceEdges = await generateEdgesForServiceGlobally({
-        serviceEdges: service.edges,
-        getGlobalStateForServiceAndFunction,
-      });
-      const cleanedEdges = serviceEdges.filter(
-        ({ data: { source, target } }) => {
-          const sourceNode = graphNodes.find(({ data }) => data.id === source);
-          const targetNode = graphNodes.find(({ data }) => data.id === target);
-          return sourceNode != null && targetNode != null;
-        },
-      );
-      graphEdges = graphEdges.concat(cleanedEdges);
-      console.log(
-        `Generated ${graphEdges.length - initialLength} edges for ${
-          service.key
-        }`,
-      );
-    }
-  }
-
-  // Step over each service, generate edges for the service's roles based on
-  // global state (any region, any account)
-  let roleEdges: GraphEdge[] = [];
-  for (const service of ALL_SERVICES) {
-    if (service.iamRoles) {
-      const initialCount = roleEdges.length;
-      for (const roleSelector of service.iamRoles) {
-        const roleArns = await evaluateSelectorGlobally(
-          roleSelector,
-          getGlobalStateForServiceAndFunction,
-        );
-        for (const { arn, executor } of roleArns) {
-          const generatedEdges = await generateEdgesForRole(
-            iamStorage,
-            arn,
-            executor,
-            getGlobalStateForServiceAndFunction,
-          );
-          if (generatedEdges) {
-            roleEdges = roleEdges.concat(generatedEdges);
-          }
-        }
-      }
-      console.log(
-        `Generated ${roleEdges.length - initialCount} edges for ${
-          service.key
-        }'s IAM roles`,
-      );
-    }
-  }
-
-  // Generate edges manually for services which are too complex to configure in the json file
-  console.log("Manually generating edges for route 53 resources");
-  const route53Edges = await generateEdgesForRoute53Resources(
-    getGlobalStateForServiceAndFunction,
-  );
-  console.log(`Generated ${route53Edges.length} edges for route 53 resources`);
-  console.log("Manually generating edges for cloudfront resources");
-  const cloudfrontEdges = await generateEdgesForCloudfrontResources(
-    getGlobalStateForServiceAndFunction,
-  );
-  console.log(
-    `Generated ${cloudfrontEdges.length} edges for cloudfront resources`,
-  );
-  console.log("Manually generating edges for ECS resources");
-  const ecsEdges = await generateEdgesForECSResources(
-    iamStorage,
-    getGlobalStateForServiceAndFunction,
-  );
-  console.log(`Generated ${ecsEdges.length} edges for ECS resources`);
-
-  // Collapse all graph elems into a single list before returning
-  return (graphNodes as GraphElement[])
-    .concat(graphEdges)
-    .concat(roleEdges)
-    .concat(route53Edges)
-    .concat(cloudfrontEdges)
-    .concat(ecsEdges);
+const AWS_ACCOUNT_SERVICE_KEY = "AWS-Account";
+export function buildAccountNode(account: string): GraphNode {
+  const humanReadableAccountName = `AWS Account ${account}`;
+  return {
+    group: "nodes",
+    id: account,
+    data: {
+      id: account,
+      type: AWS_ACCOUNT_SERVICE_KEY,
+      name: humanReadableAccountName,
+    },
+    metadata: {
+      name: humanReadableAccountName,
+    },
+  };
 }
 
-export { GraphEdge, GraphNode, GraphElement, GetGlobalStateForServiceFunction };
+const AWS_REGION_SERVICE_KEY = "AWS-Region";
+export function buildRegionNode(account: string, region: string): GraphNode {
+  const humanReadableRegionName = `${region} (${account})`;
+  return {
+    group: "nodes",
+    id: region,
+    data: {
+      id: region,
+      type: AWS_REGION_SERVICE_KEY,
+      parent: account,
+      name: humanReadableRegionName,
+    },
+    metadata: {
+      parent: account,
+      name: humanReadableRegionName,
+    },
+  };
+}
+
+export function addGraphElementToMap<T extends GraphElement>(
+  elementMap: Record<string, T>,
+  element: T,
+  serviceNodeIds?: string[],
+) {
+  if (elementMap[element.data.id] == null) {
+    elementMap[element.data.id] = element;
+    serviceNodeIds?.push(element.data.id);
+  } else {
+    console.warn(`Duplicate element found: ${element.data.id}`);
+  }
+}
+
+function getServiceFromArn(arn: string): string | undefined {
+  const [, , service] = arn.split(":");
+  return service;
+}
+
+function formatRoleEdge(
+  source: string,
+  target: string,
+  name: string,
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  statement?: any,
+  roleArn?: string,
+): GraphEdge {
+  const edgeId = `${source}:${target}`;
+  return {
+    group: "edges",
+    id: edgeId,
+    data: {
+      id: edgeId,
+      name,
+      source,
+      target,
+      type: "edge",
+    },
+    metadata: {
+      roleArn,
+      label: name,
+      statement,
+    },
+  };
+}
+
+type PolicyStatement = {
+  label: string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  statements: any[];
+};
+
+export function getStatementsForRole(role: StoredRole) {
+  const inlineStatements: PolicyStatement[] =
+    jmespath.search(
+      role,
+      "inlinePolicies[].{label:PolicyName,statements:PolicyDocument.Statement[]}",
+    ) ?? [];
+  const attachedStatements: PolicyStatement[] =
+    jmespath.search(
+      role,
+      "attachedPolicies[].{label:PolicyName,statements:Document.Statement}",
+    ) ?? [];
+  return {
+    inlineStatements: inlineStatements.flatMap((stmt) => stmt),
+    attachedStatements: attachedStatements.flatMap((stmt) => stmt),
+  };
+}
+
+/**
+ * Given a resource glob in an iam policy, resolves the relevant resources
+ * @param {string} resourceArnFromPolicy
+ * @returns {string[]} relevant arns
+ */
+export async function resolveResourceGlob(
+  resourceArnFromPolicy: string,
+  nodesMap: ServiceNodesMap,
+): Promise<string[]> {
+  if (resourceArnFromPolicy === "*") {
+    // TODO: use actions to infer which resources are impacted by a wildcard
+    // E.g. Actions: [s3:GetObject], Resources: [*]
+    return [];
+  }
+  const resourceService = getServiceFromArn(
+    resourceArnFromPolicy,
+  )?.toLowerCase();
+  if (resourceService == null) {
+    console.warn("Failed to parse service from resource arn");
+    return [];
+  }
+
+  if (nodesMap[resourceService] == null) {
+    console.warn("Unsupported service found in role policy", resourceService);
+    return [];
+  }
+
+  if (resourceArnFromPolicy.includes("*")) {
+    return nodesMap[resourceService]
+      .filter(minimatch.filter(resourceArnFromPolicy, { partial: true }))
+      .filter((nodeId) => nodeId != null) as string[];
+  }
+  return nodesMap[resourceService].filter(
+    (knownArn) => knownArn === resourceArnFromPolicy,
+  );
+}
+
+export type EdgeResource = {
+  label: string;
+  node: string;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  statement: any;
+};
+
+/**
+ * Takes inline or attached policy statements and returns the edges
+ * @param {PolicyStatement[]} policyStatements
+ * @param {string[]} policyStatements.Resource
+ * @returns {string[]}
+ */
+export async function generateEdgesForPolicyStatements(
+  policyStatements: PolicyStatement[],
+  nodesMap: ServiceNodesMap,
+): Promise<EdgeResource[]> {
+  let resources: EdgeResource[] = [];
+  for (const { label, statements } of policyStatements) {
+    for (const statement of statements) {
+      const { Resource } = statement;
+      if (Array.isArray(Resource)) {
+        for (const resourceGlobs of Resource) {
+          const resolvedResources = await resolveResourceGlob(
+            resourceGlobs,
+            nodesMap,
+          );
+          const formattedResources = resolvedResources.map((node) => ({
+            label,
+            node,
+            statement,
+          }));
+          resources = resources.concat(formattedResources);
+        }
+      } else {
+        const matchedResources = await resolveResourceGlob(Resource, nodesMap);
+        const formattedResources = matchedResources.map((node) => ({
+          label,
+          node,
+          statement,
+        }));
+        resources = resources.concat(formattedResources);
+      }
+    }
+  }
+  return resources;
+}
+
+/**
+ * @param {IAMStorage} iamStorage
+ * @param {string} arn
+ * @param {string} executor - the arn of the resource using this role
+ * @param {GetGlobalStateForServiceAndFunction} getGlobalStateForServiceAndFunction
+ * @returns {Object[]} list of edge objects
+ */
+export async function generateEdgesForRole(
+  iamStorage: IAMStorage,
+  arn: string,
+  executor: string,
+  nodesMap: ServiceNodesMap,
+): Promise<GraphEdge[]> {
+  const iamRole = iamStorage.getRole(arn);
+  if (iamRole == null) {
+    console.warn("Unknown role arn given to generate edges");
+    return [];
+  }
+  // Get role's policy statements
+  const { inlineStatements, attachedStatements } =
+    getStatementsForRole(iamRole);
+
+  // Compute edges for inline policy statements
+  const effectedResourcesForInlineStatements =
+    await generateEdgesForPolicyStatements(inlineStatements, nodesMap);
+
+  // Compute edges for attached policy statements
+  const effectedResourcesForAttachedStatements =
+    await generateEdgesForPolicyStatements(attachedStatements, nodesMap);
+
+  // Iterate over the computed edges and format them
+  return effectedResourcesForInlineStatements
+    .concat(effectedResourcesForAttachedStatements)
+    .map(({ label, node, statement }) =>
+      formatRoleEdge(executor, node, label, statement, arn),
+    );
+}

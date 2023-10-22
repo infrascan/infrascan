@@ -1,16 +1,17 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
-import {
+import type {
   GraphElement,
   GraphNode,
-  ScanMetadata,
-  generateGraph,
-} from "@infrascan/sdk";
+} from "@infrascan/shared-types";
+import type { ScanMetadata } from "@infrascan/sdk";
 import {
   CommandLineAction,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
+import Infrascan from "@infrascan/sdk";
+
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
   const scanMetadata = readFileSync(
@@ -27,16 +28,19 @@ function writeGraphOutput(outputPath: string, graphState: GraphElement[]) {
   );
 }
 
-export default class ScanCmd extends CommandLineAction {
+export default class GraphCmd extends CommandLineAction {
   private _outputDirectory: CommandLineStringParameter;
 
-  public constructor() {
+  private infrascanClient: Infrascan;
+
+  public constructor(infrascanClient: Infrascan) {
     super({
       actionName: "graph",
       summary: "Graphs a set of AWS accounts which have been scanned",
       documentation:
         "Reads in the output of an account scan, and generates an infrastructure diagram from the output. The graph is saved to the local filesystem.",
     });
+    this.infrascanClient = infrascanClient;
   }
 
   protected onDefineParameters(): void {
@@ -54,14 +58,11 @@ export default class ScanCmd extends CommandLineAction {
     const scanMetadata = readScanMetadata(
       this._outputDirectory.value as string,
     );
-    const { resolveStateForServiceFunction, getGlobalStateForServiceFunction } =
-      buildFsConnector(this._outputDirectory.value as string);
-
-    const graphData = await generateGraph({
+    const connector = buildFsConnector(this._outputDirectory.value as string);
+    const graphData = await this.infrascanClient.generateGraph(
       scanMetadata,
-      resolveStateForServiceCall: resolveStateForServiceFunction,
-      getGlobalStateForServiceAndFunction: getGlobalStateForServiceFunction,
-    });
+      connector,
+    );
     const graphNodes = graphData.filter(
       (elem) => elem.group === "nodes",
     ) as GraphNode[];

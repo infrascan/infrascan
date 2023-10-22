@@ -1,4 +1,15 @@
 /**
+ * A node returned from a state selector before its been formatted for a graphing library
+ */
+export type SelectedNode = {
+  id: string;
+  name?: string;
+  parent?: string;
+  type?: string;
+  rawState?: any;
+};
+
+/**
  * A node on the graph
  */
 export type GraphNode = {
@@ -44,7 +55,7 @@ export type GraphEdge = {
     label: string;
     roleArn?: string;
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    statement: any;
+    statement?: any;
   };
 };
 
@@ -52,3 +63,8 @@ export type GraphEdge = {
  * Generic type for elements in a graph
  */
 export type GraphElement = GraphNode | GraphEdge;
+
+export type EdgeTarget = {
+  name: string;
+  target: string;
+};

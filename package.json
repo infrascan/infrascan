@@ -1,16 +1,21 @@
 {
   "packageManager": "npm",
   "workspaces": [
+    "apps/*",
+    "aws-scanners/*",
     "internal/*",
-    "packages/*",
-    "apps/*"
+    "packages/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
     "@mxssfd/typedoc-theme": "^1.1.2",
+    "@turbo/gen": "^1.10.13",
     "eslint": "^8.47.0",
+    "tap": "^18.5.2",
+    "tsup": "^7.2.0",
     "turbo": "^1.9.9",
-    "typedoc": "^0.24.8"
+    "typedoc": "^0.24.8",
+    "typescript": "=5.1.6"
   },
   "scripts": {
     "dev": "turbo run dev",
@@ -18,7 +23,7 @@
     "codegen": "turbo run codegen",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/codegen ; cp -r assets/* docs/assets",
+    "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/eslint-config-codegen --exclude internal/codegen ; cp -r assets/* docs/assets",
     "clean": "turbo run clean"
   }
 }
