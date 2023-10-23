@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tool to generate a system map by connecting to your AWS account.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -56,7 +56,7 @@
     "@aws-sdk/client-sts": "^3.428.0",
     "@aws-sdk/config-resolver": "3.369.0",
     "@infrascan/config": "^0.1.0",
-    "@infrascan/core": "^0.1.0",
+    "@infrascan/core": "^0.2.0",
     "jmespath": "^0.16.0",
     "minimatch": "^5.1.0"
   },
