@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Prepare action
+        run: |
+          npm i -w internal/release-scanners
       - name: Find Candidate
         id: find-candidate
         uses: ./internal/release-scanners
