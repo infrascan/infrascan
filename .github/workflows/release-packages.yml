@@ -9,6 +9,10 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs: 
   find-release-candidate:
     runs-on: ubuntu-latest
+    outputs:
+      candidate_found: ${{ steps.find-candidate.outputs.release-candidate-found }}
+      candidate_package: ${{ steps.find-candidate.outputs.candidate-package }}
+      candidate_workspace: ${{ steps.find-candidate.outputs.candidate-workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,11 +27,6 @@ jobs:
         uses: ./internal/release-scanners
         with:
           release-tag: ${{ github.ref }}
-      - name: Set output
-        run: |
-          echo "candidate_found=${{ steps.find-candidate.outputs.release-candidate-found }}" >> "$GITHUB_OUTPUT"
-          echo "candidate_package=${{ steps.find-candidate.outputs.candidate-package }}" >> "$GITHUB_OUTPUT"
-          echo "candidate_workspace=${{ steps.find-candidate.outputs.candidate-workspace }}" >> "$GITHUB_OUTPUT"
     
   publish-candidate:
     needs: [ find-release-candidate ]
