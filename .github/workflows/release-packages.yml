@@ -7,40 +7,28 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs: 
-  publish-cli:
-    if: ${{ contains(github.ref,'@infrascan/cli') }}
-    uses: ./.github/workflows/release.yml
-    with:
-      package: cli
-      workspace: packages/cli
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-config:
-    if: ${{ contains(github.ref, '@infrascan/config') }}
-    uses: ./.github/workflows/release.yml
-    with:
-      package: config
-      workspace: packages/config
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-fs-connector:
-    if: ${{ contains(github.ref, '@infrascan/fs-connector') }}
-    uses: ./.github/workflows/release.yml
-    with:
-      package: fs-connector
-      workspace: packages/fs-connector
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-sdk:
-    if: ${{ contains(github.ref, '@infrascan/sdk') }}
-    uses: ./.github/workflows/release.yml
-    with:
-      package: sdk
-      workspace: packages/sdk
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
+  find-release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Find Candidate
+        id: find-candidate
+        uses: ./internal/release-scanners
+        with:
+          release-tag: ${{ github.ref }}
+      - name: Set output
+        run: |
+          echo "candidate_found=${{ steps.find-candidate.outputs.release-candidate-found }}" >> "$GITHUB_OUTPUT"
+          echo "candidate_package=${{ steps.find-candidate.outputs.candidate-package }}" >> "$GITHUB_OUTPUT"
+          echo "candidate_workspace=${{ steps.find-candidate.outputs.candidate-workspace }}" >> "$GITHUB_OUTPUT"
     
+  publish-candidate:
+    needs: [ find-release-candidate ]
+    if: ${{ needs.find-release-candidate.outputs.candidate_found }}
+    uses: ./.github/workflows/release.yml
+    with:
+      package: ${{ needs.find-release-candidate.outputs.candidate_package }}
+      workspace: ${{ needs.find-release-candidate.outputs.candidate_workspace }}
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

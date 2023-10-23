@@ -1,0 +1,16 @@
+name: 'Release Scanners'
+description: 'Loop through the infrascan scanners to and release any relevant packages'
+inputs:
+  release-tag:
+    description: 'The pushed tag corresponding to the package to release'
+    required: true
+outputs:
+  release-candidate-found:
+    description: 'true if a package was found for this release'
+  candidate-package:
+    description: 'The package to release'
+  candidate-workspace:
+    description: 'The workspace of the package'
+runs:
+  using: 'node20'
+  main: 'index.mjs'
