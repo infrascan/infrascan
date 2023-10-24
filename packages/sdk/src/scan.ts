@@ -5,9 +5,6 @@ import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import type {
   AwsContext,
   Connector,
-  ServiceScanCompleteCallbackFn,
-  ResolveStateForServiceFunction,
-  Service,
   ServiceModule,
 } from "@infrascan/shared-types";
 import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
@@ -40,34 +37,6 @@ export async function getAllRegions(
   }
   return awsRegions;
 }
-
-// All supported services
-export type ServiceList = Service[];
-
-// Parameters required to perform a scan
-export type PerformScanOptions = {
-  /**
-   * An [AWSCredentialIdentityProvider](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-smithy-types/TypeAlias/AwsCredentialIdentityProvider/) instance for
-   * the account to be scanned
-   */
-  credentials: AwsCredentialIdentityProvider;
-  /**
-   * Callback to persisting scan state
-   */
-  onServiceScanComplete: ServiceScanCompleteCallbackFn;
-  /**
-   * Callback for querying scan state
-   */
-  resolveStateForServiceCall: ResolveStateForServiceFunction;
-  /**
-   * An optional list of regions to scan. Defaults to all available regions for an account.
-   */
-  regions?: string[];
-  /**
-   * An optional list of services to scan. Defaults to all defined services within Infrascan's Config.
-   */
-  services?: ServiceList;
-};
 
 /**
  * Returned type from a call to perform scan
@@ -104,5 +73,3 @@ export async function scanService(
     );
   }
 }
-
-export { ServiceScanCompleteCallbackFn, ResolveStateForServiceFunction };

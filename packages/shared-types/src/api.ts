@@ -1,9 +1,7 @@
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 
-import type { Service } from "./services";
-import type { BaseEdgeResolver } from "./config";
 import type { GraphEdge, GraphNode } from "./graph";
-
+import type { BaseEdgeResolver } from "./config";
 
 /**
  * Callback to store state from a specific function call
@@ -22,7 +20,7 @@ export type ServiceScanCompleteCallbackFn = (
   /**
    * The service being scanned
    */
-  service: Service | "IAM",
+  service: string,
   /**
    * The specific function called during scanning
    */
@@ -53,7 +51,7 @@ export type ResolveStateForServiceFunction = (
   /**
    * The scanned service e.g. Lambda
    */
-  service: Service,
+  service: string,
   /**
    * The specific function called during the scan e.g. GetFunction
    */
@@ -70,7 +68,7 @@ export interface Connector {
   onServiceScanCompleteCallback: ServiceScanCompleteCallbackFn;
   resolveStateForServiceFunction: ResolveStateForServiceFunction;
   getGlobalStateForServiceFunction: GetGlobalStateForServiceFunction;
-};
+}
 
 type ClientBuilder<T, P extends Provider> = (
   credentials: AwsCredentialIdentityProvider,
@@ -80,16 +78,15 @@ type ClientBuilder<T, P extends Provider> = (
 type GetterFn<T, P extends Provider> = (
   client: T,
   stateConnector: Connector,
-  context: ProviderContextMap[P]
+  context: ProviderContextMap[P],
 ) => Promise<void>;
 
 type GetNodeFn<T extends Provider> = (
   stateConnector: Connector,
-  context: ProviderContextMap[T]
+  context: ProviderContextMap[T],
 ) => Promise<GraphNode[]>;
 
 type GetEdgeFn = (stateConnector: Connector) => Promise<GraphEdge[]>;
-
 
 export type Provider = "aws";
 
@@ -100,18 +97,21 @@ export type AwsContext = {
 };
 
 type ProviderContextMap = {
-  aws: AwsContext
-}
+  aws: AwsContext;
+};
 
 export type ProviderContext<T extends Provider> = {
   provider: T;
   context: ProviderContextMap[T];
 };
 
-type FormatNodeFn<P extends Provider> = (node: GraphNode, context: ProviderContextMap[P]) => GraphNode;
+type FormatNodeFn<P extends Provider> = (
+  node: GraphNode,
+  context: ProviderContextMap[P],
+) => GraphNode;
 type FormatEdgeFn<P extends Provider> = (
   node: GraphEdge,
-  context: ProviderContextMap[P]
+  context: ProviderContextMap[P],
 ) => GraphEdge;
 
 export type EntityRoleData = {
@@ -135,4 +135,4 @@ export interface ServiceModule<T, P extends Provider> {
   getEdges?: GetEdgeFn;
   formatEdge?: FormatEdgeFn<P>;
   getIamRoles?: GetIamRoleFn;
-};
+}
