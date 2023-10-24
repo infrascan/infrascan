@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-sns-scanner",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Infrascan scanner definition for AWS SNS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -54,14 +54,14 @@
   "devDependencies": {
     "@aws-sdk/credential-providers": "^3.428.0",
     "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/fs-connector": "^0.2.1",
-    "@infrascan/shared-types": "^0.2.1",
+    "@infrascan/fs-connector": "^0.2.0",
+    "@infrascan/shared-types": "^0.2.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
     "tsconfig": "^0.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "3.428.0",
-    "@infrascan/core": "0.2.1"
+    "@infrascan/core": "0.2.0"
   }
 }

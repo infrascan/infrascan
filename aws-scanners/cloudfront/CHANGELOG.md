@@ -1,12 +1,5 @@
 # @infrascan/aws-cloudfront-scanner
 
-## 0.2.1
-
-### Patch Changes
-
-- Updated dependencies [[`a58495d`](https://github.com/infrascan/infrascan/commit/a58495d306bee7cdd4a4c27f1a43e296336be29d)]:
-  - @infrascan/core@0.2.1
-
 ## 0.2.0
 
 ### Minor Changes
