@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/fs-connector",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Connector for the Infrascan SDK to read and write state to the local filesystem",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -38,7 +38,7 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.2.1",
+    "@infrascan/shared-types": "^0.2.0",
     "eslint-config-custom": "*",
     "tsconfig": "*",
     "typescript": "^5.1.6"
