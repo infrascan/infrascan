@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/shared-types",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Shared types for multiple infrascan packages",
   "main": "src/index.ts",
   "scripts": {
