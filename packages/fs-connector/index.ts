@@ -2,7 +2,7 @@ import { existsSync } from "fs";
 import { mkdir, readFile, readdir, writeFile } from "fs/promises";
 import { join, resolve } from "path";
 import { filter as buildGlobFilter } from "minimatch";
-import type { Connector, Service } from "@infrascan/shared-types";
+import type { Connector } from "@infrascan/shared-types";
 
 type FsError = {
   code?: string;
@@ -120,7 +120,7 @@ export default function buildFsConnector(
   async function onServiceScanCompleteCallback(
     account: string,
     region: string,
-    service: Service | "IAM",
+    service: string,
     functionName: string,
     functionState: any,
   ): Promise<void> {
@@ -145,7 +145,7 @@ export default function buildFsConnector(
   async function resolveStateForServiceFunction(
     account: string,
     region: string,
-    service: Service,
+    service: string,
     functionName: string,
   ): Promise<any> {
     const filePath = buildFilePathForServiceCall(

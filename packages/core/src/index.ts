@@ -2,7 +2,6 @@ import jmespath from "jmespath";
 
 import type {
   GenericParameterResolver,
-  Service,
   Connector,
   EdgeTarget,
   GraphEdge,
@@ -23,7 +22,7 @@ export async function evaluateSelector(
   const state = await connector.resolveStateForServiceFunction(
     account,
     region,
-    service as Service,
+    service,
     functionCall,
   );
   return jmespath.search(state, selector.join("|"));
