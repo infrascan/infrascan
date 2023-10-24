@@ -35,9 +35,6 @@
     "@rushstack/ts-command-line": "^4.15.2",
     "minimatch": "^6.1.6"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "devDependencies": {
     "@aws-sdk/types": "3.428.0",
     "@infrascan/shared-types": "^0.2.0",
