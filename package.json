@@ -25,7 +25,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "docs": "typedoc --exclude internal/tsconfig --exclude internal/eslint-config-custom --exclude internal/eslint-config-codegen --exclude internal/codegen ; cp -r assets/* docs/assets",
-    "clean": "turbo run clean",
-    "release": "turbo run test ; changesets publish"
+    "clean": "turbo run clean ; rm -rf node_modules",
+    "release": "turbo run test ; npx changeset publish"
   }
 }
