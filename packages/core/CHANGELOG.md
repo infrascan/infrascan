@@ -1,11 +1,5 @@
 # @infrascan/core
 
-## 0.2.1
-
-### Patch Changes
-
-- [#30](https://github.com/infrascan/infrascan/pull/30) [`88fb35e`](https://github.com/infrascan/infrascan/commit/88fb35e4e495e698d81511a02e476ce61b999516) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Simplify shared-types package - remove unneeded aws client dependencies. Patch downstream packages.
-
 ## 0.2.0
 
 ### Minor Changes
