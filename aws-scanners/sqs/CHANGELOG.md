@@ -1,5 +1,12 @@
 # @infrascan/aws-sqs-scanner
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`f7700f1`](https://github.com/infrascan/infrascan/commit/f7700f11568e413ba2ccefc990fc683bdfdeb01d)]:
+  - @infrascan/core@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

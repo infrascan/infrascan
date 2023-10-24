@@ -1,5 +1,11 @@
 # @infrascan/shared-types
 
+## 0.2.1
+
+### Patch Changes
+
+- [#36](https://github.com/infrascan/infrascan/pull/36) [`f7700f1`](https://github.com/infrascan/infrascan/commit/f7700f11568e413ba2ccefc990fc683bdfdeb01d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Simplify shared-types package - remove unneeded aws client dependencies. Patch downstream packages.
+
 ## 0.2.0
 
 ### Minor Changes
