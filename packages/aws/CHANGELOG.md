@@ -1,5 +1,27 @@
 # @infrascan/aws
 
+## 0.2.1
+
+### Patch Changes
+
+- [#41](https://github.com/infrascan/infrascan/pull/41) [`c84fa87`](https://github.com/infrascan/infrascan/commit/c84fa87fa66fef97533ea597f431c8fe135cf1b2) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update documentation and add missing keywords to package.json
+
+- Updated dependencies [[`c84fa87`](https://github.com/infrascan/infrascan/commit/c84fa87fa66fef97533ea597f431c8fe135cf1b2)]:
+  - @infrascan/aws-elastic-load-balancing-scanner@0.2.2
+  - @infrascan/aws-cloudwatch-logs-scanner@0.2.2
+  - @infrascan/aws-api-gateway-scanner@0.2.2
+  - @infrascan/aws-autoscaling-scanner@0.2.2
+  - @infrascan/aws-cloudfront-scanner@0.2.2
+  - @infrascan/aws-dynamodb-scanner@0.2.2
+  - @infrascan/aws-route53-scanner@0.2.2
+  - @infrascan/aws-lambda-scanner@0.2.2
+  - @infrascan/aws-ec2-scanner@0.2.2
+  - @infrascan/aws-ecs-scanner@0.2.2
+  - @infrascan/aws-rds-scanner@0.2.2
+  - @infrascan/aws-sns-scanner@0.2.2
+  - @infrascan/aws-sqs-scanner@0.2.2
+  - @infrascan/aws-s3-scanner@0.2.2
+
 ## 0.2.0
 
 ### Minor Changes

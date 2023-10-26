@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A convenience package to register all AWS Scanners with an instance of the Infrascan SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -54,23 +54,23 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/sdk": "^0.2.0",
+    "@infrascan/sdk": "^0.2.2",
     "tsconfig": "^0.0.0"
   },
   "dependencies": {
-    "@infrascan/aws-api-gateway-scanner": "^0.2.0",
-    "@infrascan/aws-autoscaling-scanner": "^0.2.0",
-    "@infrascan/aws-cloudfront-scanner": "^0.2.0",
-    "@infrascan/aws-cloudwatch-logs-scanner": "^0.2.0",
-    "@infrascan/aws-dynamodb-scanner": "^0.2.0",
-    "@infrascan/aws-ec2-scanner": "^0.2.0",
-    "@infrascan/aws-ecs-scanner": "^0.2.0",
-    "@infrascan/aws-elastic-load-balancing-scanner": "^0.2.0",
-    "@infrascan/aws-lambda-scanner": "^0.2.0",
-    "@infrascan/aws-rds-scanner": "^0.2.0",
-    "@infrascan/aws-route53-scanner": "^0.2.0",
-    "@infrascan/aws-s3-scanner": "^0.2.0",
-    "@infrascan/aws-sns-scanner": "^0.2.0",
-    "@infrascan/aws-sqs-scanner": "^0.2.0"
+    "@infrascan/aws-api-gateway-scanner": "^0.2.2",
+    "@infrascan/aws-autoscaling-scanner": "^0.2.2",
+    "@infrascan/aws-cloudfront-scanner": "^0.2.2",
+    "@infrascan/aws-cloudwatch-logs-scanner": "^0.2.2",
+    "@infrascan/aws-dynamodb-scanner": "^0.2.2",
+    "@infrascan/aws-ec2-scanner": "^0.2.2",
+    "@infrascan/aws-ecs-scanner": "^0.2.2",
+    "@infrascan/aws-elastic-load-balancing-scanner": "^0.2.2",
+    "@infrascan/aws-lambda-scanner": "^0.2.2",
+    "@infrascan/aws-rds-scanner": "^0.2.2",
+    "@infrascan/aws-route53-scanner": "^0.2.2",
+    "@infrascan/aws-s3-scanner": "^0.2.2",
+    "@infrascan/aws-sns-scanner": "^0.2.2",
+    "@infrascan/aws-sqs-scanner": "^0.2.2"
   }
 }

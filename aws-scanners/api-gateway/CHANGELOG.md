@@ -1,5 +1,14 @@
 # @infrascan/aws-api-gateway-scanner
 
+## 0.2.2
+
+### Patch Changes
+
+- [#41](https://github.com/infrascan/infrascan/pull/41) [`c84fa87`](https://github.com/infrascan/infrascan/commit/c84fa87fa66fef97533ea597f431c8fe135cf1b2) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update documentation and add missing keywords to package.json
+
+- Updated dependencies [[`c84fa87`](https://github.com/infrascan/infrascan/commit/c84fa87fa66fef97533ea597f431c8fe135cf1b2)]:
+  - @infrascan/core@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
