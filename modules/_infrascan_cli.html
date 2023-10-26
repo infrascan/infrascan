@@ -16,6 +16,20 @@
 <li><a href="_infrascan_cli.html">@infrascan/cli</a></li></ul>
 <h1>Module @infrascan/cli</h1></div>
 <section class="tsd-panel tsd-typography"><a id="md:infrascancli" class="tsd-anchor"></a><h1><a href="#md:infrascancli">@infrascan/cli</a></h1><p>The Infrascan CLI is a thin wrapper around the Infrascan SDK which outputs its state to the local file system.</p>
+<p>The Infrascan CLI exposes two commands: scan and graph. A scan will read in all of the information that it can from your AWS account, and write it to your local file system. You can then run the graph command to take that scan output and convert it into an infrastructure diagram. </p>
+<a id="md:prerequisite" class="tsd-anchor"></a><h2><a href="#md:prerequisite">Prerequisite</a></h2><p>Infrascan requires read access to your AWS account to generate its graphs. Read access can be given by specifying a profile in your <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html">AWS credentials file</a>, or by using the <a href="https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/setting-credentials-node.html">default credential provider chain</a> and providing a role to assume.</p>
+<a id="md:quickstart" class="tsd-anchor"></a><h2><a href="#md:quickstart">Quickstart</a></h2><a id="md:scan" class="tsd-anchor"></a><h3><a href="#md:scan">Scan</a></h3><p>To run a scan command, we first need to create the config file. The config file will tell the CLI which regions to scan, and how to authenticate with AWS. The config file format is:</p>
+<pre><code class="language-json"><span class="hl-1">[</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-7">&quot;regions&quot;</span><span class="hl-1">: [</span><span class="hl-3">&quot;eu-west-1&quot;</span><span class="hl-1">, </span><span class="hl-3">&quot;us-east-1&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">    </span><span class="hl-7">&quot;profile&quot;</span><span class="hl-1">: </span><span class="hl-3">&quot;infrascan-read-access-staging&quot;</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-7">&quot;regions&quot;</span><span class="hl-1">: [</span><span class="hl-3">&quot;eu-west-1&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">    </span><span class="hl-7">&quot;roleToAssume&quot;</span><span class="hl-1">: </span><span class="hl-3">&quot;arn:aws:iam::000000000000:role/InfrascanReadOnlyRolePreProd&quot;</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">]</span>
+</code><button>Copy</button></pre>
+<p>The scan command takes our config file and an output directory as arguments. The output directory is where all of the state generated during the scan will be written. This will be used by our graph command to produce an infrastructure diagram.</p>
+<pre><code class="language-sh"><span class="hl-6">infrascan</span><span class="hl-1"> </span><span class="hl-3">scan</span><span class="hl-1"> </span><span class="hl-4">-c</span><span class="hl-1"> </span><span class="hl-3">config.json</span><span class="hl-1"> </span><span class="hl-4">-o</span><span class="hl-1"> </span><span class="hl-3">./state</span>
+</code><button>Copy</button></pre>
+<p>The state directory should contain JSON files in the format of: <code>&lt;AccountID&gt;-&lt;Region&gt;-&lt;Service&gt;-&lt;FunctionCalled&gt;.json</code>.</p>
+<a id="md:graph" class="tsd-anchor"></a><h3><a href="#md:graph">Graph</a></h3><p>To convert the scan output into a graph, we run the graph command passing the scan output directory as our input:</p>
+<pre><code class="language-sh"><span class="hl-6">infrascan</span><span class="hl-1"> </span><span class="hl-3">graph</span><span class="hl-1"> </span><span class="hl-4">--input</span><span class="hl-1"> </span><span class="hl-3">./state</span>
+</code><button>Copy</button></pre>
+<p>The graph output will be saved to a <code>graph.json</code> file in the state directory. The graph file contains an array of JSON objects representing the Nodes and Edges of the graph. This is formatted to be used with <a href="https://js.cytoscape.org/">cytoscape</a>, however it can be translated into any graphing library (Note: the graphs usually require on being able to create parent-child relationships)</p>
+<p>You can view your graph by pasting the contents of your <code>graph.json</code> file into: <a href="https://render.infrascan.io">render.infrascan.io</a>.</p>
 </section></div>
 <div class="col-sidebar">
 <div class="page-menu">
@@ -38,7 +52,15 @@
 <ul>
 <li>
 <ul>
-<li><a href="#md:infrascancli"><span>@infrascan/cli</span></a></li></ul></li></ul></div></details></div>
+<li><a href="#md:infrascancli"><span>@infrascan/cli</span></a></li>
+<li>
+<ul>
+<li><a href="#md:prerequisite"><span>Prerequisite</span></a></li>
+<li><a href="#md:quickstart"><span>Quickstart</span></a></li>
+<li>
+<ul>
+<li><a href="#md:scan"><span>Scan</span></a></li>
+<li><a href="#md:graph"><span>Graph</span></a></li></ul></li></ul></li></ul></li></ul></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Infrascan</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">

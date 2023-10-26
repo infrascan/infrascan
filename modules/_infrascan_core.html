@@ -15,24 +15,8 @@
 <li><a href="../index.html">Infrascan</a></li>
 <li><a href="_infrascan_core.html">@infrascan/core</a></li></ul>
 <h1>Module @infrascan/core</h1></div>
-<section class="tsd-panel tsd-typography"><a id="md:infrascan" class="tsd-anchor"></a><h1><a href="#md:infrascan">Infrascan</a></h1><p>Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.</p>
-<p><img src="./assets/infrastructure-diagram.png" alt="Example Infrastructure map of an AWS Account"></p>
-<p>This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.</p>
-<a id="md:project-structure" class="tsd-anchor"></a><h2><a href="#md:project-structure">Project Structure</a></h2><p>The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. </p>
-<a id="md:apps" class="tsd-anchor"></a><h3><a href="#md:apps">apps</a></h3><ul>
-<li><code>render</code> — a playground for quickly visualizing Infrascan graph outputs, available at <a href="https://render.infrascan.io">render.infrascan.io</a>.</li>
-</ul>
-<a id="md:internal" class="tsd-anchor"></a><h3><a href="#md:internal">internal</a></h3><ul>
-<li><code>codegen</code> — a small <a href="https://github.com/dsherret/ts-morph">ts-morph</a> project which converts the per service configs from <code>@infrascan/config</code> into typescript modules.</li>
-<li><code>shared-types</code> — a set of type definitions shared across multiple packages</li>
-<li><code>tsconfig</code> — the base tsconfig definition for the typescript projects in this repo, as recommended by <a href="https://turbo.build/repo/docs/handbook/linting/typescript#sharing-tsconfigjson">turbo build</a>.</li>
-<li><code>eslint-config-custom</code> — the eslint config for the projects in this repo. Enforces airbnb style guide with some pre-project overrides where relevant.</li>
-</ul>
-<a id="md:packages" class="tsd-anchor"></a><h3><a href="#md:packages">packages</a></h3><ul>
-<li><code>cli</code> — a minimal CLI to scan and graph your infrastructure, saving output to your local FS.</li>
-<li><code>config</code> — definitions of the per service scanners and graphers, used to generate the SDK.</li>
-<li><code>sdk</code> — the SDK used to generate scans and graphs of your AWS Infrastructure.</li>
-</ul>
+<section class="tsd-panel tsd-typography"><a id="md:infrascancore" class="tsd-anchor"></a><h1><a href="#md:infrascancore">@infrascan/core</a></h1><p>Library of utils shared across many Infrascan packages, mainly for filtering or mutating state. </p>
+<p>You probably want <a href="../sdk">@infrascan/sdk</a> or <a href="../cli">@infrascan/cli</a>.</p>
 </section></div>
 <div class="col-sidebar">
 <div class="page-menu">
@@ -55,15 +39,7 @@
 <ul>
 <li>
 <ul>
-<li><a href="#md:infrascan"><span>Infrascan</span></a></li>
-<li>
-<ul>
-<li><a href="#md:project-structure"><span>Project <wbr/>Structure</span></a></li>
-<li>
-<ul>
-<li><a href="#md:apps"><span>apps</span></a></li>
-<li><a href="#md:internal"><span>internal</span></a></li>
-<li><a href="#md:packages"><span>packages</span></a></li></ul></li></ul></li></ul></li></ul></div></details></div>
+<li><a href="#md:infrascancore"><span>@infrascan/core</span></a></li></ul></li></ul></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Infrascan</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">

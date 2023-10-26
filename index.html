@@ -12,10 +12,43 @@
 <div class="col-content">
 <div class="tsd-page-title">
 <h2>Infrascan</h2></div>
-<div class="tsd-panel tsd-typography"><a id="md:infrascan" class="tsd-anchor"></a><h1><a href="#md:infrascan">Infrascan</a></h1><p>Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.</p>
+<div class="tsd-panel tsd-typography"><h1 align="center">Infrascan</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@infrascan/sdk" alt="@infrascan/sdk version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fsdk" />
+  </a>
+  <a href="https://www.npmjs.com/package/@infrascan/cli" alt="@infrascan/cli version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fcli" />
+  </a>
+</p>
+
+<p>Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.</p>
 <p><img src="./assets/infrastructure-diagram.png" alt="Example Infrastructure map of an AWS Account"></p>
 <p>This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.</p>
-<a id="md:project-structure" class="tsd-anchor"></a><h2><a href="#md:project-structure">Project Structure</a></h2><p>The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. </p>
+<a id="md:coverage" class="tsd-anchor"></a><h2><a href="#md:coverage">Coverage</a></h2><p>This project aims to be able to generate arbitrary infrastructure diagrams in most AWS deployments. This will always be a work in progress. Current covered AWS Services are listed below.</p>
+<details>
+  <summary>Supported Services</summary>
+
+<ul>
+<li>Api-Gateway</li>
+<li>Autoscaling</li>
+<li>Cloudfront</li>
+<li>Cloudwatch-logs</li>
+<li>DynamoDB</li>
+<li>EC2</li>
+<li>ECS</li>
+<li>Elastic Load Balancing</li>
+<li>Lambda</li>
+<li>RDS </li>
+<li>Route53</li>
+<li>S3</li>
+<li>SNS</li>
+<li>SQS</details></li>
+</ul>
+<a id="md:design-wip" class="tsd-anchor"></a><h2><a href="#md:design-wip">Design (wip)</a></h2><p>To simplify adding support for additional services, the logic for scanning any one service is encapsulated in a Scanner. Each Scanner implements a <code>ServiceModule</code> interface which allows the SDK to create clients for the service, pull state, and generate graph elements.</p>
+<p>The standard structure over every scanner also allows the majority of the code to be generated based on a simple config file. The codegen project can be found in the private <a href="./aws-scanners/codegen">@infrascan/codegen package</a>.</p>
+<a id="md:project-directory" class="tsd-anchor"></a><h2><a href="#md:project-directory">Project Directory</a></h2><p>The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. </p>
 <a id="md:apps" class="tsd-anchor"></a><h3><a href="#md:apps">apps</a></h3><ul>
 <li><code>render</code> — a playground for quickly visualizing Infrascan graph outputs, available at <a href="https://render.infrascan.io">render.infrascan.io</a>.</li>
 </ul>
@@ -52,10 +85,11 @@
 <ul>
 <li>
 <ul>
-<li><a href="#md:infrascan"><span>Infrascan</span></a></li>
+<li><a href="#md:coverage"><span>Coverage</span></a></li>
 <li>
 <ul>
-<li><a href="#md:project-structure"><span>Project <wbr/>Structure</span></a></li>
+<li><a href="#md:design-wip"><span>Design (wip)</span></a></li>
+<li><a href="#md:project-directory"><span>Project <wbr/>Directory</span></a></li>
 <li>
 <ul>
 <li><a href="#md:apps"><span>apps</span></a></li>
