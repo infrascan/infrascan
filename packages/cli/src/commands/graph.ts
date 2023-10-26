@@ -45,11 +45,11 @@ export default class GraphCmd extends CommandLineAction {
 
   protected onDefineParameters(): void {
     this._outputDirectory = this.defineStringParameter({
-      parameterLongName: "--output",
-      parameterShortName: "-o",
-      argumentName: "PATH_TO_STATE_OUTPUT",
+      parameterLongName: "--input",
+      parameterShortName: "-i",
+      argumentName: "PATH_TO_STATE",
       description:
-        "Location to read scan output from. This should be the same as the directory given to the scan command.",
+        "Location to read scan state from. This should be the same as the directory given to the scan command.",
       defaultValue: "./state",
     });
   }

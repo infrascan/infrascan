@@ -1,4 +1,13 @@
-# Infrascan
+<h1 align="center">Infrascan</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@infrascan/sdk" alt="@infrascan/sdk version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fsdk" />
+  </a>
+  <a href="https://www.npmjs.com/package/@infrascan/cli" alt="@infrascan/cli version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fcli" />
+  </a>
+</p>
 
 Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.
 
@@ -6,7 +15,36 @@ Infrascan is a set of open-source tools to help you make sense of your cloud inf
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
 
-## Project Structure
+## Coverage
+
+This project aims to be able to generate arbitrary infrastructure diagrams in most AWS deployments. This will always be a work in progress. Current covered AWS Services are listed below.
+
+<details>
+  <summary>Supported Services</summary>
+
+- Api-Gateway
+- Autoscaling
+- Cloudfront
+- Cloudwatch-logs
+- DynamoDB
+- EC2
+- ECS
+- Elastic Load Balancing
+- Lambda
+- RDS 
+- Route53
+- S3
+- SNS
+- SQS
+</details>
+
+## Design (wip)
+
+To simplify adding support for additional services, the logic for scanning any one service is encapsulated in a Scanner. Each Scanner implements a `ServiceModule` interface which allows the SDK to create clients for the service, pull state, and generate graph elements.
+
+The standard structure over every scanner also allows the majority of the code to be generated based on a simple config file. The codegen project can be found in the private [@infrascan/codegen package](./aws-scanners/codegen).
+
+## Project Directory
 
 The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. 
 

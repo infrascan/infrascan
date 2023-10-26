@@ -43,7 +43,9 @@ function resolveCredentials(
       },
     });
   }
-  throw new Error();
+  throw new Error(
+    "An error occurred while resolving credentials for Infrascan — no profile or role given.",
+  );
 }
 
 export default class ScanCmd extends CommandLineAction {
@@ -95,7 +97,7 @@ export default class ScanCmd extends CommandLineAction {
       const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
-        { regions }
+        { regions },
       );
       metadata.push(accountMetadata);
     }
