@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.js",
   "scripts": {
