@@ -44,7 +44,12 @@
     "type": "git",
     "url": "git+https://github.com/infrascan/infrascan.git"
   },
-  "keywords": [],
+  "keywords": [
+    "RDS",
+    "AWS",
+    "Infrascan",
+    "Scanner"
+  ],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "bugs": {

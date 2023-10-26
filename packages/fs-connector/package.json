@@ -34,7 +34,13 @@
     ],
     "target": "node18"
   },
-  "keywords": [],
+  "keywords": [
+    "AWS",
+    "Infrastructure Diagram",
+    "Infrastructure Graph",
+    "Cloud Infrastructure",
+    "Connector"
+  ],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {

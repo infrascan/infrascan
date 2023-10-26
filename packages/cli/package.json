@@ -2,7 +2,7 @@
   "name": "@infrascan/cli",
   "version": "0.2.1",
   "description": "Thin command line wrapper around the infrascan sdk",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "scripts": {
     "build": "rm -rf dist ; tsup",
     "lint": "tsc --noEmit ; eslint .",
@@ -20,13 +20,19 @@
     "target": "node18"
   },
   "bin": {
-    "infrascan": "dist/index.js"
+    "infrascan": "./dist/index.mjs"
   },
   "files": [
     "dist"
   ],
   "types": "dist/index.d.ts",
-  "keywords": [],
+  "keywords": [
+    "AWS",
+    "Infrastructure Diagram",
+    "Infrastructure Graph",
+    "Cloud Infrastructure",
+    "CLI"
+  ],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "dependencies": {

@@ -6,7 +6,9 @@
   "scripts": {
     "lint": "tsc --noEmit ; eslint ."
   },
-  "keywords": [],
+  "keywords": [
+    "Infrascan Typings"
+  ],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {

@@ -41,7 +41,12 @@
     "type": "git",
     "url": "git+https://github.com/infrascan/infrascan.git"
   },
-  "keywords": [],
+  "keywords": [
+    "AWS",
+    "Cloud Infrastructure",
+    "Infrastructure Diagram",
+    "Scanner"
+  ],
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "bugs": {
