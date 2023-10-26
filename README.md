@@ -6,7 +6,18 @@ Infrascan is a set of open-source tools to help you make sense of your cloud inf
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
 
-## Project Structure
+## Quicklinks
+
+- [Design](#design-wip)
+- [Repo Directory](#project-directory)
+
+## Design (wip)
+
+To simplify adding support for additional services, the logic for scanning any one service is encapsulated in a Scanner. Each Scanner implements a `ServiceModule` interface which allows the SDK to create clients for the service, pull state, and generate graph elements.
+
+The standard structure over every scanner also allows the majority of the code to be generated based on a simple config file. The codegen project can be found in the private [@infrascan/codegen package](./aws-scanners/codegen).
+
+## Project Directory
 
 The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. 
 
