@@ -15,6 +15,29 @@ Infrascan is a set of open-source tools to help you make sense of your cloud inf
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
 
+## Coverage
+
+This project aims to be able to generate arbitrary infrastructure diagrams in most AWS deployments. This will always be a work in progress. Current covered AWS Services are listed below.
+
+<details>
+  <summary>Supported Services</summary>
+
+- Api-Gateway
+- Autoscaling
+- Cloudfront
+- Cloudwatch-logs
+- DynamoDB
+- EC2
+- ECS
+- Elastic Load Balancing
+- Lambda
+- RDS 
+- Route53
+- S3
+- SNS
+- SQS
+</details>
+
 ## Design (wip)
 
 To simplify adding support for additional services, the logic for scanning any one service is encapsulated in a Scanner. Each Scanner implements a `ServiceModule` interface which allows the SDK to create clients for the service, pull state, and generate graph elements.
