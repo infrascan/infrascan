@@ -1,15 +1,19 @@
-# Infrascan
+<h1 align="center">Infrascan</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@infrascan/sdk" alt="@infrascan/sdk version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fsdk" />
+  </a>
+  <a href="https://www.npmjs.com/package/@infrascan/cli" alt="@infrascan/cli version on npm">
+    <img src="https://img.shields.io/npm/v/%40infrascan%2Fsdk?label=%40infrascan%2Fcli" />
+  </a>
+</p>
 
 Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.
 
 ![Example Infrastructure map of an AWS Account](./assets/infrastructure-diagram.png)
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
-
-## Quicklinks
-
-- [Design](#design-wip)
-- [Repo Directory](#project-directory)
 
 ## Design (wip)
 
