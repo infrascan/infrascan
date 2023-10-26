@@ -1,5 +1,11 @@
 # @infrascan/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- [#39](https://github.com/infrascan/infrascan/pull/39) [`36cccd6`](https://github.com/infrascan/infrascan/commit/36cccd6b2d87d3969ae1cf9b9a354f6e1b43f757) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update CLI bin name to infrascan
+
 ## 0.2.0
 
 ### Minor Changes
