@@ -7,6 +7,7 @@ import DynamoDBScanner from "@infrascan/aws-dynamodb-scanner";
 import Ec2Scanner from "@infrascan/aws-ec2-scanner";
 import ECSScanner from "@infrascan/aws-ecs-scanner";
 import ElasticLoadBalancingScanner from "@infrascan/aws-elastic-load-balancing-scanner";
+import KinesisScanner from "@infrascan/aws-kinesis-scanner";
 import LambdaScanner from "@infrascan/aws-lambda-scanner";
 import RDSScanner from "@infrascan/aws-rds-scanner";
 import Route53Scanner from "@infrascan/aws-route53-scanner";
@@ -23,6 +24,7 @@ export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
   infrascanClient.registerScanner(Ec2Scanner);
   infrascanClient.registerScanner(ECSScanner);
   infrascanClient.registerScanner(ElasticLoadBalancingScanner);
+  infrascanClient.registerScanner(KinesisScanner);
   infrascanClient.registerScanner(LambdaScanner);
   infrascanClient.registerScanner(RDSScanner);
   infrascanClient.registerScanner(Route53Scanner);
