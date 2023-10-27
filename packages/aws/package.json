@@ -66,6 +66,7 @@
     "@infrascan/aws-ec2-scanner": "^0.2.2",
     "@infrascan/aws-ecs-scanner": "^0.2.2",
     "@infrascan/aws-elastic-load-balancing-scanner": "^0.2.2",
+    "@infrascan/aws-kinesis-scanner": "^0.1.0",
     "@infrascan/aws-lambda-scanner": "^0.2.2",
     "@infrascan/aws-rds-scanner": "^0.2.2",
     "@infrascan/aws-route53-scanner": "^0.2.2",
