@@ -1,5 +1,11 @@
 # @infrascan/aws
 
+## 0.3.0
+
+### Minor Changes
+
+- [#45](https://github.com/infrascan/infrascan/pull/45) [`4e230a8`](https://github.com/infrascan/infrascan/commit/4e230a8ff973aaabd1fe621262b0bf67dc982156) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add Kinesis Scanner to @infrascan/aws package
+
 ## 0.2.1
 
 ### Patch Changes
