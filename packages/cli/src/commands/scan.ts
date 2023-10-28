@@ -41,6 +41,7 @@ function resolveCredentials(
         RoleArn: roleToAssume,
         RoleSessionName: "infrascan-cli-scan",
       },
+      clientConfig: { region: undefined },
     });
   }
   throw new Error(
