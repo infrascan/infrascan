@@ -82,3 +82,30 @@ t.test(
     }
   },
 );
+
+t.test("No functions returned from ListFunctionsCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const lambdaClient = LambdaScanner.getClient(fromProcess(), testContext);
+
+  const mockedLambdaClient = mockClient(lambdaClient);
+
+  // Mock each of the functions used to pull state
+  mockedLambdaClient.on(ListFunctionsCommand).resolves({
+    Functions: [],
+  });
+
+  for (const scannerFn of LambdaScanner.getters) {
+    await scannerFn(lambdaClient, connector, testContext);
+  }
+
+  t.equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
+  t.equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 0);
+
+  if (LambdaScanner.getNodes != null) {
+    const nodes = await LambdaScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+});

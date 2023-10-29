@@ -110,3 +110,33 @@ t.test(
     }
   },
 );
+
+t.test("No streams returned from ListStreamsCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const kinesisClient = KinesisScanner.getClient(fromProcess(), testContext);
+
+  const mockedKinesisClient = mockClient(kinesisClient);
+
+  // Mock each of the functions used to pull state
+  mockedKinesisClient.on(ListStreamsCommand).resolves({
+    StreamSummaries: [],
+  });
+
+  for (const scannerFn of KinesisScanner.getters) {
+    await scannerFn(kinesisClient, connector, testContext);
+  }
+
+  t.equal(mockedKinesisClient.commandCalls(ListStreamsCommand).length, 1);
+  t.equal(
+    mockedKinesisClient.commandCalls(ListStreamConsumersCommand).length,
+    0,
+  );
+
+  if (KinesisScanner.getNodes != null) {
+    const nodes = await KinesisScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+});

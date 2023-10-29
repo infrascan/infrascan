@@ -79,3 +79,31 @@ t.test(
     }
   },
 );
+
+t.test("No SQS queues returned from ListQueuesCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const sqsClient = SQSScanner.getClient(fromProcess(), testContext);
+
+  const mockedSQSClient = mockClient(sqsClient);
+
+  // Mock each of the functions used to pull state
+  mockedSQSClient.on(ListQueuesCommand).resolves({
+    QueueUrls: [],
+  });
+
+  for (const scannerFn of SQSScanner.getters) {
+    await scannerFn(sqsClient, connector, testContext);
+  }
+
+  t.equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
+  t.equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 0);
+  t.equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 0);
+
+  if (SQSScanner.getNodes != null) {
+    const nodes = await SQSScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+});
