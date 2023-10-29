@@ -16,16 +16,19 @@ import {
   GetBucketAcl,
 } from "./generated/getters";
 import { getNodes, getEdges } from "./generated/graph";
+import { registerMiddleware } from "./middleware";
 
 export function getClient(
   credentials: AwsCredentialIdentityProvider,
   context: AwsContext,
 ): S3Client {
-  return new S3Client({
+  const s3Client = new S3Client({
     credentials,
     region: context.region,
-    followRegionRedirects: true
+    followRegionRedirects: true,
   });
+  registerMiddleware(s3Client);
+  return s3Client;
 }
 
 // Format S3 ID as arn in place of bucket name
