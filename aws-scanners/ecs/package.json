@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-ecs-scanner",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Infrascan scanner definition for AWS ECS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -60,7 +60,7 @@
     "@aws-sdk/credential-providers": "^3.428.0",
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.2.2",
-    "@infrascan/shared-types": "^0.2.2",
+    "@infrascan/shared-types": "^0.2.3",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
     "tsconfig": "^0.0.0"
