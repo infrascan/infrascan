@@ -129,3 +129,40 @@ t.test(
     }
   },
 );
+
+t.test("No sns topics returned from ListTopicsCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const snsClient = SNSScanner.getClient(fromProcess(), testContext);
+
+  const mockedSNSClient = mockClient(snsClient);
+
+  // Mock each of the functions used to pull state
+  mockedSNSClient.on(ListTopicsCommand).resolves({
+    Topics: [],
+  });
+
+  for (const scannerFn of SNSScanner.getters) {
+    await scannerFn(snsClient, connector, testContext);
+  }
+
+  t.equal(mockedSNSClient.commandCalls(ListTopicsCommand).length, 1);
+  t.equal(mockedSNSClient.commandCalls(GetTopicAttributesCommand).length, 0);
+  t.equal(
+    mockedSNSClient.commandCalls(ListSubscriptionsByTopicCommand).length,
+    0,
+  );
+  t.equal(mockedSNSClient.commandCalls(ListTagsForResourceCommand).length, 0);
+
+  if (SNSScanner.getNodes != null) {
+    const nodes = await SNSScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+
+  if (SNSScanner.getEdges != null) {
+    const edges = await SNSScanner.getEdges(connector);
+    t.equal(edges.length, 0);
+  }
+});

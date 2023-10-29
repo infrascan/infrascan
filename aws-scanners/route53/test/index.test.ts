@@ -149,3 +149,46 @@ t.test(
     }
   },
 );
+
+t.test(
+  "No hosted zones returned from ListHostedZonesByNameCommand",
+  async () => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const route53Client = Route53Scanner.getClient(fromProcess(), testContext);
+
+    const mockedRoute53Client = mockClient(route53Client);
+
+    // Mock each of the functions used to pull state
+    mockedRoute53Client.on(ListHostedZonesByNameCommand).resolves({
+      HostedZones: [],
+    });
+
+    for (const scannerFn of Route53Scanner.getters) {
+      await scannerFn(route53Client, connector, testContext);
+    }
+
+    t.equal(
+      mockedRoute53Client.commandCalls(ListHostedZonesByNameCommand).length,
+      1,
+    );
+
+    t.equal(
+      mockedRoute53Client.commandCalls(ListResourceRecordSetsCommand).length,
+      0,
+    );
+
+    if (Route53Scanner.getNodes != null) {
+      const nodes = await Route53Scanner.getNodes(connector, testContext);
+      t.equal(nodes.length, 0);
+    }
+
+    // TODO; have a better way to seed/use fixtures for cross-service edges
+    if (Route53Scanner.getEdges != null) {
+      const edges = await Route53Scanner.getEdges(connector);
+      t.equal(edges.length, 0);
+    }
+  },
+);

@@ -91,8 +91,8 @@ t.test(
       // preformat
       t.equal(nodes[0].data.id, bucketName);
       t.equal(nodes[0].data.name, bucketName);
-      
-      if(S3Scanner.formatNode != null) {
+
+      if (S3Scanner.formatNode != null) {
         const formattedNode = S3Scanner.formatNode(nodes[0], testContext);
         t.equal(formattedNode.data.id, bucketArn);
       }
@@ -124,3 +124,42 @@ t.test(
     }
   },
 );
+
+t.test("No Buckets returned from ListBucketsCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const s3Client = S3Scanner.getClient(fromProcess(), testContext);
+
+  const mockedS3Client = mockClient(s3Client);
+
+  // Mock each of the functions used to pull state
+  mockedS3Client.on(ListBucketsCommand).resolves({
+    Buckets: [],
+  });
+
+  for (const scannerFn of S3Scanner.getters) {
+    await scannerFn(s3Client, connector, testContext);
+  }
+
+  t.equal(mockedS3Client.commandCalls(ListBucketsCommand).length, 1);
+  t.equal(mockedS3Client.commandCalls(GetBucketTaggingCommand).length, 0);
+  t.equal(
+    mockedS3Client.commandCalls(GetBucketNotificationConfigurationCommand)
+      .length,
+    0,
+  );
+  t.equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 0);
+  t.equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 0);
+
+  if (S3Scanner.getNodes != null) {
+    const nodes = await S3Scanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+
+  if (S3Scanner.getEdges != null) {
+    const edges = await S3Scanner.getEdges(connector);
+    t.equal(edges.length, 0);
+  }
+});

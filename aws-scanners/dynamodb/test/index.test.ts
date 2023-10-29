@@ -68,3 +68,35 @@ t.test(
     }
   },
 );
+
+t.test("No Tables returned from ListTablesCommand", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const dynamoClient = DynamoDBScanner.getClient(fromProcess(), testContext);
+
+  const mockedDynamoClient = mockClient(dynamoClient);
+
+  // Mock each of the functions used to pull state
+  mockedDynamoClient.on(ListTablesCommand).resolves({
+    TableNames: [],
+  });
+
+  for (const scannerFn of DynamoDBScanner.getters) {
+    await scannerFn(dynamoClient, connector, testContext);
+  }
+
+  const logGroupCallCount =
+    mockedDynamoClient.commandCalls(ListTablesCommand).length;
+  t.equal(logGroupCallCount, 1);
+
+  const describeTableCallCount =
+    mockedDynamoClient.commandCalls(DescribeTableCommand).length;
+  t.equal(describeTableCallCount, 0);
+
+  if (DynamoDBScanner.getNodes != null) {
+    const nodes = await DynamoDBScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
+});
