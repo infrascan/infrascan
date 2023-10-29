@@ -1,5 +1,11 @@
 # @infrascan/aws-s3-scanner
 
+## 0.2.3
+
+### Patch Changes
+
+- [#47](https://github.com/infrascan/infrascan/pull/47) [`74365b6`](https://github.com/infrascan/infrascan/commit/74365b6835af817e60a9a06aac94b782236fa8bf) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add middleware to silence not found errors when scanning s3 bucket tag sets and website configs
+
 ## 0.2.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @infrascan/aws-ecs-scanner
 
+## 0.2.3
+
+### Patch Changes
+
+- [#49](https://github.com/infrascan/infrascan/pull/49) [`c70ad53`](https://github.com/infrascan/infrascan/commit/c70ad53f573a5cf5f600d3f9866f36b3ec6239a0) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update ECS Scanner to filter out empty lists when pulling parameters.
+
+  Remove unused key in shared-types scanner definitions.
+
 ## 0.2.2
 
 ### Patch Changes
