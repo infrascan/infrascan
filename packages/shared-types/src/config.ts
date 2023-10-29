@@ -15,10 +15,9 @@ export type BaseGetter = {
   id?: string;
   fn: string;
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  parameters?: (BaseParameterResolver & { Value?: any, Selector?: string })[];
+  parameters?: (BaseParameterResolver & { Value?: any; Selector?: string })[];
   formatter?: string;
   paginationToken?: PaginationToken;
-  iamRoleSelectors?: string[];
 };
 
 export type GenericNodeSelector = `${string}|${string}|${string}`;
@@ -39,7 +38,7 @@ export type BaseScannerDefinition = {
   callPerRegion: boolean;
   // Scanner functions for pulling state from a service
   getters: BaseGetter[];
-  // Scrapers for pulling Nodes from service state 
+  // Scrapers for pulling Nodes from service state
   nodes?: GenericNodeSelector[];
   // Scrapers for pulling Edges from service state
   edges?: BaseEdgeResolver[];
@@ -112,7 +111,6 @@ export type ServiceGetter<
   fn: AvailableCommand<Serv, Funcs>;
   paginationToken?: PaginationToken;
   parameters?: ParameterResolver<ServiceName, Serv, Funcs>[];
-  iamRoleSelectors?: string[];
 };
 
 export type ScannerDefinition<

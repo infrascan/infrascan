@@ -80,7 +80,10 @@ export async function DescribeClusters(
   const state: GenericState[] = [];
   console.log("ecs DescribeClusters");
   const resolvers = [
-    { Key: "clusters", Selector: "ECS|ListClusters|[]._result.clusterArns" },
+    {
+      Key: "clusters",
+      Selector: "ECS|ListClusters|[]._result.clusterArns | [?length(@)>`0`]",
+    },
     {
       Key: "include",
       Value: [
@@ -186,7 +189,10 @@ export async function DescribeServices(
   console.log("ecs DescribeServices");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListServices|[]._parameters.cluster" },
-    { Key: "services", Selector: "ECS|ListServices|[]._result.serviceArns" },
+    {
+      Key: "services",
+      Selector: "ECS|ListServices|[]._result.serviceArns | [?length(@)>`0`]",
+    },
     { Key: "include", Value: ["TAGS"] },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
@@ -282,7 +288,10 @@ export async function DescribeTasks(
   console.log("ecs DescribeTasks");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListTasks|[]._parameters.cluster" },
-    { Key: "tasks", Selector: "ECS|ListTasks|[]._result.taskArns" },
+    {
+      Key: "tasks",
+      Selector: "ECS|ListTasks|[]._result.taskArns | [?length(@)>`0`]",
+    },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,

@@ -27,7 +27,8 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
       parameters: [
         {
           Key: "clusters",
-          Selector: "ECS|ListClusters|[]._result.clusterArns",
+          Selector:
+            "ECS|ListClusters|[]._result.clusterArns | [?length(@)>`0`]",
         },
         {
           Key: "include",
@@ -63,7 +64,8 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
         },
         {
           Key: "services",
-          Selector: "ECS|ListServices|[]._result.serviceArns",
+          Selector:
+            "ECS|ListServices|[]._result.serviceArns | [?length(@)>`0`]",
         },
         {
           Key: "include",
@@ -89,7 +91,7 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
         },
         {
           Key: "tasks",
-          Selector: "ECS|ListTasks|[]._result.taskArns",
+          Selector: "ECS|ListTasks|[]._result.taskArns | [?length(@)>`0`]",
         },
       ],
     },
@@ -104,10 +106,6 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
           Key: "include",
           Value: ["TAGS"],
         },
-      ],
-      iamRoleSelectors: [
-        "taskDefinition.taskRoleArn",
-        "taskDefinition.executionRoleArn",
       ],
     },
   ],
