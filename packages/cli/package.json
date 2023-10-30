@@ -41,6 +41,7 @@
     "@infrascan/fs-connector": "^0.2.2",
     "@infrascan/sdk": "^0.2.2",
     "@rushstack/ts-command-line": "^4.15.2",
+    "@smithy/shared-ini-file-loader": "^2.2.2",
     "minimatch": "^6.1.6"
   },
   "devDependencies": {

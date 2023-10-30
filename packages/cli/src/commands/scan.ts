@@ -9,8 +9,12 @@ import {
   fromIni,
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import {
+  loadSharedConfigFiles,
+  DEFAULT_PROFILE,
+} from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
+import type { CredentialProviderFactory } from "@infrascan/sdk";
 
 function getConfig(path: string) {
   const resolvedConfigPath = resolve(path);
@@ -26,22 +30,26 @@ function writeScanMetadata(outputDirectory: string, metadata: any) {
   );
 }
 
-function resolveCredentials(
+function resolveCredentialProvider(
   profile?: string,
   roleToAssume?: string,
-): AwsCredentialIdentityProvider {
+): CredentialProviderFactory {
   if (profile) {
-    return fromIni({
-      profile,
-    });
+    return (region: string) =>
+      fromIni({
+        profile,
+        clientConfig: { region },
+      });
   }
   if (roleToAssume) {
-    return fromTemporaryCredentials({
-      params: {
-        RoleArn: roleToAssume,
-        RoleSessionName: "infrascan-cli-scan",
-      },
-    });
+    return (region: string) =>
+      fromTemporaryCredentials({
+        params: {
+          RoleArn: roleToAssume,
+          RoleSessionName: "infrascan-cli-scan",
+        },
+        clientConfig: { region },
+      });
   }
   throw new Error(
     "An error occurred while resolving credentials for Infrascan — no profile or role given.",
@@ -89,15 +97,25 @@ export default class ScanCmd extends CommandLineAction {
       createTargetDirectory: true,
     });
 
+    const defaultRegion = await loadSharedConfigFiles()
+      .then((config) => config.configFile?.[DEFAULT_PROFILE]?.region)
+      .catch((err) => {
+        console.warn(
+          `Failed to load AWS config file, falling back to @infrascan/sdk defaults. (${err.message})`,
+        );
+        return undefined;
+      });
+
     const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const { profile, roleToAssume, regions } = accountConfig;
-      const credentials = resolveCredentials(profile, roleToAssume);
+      const credentials = resolveCredentialProvider(profile, roleToAssume);
+
       const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
-        { regions },
+        { regions, defaultRegion },
       );
       metadata.push(accountMetadata);
     }

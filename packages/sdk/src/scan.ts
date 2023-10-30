@@ -9,6 +9,34 @@ import type {
 } from "@infrascan/shared-types";
 import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
 
+export type CredentialProviderFactory = (
+  region: string,
+) => AwsCredentialIdentityProvider | Promise<AwsCredentialIdentityProvider>;
+
+export type ScanCredentialProvider =
+  | AwsCredentialIdentityProvider
+  | CredentialProviderFactory;
+
+function isCredentialProviderFactory(
+  provider: ScanCredentialProvider,
+): provider is CredentialProviderFactory {
+  return typeof provider === "function";
+}
+
+/**
+ * In cases where the AWS config file isn't present to define a default region, the client SDKs will throw
+ * a Region in Missing error. Supporting a credential provider factory allows the region to be provided when using STS internally.
+ */
+export async function resolveCredentialsFromProvider(
+  provider: ScanCredentialProvider,
+  region: string,
+): Promise<AwsCredentialIdentityProvider> {
+  if (isCredentialProviderFactory(provider)) {
+    return provider(region);
+  }
+  return provider;
+}
+
 // Rather than relying on an account id being supplied, we fetch it from STS before scanning.
 export async function whoami(
   credentials: AwsCredentialIdentityProvider,

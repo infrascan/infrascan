@@ -6,10 +6,18 @@ import type {
   GraphEdge,
   GraphNode,
 } from "@infrascan/shared-types";
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import { IAM } from "@aws-sdk/client-iam";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "aws/helpers/iam";
-import { whoami, getAllRegions, ScanMetadata, scanService } from "./scan";
+import {
+  whoami,
+  getAllRegions,
+  ScanMetadata,
+  scanService,
+  CredentialProviderFactory,
+  ScanCredentialProvider,
+  resolveCredentialsFromProvider,
+} from "./scan";
+
 import {
   buildAccountNode,
   buildRegionNode,
@@ -86,11 +94,17 @@ export default class Infrascan {
    * ```
    */
   async performScan(
-    credentials: AwsCredentialIdentityProvider,
+    credentialProvider: ScanCredentialProvider,
     connector: Connector,
-    opts?: { regions?: string[] },
+    opts?: { regions?: string[]; defaultRegion?: string | undefined },
   ): Promise<ScanMetadata> {
-    const globalCaller = await whoami(credentials, AWS_DEFAULT_REGION);
+    const defaultRegion = opts?.defaultRegion ?? AWS_DEFAULT_REGION;
+    const credentials = await resolveCredentialsFromProvider(
+      credentialProvider,
+      defaultRegion,
+    );
+
+    const globalCaller = await whoami(credentials, defaultRegion);
     if (globalCaller?.Account == null) {
       throw new Error(
         "Failed to get caller identity. Please make sure that the credentials provided are correct.",
@@ -102,12 +116,16 @@ export default class Infrascan {
       regions: [],
     };
 
-    const iamClient = new IAM({ credentials });
+    const iamClient = new IAM({
+      credentials,
+      region: defaultRegion,
+    });
+
     const iamStorage = new IAMStorage();
 
     const scanContext = {
       account: globalCaller.Account,
-      region: AWS_DEFAULT_REGION,
+      region: defaultRegion,
     };
 
     // Take list of all global services to scan
@@ -127,18 +145,23 @@ export default class Infrascan {
     // Get all available regions for this account from the AWS API
     const regionsToScan = await getAllRegions(
       credentials,
-      AWS_DEFAULT_REGION,
+      defaultRegion,
       opts?.regions,
     );
     const regionalServiceEntries = Object.entries(this.regionalScannerRegistry);
     for (const region of regionsToScan) {
       scanContext.region = region;
+      const regionBoundCredentials = await resolveCredentialsFromProvider(
+        credentialProvider,
+        region,
+      );
+
       console.log(`Beginning scan of ${region}`);
       for (const [serviceName, serviceScanner] of regionalServiceEntries) {
         console.log(`Beginning scan of ${serviceName} in ${region}`);
         await scanService(
           serviceScanner,
-          credentials,
+          regionBoundCredentials,
           connector,
           iamStorage,
           iamClient,
@@ -152,7 +175,7 @@ export default class Infrascan {
 
     await connector.onServiceScanCompleteCallback(
       scanContext.account,
-      AWS_DEFAULT_REGION,
+      defaultRegion,
       "IAM",
       "roles",
       iamStorage.getAllRoles(),
@@ -309,4 +332,4 @@ export default class Infrascan {
   }
 }
 
-export type { ScanMetadata };
+export type { ScanMetadata, CredentialProviderFactory, ScanCredentialProvider };
