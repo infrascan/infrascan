@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/sdk": "^0.2.2",
+    "@infrascan/sdk": "^0.3.0",
     "tsconfig": "^0.0.0"
   },
   "dependencies": {
