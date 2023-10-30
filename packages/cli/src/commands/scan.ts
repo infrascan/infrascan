@@ -97,21 +97,20 @@ export default class ScanCmd extends CommandLineAction {
       createTargetDirectory: true,
     });
 
-    const defaultRegion = await loadSharedConfigFiles()
-      .then((config) => config.configFile?.[DEFAULT_PROFILE]?.region)
-      .catch((err) => {
-        console.warn(
-          `Failed to load AWS config file, falling back to @infrascan/sdk defaults. (${err.message})`,
-        );
-        return undefined;
-      });
-
     const metadata = [];
+    const awsConfig = await loadSharedConfigFiles().catch((err) => {
+      console.warn(
+        `Failed to load AWS config file, falling back to @infrascan/sdk defaults. (${err.message})`,
+      );
+      return undefined;
+    });
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const { profile, roleToAssume, regions } = accountConfig;
       const credentials = resolveCredentialProvider(profile, roleToAssume);
 
+      const defaultRegion =
+        awsConfig?.configFile?.[profile ?? DEFAULT_PROFILE]?.region;
       const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
