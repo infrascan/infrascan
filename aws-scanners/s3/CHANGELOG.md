@@ -1,5 +1,11 @@
 # @infrascan/aws-s3-scanner
 
+## 0.2.4
+
+### Patch Changes
+
+- [#52](https://github.com/infrascan/infrascan/pull/52) [`9a82eb5`](https://github.com/infrascan/infrascan/commit/9a82eb5033c64478a4bf379b4e0a6c42767c84e6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Remove log line from error mapping middleware
+
 ## 0.2.3
 
 ### Patch Changes

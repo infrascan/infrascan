@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- [#52](https://github.com/infrascan/infrascan/pull/52) [`9a82eb5`](https://github.com/infrascan/infrascan/commit/9a82eb5033c64478a4bf379b4e0a6c42767c84e6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add default region to scan metadata to ensure region is consistent in both scan and graph
+
 ## 0.3.0
 
 ### Minor Changes
