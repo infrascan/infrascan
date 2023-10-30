@@ -114,6 +114,7 @@ export default class Infrascan {
     const scanMetadata: ScanMetadata = {
       account: globalCaller.Account,
       regions: [],
+      defaultRegion,
     };
 
     const iamClient = new IAM({
@@ -224,8 +225,8 @@ export default class Infrascan {
     const globalServiceEntries = Object.values(this.globalScannerRegistry);
     const regionalServiceEntries = Object.values(this.regionalScannerRegistry);
 
-    for (const { account, regions } of scanMetadata) {
-      const context = { account, region: AWS_DEFAULT_REGION };
+    for (const { account, regions, defaultRegion } of scanMetadata) {
+      const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
       addGraphElementToMap(graphNodes, accountNode);
 

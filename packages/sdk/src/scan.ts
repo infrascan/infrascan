@@ -78,6 +78,10 @@ export type ScanMetadata = {
    * The regions scanned
    */
   regions: string[];
+  /**
+   * The region considered as default for the scan. Used to scrape state for global services.
+   */
+  defaultRegion: string;
 };
 
 export async function scanService(

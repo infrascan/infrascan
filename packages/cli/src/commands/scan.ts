@@ -1,5 +1,6 @@
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { resolve, join } from "path";
+
 import {
   CommandLineAction,
   CommandLineStringParameter,
@@ -7,6 +8,7 @@ import {
 import buildFsConnector from "@infrascan/fs-connector";
 import {
   fromIni,
+  fromNodeProviderChain,
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
 import {
@@ -15,11 +17,7 @@ import {
 } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
-
-function getConfig(path: string) {
-  const resolvedConfigPath = resolve(path);
-  return JSON.parse(readFileSync(resolvedConfigPath, "utf8"));
-}
+import { getConfig, getDefaultConfig } from "../config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function writeScanMetadata(outputDirectory: string, metadata: any) {
@@ -51,9 +49,11 @@ function resolveCredentialProvider(
         clientConfig: { region },
       });
   }
-  throw new Error(
-    "An error occurred while resolving credentials for Infrascan — no profile or role given.",
+  console.log(
+    "No profile or role given, falling back to default provider chain.",
   );
+  return (region: string) =>
+    fromNodeProviderChain({ clientConfig: { region } });
 }
 
 export default class ScanCmd extends CommandLineAction {
@@ -79,7 +79,6 @@ export default class ScanCmd extends CommandLineAction {
       parameterShortName: "-c",
       argumentName: "PATH_TO_CONFIG",
       description: "Config to use for the scan.",
-      defaultValue: "./config.json",
     });
 
     this._outputDirectory = this.defineStringParameter({
@@ -92,18 +91,21 @@ export default class ScanCmd extends CommandLineAction {
   }
 
   protected async onExecute(): Promise<void> {
-    const scanConfig = getConfig(this._config.value as string);
-    const connector = buildFsConnector(this._outputDirectory.value as string, {
-      createTargetDirectory: true,
-    });
-
-    const metadata = [];
     const awsConfig = await loadSharedConfigFiles().catch((err) => {
       console.warn(
         `Failed to load AWS config file, falling back to @infrascan/sdk defaults. (${err.message})`,
       );
       return undefined;
     });
+    const scanConfig = this._config.value
+      ? getConfig(this._config.value)
+      : getDefaultConfig(awsConfig?.configFile);
+
+    const connector = buildFsConnector(this._outputDirectory.value as string, {
+      createTargetDirectory: true,
+    });
+
+    const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const { profile, roleToAssume, regions } = accountConfig;
