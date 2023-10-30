@@ -1,5 +1,14 @@
 # @infrascan/cli
 
+## 0.2.4
+
+### Patch Changes
+
+- [#50](https://github.com/infrascan/infrascan/pull/50) [`dd0ebfe`](https://github.com/infrascan/infrascan/commit/dd0ebfe60b09335cf9ffecc6045b8aff18029d6e) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update `@infrascan/sdk` dependency to use new credential provider factories. Add dependency on `@smithy/shared-ini-file-loader` to override the default region in `@infrascan/sdk` when there is a local default region set.
+
+- Updated dependencies [[`dd0ebfe`](https://github.com/infrascan/infrascan/commit/dd0ebfe60b09335cf9ffecc6045b8aff18029d6e)]:
+  - @infrascan/sdk@0.3.0
+
 ## 0.2.3
 
 ### Patch Changes
