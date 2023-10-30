@@ -7,7 +7,8 @@ import type { ParsedIniData } from "@smithy/types";
 export type ScanConfig = {
   profile?: string;
   roleToAssume?: string;
-  regions?: string[];
+  regions?: string[] | undefined;
+  defaultRegion?: string | undefined;
 }[];
 
 export function getConfig(path: string): ScanConfig {
@@ -15,19 +16,10 @@ export function getConfig(path: string): ScanConfig {
   return JSON.parse(readFileSync(resolvedConfigPath, "utf8"));
 }
 
-// Create a default config if file is given - scan the default region.
-export function getDefaultConfig(iniDefaultRegion?: ParsedIniData): ScanConfig {
-  console.log("No config file given. Deriving config from environment.");
-  const defaultRegion =
-    env.AWS_REGION ??
-    iniDefaultRegion?.[env.AWS_PROFILE ?? DEFAULT_PROFILE]?.region;
-  if (defaultRegion != null) {
-    console.log("Default region found: ", defaultRegion);
-    return [
-      {
-        regions: [defaultRegion],
-      },
-    ];
-  }
-  return [{}];
+export function getDefaultRegion(
+  parsedAwsConfig?: ParsedIniData,
+  currentProfile?: string,
+): string | undefined {
+  const profile = currentProfile ?? env.AWS_PROFILE ?? DEFAULT_PROFILE;
+  return env.AWS_REGION ?? parsedAwsConfig?.[profile]?.region;
 }

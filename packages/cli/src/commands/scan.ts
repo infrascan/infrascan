@@ -3,6 +3,7 @@ import { resolve, join } from "path";
 
 import {
   CommandLineAction,
+  CommandLineStringListParameter,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
@@ -17,7 +18,7 @@ import {
 } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
-import { getConfig, getDefaultConfig } from "../config";
+import { ScanConfig, getConfig, getDefaultRegion } from "../config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function writeScanMetadata(outputDirectory: string, metadata: any) {
@@ -63,6 +64,8 @@ export default class ScanCmd extends CommandLineAction {
 
   private _outputDirectory: CommandLineStringParameter;
 
+  private _regions: CommandLineStringListParameter;
+
   public constructor(infrascanClient: Infrascan) {
     super({
       actionName: "scan",
@@ -88,6 +91,12 @@ export default class ScanCmd extends CommandLineAction {
       description: "Location to save scan output to.",
       defaultValue: "./state",
     });
+    this._regions = this.defineStringListParameter({
+      parameterLongName: "--region",
+      argumentName: "REGION_TO_SCAN",
+      description:
+        "The region to scan. This flag can be provided many times e.g. --region us-east-1 --region eu-west-1",
+    });
   }
 
   protected async onExecute(): Promise<void> {
@@ -97,9 +106,18 @@ export default class ScanCmd extends CommandLineAction {
       );
       return undefined;
     });
+
+    const defaultRegionFromEnv = getDefaultRegion(awsConfig?.configFile);
+    const runtimeRegionsToScan =
+      this._regions.values.length > 0 ? this._regions.values : undefined;
+
     const scanConfig = this._config.value
       ? getConfig(this._config.value)
-      : getDefaultConfig(awsConfig?.configFile);
+      : ([
+          {
+            defaultRegion: defaultRegionFromEnv,
+          },
+        ] as ScanConfig);
 
     const connector = buildFsConnector(this._outputDirectory.value as string, {
       createTargetDirectory: true,
@@ -108,15 +126,21 @@ export default class ScanCmd extends CommandLineAction {
     const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
-      const { profile, roleToAssume, regions } = accountConfig;
+      const {
+        profile,
+        roleToAssume,
+        regions,
+        defaultRegion: configDefaultRegion,
+      } = accountConfig;
+
       const credentials = resolveCredentialProvider(profile, roleToAssume);
 
       const defaultRegion =
-        awsConfig?.configFile?.[profile ?? DEFAULT_PROFILE]?.region;
+        configDefaultRegion ?? getDefaultRegion(awsConfig?.configFile, profile);
       const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
-        { regions, defaultRegion },
+        { regions: runtimeRegionsToScan ?? regions, defaultRegion },
       );
       metadata.push(accountMetadata);
     }
