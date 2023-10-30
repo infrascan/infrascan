@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/cli",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.mjs",
   "scripts": {
@@ -39,7 +39,7 @@
     "@aws-sdk/credential-providers": "3.428.0",
     "@infrascan/aws": "^0.3.0",
     "@infrascan/fs-connector": "^0.2.2",
-    "@infrascan/sdk": "^0.3.0",
+    "@infrascan/sdk": "^0.3.1",
     "@rushstack/ts-command-line": "^4.15.2",
     "@smithy/shared-ini-file-loader": "^2.2.2",
     "minimatch": "^6.1.6"

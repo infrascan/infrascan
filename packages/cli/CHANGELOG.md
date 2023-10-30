@@ -1,5 +1,16 @@
 # @infrascan/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- [#52](https://github.com/infrascan/infrascan/pull/52) [`9a82eb5`](https://github.com/infrascan/infrascan/commit/9a82eb5033c64478a4bf379b4e0a6c42767c84e6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add support for using the default node credential provider chain when no config given, expose region flag to filter regions to scan
+
+### Patch Changes
+
+- Updated dependencies [[`9a82eb5`](https://github.com/infrascan/infrascan/commit/9a82eb5033c64478a4bf379b4e0a6c42767c84e6)]:
+  - @infrascan/sdk@0.3.1
+
 ## 0.2.4
 
 ### Patch Changes
