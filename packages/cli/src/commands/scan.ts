@@ -1,12 +1,15 @@
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { resolve, join } from "path";
+
 import {
   CommandLineAction,
+  CommandLineStringListParameter,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
 import {
   fromIni,
+  fromNodeProviderChain,
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
 import {
@@ -15,11 +18,7 @@ import {
 } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
-
-function getConfig(path: string) {
-  const resolvedConfigPath = resolve(path);
-  return JSON.parse(readFileSync(resolvedConfigPath, "utf8"));
-}
+import { ScanConfig, getConfig, getDefaultRegion } from "../config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function writeScanMetadata(outputDirectory: string, metadata: any) {
@@ -51,9 +50,11 @@ function resolveCredentialProvider(
         clientConfig: { region },
       });
   }
-  throw new Error(
-    "An error occurred while resolving credentials for Infrascan — no profile or role given.",
+  console.log(
+    "No profile or role given, falling back to default provider chain.",
   );
+  return (region: string) =>
+    fromNodeProviderChain({ clientConfig: { region } });
 }
 
 export default class ScanCmd extends CommandLineAction {
@@ -62,6 +63,8 @@ export default class ScanCmd extends CommandLineAction {
   private infrascanClient: Infrascan;
 
   private _outputDirectory: CommandLineStringParameter;
+
+  private _regions: CommandLineStringListParameter;
 
   public constructor(infrascanClient: Infrascan) {
     super({
@@ -79,7 +82,6 @@ export default class ScanCmd extends CommandLineAction {
       parameterShortName: "-c",
       argumentName: "PATH_TO_CONFIG",
       description: "Config to use for the scan.",
-      defaultValue: "./config.json",
     });
 
     this._outputDirectory = this.defineStringParameter({
@@ -89,32 +91,56 @@ export default class ScanCmd extends CommandLineAction {
       description: "Location to save scan output to.",
       defaultValue: "./state",
     });
+    this._regions = this.defineStringListParameter({
+      parameterLongName: "--region",
+      argumentName: "REGION_TO_SCAN",
+      description:
+        "The region to scan. This flag can be provided many times e.g. --region us-east-1 --region eu-west-1",
+    });
   }
 
   protected async onExecute(): Promise<void> {
-    const scanConfig = getConfig(this._config.value as string);
-    const connector = buildFsConnector(this._outputDirectory.value as string, {
-      createTargetDirectory: true,
-    });
-
-    const metadata = [];
     const awsConfig = await loadSharedConfigFiles().catch((err) => {
       console.warn(
         `Failed to load AWS config file, falling back to @infrascan/sdk defaults. (${err.message})`,
       );
       return undefined;
     });
+
+    const defaultRegionFromEnv = getDefaultRegion(awsConfig?.configFile);
+    const runtimeRegionsToScan =
+      this._regions.values.length > 0 ? this._regions.values : undefined;
+
+    const scanConfig = this._config.value
+      ? getConfig(this._config.value)
+      : ([
+          {
+            defaultRegion: defaultRegionFromEnv,
+          },
+        ] as ScanConfig);
+
+    const connector = buildFsConnector(this._outputDirectory.value as string, {
+      createTargetDirectory: true,
+    });
+
+    const metadata = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
-      const { profile, roleToAssume, regions } = accountConfig;
+      const {
+        profile,
+        roleToAssume,
+        regions,
+        defaultRegion: configDefaultRegion,
+      } = accountConfig;
+
       const credentials = resolveCredentialProvider(profile, roleToAssume);
 
       const defaultRegion =
-        awsConfig?.configFile?.[profile ?? DEFAULT_PROFILE]?.region;
+        configDefaultRegion ?? getDefaultRegion(awsConfig?.configFile, profile);
       const accountMetadata = await this.infrascanClient.performScan(
         credentials,
         connector,
-        { regions, defaultRegion },
+        { regions: runtimeRegionsToScan ?? regions, defaultRegion },
       );
       metadata.push(accountMetadata);
     }

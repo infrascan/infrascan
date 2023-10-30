@@ -30,7 +30,6 @@ export function mapNotFoundErrorToEmptyResponse(
 ): FinalizeHandlerOutput<ServiceOutputTypes> | undefined {
   const isRichS3Err = err instanceof S3ServiceException && isRichError(err);
   if (!isRichS3Err) {
-    console.log("Not a rich error", err);
     return undefined;
   }
 
