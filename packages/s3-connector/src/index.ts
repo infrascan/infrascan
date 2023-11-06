@@ -17,7 +17,7 @@ export interface ConstructorArgs {
 const isNotNull = <T>(value: T | null | undefined | void): value is T =>
   value != null;
 
-export class S3Connector {
+export default class S3Connector {
   S3: S3Client;
 
   prefix: string;

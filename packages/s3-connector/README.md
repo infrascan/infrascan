@@ -10,13 +10,19 @@ This is to support both searching state globally and reading state by function c
 ## Quickstart
 
 ```js
-import Infrascan from "@infrascan/sdk";
-import buildS3Connector from "@infrascan/s3-connector";
-import { registerAwsScanners } from "@infrascan/aws";
 import { fromIni } from "@aws-sdk/credential-providers";
+import { S3Client } from "@aws-sdk/s3-client";
+import Infrascan from "@infrascan/sdk";
+import S3Connector from "@infrascan/s3-connector";
+import { registerAwsScanners } from "@infrascan/aws";
 
 const credentials = fromIni({ profile: "dev" });
-const connector = buildS3Connector();
+const s3Client = new S3Client({ credentials });
+const connector = new S3Connector({
+  S3: s3Client,
+  prefix: 'my-scan-tenant',
+  bucket: 'my-scan-output-bucket'
+});
 const infrascan = registerAwsScanners(new Infrascan());
 
 infrascan.performScan(
