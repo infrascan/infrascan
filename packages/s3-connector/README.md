@@ -4,7 +4,7 @@ Infrascan connectors act as the plumbing between the Infrascan SDK and wherever 
 
 The S3 connector uses an AWS S3 Bucket to store its state. This connector library exposes an S3Connector class as the default export, which wraps an cache internally to reduce the overhead of S3 reads.
 
-All state files are written into the bucket in the format: /service/function/account/region.json.
+All state files are written into the bucket in the format: /service-function/account/region.json.
 This is to support both searching state globally and reading state by function call per region.
 
 ## Quickstart

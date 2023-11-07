@@ -33,7 +33,7 @@ export default class S3Connector {
     this.cache = new Cache(cacheLimit ?? 10);
   }
 
-  recordServiceCall(
+  async recordServiceCall(
     filePath: string,
     state: any,
   ): Promise<PutObjectCommandOutput> {
@@ -42,8 +42,9 @@ export default class S3Connector {
       Key: filePath,
       Body: JSON.stringify(state),
     });
+    const putObjectResponse = await this.S3.send(putObjectCmd);
     this.cache.set(filePath, state);
-    return this.S3.send(putObjectCmd);
+    return putObjectResponse;
   }
 
   async readStateForCall(filePath: string): Promise<any> {
@@ -65,7 +66,7 @@ export default class S3Connector {
    * This makes it easier for retrieving global state by service and function call where only list by prefix is supported (e.g. S3)
    * Example:
    * - /1234567890/us-east-1/Lambda/listFunctions.json cannot be globally listed by prefix, only by account and region
-   * - /Lambda/listFunctions/1234567890/us-east-1.json can be listed by function which allows for cross account resolution
+   * - /Lambda-listFunctions/1234567890/us-east-1.json can be listed by function which allows for cross account resolution
    */
   buildFilePathForServiceCall(
     account: string,
