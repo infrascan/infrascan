@@ -25,6 +25,7 @@
     "clean": true,
     "cjsInterop": true,
     "splitting": false,
+    "dts": true,
     "entry": [
       "index.ts"
     ],
