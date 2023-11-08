@@ -1,5 +1,11 @@
 # @infrascan/fs-connector
 
+## 0.2.3
+
+### Patch Changes
+
+- [#54](https://github.com/infrascan/infrascan/pull/54) [`e96ff3a`](https://github.com/infrascan/infrascan/commit/e96ff3a0abbf4442cd24384745e6511307e9f9f9) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Include typings
+
 ## 0.2.2
 
 ### Patch Changes
