@@ -1,6 +1,8 @@
 import { EC2 } from "@aws-sdk/client-ec2";
 import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import { IAM } from "@aws-sdk/client-iam";
+import { AdaptiveRetryStrategy } from "@smithy/util-retry";
+
 import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
 import type {
   AwsContext,
@@ -92,7 +94,11 @@ export async function scanService(
   iamClient: IAM,
   context: AwsContext,
 ): Promise<void> {
-  const serviceClient = serviceScanner.getClient(credentials, context);
+  const serviceClient = serviceScanner.getClient(
+    credentials,
+    context,
+    new AdaptiveRetryStrategy(async () => 5),
+  );
   for (const scannerFn of serviceScanner.getters) {
     await scannerFn(serviceClient, connector, context);
   }

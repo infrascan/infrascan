@@ -61,6 +61,7 @@
     "@aws-sdk/client-sts": "^3.428.0",
     "@aws-sdk/config-resolver": "3.369.0",
     "@infrascan/core": "^0.2.2",
+    "@smithy/util-retry": "^2.0.5",
     "jmespath": "^0.16.0",
     "minimatch": "^5.1.0"
   },
