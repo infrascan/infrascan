@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.3.3
+
+### Patch Changes
+
+- [#58](https://github.com/infrascan/infrascan/pull/58) [`49ea5e0`](https://github.com/infrascan/infrascan/commit/49ea5e0be9f40c21ef7ea127cb619c2f5770d5f2) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Catch error on iam role scanning
+
 ## 0.3.2
 
 ### Patch Changes
