@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.3.4
+
+### Patch Changes
+
+- [#60](https://github.com/infrascan/infrascan/pull/60) [`4e6df74`](https://github.com/infrascan/infrascan/commit/4e6df74b4843c112eec13025da08aa20bc1003d3) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Account for non-list policy statements for IAM API.
+
 ## 0.3.3
 
 ### Patch Changes
