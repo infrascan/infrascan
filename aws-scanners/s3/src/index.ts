@@ -6,7 +6,11 @@ import type {
   ServiceModule,
 } from "@infrascan/shared-types";
 
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import type {
+  AwsCredentialIdentityProvider,
+  RetryStrategy,
+  RetryStrategyV2,
+} from "@aws-sdk/types";
 
 import {
   ListBuckets,
@@ -21,11 +25,13 @@ import { registerMiddleware } from "./middleware";
 export function getClient(
   credentials: AwsCredentialIdentityProvider,
   context: AwsContext,
+  retryStrategy?: RetryStrategy | RetryStrategyV2,
 ): S3Client {
   const s3Client = new S3Client({
     credentials,
     region: context.region,
     followRegionRedirects: true,
+    retryStrategy,
   });
   registerMiddleware(s3Client);
   return s3Client;

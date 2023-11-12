@@ -31,12 +31,12 @@ function getServiceErrorType(scannerDefinition: BaseScannerDefinition): string {
  */
 function declareClientBuilder(scannerDefinition: BaseScannerDefinition, writer: CodeBlockWriter): CodeBlockWriter {
   return writer.writeLine(`import { ${getServiceClientClass(scannerDefinition)} } from "@aws-sdk/client-${scannerDefinition.service}";`)
-    .writeLine(`import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";`)
+    .writeLine(`import type { AwsCredentialIdentityProvider, RetryStrategy, RetryStrategyV2 } from "@aws-sdk/types";`)
     .writeLine(`import type { AwsContext } from "@infrascan/shared-types";`)
     .newLine()
-    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, context: AwsContext): ${getServiceClientClass(scannerDefinition)} {`)
+    .writeLine(`export function getClient(credentials: AwsCredentialIdentityProvider, context: AwsContext, retryStrategy?: RetryStrategy | RetryStrategyV2): ${getServiceClientClass(scannerDefinition)} {`)
     .tab()
-    .write(`return new ${getServiceClientClass(scannerDefinition)}({ credentials, region: context.region });`)
+    .write(`return new ${getServiceClientClass(scannerDefinition)}({ credentials, region: context.region, retryStrategy });`)
     .newLine()
     .writeLine('}\n');
 }
