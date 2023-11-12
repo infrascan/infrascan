@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-dynamodb-scanner",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Infrascan scanner definition for AWS DynamoDB",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -58,7 +58,7 @@
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
     "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/shared-types": "^0.2.2",
+    "@infrascan/shared-types": "^0.2.4",
     "eslint-config-codegen": "^1.0.0",
     "tsconfig": "^0.0.0"
   },

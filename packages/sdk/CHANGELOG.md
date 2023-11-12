@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.3.2
+
+### Patch Changes
+
+- [#56](https://github.com/infrascan/infrascan/pull/56) [`4b6911d`](https://github.com/infrascan/infrascan/commit/4b6911d07cfc846389c30317becdf63e95768386) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update to include support scanner level retry strategies
+
 ## 0.3.1
 
 ### Patch Changes
