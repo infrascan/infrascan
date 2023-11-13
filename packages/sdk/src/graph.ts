@@ -83,6 +83,21 @@ export function addGraphElementToMap<T extends GraphElement>(
   }
 }
 
+export function addGraphEdgeToMap(
+  nodeMap: Record<string, GraphNode>,
+  edgeMap: Record<string, GraphEdge>,
+  element: GraphEdge,
+) {
+  const { source, target } = element.data;
+  const hasSource = nodeMap[source] != null;
+  const hasTarget = nodeMap[target] != null;
+  if (hasSource && hasTarget) {
+    addGraphElementToMap(edgeMap, element);
+  } else {
+    console.warn(`Found edge with missing source or target: ${source} -> ${target}`);
+  }
+}
+
 function getServiceFromArn(arn: string): string | undefined {
   const [, , service] = arn.split(":");
   return service;

@@ -23,6 +23,7 @@ import {
   buildRegionNode,
   addGraphElementToMap,
   generateEdgesForRole,
+  addGraphEdgeToMap,
 } from "./graph";
 
 const AWS_DEFAULT_REGION = "us-east-1";
@@ -306,7 +307,7 @@ export default class Infrascan {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
         const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
-        scannerEdges.forEach((edge) => addGraphElementToMap(graphEdges, edge));
+        scannerEdges.forEach((edge) => addGraphEdgeToMap(graphNodes, graphEdges, edge));
       }
     }
 
@@ -322,7 +323,9 @@ export default class Infrascan {
             executor,
             serviceNodeMap,
           );
-          roleEdges.forEach((edge) => addGraphElementToMap(graphEdges, edge));
+          roleEdges.forEach((edge) =>
+            addGraphEdgeToMap(graphNodes, graphEdges, edge),
+          );
         }
       }
     }
