@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.3.5
+
+### Patch Changes
+
+- [#62](https://github.com/infrascan/infrascan/pull/62) [`094dba5`](https://github.com/infrascan/infrascan/commit/094dba54698fb5559d7ef123ea6b13ca92edb18f) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add validation to check that both source and destination nodes exist before inserting a graph edge
+
 ## 0.3.4
 
 ### Patch Changes
