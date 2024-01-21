@@ -9,9 +9,11 @@ import {
   ListTasks,
   DescribeTasks,
   DescribeTaskDefinition,
-  getIamRoles
+  ListContainerInstances,
+  DescribeContainerInstances,
+  getIamRoles,
 } from "./generated/getters";
-import { getNodes } from "./generated/graph";
+import { getNodes } from "./graph";
 
 const ECSScanner: ServiceModule<ECSClient, "aws"> = {
   provider: "aws",
@@ -27,6 +29,8 @@ const ECSScanner: ServiceModule<ECSClient, "aws"> = {
     ListTasks,
     DescribeTasks,
     DescribeTaskDefinition,
+    ListContainerInstances,
+    DescribeContainerInstances
   ],
   getNodes,
   getIamRoles

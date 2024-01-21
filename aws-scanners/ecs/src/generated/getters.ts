@@ -7,6 +7,8 @@ import {
   ListTasksCommand,
   DescribeTasksCommand,
   DescribeTaskDefinitionCommand,
+  ListContainerInstancesCommand,
+  DescribeContainerInstancesCommand,
   ECSServiceException,
 } from "@aws-sdk/client-ecs";
 import {
@@ -34,6 +36,10 @@ import type {
   DescribeTasksCommandOutput,
   DescribeTaskDefinitionCommandInput,
   DescribeTaskDefinitionCommandOutput,
+  ListContainerInstancesCommandInput,
+  ListContainerInstancesCommandOutput,
+  DescribeContainerInstancesCommandInput,
+  DescribeContainerInstancesCommandOutput,
 } from "@aws-sdk/client-ecs";
 
 export async function ListClusters(
@@ -379,6 +385,121 @@ export async function DescribeTaskDefinition(
     context.region,
     "ECS",
     "DescribeTaskDefinition",
+    state,
+  );
+}
+
+export async function ListContainerInstances(
+  client: ECSClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const state: GenericState[] = [];
+  console.log("ecs ListContainerInstances");
+  const resolvers = [
+    {
+      Key: "cluster",
+      Selector: "ECS|DescribeClusters|[]._result.clusters[].clusterArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListContainerInstancesCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined = undefined;
+    do {
+      const preparedParams: ListContainerInstancesCommandInput = parameters;
+      preparedParams.nextToken = pagingToken;
+      try {
+        const cmd = new ListContainerInstancesCommand(preparedParams);
+        const result: ListContainerInstancesCommandOutput = await client.send(
+          cmd,
+        );
+        state.push({
+          _metadata: { account: context.account, region: context.region },
+          _parameters: preparedParams,
+          _result: result,
+        });
+        pagingToken = result.nextToken;
+      } catch (err: unknown) {
+        if (err instanceof ECSServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
+      }
+    } while (pagingToken != null);
+  }
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "ECS",
+    "ListContainerInstances",
+    state,
+  );
+}
+
+export async function DescribeContainerInstances(
+  client: ECSClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const state: GenericState[] = [];
+  console.log("ecs DescribeContainerInstances");
+  const resolvers = [
+    {
+      Key: "cluster",
+      Selector: "ECS|ListContainerInstances|[]._parameters.cluster",
+    },
+    {
+      Key: "containerInstances",
+      Value: "ECS|ListContainerInstances|[]._result.containerInstanceArns",
+    },
+    { Key: "include", Value: ["TAGS"] },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as DescribeContainerInstancesCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: DescribeContainerInstancesCommandInput = parameters;
+    try {
+      const cmd = new DescribeContainerInstancesCommand(preparedParams);
+      const result: DescribeContainerInstancesCommandOutput = await client.send(
+        cmd,
+      );
+      state.push({
+        _metadata: { account: context.account, region: context.region },
+        _parameters: preparedParams,
+        _result: result,
+      });
+    } catch (err: unknown) {
+      if (err instanceof ECSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+    }
+  }
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "ECS",
+    "DescribeContainerInstances",
     state,
   );
 }

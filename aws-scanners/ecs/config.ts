@@ -1,7 +1,7 @@
 import * as ECS from "@aws-sdk/client-ecs";
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-type ECSClusterFunctions = "ListClusters" | "DescribeClusters";
+type ECSClusterFunctions = "ListClusters" | "DescribeClusters" | "ListContainerInstances" | "DescribeContainerInstances";
 type ECSServiceFunctions = "ListServices" | "DescribeServices";
 type ECSTaskFunctions =
   | "ListTasks"
@@ -108,12 +108,36 @@ const ECSScanner: ScannerDefinition<"ECS", typeof ECS, ECSFunctions> = {
         },
       ],
     },
-  ],
-  nodes: [
-    'ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`"ECS-Cluster"`,rawState:@}',
-    'ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`"ECS-Service"`,rawState:@}',
-    'ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`"ECS-Task"`,rawState:@}',
-    'ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`"ECS-Task"`,rawState:@}',
+    {
+      fn: "ListContainerInstances",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|DescribeClusters|[]._result.clusters[].clusterArn",
+        }
+      ],
+      paginationToken: {
+        request: "nextToken",
+        response: "nextToken"
+      }
+    },
+    {
+      fn: "DescribeContainerInstances",
+      parameters: [
+        {
+          Key: "cluster",
+          Selector: "ECS|ListContainerInstances|[]._parameters.cluster",
+        },
+        {
+          Key: "containerInstances",
+          Value: "ECS|ListContainerInstances|[]._result.containerInstanceArns",
+        },
+        {
+          Key: "include",
+          Value: ["TAGS"]
+        }
+      ],
+    },
   ],
   iamRoles: [
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:taskRoleArn,executor:taskDefinitionArn}",

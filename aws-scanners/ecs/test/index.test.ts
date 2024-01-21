@@ -13,6 +13,8 @@ import {
   ListTasksCommand,
   DescribeTasksCommand,
   DescribeTaskDefinitionCommand,
+  ListContainerInstancesCommand,
+  DescribeContainerInstancesCommand,
 } from "@aws-sdk/client-ecs";
 import buildFsConnector from "@infrascan/fs-connector";
 import ECSScanner from "../src";
@@ -50,6 +52,10 @@ t.test(
           clusterArn,
         },
       ],
+    });
+
+    mockedEcsClient.on(ListContainerInstancesCommand).resolves({
+      containerInstanceArns: []
     });
 
     const serviceName = "test-service";
@@ -238,6 +244,10 @@ t.test("No Services defined in the ECS Cluster", async () => {
     ],
   });
 
+  mockedEcsClient.on(ListContainerInstancesCommand).resolves({
+    containerInstanceArns: []
+  });
+
   mockedEcsClient.on(ListServicesCommand).resolves({
     serviceArns: [],
   });
@@ -350,6 +360,23 @@ t.test("No Tasks found in the cluster", async () => {
     ],
   });
 
+  const testContainerInstanceArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:container/test-container`;
+  mockedEcsClient.on(ListContainerInstancesCommand).resolves({
+    containerInstanceArns: [
+      testContainerInstanceArn
+    ]
+  });
+
+  const testEc2InstanceId = "i-99";
+  mockedEcsClient.on(DescribeContainerInstancesCommand).resolves({
+    containerInstances: [
+      {
+        containerInstanceArn: testContainerInstanceArn,
+        ec2InstanceId: testEc2InstanceId
+      }
+    ]
+  });
+
   mockedEcsClient.on(ListServicesCommand).resolves({
     serviceArns: [],
   });
@@ -373,16 +400,24 @@ t.test("No Tasks found in the cluster", async () => {
     mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
     0,
   );
+  t.equal(mockedEcsClient.commandCalls(ListContainerInstancesCommand).length, 1);
+  t.equal(mockedEcsClient.commandCalls(DescribeContainerInstancesCommand).length, 1);
 
   if (ECSScanner.getNodes != null) {
     const nodes = await ECSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 1);
+    t.equal(nodes.length, 2);
     // successfully found cluster node
-    t.ok(
-      nodes.find(
-        (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
-      ),
+    const ecsClusterNode = nodes.find(
+      (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
     );
+    t.ok(ecsClusterNode);
+    // found container instance in cluster
+    const ecsContainerInstanceNode = nodes.find(
+      (node) => node.id === testContainerInstanceArn && node.data.name === testEc2InstanceId
+    );
+    t.ok(ecsContainerInstanceNode);
+    // Container is correctly associated with the ecs cluster
+    t.equal(ecsContainerInstanceNode?.data.parent, ecsClusterNode?.data.id);
   }
 
   if (ECSScanner.getIamRoles != null) {
