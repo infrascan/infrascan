@@ -97,43 +97,43 @@ t.test(
   },
 );
 
-// t.test("No Log groups returned from DescribeLogGroups command", async () => {
-//   const testContext = {
-//     region: "us-east-1",
-//     account: "0".repeat(8),
-//   };
-//   const cloudwatchLogsClient = CloudwatchLogsScanner.getClient(
-//     fromProcess(),
-//     testContext,
-//   );
+t.test("No Log groups returned from DescribeLogGroups command", async () => {
+  const testContext = {
+    region: "us-east-1",
+    account: "0".repeat(8),
+  };
+  const cloudwatchLogsClient = CloudwatchLogsScanner.getClient(
+    fromProcess(),
+    testContext,
+  );
 
-//   const mockedCloudwatchLogsClient = mockClient(cloudwatchLogsClient);
+  const mockedCloudwatchLogsClient = mockClient(cloudwatchLogsClient);
 
-//   // Mock each of the functions used to pull state
-//   mockedCloudwatchLogsClient.on(DescribeLogGroupsCommand).resolves({
-//     logGroups: [],
-//   });
+  // Mock each of the functions used to pull state
+  mockedCloudwatchLogsClient.on(DescribeLogGroupsCommand).resolves({
+    logGroups: [],
+  });
 
-//   for (const scannerFn of CloudwatchLogsScanner.getters) {
-//     await scannerFn(cloudwatchLogsClient, connector, testContext);
-//   }
+  for (const scannerFn of CloudwatchLogsScanner.getters) {
+    await scannerFn(cloudwatchLogsClient, connector, testContext);
+  }
 
-//   const logGroupCallCount = mockedCloudwatchLogsClient.commandCalls(
-//     DescribeLogGroupsCommand,
-//   ).length;
-//   t.equal(logGroupCallCount, 1);
-//   const subscriptionCallCount = mockedCloudwatchLogsClient.commandCalls(
-//     DescribeSubscriptionFiltersCommand,
-//   ).length;
-//   t.equal(subscriptionCallCount, 0);
+  const logGroupCallCount = mockedCloudwatchLogsClient.commandCalls(
+    DescribeLogGroupsCommand,
+  ).length;
+  t.equal(logGroupCallCount, 1);
+  const subscriptionCallCount = mockedCloudwatchLogsClient.commandCalls(
+    DescribeSubscriptionFiltersCommand,
+  ).length;
+  t.equal(subscriptionCallCount, 0);
 
-//   if (CloudwatchLogsScanner.getNodes != null) {
-//     const nodes = await CloudwatchLogsScanner.getNodes(connector, testContext);
-//     t.equal(nodes.length, 0);
-//   }
+  if (CloudwatchLogsScanner.getNodes != null) {
+    const nodes = await CloudwatchLogsScanner.getNodes(connector, testContext);
+    t.equal(nodes.length, 0);
+  }
 
-//   if (CloudwatchLogsScanner.getEdges != null) {
-//     const edges = await CloudwatchLogsScanner.getEdges(connector);
-//     t.equal(edges.length, 0);
-//   }
-// });
+  if (CloudwatchLogsScanner.getEdges != null) {
+    const edges = await CloudwatchLogsScanner.getEdges(connector);
+    t.equal(edges.length, 0);
+  }
+});
