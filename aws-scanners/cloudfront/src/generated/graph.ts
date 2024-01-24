@@ -18,6 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListDistributionsNodes);
+
   return state.map((node) =>
     formatNode(node, "cloudfront", "CloudFront", context, false),
   );

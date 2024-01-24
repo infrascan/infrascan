@@ -1,21 +1,19 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   DynamoDBClient,
-  ListTablesCommand,
-  DescribeTableCommand,
   DynamoDBServiceException,
+  ListTablesCommand,
+  ListTablesCommandInput,
+  ListTablesCommandOutput,
+  DescribeTableCommand,
+  DescribeTableCommandInput,
+  DescribeTableCommandOutput,
 } from "@aws-sdk/client-dynamodb";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListTablesCommandInput,
-  ListTablesCommandOutput,
-  DescribeTableCommandInput,
-  DescribeTableCommandOutput,
-} from "@aws-sdk/client-dynamodb";
 
 export async function ListTables(
   client: DynamoDBClient,
@@ -52,7 +50,6 @@ export async function ListTables(
     state,
   );
 }
-
 export async function DescribeTable(
   client: DynamoDBClient,
   stateConnector: Connector,

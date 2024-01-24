@@ -18,6 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...GetApisNodes);
+
   return state.map((node) =>
     formatNode(node, "apigatewayv2", "ApiGateway", context, true),
   );

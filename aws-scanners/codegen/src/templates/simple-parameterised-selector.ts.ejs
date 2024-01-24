@@ -1,0 +1,33 @@
+export async function <%= getter.id ?? getter.fn %>(
+    client: <%= serviceClientClass %>, 
+    stateConnector: Connector, 
+    context: AwsContext
+): Promise<void> {
+    const state: GenericState[] = [];
+    console.log("<%= service %> <%= getter.id ?? getter.fn %>");
+    const resolvers = <%- JSON.stringify(getter.parameters) %>;
+    const parameterQueue = await resolveFunctionCallParameters(context.account, context.region, resolvers, stateConnector) as <%= getter.id ?? getter.fn %>CommandInput[];
+    for(const parameters of parameterQueue) {
+        const preparedParams: <%= getter.id ?? getter.fn %>CommandInput = parameters;
+        try {
+            const cmd = new <%= getter.fn %>Command(preparedParams);
+            const result: <%= getter.fn %>CommandOutput = await client.send(cmd);
+            state.push({ _metadata: 
+                { account: context.account, region: context.region }, 
+                _parameters: preparedParams, 
+                _result: result 
+            });
+        } catch(err: unknown) {
+            if(err instanceof <%= serviceErrorType %>) {
+                if(err?.$retryable) {
+                    console.log("Encountered retryable error", err);
+                } else {
+                    console.log("Encountered unretryable error", err);
+                }
+            } else {
+                console.log("Encountered unexpected error", err);
+            }
+        }
+    }
+    await stateConnector.onServiceScanCompleteCallback(context.account, context.region, "<%= clientKey %>", "<%= getter.id ?? getter.fn %>", state);
+}

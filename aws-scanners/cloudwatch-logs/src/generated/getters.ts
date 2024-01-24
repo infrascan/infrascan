@@ -1,21 +1,19 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   CloudWatchLogsClient,
-  DescribeLogGroupsCommand,
-  DescribeSubscriptionFiltersCommand,
   CloudWatchLogsServiceException,
+  DescribeLogGroupsCommand,
+  DescribeLogGroupsCommandInput,
+  DescribeLogGroupsCommandOutput,
+  DescribeSubscriptionFiltersCommand,
+  DescribeSubscriptionFiltersCommandInput,
+  DescribeSubscriptionFiltersCommandOutput,
 } from "@aws-sdk/client-cloudwatch-logs";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  DescribeLogGroupsCommandInput,
-  DescribeLogGroupsCommandOutput,
-  DescribeSubscriptionFiltersCommandInput,
-  DescribeSubscriptionFiltersCommandOutput,
-} from "@aws-sdk/client-cloudwatch-logs";
 
 export async function DescribeLogGroups(
   client: CloudWatchLogsClient,
@@ -24,7 +22,7 @@ export async function DescribeLogGroups(
 ): Promise<void> {
   const state: GenericState[] = [];
   console.log("cloudwatch-logs DescribeLogGroups");
-  let pagingToken: string | undefined = undefined;
+  let pagingToken: string | undefined;
   do {
     const preparedParams: DescribeLogGroupsCommandInput = {};
     preparedParams.nextToken = pagingToken;
@@ -58,7 +56,6 @@ export async function DescribeLogGroups(
     state,
   );
 }
-
 export async function DescribeSubscriptionFilters(
   client: CloudWatchLogsClient,
   stateConnector: Connector,
@@ -80,7 +77,7 @@ export async function DescribeSubscriptionFilters(
     stateConnector,
   )) as DescribeSubscriptionFiltersCommandInput[];
   for (const parameters of parameterQueue) {
-    let pagingToken: string | undefined = undefined;
+    let pagingToken: string | undefined;
     do {
       const preparedParams: DescribeSubscriptionFiltersCommandInput =
         parameters;

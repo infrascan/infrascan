@@ -1,40 +1,38 @@
 import {
-  ECSClient,
-  ListClustersCommand,
-  DescribeClustersCommand,
-  ListServicesCommand,
-  DescribeServicesCommand,
-  ListTasksCommand,
-  DescribeTasksCommand,
-  DescribeTaskDefinitionCommand,
-  ECSServiceException,
-} from "@aws-sdk/client-ecs";
-import {
   evaluateSelectorGlobally,
   resolveFunctionCallParameters,
 } from "@infrascan/core";
+import {
+  ECSClient,
+  ECSServiceException,
+  ListClustersCommand,
+  ListClustersCommandInput,
+  ListClustersCommandOutput,
+  DescribeClustersCommand,
+  DescribeClustersCommandInput,
+  DescribeClustersCommandOutput,
+  ListServicesCommand,
+  ListServicesCommandInput,
+  ListServicesCommandOutput,
+  DescribeServicesCommand,
+  DescribeServicesCommandInput,
+  DescribeServicesCommandOutput,
+  ListTasksCommand,
+  ListTasksCommandInput,
+  ListTasksCommandOutput,
+  DescribeTasksCommand,
+  DescribeTasksCommandInput,
+  DescribeTasksCommandOutput,
+  DescribeTaskDefinitionCommand,
+  DescribeTaskDefinitionCommandInput,
+  DescribeTaskDefinitionCommandOutput,
+} from "@aws-sdk/client-ecs";
 import type {
   Connector,
   GenericState,
   AwsContext,
   EntityRoleData,
 } from "@infrascan/shared-types";
-import type {
-  ListClustersCommandInput,
-  ListClustersCommandOutput,
-  DescribeClustersCommandInput,
-  DescribeClustersCommandOutput,
-  ListServicesCommandInput,
-  ListServicesCommandOutput,
-  DescribeServicesCommandInput,
-  DescribeServicesCommandOutput,
-  ListTasksCommandInput,
-  ListTasksCommandOutput,
-  DescribeTasksCommandInput,
-  DescribeTasksCommandOutput,
-  DescribeTaskDefinitionCommandInput,
-  DescribeTaskDefinitionCommandOutput,
-} from "@aws-sdk/client-ecs";
 
 export async function ListClusters(
   client: ECSClient,
@@ -71,7 +69,6 @@ export async function ListClusters(
     state,
   );
 }
-
 export async function DescribeClusters(
   client: ECSClient,
   stateConnector: Connector,
@@ -131,7 +128,6 @@ export async function DescribeClusters(
     state,
   );
 }
-
 export async function ListServices(
   client: ECSClient,
   stateConnector: Connector,
@@ -179,7 +175,6 @@ export async function ListServices(
     state,
   );
 }
-
 export async function DescribeServices(
   client: ECSClient,
   stateConnector: Connector,
@@ -231,7 +226,6 @@ export async function DescribeServices(
     state,
   );
 }
-
 export async function ListTasks(
   client: ECSClient,
   stateConnector: Connector,
@@ -278,7 +272,6 @@ export async function ListTasks(
     state,
   );
 }
-
 export async function DescribeTasks(
   client: ECSClient,
   stateConnector: Connector,
@@ -329,7 +322,6 @@ export async function DescribeTasks(
     state,
   );
 }
-
 export async function DescribeTaskDefinition(
   client: ECSClient,
   stateConnector: Connector,
@@ -386,16 +378,16 @@ export async function DescribeTaskDefinition(
 export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
-  let state: EntityRoleData[] = [];
+  const state: EntityRoleData[] = [];
   const DescribeTaskDefinitionRoleState = (await evaluateSelectorGlobally(
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:taskRoleArn,executor:taskDefinitionArn}",
     stateConnector,
   )) as EntityRoleData[];
-  state = state.concat(DescribeTaskDefinitionRoleState);
+  state.push(...DescribeTaskDefinitionRoleState);
   const DescribeTaskDefinitionRoleState1 = (await evaluateSelectorGlobally(
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:executionRoleArn,executor:taskDefinitionArn}",
     stateConnector,
   )) as EntityRoleData[];
-  state = state.concat(DescribeTaskDefinitionRoleState1);
+  state.push(...DescribeTaskDefinitionRoleState1);
   return state;
 }

@@ -1,25 +1,23 @@
 import {
-  LambdaClient,
-  ListFunctionsCommand,
-  GetFunctionCommand,
-  LambdaServiceException,
-} from "@aws-sdk/client-lambda";
-import {
   evaluateSelectorGlobally,
   resolveFunctionCallParameters,
 } from "@infrascan/core";
+import {
+  LambdaClient,
+  LambdaServiceException,
+  ListFunctionsCommand,
+  ListFunctionsCommandInput,
+  ListFunctionsCommandOutput,
+  GetFunctionCommand,
+  GetFunctionCommandInput,
+  GetFunctionCommandOutput,
+} from "@aws-sdk/client-lambda";
 import type {
   Connector,
   GenericState,
   AwsContext,
   EntityRoleData,
 } from "@infrascan/shared-types";
-import type {
-  ListFunctionsCommandInput,
-  ListFunctionsCommandOutput,
-  GetFunctionCommandInput,
-  GetFunctionCommandOutput,
-} from "@aws-sdk/client-lambda";
 
 export async function ListFunctions(
   client: LambdaClient,
@@ -28,7 +26,7 @@ export async function ListFunctions(
 ): Promise<void> {
   const state: GenericState[] = [];
   console.log("lambda ListFunctions");
-  let pagingToken: string | undefined = undefined;
+  let pagingToken: string | undefined;
   do {
     const preparedParams: ListFunctionsCommandInput = {};
     preparedParams.Marker = pagingToken;
@@ -62,7 +60,6 @@ export async function ListFunctions(
     state,
   );
 }
-
 export async function GetFunction(
   client: LambdaClient,
   stateConnector: Connector,
@@ -116,11 +113,11 @@ export async function GetFunction(
 export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
-  let state: EntityRoleData[] = [];
+  const state: EntityRoleData[] = [];
   const GetFunctionRoleState = (await evaluateSelectorGlobally(
     "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
     stateConnector,
   )) as EntityRoleData[];
-  state = state.concat(GetFunctionRoleState);
+  state.push(...GetFunctionRoleState);
   return state;
 }

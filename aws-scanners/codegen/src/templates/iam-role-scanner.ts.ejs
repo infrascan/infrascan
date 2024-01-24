@@ -1,0 +1,20 @@
+export async function getIamRoles(stateConnector: Connector): Promise<EntityRoleData[]> {
+    const state: EntityRoleData[] = [];
+    <%_ let lastStateVariable = null; -%>
+    <%_ iamRoles.forEach((selector, idx) => { -%>
+    <%_ const [_, func] = selector.split('|'); -%>
+    <%_ let iamRoleStateVariable = `${func}RoleState`; -%>
+    <%_ if(lastStateVariable == iamRoleStateVariable) { -%>
+        <%_ iamRoleStateVariable += idx; -%>
+    <%_ } -%>
+    const <%=iamRoleStateVariable%> = (await evaluateSelectorGlobally(
+        "<%=selector%>", 
+        stateConnector
+    )) as EntityRoleData[];
+    state.push(...<%=iamRoleStateVariable%>);
+    <%_ if(lastStateVariable != iamRoleStateVariable) { -%>
+        <%_ lastStateVariable = iamRoleStateVariable; -%>
+    <%_ } -%>
+    <%_ }); -%>
+    return state;
+}

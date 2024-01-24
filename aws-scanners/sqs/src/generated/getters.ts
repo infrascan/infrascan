@@ -1,24 +1,22 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   SQSClient,
-  ListQueuesCommand,
-  ListQueueTagsCommand,
-  GetQueueAttributesCommand,
   SQSServiceException,
+  ListQueuesCommand,
+  ListQueuesCommandInput,
+  ListQueuesCommandOutput,
+  ListQueueTagsCommand,
+  ListQueueTagsCommandInput,
+  ListQueueTagsCommandOutput,
+  GetQueueAttributesCommand,
+  GetQueueAttributesCommandInput,
+  GetQueueAttributesCommandOutput,
 } from "@aws-sdk/client-sqs";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListQueuesCommandInput,
-  ListQueuesCommandOutput,
-  ListQueueTagsCommandInput,
-  ListQueueTagsCommandOutput,
-  GetQueueAttributesCommandInput,
-  GetQueueAttributesCommandOutput,
-} from "@aws-sdk/client-sqs";
 
 export async function ListQueues(
   client: SQSClient,
@@ -55,7 +53,6 @@ export async function ListQueues(
     state,
   );
 }
-
 export async function ListQueueTags(
   client: SQSClient,
   stateConnector: Connector,
@@ -102,7 +99,6 @@ export async function ListQueueTags(
     state,
   );
 }
-
 export async function GetQueueAttributes(
   client: SQSClient,
   stateConnector: Connector,

@@ -18,6 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...DescribeTableNodes);
+
   return state.map((node) =>
     formatNode(node, "dynamodb", "DynamoDB", context, true),
   );

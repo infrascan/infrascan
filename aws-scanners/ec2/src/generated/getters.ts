@@ -1,24 +1,22 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   EC2Client,
-  DescribeVpcsCommand,
-  DescribeAvailabilityZonesCommand,
-  DescribeSubnetsCommand,
   EC2ServiceException,
+  DescribeVpcsCommand,
+  DescribeVpcsCommandInput,
+  DescribeVpcsCommandOutput,
+  DescribeAvailabilityZonesCommand,
+  DescribeAvailabilityZonesCommandInput,
+  DescribeAvailabilityZonesCommandOutput,
+  DescribeSubnetsCommand,
+  DescribeSubnetsCommandInput,
+  DescribeSubnetsCommandOutput,
 } from "@aws-sdk/client-ec2";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  DescribeVpcsCommandInput,
-  DescribeVpcsCommandOutput,
-  DescribeAvailabilityZonesCommandInput,
-  DescribeAvailabilityZonesCommandOutput,
-  DescribeSubnetsCommandInput,
-  DescribeSubnetsCommandOutput,
-} from "@aws-sdk/client-ec2";
 
 export async function DescribeVpcs(
   client: EC2Client,
@@ -55,7 +53,6 @@ export async function DescribeVpcs(
     state,
   );
 }
-
 export async function DescribeAvailabilityZones(
   client: EC2Client,
   stateConnector: Connector,
@@ -93,7 +90,6 @@ export async function DescribeAvailabilityZones(
     state,
   );
 }
-
 export async function DescribeSubnets(
   client: EC2Client,
   stateConnector: Connector,
@@ -111,7 +107,7 @@ export async function DescribeSubnets(
     stateConnector,
   )) as DescribeSubnetsCommandInput[];
   for (const parameters of parameterQueue) {
-    let pagingToken: string | undefined = undefined;
+    let pagingToken: string | undefined;
     do {
       const preparedParams: DescribeSubnetsCommandInput = parameters;
       preparedParams.NextToken = pagingToken;

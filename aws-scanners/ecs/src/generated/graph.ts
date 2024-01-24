@@ -39,5 +39,6 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...DescribeTasksNodes);
+
   return state.map((node) => formatNode(node, "ecs", "ECS", context, true));
 }

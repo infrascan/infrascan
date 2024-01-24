@@ -1,17 +1,15 @@
 import {
   RDSClient,
-  DescribeDBInstancesCommand,
   RDSServiceException,
+  DescribeDBInstancesCommand,
+  DescribeDBInstancesCommandInput,
+  DescribeDBInstancesCommandOutput,
 } from "@aws-sdk/client-rds";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  DescribeDBInstancesCommandInput,
-  DescribeDBInstancesCommandOutput,
-} from "@aws-sdk/client-rds";
 
 export async function DescribeDBInstances(
   client: RDSClient,

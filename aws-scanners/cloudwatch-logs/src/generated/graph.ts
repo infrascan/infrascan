@@ -26,6 +26,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...DescribeSubscriptionFiltersNodes);
+
   return state.map((node) =>
     formatNode(node, "cloudwatch-logs", "CloudWatchLogs", context, true),
   );

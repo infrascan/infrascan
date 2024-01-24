@@ -307,7 +307,9 @@ export default class Infrascan {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
         const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
-        scannerEdges.forEach((edge) => addGraphEdgeToMap(graphNodes, graphEdges, edge));
+        scannerEdges.forEach((edge) =>
+          addGraphEdgeToMap(graphNodes, graphEdges, edge),
+        );
       }
     }
 

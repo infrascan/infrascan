@@ -26,6 +26,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListBucketsNodes);
+
   return state.map((node) => formatNode(node, "s3", "S3", context, false));
 }
 

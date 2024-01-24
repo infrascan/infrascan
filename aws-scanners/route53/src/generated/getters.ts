@@ -1,21 +1,19 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   Route53Client,
-  ListHostedZonesByNameCommand,
-  ListResourceRecordSetsCommand,
   Route53ServiceException,
+  ListHostedZonesByNameCommand,
+  ListHostedZonesByNameCommandInput,
+  ListHostedZonesByNameCommandOutput,
+  ListResourceRecordSetsCommand,
+  ListResourceRecordSetsCommandInput,
+  ListResourceRecordSetsCommandOutput,
 } from "@aws-sdk/client-route-53";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListHostedZonesByNameCommandInput,
-  ListHostedZonesByNameCommandOutput,
-  ListResourceRecordSetsCommandInput,
-  ListResourceRecordSetsCommandOutput,
-} from "@aws-sdk/client-route-53";
 
 export async function ListHostedZonesByName(
   client: Route53Client,
@@ -52,7 +50,6 @@ export async function ListHostedZonesByName(
     state,
   );
 }
-
 export async function ListResourceRecordSets(
   client: Route53Client,
   stateConnector: Connector,

@@ -1,27 +1,25 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   SNSClient,
-  ListTopicsCommand,
-  GetTopicAttributesCommand,
-  ListSubscriptionsByTopicCommand,
-  ListTagsForResourceCommand,
   SNSServiceException,
+  ListTopicsCommand,
+  ListTopicsCommandInput,
+  ListTopicsCommandOutput,
+  GetTopicAttributesCommand,
+  GetTopicAttributesCommandInput,
+  GetTopicAttributesCommandOutput,
+  ListSubscriptionsByTopicCommand,
+  ListSubscriptionsByTopicCommandInput,
+  ListSubscriptionsByTopicCommandOutput,
+  ListTagsForResourceCommand,
+  ListTagsForResourceCommandInput,
+  ListTagsForResourceCommandOutput,
 } from "@aws-sdk/client-sns";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListTopicsCommandInput,
-  ListTopicsCommandOutput,
-  GetTopicAttributesCommandInput,
-  GetTopicAttributesCommandOutput,
-  ListSubscriptionsByTopicCommandInput,
-  ListSubscriptionsByTopicCommandOutput,
-  ListTagsForResourceCommandInput,
-  ListTagsForResourceCommandOutput,
-} from "@aws-sdk/client-sns";
 
 export async function ListTopics(
   client: SNSClient,
@@ -58,7 +56,6 @@ export async function ListTopics(
     state,
   );
 }
-
 export async function GetTopicAttributes(
   client: SNSClient,
   stateConnector: Connector,
@@ -108,7 +105,6 @@ export async function GetTopicAttributes(
     state,
   );
 }
-
 export async function ListSubscriptionsByTopic(
   client: SNSClient,
   stateConnector: Connector,
@@ -160,7 +156,6 @@ export async function ListSubscriptionsByTopic(
     state,
   );
 }
-
 export async function ListTagsForResource(
   client: SNSClient,
   stateConnector: Connector,

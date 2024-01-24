@@ -33,6 +33,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListStreamConsumersNodes);
+
   return state.map((node) =>
     formatNode(node, "kinesis", "Kinesis", context, true),
   );

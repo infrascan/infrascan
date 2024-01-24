@@ -26,6 +26,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListTopicsNodes);
+
   return state.map((node) => formatNode(node, "sns", "SNS", context, true));
 }
 
