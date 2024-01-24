@@ -1,6 +1,6 @@
 import { renderFile } from 'ejs';
 import { existsSync } from 'node:fs';
-import { writeFile } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { BaseScannerDefinition } from '@infrascan/shared-types';
 
@@ -10,6 +10,11 @@ export type CodegenConfig = {
 };
 
 export default async function generateScanner(scannerDefinition: BaseScannerDefinition, config: CodegenConfig) {
+  const generatedFilesBasePath = join(config.basePath, 'generated');
+  if (!existsSync(generatedFilesBasePath)) {
+    await mkdir(generatedFilesBasePath);
+  }
+
   const targetPath = join(config.basePath, 'generated/getters.ts');
   if (existsSync(targetPath) && !config.overwrite) {
     console.warn(targetPath, ' already exists. Pass overwrite: true in the codegen config to update it in place.');
