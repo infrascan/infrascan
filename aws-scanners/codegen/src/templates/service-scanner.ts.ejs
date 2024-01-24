@@ -1,0 +1,39 @@
+<%# Declare helper types before implementing template %>
+<%_ const hasRoles = locals.iamRoles && locals.iamRoles?.length > 0; -%>
+<%_ const hasParameterisedGetter = getters && getters.some((getter) => getter.parameters != null); -%>
+<%_ const serviceClientClass=`${clientKey}Client`; -%>
+<%_ const serviceErrorType=`${clientKey}ServiceException`; -%>
+<%# Begin template %>
+<%_ if(hasParameterisedGetter && hasRoles) { -%>
+import { evaluateSelectorGlobally, resolveFunctionCallParameters } from "@infrascan/core";
+<%_ } else if (hasParameterisedGetter) { -%>
+import { resolveFunctionCallParameters } from "@infrascan/core";
+<%_ } -%>
+import { <%= serviceClientClass %>, <%= serviceErrorType %> } from "@aws-sdk/client-<%=service%>";
+<%_ getters.forEach(({ fn }) => { -%>
+import { <%=fn%>Command,<%=fn%>CommandInput,<%=fn%>CommandOutput } from "@aws-sdk/client-<%=service%>";
+<%_ }); -%>
+import type { 
+    Connector, 
+    GenericState, 
+    AwsContext,
+    <%_ if(hasRoles) { -%>
+    EntityRoleData,
+    <%_ } -%>
+} from "@infrascan/shared-types";
+
+<% getters.forEach((getter) => { -%>
+<%_ if(getter.paginationToken != null && getter.parameters != null) { -%>
+<%- include('paginated-parameterised-selector.ts.ejs', { getter, serviceErrorType, service, serviceClientClass }); %>
+<%_ } else if (getter.paginationToken != null && getter.parameters == null) { -%>
+<%- include('paginated-selector.ts.ejs', { getter, serviceErrorType, service, serviceClientClass }); %>
+<%_ } else if (getter.parameters != null) { -%>
+<%- include('simple-parameterised-selector.ts.ejs', { getter, serviceErrorType, service, serviceClientClass }); %>
+<%_ } else { -%>
+<%- include('simple-selector.ts.ejs', { getter, serviceErrorType, service, serviceClientClass }); %>
+<%_ } -%>
+<%_ }); -%>
+
+<% if(hasRoles) { -%>
+<%- include('iam-role-scanner.ts.ejs', { iamRoles: locals.iamRoles }); %>
+<%_ } -%>

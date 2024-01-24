@@ -1,0 +1,35 @@
+export async function <%= getter.id ?? getter.fn %>(
+    client: <%= serviceClientClass %>, 
+    stateConnector: Connector, 
+    context: AwsContext
+): Promise<void> {
+    const state: GenericState[] = [];
+    console.log("<%= service %> <%= getter.id ?? getter.fn %>");
+    let pagingToken: string | undefined;
+    do {
+        const preparedParams: <%= getter.fn %>CommandInput = {};
+        preparedParams["<%= getter.paginationToken.request %>"] = pagingToken;
+        try {
+            const cmd = new <%= getter.fn %>Command(preparedParams);
+            const result: <%= getter.fn %>CommandOutput = await client.send(cmd);
+            state.push({ _metadata: 
+                { account: context.account, region: context.region }, 
+                _parameters: preparedParams, 
+                _result: result 
+            });
+            pagingToken = result["<%= getter.paginationToken.response %>"];
+        } catch(err: unknown) {
+            if(err instanceof <%= serviceErrorType %>) {
+                if(err?.$retryable) {
+                    console.log("Encountered retryable error", err);
+                } else {
+                    console.log("Encountered unretryable error", err);
+                }
+            } else {
+                console.log("Encountered unexpected error", err);
+            }
+            pagingToken = undefined;
+        }
+    } while(pagingToken != null);
+    await stateConnector.onServiceScanCompleteCallback(context.account, context.region, "<%= clientKey %>", "<%= getter.id ?? getter.fn %>", state);
+}

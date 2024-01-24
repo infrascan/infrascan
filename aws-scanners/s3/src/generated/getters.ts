@@ -1,30 +1,28 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   S3Client,
-  ListBucketsCommand,
-  GetBucketTaggingCommand,
-  GetBucketNotificationConfigurationCommand,
-  GetBucketWebsiteCommand,
-  GetBucketAclCommand,
   S3ServiceException,
+  ListBucketsCommand,
+  ListBucketsCommandInput,
+  ListBucketsCommandOutput,
+  GetBucketTaggingCommand,
+  GetBucketTaggingCommandInput,
+  GetBucketTaggingCommandOutput,
+  GetBucketNotificationConfigurationCommand,
+  GetBucketNotificationConfigurationCommandInput,
+  GetBucketNotificationConfigurationCommandOutput,
+  GetBucketWebsiteCommand,
+  GetBucketWebsiteCommandInput,
+  GetBucketWebsiteCommandOutput,
+  GetBucketAclCommand,
+  GetBucketAclCommandInput,
+  GetBucketAclCommandOutput,
 } from "@aws-sdk/client-s3";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListBucketsCommandInput,
-  ListBucketsCommandOutput,
-  GetBucketTaggingCommandInput,
-  GetBucketTaggingCommandOutput,
-  GetBucketNotificationConfigurationCommandInput,
-  GetBucketNotificationConfigurationCommandOutput,
-  GetBucketWebsiteCommandInput,
-  GetBucketWebsiteCommandOutput,
-  GetBucketAclCommandInput,
-  GetBucketAclCommandOutput,
-} from "@aws-sdk/client-s3";
 
 export async function ListBuckets(
   client: S3Client,
@@ -61,7 +59,6 @@ export async function ListBuckets(
     state,
   );
 }
-
 export async function GetBucketTagging(
   client: S3Client,
   stateConnector: Connector,
@@ -108,7 +105,6 @@ export async function GetBucketTagging(
     state,
   );
 }
-
 export async function GetBucketNotificationConfiguration(
   client: S3Client,
   stateConnector: Connector,
@@ -157,7 +153,6 @@ export async function GetBucketNotificationConfiguration(
     state,
   );
 }
-
 export async function GetBucketWebsite(
   client: S3Client,
   stateConnector: Connector,
@@ -204,7 +199,6 @@ export async function GetBucketWebsite(
     state,
   );
 }
-
 export async function GetBucketAcl(
   client: S3Client,
   stateConnector: Connector,

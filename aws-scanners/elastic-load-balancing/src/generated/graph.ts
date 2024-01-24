@@ -18,6 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...DescribeLoadBalancersNodes);
+
   return state.map((node) =>
     formatNode(node, "elastic-load-balancing-v2", "ELB", context, true),
   );

@@ -107,8 +107,8 @@ export async function scanService(
     await Promise.all(
       iamRoles.map(({ roleArn }) =>
         scanIamRole(iamStorage, iamClient, roleArn).catch((err) => {
-          console.error("An error occurred while scanning role:",roleArn);
-          if(err instanceof Error) {
+          console.error("An error occurred while scanning role:", roleArn);
+          if (err instanceof Error) {
             console.error(err.message);
           }
         }),

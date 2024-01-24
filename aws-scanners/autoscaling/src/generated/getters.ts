@@ -1,17 +1,15 @@
 import {
   AutoScalingClient,
-  DescribeAutoScalingGroupsCommand,
   AutoScalingServiceException,
+  DescribeAutoScalingGroupsCommand,
+  DescribeAutoScalingGroupsCommandInput,
+  DescribeAutoScalingGroupsCommandOutput,
 } from "@aws-sdk/client-auto-scaling";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  DescribeAutoScalingGroupsCommandInput,
-  DescribeAutoScalingGroupsCommandOutput,
-} from "@aws-sdk/client-auto-scaling";
 
 export async function DescribeAutoScalingGroups(
   client: AutoScalingClient,

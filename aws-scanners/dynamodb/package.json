@@ -22,7 +22,7 @@
     "splitting": false,
     "sourcemap": false,
     "entry": [
-      "src/index.ts"
+      "src/**/*.ts"
     ],
     "format": [
       "cjs",

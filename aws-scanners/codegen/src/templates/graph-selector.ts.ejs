@@ -1,0 +1,75 @@
+<%_ const hasNodes = locals.nodes && locals.nodes.length > 0; -%>
+<%_ const hasEdges = locals.edges && locals.edges.length > 0; -%>
+import { 
+<%_ if(hasNodes) { -%>
+    evaluateSelector, 
+    formatNode,
+<%_ } -%>
+<%_ if(hasEdges) { -%>
+    evaluateSelectorGlobally, 
+    filterState, 
+    formatEdge
+<%_ } -%>
+} from "@infrascan/core";
+import type { 
+    Connector,
+    AwsContext,
+<%_ if(hasNodes) { -%>
+    SelectedNode, 
+    GraphNode,
+<%_ } -%>
+<%_ if(hasEdges) { -%>
+    GraphEdge, 
+    EdgeTarget
+<%_ } -%>
+} from "@infrascan/shared-types";
+
+<%_ if(hasNodes){ -%>
+export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<GraphNode[]> {
+    const state: SelectedNode[] = [];
+    <%_ let lastVariable = null; -%>
+    <%_ locals.nodes.forEach((nodeSelector, idx) => { -%>
+    <%_ const fnLabel = nodeSelector.split('|')[1]; -%>
+    <%_ let nodesVariable = `${fnLabel}Nodes`; -%>
+    <%_ if(nodesVariable === lastVariable) { -%>
+    <%_      nodesVariable += idx; -%>
+    <%_ } -%>
+    const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, '<%- nodeSelector %>', stateConnector);
+    state.push(...<%= nodesVariable %>);
+    <%_ lastVariable = nodesVariable; -%>
+    <% }); %>
+    return state.map((node) => formatNode(
+        node, 
+        "<%= service %>", 
+        "<%= key %>", 
+        context, 
+        <%= callPerRegion %>
+    ));
+}
+<%_ } -%>
+<% if(hasEdges){ %>
+export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {
+    const edges: GraphEdge[] = [];
+    <%_ locals.edges.forEach(({ state, to, from }, idx) => { -%>
+    <%_ const fnLabel = state.split('|')[1]; -%>
+    <%_ const stateVariable = `${fnLabel}State${idx+1}`; -%>
+    <%_ const edgesVariable = `${fnLabel}Edges${idx+1}`; -%>
+    const <%= stateVariable %> = await evaluateSelectorGlobally("<%- state %>", stateConnector);
+    const <%= edgesVariable %> = <%= stateVariable %>.flatMap((state: any) => {
+        const source = filterState(state, "<%- from %>");
+        const target: EdgeTarget | EdgeTarget[] | null = filterState(state, "<%- to %>");
+        if(!target || !source) {
+            return [];
+        }
+        // Handle case of one to many edges
+        if (Array.isArray(target)) {
+            return target.map((edgeTarget) => formatEdge(source, edgeTarget));
+        } else {
+            return formatEdge(source, target);
+        }
+    });
+    edges.push(...<%= edgesVariable %>);
+    <%_ }); -%>
+    return edges;
+}
+<% } %>

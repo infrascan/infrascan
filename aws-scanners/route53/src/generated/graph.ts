@@ -18,6 +18,7 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...ListResourceRecordSetsNodes);
+
   return state.map((node) =>
     formatNode(node, "route-53", "Route53", context, false),
   );

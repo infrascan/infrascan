@@ -18,5 +18,6 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...DescribeDBInstancesNodes);
+
   return state.map((node) => formatNode(node, "rds", "RDS", context, true));
 }

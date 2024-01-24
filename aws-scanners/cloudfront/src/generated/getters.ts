@@ -1,17 +1,15 @@
 import {
   CloudFrontClient,
-  ListDistributionsCommand,
   CloudFrontServiceException,
+  ListDistributionsCommand,
+  ListDistributionsCommandInput,
+  ListDistributionsCommandOutput,
 } from "@aws-sdk/client-cloudfront";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListDistributionsCommandInput,
-  ListDistributionsCommandOutput,
-} from "@aws-sdk/client-cloudfront";
 
 export async function ListDistributions(
   client: CloudFrontClient,

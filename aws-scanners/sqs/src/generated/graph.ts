@@ -18,5 +18,6 @@ export async function getNodes(
     stateConnector,
   );
   state.push(...GetQueueAttributesNodes);
+
   return state.map((node) => formatNode(node, "sqs", "SQS", context, true));
 }

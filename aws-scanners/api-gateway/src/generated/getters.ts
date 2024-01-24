@@ -1,20 +1,18 @@
 import {
   ApiGatewayV2Client,
-  GetApisCommand,
-  GetDomainNamesCommand,
   ApiGatewayV2ServiceException,
+  GetApisCommand,
+  GetApisCommandInput,
+  GetApisCommandOutput,
+  GetDomainNamesCommand,
+  GetDomainNamesCommandInput,
+  GetDomainNamesCommandOutput,
 } from "@aws-sdk/client-apigatewayv2";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  GetApisCommandInput,
-  GetApisCommandOutput,
-  GetDomainNamesCommandInput,
-  GetDomainNamesCommandOutput,
-} from "@aws-sdk/client-apigatewayv2";
 
 export async function GetApis(
   client: ApiGatewayV2Client,
@@ -51,7 +49,6 @@ export async function GetApis(
     state,
   );
 }
-
 export async function GetDomainNames(
   client: ApiGatewayV2Client,
   stateConnector: Connector,

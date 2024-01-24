@@ -94,7 +94,9 @@ export function addGraphEdgeToMap(
   if (hasSource && hasTarget) {
     addGraphElementToMap(edgeMap, element);
   } else {
-    console.warn(`Found edge with missing source or target: ${source} -> ${target}`);
+    console.warn(
+      `Found edge with missing source or target: ${source} -> ${target}`,
+    );
   }
 }
 
@@ -209,7 +211,9 @@ export async function generateEdgesForPolicyStatements(
 ): Promise<EdgeResource[]> {
   let resources: EdgeResource[] = [];
   for (const { label, statements } of policyStatements) {
-    const mappedStatements = Array.isArray(statements) ? statements : [statements];
+    const mappedStatements = Array.isArray(statements)
+      ? statements
+      : [statements];
     for (const statement of mappedStatements) {
       const { Resource } = statement;
       if (Array.isArray(Resource)) {

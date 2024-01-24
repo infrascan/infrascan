@@ -1,21 +1,19 @@
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import {
   KinesisClient,
-  ListStreamsCommand,
-  ListStreamConsumersCommand,
   KinesisServiceException,
+  ListStreamsCommand,
+  ListStreamsCommandInput,
+  ListStreamsCommandOutput,
+  ListStreamConsumersCommand,
+  ListStreamConsumersCommandInput,
+  ListStreamConsumersCommandOutput,
 } from "@aws-sdk/client-kinesis";
-import { resolveFunctionCallParameters } from "@infrascan/core";
 import type {
   Connector,
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
-import type {
-  ListStreamsCommandInput,
-  ListStreamsCommandOutput,
-  ListStreamConsumersCommandInput,
-  ListStreamConsumersCommandOutput,
-} from "@aws-sdk/client-kinesis";
 
 export async function ListStreams(
   client: KinesisClient,
@@ -24,7 +22,7 @@ export async function ListStreams(
 ): Promise<void> {
   const state: GenericState[] = [];
   console.log("kinesis ListStreams");
-  let pagingToken: string | undefined = undefined;
+  let pagingToken: string | undefined;
   do {
     const preparedParams: ListStreamsCommandInput = {};
     preparedParams.NextToken = pagingToken;
@@ -58,7 +56,6 @@ export async function ListStreams(
     state,
   );
 }
-
 export async function ListStreamConsumers(
   client: KinesisClient,
   stateConnector: Connector,
@@ -79,7 +76,7 @@ export async function ListStreamConsumers(
     stateConnector,
   )) as ListStreamConsumersCommandInput[];
   for (const parameters of parameterQueue) {
-    let pagingToken: string | undefined = undefined;
+    let pagingToken: string | undefined;
     do {
       const preparedParams: ListStreamConsumersCommandInput = parameters;
       preparedParams.NextToken = pagingToken;
