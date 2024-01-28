@@ -47,7 +47,7 @@ The standard structure over every scanner also allows the majority of the code t
 
 ## Project Directory
 
-The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages. 
+The packages involved in Infrascan development are split across three top-level workspaces: apps, internal and packages.
 
 ### apps
 
@@ -55,7 +55,7 @@ The packages involved in Infrascan development are split across three top-level 
 
 ### internal
 
-- `codegen` — a small [ts-morph](https://github.com/dsherret/ts-morph) project which converts the per service configs from `@infrascan/config` into typescript modules.
+- `codegen` — a small [ejs](https://github.com/mde/ejs) project which converts the per service configs from `@infrascan/config` into typescript modules based on a set of templates.
 - `shared-types` — a set of type definitions shared across multiple packages
 - `tsconfig` — the base tsconfig definition for the typescript projects in this repo, as recommended by [turbo build](https://turbo.build/repo/docs/handbook/linting/typescript#sharing-tsconfigjson).
 - `eslint-config-custom` — the eslint config for the projects in this repo. Enforces airbnb style guide with some pre-project overrides where relevant.
