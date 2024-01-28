@@ -1,5 +1,14 @@
 # @infrascan/sdk
 
+## 0.3.6
+
+### Patch Changes
+
+- [#69](https://github.com/infrascan/infrascan/pull/69) [`647a680`](https://github.com/infrascan/infrascan/commit/647a680af9efc08107a6f315a0d0aedb630559ec) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add account prefix to region nodes to avoid cross account conflicts. Use common API for formatting nodes in EC2 to prevent orphaned VPC nodes.
+
+- Updated dependencies [[`647a680`](https://github.com/infrascan/infrascan/commit/647a680af9efc08107a6f315a0d0aedb630559ec)]:
+  - @infrascan/core@0.2.3
+
 ## 0.3.5
 
 ### Patch Changes

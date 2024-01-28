@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-kinesis-scanner",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Infrascan scanner definition for AWS Kinesis",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -67,6 +67,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-kinesis": "^3.437.0",
-    "@infrascan/core": "0.2.2"
+    "@infrascan/core": "0.2.3"
   }
 }

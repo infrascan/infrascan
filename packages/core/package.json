@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/core",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Core library for use in service scanners and the SDK.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

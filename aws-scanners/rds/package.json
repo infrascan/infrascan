@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-rds-scanner",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Infrascan scanner definition for AWS RDS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -64,6 +64,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-rds": "^3.428.0",
-    "@infrascan/core": "0.2.2"
+    "@infrascan/core": "0.2.3"
   }
 }

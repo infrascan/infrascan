@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-sqs-scanner",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Infrascan scanner definition for AWS SQS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -67,6 +67,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "3.428.0",
-    "@infrascan/core": "0.2.2"
+    "@infrascan/core": "0.2.3"
   }
 }
