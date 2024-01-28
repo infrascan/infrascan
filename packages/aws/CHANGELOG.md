@@ -1,5 +1,11 @@
 # @infrascan/aws
 
+## 0.4.0
+
+### Minor Changes
+
+- [#73](https://github.com/infrascan/infrascan/pull/73) [`1efd3c4`](https://github.com/infrascan/infrascan/commit/1efd3c40e42f824dab57e91269a1cfe83262d27e) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add step functions scanner to @infrascan/aws
+
 ## 0.3.0
 
 ### Minor Changes

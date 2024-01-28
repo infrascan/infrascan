@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A convenience package to register all AWS Scanners with an instance of the Infrascan SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
