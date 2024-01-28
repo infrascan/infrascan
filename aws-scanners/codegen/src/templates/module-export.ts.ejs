@@ -1,19 +1,19 @@
-<%_ const serviceClientClass = `${clientKey}Client`; -%>
-import { <%=serviceClientClass%> } from "@aws-sdk/client-<%=service%>"; 
+<%_ const serviceClientClass=`${clientKey}Client`; -%>
+import { <%=serviceClientClass%> } from "@aws-sdk/client-<%=service%>";
 <%_ if(!locals.skipClientBuilder) { -%>
 import { getClient } from "./generated/client";
 <%_ } -%>
-import {
-    <%_ const getterImports = getters.map(({ id, fn }) => id ?? fn); -%>
-    <%_ if(locals.iamRoles != null) { -%>
-    <%_    getterImports.push('getIamRoles'); -%>
-    <%_ } -%>
-    <%=getterImports.join(', ')%>
-} from "./generated/getters";
-import { 
-    <%_ if(locals.nodes != null) { -%> getNodes,<%}-%>
-    <%_ if(locals.edges != null) { -%> getEdges,<%}-%>
-} from "./generated/graph";
+<%_ const getterImports=getters.map(({ id, fn })=> id ?? fn); -%>
+<%_ if(locals.iamRoles !=null) { -%>
+<%_ getterImports.push('getIamRoles'); -%>
+<%_ } -%>
+import { <%=getterImports.join(', ')%> } from "./generated/getters";
+<%_ const graphImports = []; -%>
+<%_ if(locals.nodes != null) { graphImports.push('getNodes') } -%>
+<%_ if(locals.edges != null) { graphImports.push('getEdges') }-%>
+<%_ if(graphImports.length > 0) { -%>
+import { <%=graphImports.join(', ')%> } from "./generated/graph";
+<%_ } -%>
 import type { ServiceModule } from "@infrascan/shared-types";
 
 const <%=clientKey%>Scanner: ServiceModule<<%=serviceClientClass%>, "aws"> = {
@@ -27,7 +27,7 @@ const <%=clientKey%>Scanner: ServiceModule<<%=serviceClientClass%>, "aws"> = {
   arnLabel: "<%=locals.arnLabel%>",
   <%_ } -%>
   callPerRegion: <%=callPerRegion%>,
-  getters: [<%=getterImports%>],
+  getters: [<%=getters.map(({ id, fn }) => id ?? fn).join(' , ')%>],
   <%_ if(locals.nodes != null) { -%>
   getNodes,  
   <%_ } -%>

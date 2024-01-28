@@ -1,7 +1,7 @@
 import generateScanner from "@infrascan/aws-codegen";
-import RDSScanner from "./config";
+import CloudwatchLogsScanner from "./config";
 
-generateScanner(RDSScanner, {
+generateScanner(CloudwatchLogsScanner, {
   overwrite: true,
   basePath: "./src",
 }).then(() => console.log("Complete"));
