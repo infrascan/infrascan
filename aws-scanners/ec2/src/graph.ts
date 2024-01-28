@@ -6,7 +6,6 @@ import type {
   State,
 } from "@infrascan/shared-types";
 import type {
-  DescribeSubnetsCommandOutput,
   DescribeVpcsCommandOutput,
   Subnet,
 } from "@aws-sdk/client-ec2";
