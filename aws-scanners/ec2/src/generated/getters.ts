@@ -5,9 +5,6 @@ import {
   DescribeVpcsCommand,
   DescribeVpcsCommandInput,
   DescribeVpcsCommandOutput,
-  DescribeAvailabilityZonesCommand,
-  DescribeAvailabilityZonesCommandInput,
-  DescribeAvailabilityZonesCommandOutput,
   DescribeSubnetsCommand,
   DescribeSubnetsCommandInput,
   DescribeSubnetsCommandOutput,
@@ -53,43 +50,6 @@ export async function DescribeVpcs(
     state,
   );
 }
-export async function DescribeAvailabilityZones(
-  client: EC2Client,
-  stateConnector: Connector,
-  context: AwsContext,
-): Promise<void> {
-  const state: GenericState[] = [];
-  console.log("ec2 DescribeAvailabilityZones");
-  const preparedParams: DescribeAvailabilityZonesCommandInput = {};
-  try {
-    const cmd = new DescribeAvailabilityZonesCommand(preparedParams);
-    const result: DescribeAvailabilityZonesCommandOutput = await client.send(
-      cmd,
-    );
-    state.push({
-      _metadata: { account: context.account, region: context.region },
-      _parameters: preparedParams,
-      _result: result,
-    });
-  } catch (err: unknown) {
-    if (err instanceof EC2ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
-      } else {
-        console.log("Encountered unretryable error", err);
-      }
-    } else {
-      console.log("Encountered unexpected error", err);
-    }
-  }
-  await stateConnector.onServiceScanCompleteCallback(
-    context.account,
-    context.region,
-    "EC2",
-    "DescribeAvailabilityZones",
-    state,
-  );
-}
 export async function DescribeSubnets(
   client: EC2Client,
   stateConnector: Connector,
@@ -98,7 +58,7 @@ export async function DescribeSubnets(
   const state: GenericState[] = [];
   console.log("ec2 DescribeSubnets");
   const resolvers = [
-    { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result[]|[].VpcId" },
+    { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId" },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,

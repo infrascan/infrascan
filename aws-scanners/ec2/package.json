@@ -34,7 +34,7 @@
     "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
     "build": "rm -rf dist ; tsup",
     "prepublish": "rm -rf dist ; tsup",
-    "test": "echo \"Error: no test specified\"",
+    "test": "tap test/*.test.ts --allow-incomplete-coverage -- --typescript",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
@@ -59,6 +59,7 @@
   "devDependencies": {
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/shared-types": "^0.2.4",
+    "aws-sdk-client-mock": "^3.0.1",
     "eslint-config-codegen": "^1.0.0",
     "tsconfig": "^0.0.0"
   },

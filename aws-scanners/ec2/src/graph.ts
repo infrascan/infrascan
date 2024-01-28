@@ -8,6 +8,7 @@ import type {
 import type {
   DescribeSubnetsCommandOutput,
   DescribeVpcsCommandOutput,
+  Subnet,
 } from "@aws-sdk/client-ec2";
 
 
@@ -42,44 +43,43 @@ export async function getNodes(
    * VPCs despite not being modelled that way by AWS. This is because VPCs span many AZs,
    * in which subnets exist. So a hierarchy of Region > VPC > AZ > Subnet is the _most_ correct.
    */
-  const subnetsState: State<DescribeSubnetsCommandOutput>[] = await evaluateSelector(
+  const subnetsState: Subnet[] = await evaluateSelector(
     context.account,
     context.region,
-    "EC2|DescribeSubnets|[]",
+    "EC2|DescribeSubnets|[]._result.Subnets[]",
     connector,
   );
 
-  const azNodes: GraphNode[] = subnetsState.flatMap(({ _result }) =>
-    _result.Subnets?.map(({ AvailabilityZoneId, AvailabilityZone, VpcId }) => ({
-      group: "nodes",
-      id: `${VpcId}-${AvailabilityZoneId}`,
-      data: {
-        id: `${VpcId}-${AvailabilityZoneId}`,
-        type: "EC2-AZ",
-        parent: VpcId,
-      },
-      metadata: {
-        name: AvailabilityZone,
-      },
-    })) ?? [],
-  );
+  const azNodes: GraphNode[] = subnetsState.flatMap(({ AvailabilityZone, VpcId }) => ({
+    group: "nodes",
+    id: `${VpcId}-${AvailabilityZone}`,
+    data: {
+      id: `${VpcId}-${AvailabilityZone}`,
+      type: "EC2-AZ",
+      parent: VpcId,
+      name: AvailabilityZone,
+    },
+    metadata: {
+      name: AvailabilityZone,
+    }
+  })) ?? [];
 
   ec2NetworkingNodes.push(...azNodes);
 
-  const subnets: GraphNode[] = subnetsState.flatMap(({ _result }) =>
-    _result.Subnets?.map(({ VpcId, SubnetArn, SubnetId, AvailabilityZoneId }) => ({
-      group: "nodes",
-      id: SubnetArn as string,
-      data: {
-        id: SubnetArn as string,
-        type: "EC2-Subnet",
-        parent: `${VpcId}-${AvailabilityZoneId}`,
-      },
-      metadata: {
-        name: SubnetId,
-      },
-    })) ?? [],
-  );
+  const subnets: GraphNode[] = subnetsState.flatMap(({ VpcId, SubnetArn, SubnetId, AvailabilityZone }) => ({
+    group: "nodes",
+    id: SubnetId as string,
+    data: {
+      id: SubnetId as string,
+      type: "EC2-Subnet",
+      parent: `${VpcId}-${AvailabilityZone}`,
+      name: SubnetId,
+    },
+    metadata: {
+      name: SubnetId,
+      arn: SubnetArn
+    },
+  })) ?? [];
 
   ec2NetworkingNodes.push(...subnets);
 
