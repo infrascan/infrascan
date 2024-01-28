@@ -172,6 +172,194 @@ t.test(
   },
 );
 
+t.test(
+  "The service is created in awsvpc mode causing it to be nested in the subnet",
+  async () => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ecsClient = ECSScanner.getClient(fromProcess(), testContext);
+
+    const mockedEcsClient = mockClient(ecsClient);
+
+    // Mock each of the functions used to pull state
+    const clusterName = "test-cluster";
+    const clusterArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:cluster/${clusterName}`;
+    mockedEcsClient.on(ListClustersCommand).resolves({
+      clusterArns: [clusterArn],
+    });
+
+    mockedEcsClient.on(DescribeClustersCommand).resolves({
+      clusters: [
+        {
+          clusterName,
+          clusterArn,
+        },
+      ],
+    });
+
+    const serviceName = "test-service";
+    const serviceArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:service/${serviceName}`;
+    const taskDefArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:task-definition/${serviceName}:1`;
+    mockedEcsClient.on(ListServicesCommand).resolves({
+      serviceArns: [serviceArn],
+    });
+
+    const testSubnet1 = "subnet-00000001";
+    const testSubnet2 = "subnet-00000002";
+    mockedEcsClient.on(DescribeServicesCommand).resolves({
+      services: [
+        {
+          serviceName,
+          serviceArn,
+          taskDefinition: taskDefArn,
+          clusterArn,
+          networkConfiguration: {
+            awsvpcConfiguration: {
+              subnets: [testSubnet1, testSubnet2]
+            }
+          }
+        },
+      ],
+    });
+
+    const taskArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:task/${clusterName}/test-task`;
+    mockedEcsClient.on(ListTasksCommand).resolves({
+      taskArns: [taskArn],
+    });
+
+    const executionRoleArn = `arn:aws:iam::${testContext.account}:role/test-exec-role`;
+    const taskRoleArn = `arn:aws:iam::${testContext.account}:role/test-task-role`;
+    const scheduledTaskDefArn = `arn:aws:ecs:${testContext.region}:${testContext.account}:task-definition/scheduled:1`;
+    mockedEcsClient.on(DescribeTasksCommand).resolves({
+      tasks: [
+        {
+          taskArn,
+          taskDefinitionArn: scheduledTaskDefArn,
+          clusterArn,
+        },
+      ],
+    });
+
+    mockedEcsClient.on(DescribeTaskDefinitionCommand).resolves({
+      taskDefinition: {
+        taskRoleArn,
+        executionRoleArn,
+        taskDefinitionArn: scheduledTaskDefArn,
+      },
+    });
+
+    for (const scannerFn of ECSScanner.getters) {
+      await scannerFn(ecsClient, connector, testContext);
+    }
+
+    t.equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
+    t.equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
+    t.equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
+    t.equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 1);
+    t.equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
+    t.equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 1);
+    t.equal(
+      mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
+      1,
+    );
+
+
+    const nodes = await ECSScanner.getNodes!(connector, testContext);
+
+    t.equal(nodes.length, 8);
+    // successfully found cluster node under the region
+    t.ok(
+      nodes.find(
+        (node) => node.id === clusterArn && node.data.type === "ECS-Cluster" && node.data.parent === `${testContext.account}-${testContext.region}`,
+      ),
+    );
+    // successfully found cluster node under the subnets
+    t.ok(
+      nodes.find(
+        (node) => node.id === `${testSubnet1}-${clusterArn}` && node.data.type === "ECS-Cluster" && node.data.parent === testSubnet1,
+      ),
+    );
+    t.ok(
+      nodes.find(
+        (node) => node.id === `${testSubnet2}-${clusterArn}` && node.data.type === "ECS-Cluster" && node.data.parent === testSubnet2,
+      ),
+    );
+
+    // successfully found service node with cluster as parent
+    t.ok(
+      nodes.find(
+        (node) =>
+          node.id === `${testSubnet1}-${serviceArn}` &&
+          node.data.parent === `${testSubnet1}-${clusterArn}` &&
+          node.data.type === "ECS-Service",
+      ),
+    );
+    t.notOk(
+      nodes.find(
+        (node) =>
+          node.id === `${testSubnet1}-${serviceArn}` &&
+          node.data.parent === clusterArn &&
+          node.data.type === "ECS-Service",
+      ),
+    );
+    t.notOk(
+      nodes.find(
+        (node) =>
+          node.id === `${testSubnet2}-${serviceArn}` &&
+          node.data.parent === clusterArn &&
+          node.data.type === "ECS-Service",
+      ),
+    );
+    // successfully found task node with service as parent
+    t.ok(
+      nodes.find(
+        (node) =>
+          node.id === `${testSubnet1}-${taskDefArn}` &&
+          node.data.parent === `${testSubnet1}-${serviceArn}` &&
+          node.data.type === "ECS-Task",
+      ),
+    );
+    t.ok(
+      nodes.find(
+        (node) =>
+          node.id === `${testSubnet2}-${taskDefArn}` &&
+          node.data.parent === `${testSubnet2}-${serviceArn}` &&
+          node.data.type === "ECS-Task",
+      ),
+    );
+
+    // successfully found task node with cluster as parent
+    t.ok(
+      nodes.find(
+        (node) =>
+          node.id === scheduledTaskDefArn &&
+          node.data.parent === clusterArn &&
+          node.data.type === "ECS-Task",
+      ),
+    );
+
+    const iamRoles = await ECSScanner.getIamRoles!(connector);
+    t.equal(iamRoles.length, 2);
+    t.ok(
+      iamRoles.find(
+        (role) =>
+          role.executor === scheduledTaskDefArn &&
+          role.roleArn === taskRoleArn,
+      ),
+    );
+
+    t.ok(
+      iamRoles.find(
+        (role) =>
+          role.executor === scheduledTaskDefArn &&
+          role.roleArn === executionRoleArn,
+      ),
+    );
+  },
+);
+
 t.test("No Clusters in the account, should skip subsequent calls", async () => {
   const testContext = {
     region: "us-east-1",
