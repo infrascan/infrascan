@@ -1,5 +1,11 @@
 # @infrascan/aws-ec2-scanner
 
+## 0.2.4
+
+### Patch Changes
+
+- [#67](https://github.com/infrascan/infrascan/pull/67) [`2941c7d`](https://github.com/infrascan/infrascan/commit/2941c7dfd5eecaec1a57483b0c2c34e7c5fba6a0) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update EC2 scanner to correctly build the hierarchy between VPC, AZ, and subnets
+
 ## 0.2.3
 
 ### Patch Changes
