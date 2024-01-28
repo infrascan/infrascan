@@ -110,7 +110,7 @@ function resolveParentForNode(
   context: AwsContext,
   isRegionBound: boolean,
 ): string {
-  return isRegionBound ? context.region : context.account;
+  return isRegionBound ? `${context.account}-${context.region}` : context.account;
 }
 
 export function formatNode(
