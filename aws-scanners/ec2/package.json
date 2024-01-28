@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-ec2-scanner",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Infrascan scanner definition for AWS EC2",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
