@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-cloudfront-scanner",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Infrascan scanner definition for AWS Cloudfront",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "3.428.0",
-    "@infrascan/core": "0.2.2",
+    "@infrascan/core": "0.2.3",
     "minimatch": "^9.0.3"
   }
 }
