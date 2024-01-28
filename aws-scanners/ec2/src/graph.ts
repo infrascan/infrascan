@@ -1,13 +1,13 @@
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, formatNode } from "@infrascan/core";
 import type {
   AwsContext,
   Connector,
   GraphNode,
-  State,
+  SelectedNode,
 } from "@infrascan/shared-types";
 import type {
-  DescribeVpcsCommandOutput,
   Subnet,
+  Vpc,
 } from "@aws-sdk/client-ec2";
 
 
@@ -16,25 +16,21 @@ export async function getNodes(
   context: AwsContext,
 ): Promise<GraphNode[]> {
   const ec2NetworkingNodes: GraphNode[] = [];
-  const vpcs: State<DescribeVpcsCommandOutput>[] = await evaluateSelector(
+  const vpcs: Vpc[] = await evaluateSelector(
     context.account,
     context.region,
-    "EC2|DescribeVpcs|[]",
+    "EC2|DescribeVpcs|[]._result.Vpcs[]",
     connector,
   );
-  const vpcNodes: GraphNode[] = vpcs.flatMap(({ _metadata, _result }) =>
-    _result.Vpcs?.map(({ VpcId, ...vpcInfo }) => ({
-      group: "nodes",
-      id: VpcId as string,
-      data: {
-        id: VpcId as string,
-        type: "EC2-VPC",
-        parent: `${_metadata.account}-${_metadata.region}`,
-      },
-      metadata: { ...vpcInfo },
-    })) ?? [],
-  );
+  const rawVpcNodes: SelectedNode[] = vpcs.flatMap(({ VpcId, ...vpcInfo }) => ({
+    name: VpcId,
+    id: VpcId as string,
+    type: "EC2-VPC",
+    parent: `${context.account}-${context.region}`,
+    rawState: vpcInfo,
+  })) ?? [];
 
+  const vpcNodes = rawVpcNodes.map((node) => formatNode(node, 'EC2', 'EC2-VPC', context, true));
   ec2NetworkingNodes.push(...vpcNodes);
 
   /**
@@ -49,38 +45,26 @@ export async function getNodes(
     connector,
   );
 
-  const azNodes: GraphNode[] = subnetsState.flatMap(({ AvailabilityZone, VpcId }) => ({
-    group: "nodes",
+  const rawAzNodes: SelectedNode[] = subnetsState.flatMap(({ AvailabilityZone, VpcId }) => ({
     id: `${VpcId}-${AvailabilityZone}`,
-    data: {
-      id: `${VpcId}-${AvailabilityZone}`,
-      type: "EC2-AZ",
-      parent: VpcId,
-      name: AvailabilityZone,
-    },
-    metadata: {
-      name: AvailabilityZone,
-    }
+    type: "EC2-VPC-AZ",
+    parent: VpcId,
+    name: AvailabilityZone,
   })) ?? [];
 
+  const azNodes = rawAzNodes.map((node) => formatNode(node, 'EC2', 'EC2-VPC-AZ', context, true));
   ec2NetworkingNodes.push(...azNodes);
 
-  const subnets: GraphNode[] = subnetsState.flatMap(({ VpcId, SubnetArn, SubnetId, AvailabilityZone }) => ({
-    group: "nodes",
+  const rawSubnets: SelectedNode[] = subnetsState.flatMap(({ VpcId, SubnetId, AvailabilityZone, ...subnetState }) => ({
     id: SubnetId as string,
-    data: {
-      id: SubnetId as string,
-      type: "EC2-Subnet",
-      parent: `${VpcId}-${AvailabilityZone}`,
-      name: SubnetId,
-    },
-    metadata: {
-      name: SubnetId,
-      arn: SubnetArn
-    },
+    type: "EC2-Subnet",
+    parent: `${VpcId}-${AvailabilityZone}`,
+    name: SubnetId,
+    rawState: subnetState
   })) ?? [];
 
-  ec2NetworkingNodes.push(...subnets);
+  const subnetNodes = rawSubnets.map((node) => formatNode(node, 'EC2', 'EC2-Subnet', context, true));
+  ec2NetworkingNodes.push(...subnetNodes);
 
   return ec2NetworkingNodes;
 }

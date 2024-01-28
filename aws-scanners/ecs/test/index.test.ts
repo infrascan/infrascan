@@ -117,7 +117,7 @@ t.test(
       // successfully found cluster node
       t.ok(
         nodes.find(
-          (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
+          (node) => node.id === clusterArn && node.data.type === "ECS-Cluster" && node.data.parent === `${testContext.account}-${testContext.region}`,
         ),
       );
 

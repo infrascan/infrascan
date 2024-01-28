@@ -56,9 +56,9 @@ export function buildRegionNode(account: string, region: string): GraphNode {
   const humanReadableRegionName = `${region} (${account})`;
   return {
     group: "nodes",
-    id: region,
+    id: `${account}-${region}`,
     data: {
-      id: region,
+      id: `${account}-${region}`,
       type: AWS_REGION_SERVICE_KEY,
       parent: account,
       name: humanReadableRegionName,
