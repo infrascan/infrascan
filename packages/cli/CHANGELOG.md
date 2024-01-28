@@ -1,5 +1,12 @@
 # @infrascan/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`1efd3c4`](https://github.com/infrascan/infrascan/commit/1efd3c40e42f824dab57e91269a1cfe83262d27e)]:
+  - @infrascan/aws@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
