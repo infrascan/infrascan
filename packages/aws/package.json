@@ -72,6 +72,7 @@
     "@infrascan/aws-route53-scanner": "^0.2.2",
     "@infrascan/aws-s3-scanner": "^0.2.2",
     "@infrascan/aws-sns-scanner": "^0.2.2",
-    "@infrascan/aws-sqs-scanner": "^0.2.2"
+    "@infrascan/aws-sqs-scanner": "^0.2.2",
+    "@infrascan/aws-step-function-scanner": "^0.1.0"
   }
 }

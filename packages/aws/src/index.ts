@@ -13,6 +13,7 @@ import RDSScanner from "@infrascan/aws-rds-scanner";
 import Route53Scanner from "@infrascan/aws-route53-scanner";
 import S3Scanner from "@infrascan/aws-s3-scanner";
 import SNSScanner from "@infrascan/aws-sns-scanner";
+import SFNScanner from "@infrascan/aws-step-function-scanner";
 import SQSScanner from "@infrascan/aws-sqs-scanner";
 
 export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
@@ -30,6 +31,7 @@ export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
   infrascanClient.registerScanner(Route53Scanner);
   infrascanClient.registerScanner(S3Scanner);
   infrascanClient.registerScanner(SNSScanner);
+  infrascanClient.registerScanner(SFNScanner);
   infrascanClient.registerScanner(SQSScanner);
   return infrascanClient;
 }
