@@ -1,5 +1,7 @@
 import jmespath from "jmespath";
 
+export * as Graph from './graph';
+
 import type {
   GenericParameterResolver,
   Connector,
