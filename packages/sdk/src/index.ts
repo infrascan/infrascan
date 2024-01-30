@@ -6,6 +6,7 @@ import type {
   GraphEdge,
   GraphNode,
 } from "@infrascan/shared-types";
+import { Graph } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "aws/helpers/iam";
 import {
@@ -214,6 +215,7 @@ export default class Infrascan {
     connector: Connector,
   ): Promise<GraphElement[]> {
     const serviceNodeMap: ServiceNodesMap = {};
+    const graph = Graph.Graph();
 
     const iamStorage = new IAMStorage();
     const iamState: StoredRole[] =
@@ -229,7 +231,15 @@ export default class Infrascan {
     for (const { account, regions, defaultRegion } of scanMetadata) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
-      addGraphElementToMap(graphNodes, accountNode);
+      graph.addNode({
+        id: accountNode.id,
+        name: accountNode.data.name ?? accountNode.id,
+        metadata: accountNode.metadata,
+        edges: {
+          incoming: {},
+          outgoing: {}
+        }
+      });
 
       for (const serviceScanner of globalServiceEntries) {
         if (serviceScanner.getNodes != null) {
@@ -244,13 +254,33 @@ export default class Infrascan {
             const formattedNodes = scannerNodes.map((node) =>
               serviceScanner.formatNode!(node, context),
             );
-            formattedNodes.forEach((node) =>
-              addGraphElementToMap(graphNodes, node, serviceNodeIds),
-            );
+            formattedNodes.forEach((node) => {
+              graph.addNode({
+                id: node.id,
+                name: node.data.name ?? node.id,
+                metadata: node.metadata,
+                parent: node.data.parent,
+                edges: {
+                  incoming: {},
+                  outgoing: {}
+                }
+              });
+              serviceNodeIds.push(node.id);
+            });
           } else {
-            scannerNodes.forEach((node) =>
-              addGraphElementToMap(graphNodes, node, serviceNodeIds),
-            );
+            scannerNodes.forEach((node) => {
+              graph.addNode({
+                id: node.id,
+                name: node.data.name ?? node.id,
+                metadata: node.metadata,
+                parent: node.data.parent,
+                edges: {
+                  incoming: {},
+                  outgoing: {}
+                }
+              });
+              serviceNodeIds.push(node.id);
+            });
           }
           serviceNodeMap[
             serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
@@ -261,7 +291,16 @@ export default class Infrascan {
       for (const region of regions) {
         context.region = region;
         const regionNode = buildRegionNode(account, region);
-        addGraphElementToMap(graphNodes, regionNode);
+        graph.addNode({
+          id: regionNode.id,
+          name: regionNode.data.name ?? regionNode.id,
+          metadata: regionNode.metadata,
+          parent: regionNode.data.parent,
+          edges: {
+            incoming: {},
+            outgoing: {}
+          }
+        });
         for (const regionalServiceScanner of regionalServiceEntries) {
           if (regionalServiceScanner.getNodes != null) {
             const regionalServiceNodeIds: string[] = [];
@@ -275,25 +314,44 @@ export default class Infrascan {
               const formattedNodes = regionalNodes.map((node) =>
                 regionalServiceScanner.formatNode!(node, context),
               );
-              formattedNodes.forEach((node) =>
-                addGraphElementToMap(graphNodes, node, regionalServiceNodeIds),
-              );
+              formattedNodes.forEach((node) => {
+                graph.addNode({
+                  id: node.id,
+                  name: node.id ?? node.data.name,
+                  metadata: node.metadata,
+                  parent: node.data.parent,
+                  edges: {
+                    incoming: {},
+                    outgoing: {}
+                  }
+                });
+                regionalServiceNodeIds.push(node.id);
+              });
             } else {
-              regionalNodes.forEach((node) =>
-                addGraphElementToMap(graphNodes, node, regionalServiceNodeIds),
-              );
+              regionalNodes.forEach((node) => {
+                graph.addNode({
+                  id: node.id,
+                  name: node.data.name ?? node.id,
+                  metadata: node.metadata,
+                  parent: node.data.parent,
+                  edges: {
+                    incoming: {},
+                    outgoing: {}
+                  }
+                });
+                regionalServiceNodeIds.push(node.id);
+              });
             }
-            const serviceNodes =
-              serviceNodeMap[
-                regionalServiceScanner.arnLabel ??
-                  regionalServiceScanner.service.toLowerCase()
-              ];
+            const serviceNodes = serviceNodeMap[
+              regionalServiceScanner.arnLabel
+              ?? regionalServiceScanner.service.toLowerCase()
+            ];
             if (serviceNodes) {
               serviceNodes.push(...regionalServiceNodeIds);
             } else {
               serviceNodeMap[
                 regionalServiceScanner.arnLabel ??
-                  regionalServiceScanner.service.toLowerCase()
+                regionalServiceScanner.service.toLowerCase()
               ] = regionalServiceNodeIds;
             }
           }
@@ -307,9 +365,14 @@ export default class Infrascan {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
         const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
-        scannerEdges.forEach((edge) =>
-          addGraphEdgeToMap(graphNodes, graphEdges, edge),
-        );
+        scannerEdges.forEach((edge) => {
+          graph.addEdge({
+            id: edge.id ?? edge.data.id,
+            metadata: Object.assign(edge.metadata ?? {}, edge.data),
+            source: edge.data.source,
+            target: edge.data.target
+          });
+        });
       }
     }
 
@@ -325,9 +388,14 @@ export default class Infrascan {
             executor,
             serviceNodeMap,
           );
-          roleEdges.forEach((edge) =>
-            addGraphEdgeToMap(graphNodes, graphEdges, edge),
-          );
+          roleEdges.forEach((edge) => {
+            graph.addEdge({
+              id: edge.id ?? edge.data.id,
+              metadata: Object.assign(edge.metadata ?? {}, edge.data),
+              source: edge.data.source,
+              target: edge.data.target
+            });
+          });
         }
       }
     }

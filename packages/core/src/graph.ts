@@ -3,6 +3,7 @@ interface Node {
     name: string,
     metadata: object;
     parent?: string | Node,
+    children?: Record<string, Node>,
     edges: {
         incoming: Record<string, Edge<Node>>,
         outgoing: Record<string, Edge<Node>>
@@ -17,8 +18,8 @@ interface Edge<T extends string | Node> {
 }
 
 interface Graph {
-    nodes: Record<string, Node>,
-    edges: Record<string, Edge<Node>>,
+    nodes: Node[],
+    edges: Edge<Node>[],
     addNode: (node: Node) => void,
     addEdge: (edge: Edge<string>) => void,
     getNode: (id: string) => Node | undefined,
@@ -31,7 +32,6 @@ interface Graph {
 /**
  * In memory graph model used by the Infrascan SDK. 
  * The graph is built using object references to support recursive lookups (e.g. `node.edges.outgoing["edge-1"].target.edges.incoming["edge-1"].source` and so on.)
- * The graph makes no assumptions about being acyclic so it is not recommended to do unbounded recursion over it.
  * 
  * The main aim behind the design of this graph model, is to be able to easily duplicate nodes and carry across their edges. This is particularly
  * useful for graphs which need to translate a node or set of nodes under a new parent, while maintaining their edges.
@@ -47,7 +47,38 @@ export function Graph(): Graph {
         if (nodes[node.id] != null) {
             throw new Error('Node already exists in graph');
         }
-        nodes[node.id] = node;
+        try {
+            nodes[node.id] = node;
+            if (node.parent != null) {
+                // Parent is of type Node at this point.
+                addChild(
+                    typeof node.parent === 'string'
+                        ? node.parent
+                        : node.parent.id,
+                    node.id
+                );
+            }
+        } catch (err: unknown) {
+            delete nodes[node.id];
+            throw err;
+        }
+    }
+
+    function addChild(parent: string, child: string) {
+        const parentNode = nodes[parent];
+        const childNode = nodes[child];
+        if (parentNode == null) {
+            throw new Error('No node found for parent id');
+        }
+        if (childNode == null) {
+            throw new Error('No node found for child id');
+        }
+
+        if (parentNode.children == null) {
+            parentNode.children = {};
+        }
+        parentNode.children[childNode.id] = childNode;
+        childNode.parent = parentNode;
     }
 
     function addEdge(edge: Edge<string>) {
@@ -143,11 +174,11 @@ Edges: ${edgeStrings}`;
     }
 
     return {
-        get nodes() {
-            return nodes;
+        get nodes(): Node[] {
+            return Object.values(nodes);
         },
-        get edges() {
-            return edges;
+        get edges(): Edge<Node>[] {
+            return Object.values(edges);
         },
         addNode,
         addEdge,
