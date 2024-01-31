@@ -2,9 +2,10 @@ import type {
   ServiceModule,
   Provider,
   Connector,
-  GraphElement,
   GraphEdge,
-  GraphNode,
+  GraphPluginEvents,
+  GraphPlugin,
+  GraphSerializer
 } from "@infrascan/shared-types";
 import { Graph } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
@@ -20,11 +21,11 @@ import {
 } from "./scan";
 
 import {
+  addEdgeToGraphUnchecked,
+  addNodeToGraphUnchecked,
   buildAccountNode,
   buildRegionNode,
-  addGraphElementToMap,
   generateEdgesForRole,
-  addGraphEdgeToMap,
 } from "./graph";
 
 const AWS_DEFAULT_REGION = "us-east-1";
@@ -43,12 +44,18 @@ export interface ServiceNodesMap {
 
 export default class Infrascan {
   private regionalScannerRegistry: ScannerRegistry;
-
   private globalScannerRegistry: ScannerRegistry;
+  private pluginRegistry: { [E in GraphPluginEvents]: Omit<GraphPlugin<E>, "event">[] };
 
   constructor() {
     this.regionalScannerRegistry = {};
     this.globalScannerRegistry = {};
+    this.pluginRegistry = {
+      onAccountComplete: [],
+      onGraphComplete: [],
+      onRegionComplete: [],
+      onServiceComplete: []
+    };
   }
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -62,6 +69,16 @@ export default class Infrascan {
       );
     }
     targetRegistry[scanner.key] = scanner;
+  }
+
+  /**
+   * Register a plugin to be run during the lifecycle of the graph. Supported events are {@link GraphPluginEvents}.
+   * Plugins registered for the same event will be run in order of registration.
+   * @param plugin A plugin to be run on a specified lifecycle event within the graph.
+   */
+  registerPlugin<E extends GraphPluginEvents>(plugin: GraphPlugin<E>) {
+    const { event, ...pluginDetails } = plugin;
+    this.pluginRegistry[event].push(pluginDetails);
   }
 
   /**
@@ -201,7 +218,8 @@ export default class Infrascan {
    * const scanMetadata = await infrascan.performScan({ ... });
    * infrascan.generateGraph(
    *  scanMetadata,
-   *  connector
+   *  connector,
+   *  (graph) => graph.nodes()
    * ).then(function (graphData) {
    *  console.log("Graph Complete!", graphData);
    * }).catch(function (err) {
@@ -209,21 +227,18 @@ export default class Infrascan {
    * });
    * ```
    */
-
-  async generateGraph(
+  async generateGraph<T>(
     scanMetadata: ScanMetadata[],
     connector: Connector,
-  ): Promise<GraphElement[]> {
+    graphSerializer: GraphSerializer<T>
+  ): Promise<T> {
     const serviceNodeMap: ServiceNodesMap = {};
-    const graph = Graph.Graph();
+    const graph = Graph();
 
     const iamStorage = new IAMStorage();
     const iamState: StoredRole[] =
       await connector.getGlobalStateForServiceFunction("IAM", "roles");
     hydrateRoleStorage(iamStorage, iamState);
-
-    const graphEdges: Record<string, GraphEdge> = {};
-    const graphNodes: Record<string, GraphNode> = {};
 
     const globalServiceEntries = Object.values(this.globalScannerRegistry);
     const regionalServiceEntries = Object.values(this.regionalScannerRegistry);
@@ -231,15 +246,7 @@ export default class Infrascan {
     for (const { account, regions, defaultRegion } of scanMetadata) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
-      graph.addNode({
-        id: accountNode.id,
-        name: accountNode.data.name ?? accountNode.id,
-        metadata: accountNode.metadata,
-        edges: {
-          incoming: {},
-          outgoing: {}
-        }
-      });
+      addNodeToGraphUnchecked(graph, accountNode);
 
       for (const serviceScanner of globalServiceEntries) {
         if (serviceScanner.getNodes != null) {
@@ -255,52 +262,29 @@ export default class Infrascan {
               serviceScanner.formatNode!(node, context),
             );
             formattedNodes.forEach((node) => {
-              graph.addNode({
-                id: node.id,
-                name: node.data.name ?? node.id,
-                metadata: node.metadata,
-                parent: node.data.parent,
-                edges: {
-                  incoming: {},
-                  outgoing: {}
-                }
-              });
+              addNodeToGraphUnchecked(graph, node);
               serviceNodeIds.push(node.id);
             });
           } else {
             scannerNodes.forEach((node) => {
-              graph.addNode({
-                id: node.id,
-                name: node.data.name ?? node.id,
-                metadata: node.metadata,
-                parent: node.data.parent,
-                edges: {
-                  incoming: {},
-                  outgoing: {}
-                }
-              });
+              addNodeToGraphUnchecked(graph, node);
               serviceNodeIds.push(node.id);
             });
           }
           serviceNodeMap[
             serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
           ] = serviceNodeIds;
+          for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
+            console.log(`Running ${id} onServiceComplete`);
+            await handler(graph, serviceScanner.service, context);
+          }
         }
       }
 
       for (const region of regions) {
         context.region = region;
         const regionNode = buildRegionNode(account, region);
-        graph.addNode({
-          id: regionNode.id,
-          name: regionNode.data.name ?? regionNode.id,
-          metadata: regionNode.metadata,
-          parent: regionNode.data.parent,
-          edges: {
-            incoming: {},
-            outgoing: {}
-          }
-        });
+        addNodeToGraphUnchecked(graph, regionNode);
         for (const regionalServiceScanner of regionalServiceEntries) {
           if (regionalServiceScanner.getNodes != null) {
             const regionalServiceNodeIds: string[] = [];
@@ -315,30 +299,12 @@ export default class Infrascan {
                 regionalServiceScanner.formatNode!(node, context),
               );
               formattedNodes.forEach((node) => {
-                graph.addNode({
-                  id: node.id,
-                  name: node.id ?? node.data.name,
-                  metadata: node.metadata,
-                  parent: node.data.parent,
-                  edges: {
-                    incoming: {},
-                    outgoing: {}
-                  }
-                });
+                addNodeToGraphUnchecked(graph, node);
                 regionalServiceNodeIds.push(node.id);
               });
             } else {
               regionalNodes.forEach((node) => {
-                graph.addNode({
-                  id: node.id,
-                  name: node.data.name ?? node.id,
-                  metadata: node.metadata,
-                  parent: node.data.parent,
-                  edges: {
-                    incoming: {},
-                    outgoing: {}
-                  }
-                });
+                addNodeToGraphUnchecked(graph, node);
                 regionalServiceNodeIds.push(node.id);
               });
             }
@@ -354,8 +320,23 @@ export default class Infrascan {
                 regionalServiceScanner.service.toLowerCase()
               ] = regionalServiceNodeIds;
             }
+
+            for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
+              console.log(`Running ${id} onServiceComplete`);
+              await handler(graph, regionalServiceScanner.service, context);
+            }
           }
         }
+
+        for (const { id, handler } of this.pluginRegistry.onRegionComplete) {
+          console.log(`Running ${id} onRegionComplete`);
+          await handler(graph, context);
+        }
+      }
+
+      for (const { id, handler } of this.pluginRegistry.onAccountComplete) {
+        console.log(`Running ${id} onAccountComplete`);
+        await handler(graph, context);
       }
     }
 
@@ -365,14 +346,7 @@ export default class Infrascan {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
         const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
-        scannerEdges.forEach((edge) => {
-          graph.addEdge({
-            id: edge.id ?? edge.data.id,
-            metadata: Object.assign(edge.metadata ?? {}, edge.data),
-            source: edge.data.source,
-            target: edge.data.target
-          });
-        });
+        scannerEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
       }
     }
 
@@ -388,21 +362,12 @@ export default class Infrascan {
             executor,
             serviceNodeMap,
           );
-          roleEdges.forEach((edge) => {
-            graph.addEdge({
-              id: edge.id ?? edge.data.id,
-              metadata: Object.assign(edge.metadata ?? {}, edge.data),
-              source: edge.data.source,
-              target: edge.data.target
-            });
-          });
+          roleEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
         }
       }
     }
 
-    const nodes: GraphElement[] = Object.values(graphNodes);
-    const edges: GraphElement[] = Object.values(graphEdges);
-    return nodes.concat(edges);
+    return graphSerializer(graph);
   }
 }
 

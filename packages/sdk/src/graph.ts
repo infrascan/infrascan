@@ -11,6 +11,7 @@ import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
 import type { StoredRole } from "./aws/helpers/iam";
 import type { ServiceNodesMap } from "./index";
+import type { Graph } from "@infrascan/core";
 
 /**
  * Parameters required to convert a scan output into an infrastructure graph.
@@ -70,33 +71,52 @@ export function buildRegionNode(account: string, region: string): GraphNode {
   };
 }
 
-export function addGraphElementToMap<T extends GraphElement>(
-  elementMap: Record<string, T>,
-  element: T,
-  serviceNodeIds?: string[],
+/**
+ * Add a node into the graph logging any errors that the graph module throws.
+ * @param graph The in-memory graph
+ * @param node The node to insert into the graph
+ */
+export function addNodeToGraphUnchecked(
+  graph: Graph,
+  node: GraphNode,
 ) {
-  if (elementMap[element.data.id] == null) {
-    elementMap[element.data.id] = element;
-    serviceNodeIds?.push(element.data.id);
-  } else {
-    console.warn(`Duplicate element found: ${element.data.id}`);
+  try {
+    graph.addNode({
+      id: node.id,
+      name: node.id ?? node.data.name,
+      metadata: node.metadata,
+      parent: node.data.parent,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.warn(`An error occurred while inserting node ${node.id} into graph. ${err.message}`);
+    } else {
+      console.warn(`An unexpected error occurred while inserting node ${node.id} into graph.`);
+    }
   }
 }
 
-export function addGraphEdgeToMap(
-  nodeMap: Record<string, GraphNode>,
-  edgeMap: Record<string, GraphEdge>,
-  element: GraphEdge,
+/**
+ * Add an edge to the graph logging any errors that the graph module throws.
+ * @param graph The in-memory graph
+ * @param edge The edge to insert into the graph
+ */
+export function addEdgeToGraphUnchecked(
+  graph: Graph,
+  edge: GraphEdge,
 ) {
-  const { source, target } = element.data;
-  const hasSource = nodeMap[source] != null;
-  const hasTarget = nodeMap[target] != null;
-  if (hasSource && hasTarget) {
-    addGraphElementToMap(edgeMap, element);
-  } else {
-    console.warn(
-      `Found edge with missing source or target: ${source} -> ${target}`,
-    );
+  try {
+    graph.addEdge({
+      source: edge.data.source,
+      target: edge.data.target,
+      metadata: Object.assign(edge.metadata ?? {}, edge.data),
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.warn(`An error occurred while inserting edge ${edge.data.source}-${edge.data.target} into graph. ${err.message}`);
+    } else {
+      console.error(`An unexpected error occurred while inserting edge ${edge.data.source}-${edge.data.target} into graph.`);
+    }
   }
 }
 

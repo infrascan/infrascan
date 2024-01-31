@@ -1,3 +1,5 @@
+import type { Graph } from "@infrascan/shared-types";
+
 /**
  * A node on the graph in Cytoscape format
  */
@@ -17,7 +19,6 @@ export type CytoscapeNode = {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     metadata?: any;
 };
-
 
 /**
  * An edge connecting two nodes within a graph
@@ -49,14 +50,49 @@ export type CytoscapeEdge = {
     };
 };
 
-
 /**
  * Generic type for elements in a graph
  */
 export type CytoscapeGraph = CytoscapeNode | CytoscapeEdge;
 
-
 export type EdgeTarget = {
     name: string;
     target: string;
 };
+
+export function serializeGraph(graph: Graph): CytoscapeGraph[] {
+    const nodes: CytoscapeNode[] = graph.nodes.map((node) => {
+        return {
+            group: "nodes",
+            id: node.id,
+            data: {
+                id: node.id,
+                type: 'node',
+                parent: typeof node.parent === 'string' ? node.parent : node.parent?.id,
+                name: node.name,
+                service: node.metadata.service as string
+            },
+            metadata: node.metadata
+        };
+    });
+
+    const edges: CytoscapeEdge[] = graph.edges.map((edge) => {
+        return {
+            group: 'edges',
+            id: edge.id,
+            data: {
+                id: edge.id,
+                name: edge.name as string,
+                source: edge.source.id,
+                target: edge.target.id,
+                type: "edge",
+            },
+            metadata: {
+                label: edge.target.name,
+                ...edge.metadata
+            }
+        };
+    });
+
+    return [...nodes, ...edges];
+}

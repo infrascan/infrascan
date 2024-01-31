@@ -1,33 +1,28 @@
-interface Node {
-    id: string,
-    name: string,
-    metadata: object;
-    parent?: string | Node,
-    children?: Record<string, Node>,
-    edges: {
-        incoming: Record<string, Edge<Node>>,
-        outgoing: Record<string, Edge<Node>>
+import type { Edge, Graph, Node } from "@infrascan/shared-types";
+
+export class NodeConflictError extends Error {
+    constructor(nodeId: string) {
+        super(`Node ${nodeId} already exists in graph.`);
     }
 }
 
-interface Edge<T extends string | Node> {
-    id: string,
-    metadata: object,
-    source: T,
-    target: T
+export class EdgeConflictError extends Error {
+    constructor(edgeId: string) {
+        super(`Edge ${edgeId} already exists in graph.`);
+    }
 }
 
-interface Graph {
-    nodes: Node[],
-    edges: Edge<Node>[],
-    addNode: (node: Node) => void,
-    addEdge: (edge: Edge<string>) => void,
-    getNode: (id: string) => Node | undefined,
-    mapNodesById: (id: string, mapperFn: (node: Node) => Node[]) => void,
-    removeEdge: (id: string) => Edge<Node>,
-    removeNode: (id: string) => Node,
-    serialize: () => string
-};
+export class NodeNotFoundError extends Error {
+    constructor(nodeId: string) {
+        super(`Node ${nodeId} not found in graph.`);
+    }
+}
+
+export class EdgeNotFoundError extends Error {
+    constructor(edgeId: string) {
+        super(`Edge ${edgeId} not found in graph.`);
+    }
+}
 
 /**
  * In memory graph model used by the Infrascan SDK. 
@@ -43,18 +38,22 @@ export function Graph(): Graph {
     const nodes: Record<string, Node> = {};
     const edges: Record<string, Edge<Node>> = {};
 
-    function addNode(node: Node) {
+    function addNode(node: Pick<Node, "id" | "name" | "metadata" | "parent">) {
         if (nodes[node.id] != null) {
-            throw new Error('Node already exists in graph');
+            throw new NodeConflictError(node.id);
         }
         try {
-            nodes[node.id] = node;
-            if (node.parent != null) {
+            const completedNode: Node = Object.assign(node, {
+                incomingEdges: {},
+                outgoingEdges: {}
+            });
+            nodes[node.id] = completedNode;
+            if (completedNode.parent != null) {
                 // Parent is of type Node at this point.
                 addChild(
-                    typeof node.parent === 'string'
-                        ? node.parent
-                        : node.parent.id,
+                    typeof completedNode.parent === 'string'
+                        ? completedNode.parent
+                        : completedNode.parent.id,
                     node.id
                 );
             }
@@ -68,10 +67,10 @@ export function Graph(): Graph {
         const parentNode = nodes[parent];
         const childNode = nodes[child];
         if (parentNode == null) {
-            throw new Error('No node found for parent id');
+            throw new NodeNotFoundError(parent);
         }
         if (childNode == null) {
-            throw new Error('No node found for child id');
+            throw new NodeNotFoundError(child);
         }
 
         if (parentNode.children == null) {
@@ -81,38 +80,37 @@ export function Graph(): Graph {
         childNode.parent = parentNode;
     }
 
-    function addEdge(edge: Edge<string>) {
-        if (edges[edge.id] != null) {
-            throw new Error(`${edge.id} already exists in graph`);
+    function addEdge(edge: Pick<Edge<string>, "name" | "source" | "target" | "metadata">) {
+        const edgeId = `${edge.source}-${edge.target}`;
+        if (edges[edgeId] != null) {
+            throw new EdgeConflictError(edgeId);
         }
         const sourceNode = nodes[edge.source];
         if (sourceNode == null) {
-            throw new Error('Source node not found in graph');
+            throw new NodeNotFoundError(edge.source);
         }
         const targetNode = nodes[edge.target];
         if (targetNode == null) {
-            throw new Error('Target node not found in graph');
+            throw new NodeNotFoundError(edge.target);
         }
 
-        const preparedEdge = {
-            ...edge,
-            id: `${sourceNode.id}-${targetNode.id}`,
+        const preparedEdge: Edge<Node> = Object.assign(edge, {
+            id: edgeId,
             source: sourceNode,
             target: targetNode
-        };
+        });
         edges[preparedEdge.id] = preparedEdge;
-        sourceNode.edges.outgoing[preparedEdge.id] = preparedEdge;
-        targetNode.edges.incoming[preparedEdge.id] = preparedEdge;
+        sourceNode.outgoingEdges[preparedEdge.id] = preparedEdge;
+        targetNode.incomingEdges[preparedEdge.id] = preparedEdge;
     }
 
     function removeNode(id: string): Node {
         const node = nodes[id];
         if (node == null) {
-            throw new Error(`No node found with ID: ${id}`);
+            throw new NodeNotFoundError(id);
         }
-        console.log(node.id, Object.keys(node.edges.incoming));
-        Object.keys(node.edges.incoming).forEach(removeEdge);
-        Object.keys(node.edges.outgoing).forEach(removeEdge);
+        Object.keys(node.incomingEdges).forEach(removeEdge);
+        Object.keys(node.outgoingEdges).forEach(removeEdge);
         delete nodes[id];
         return node;
     }
@@ -120,11 +118,11 @@ export function Graph(): Graph {
     function removeEdge(id: string): Edge<Node> {
         const edge = edges[id];
         if (edge == null) {
-            throw new Error(`No edge found with ID: ${id}`);
+            throw new EdgeNotFoundError(id);
         }
         delete edges[id];
-        delete edge.source.edges.outgoing[id];
-        delete edge.target.edges.incoming[id];
+        delete edge.source.outgoingEdges[id];
+        delete edge.target.incomingEdges[id];
         return edge;
     }
 
@@ -136,30 +134,27 @@ export function Graph(): Graph {
     function mapNodesById(id: string, mapperFn: (node: Node) => Node[]) {
         const nodeToMap = nodes[id];
         const newNodes = mapperFn(nodeToMap);
-        const edgesToAdd = newNodes.flatMap((newNode) => {
+        const incomingEdges = Object.values(nodeToMap.incomingEdges);
+        const outgoingEdges = Object.values(nodeToMap.outgoingEdges);
+        newNodes.forEach((newNode) => {
             addNode(newNode);
-            const incomingNodes = Object.values(nodeToMap.edges.incoming).map((edge) => {
-                return {
+            incomingEdges.forEach((edge) => {
+                addEdge({
                     ...edge,
-                    id: `${edge.source.id}-${newNode.id}`,
                     source: edge.source.id,
                     target: newNode.id
-                };
+                })
             });
 
-            const outgoingNodes = Object.values(nodeToMap.edges.outgoing).map((edge) => {
-                return {
+            outgoingEdges.forEach((edge) => {
+                addEdge({
                     ...edge,
-                    id: `${newNode.id}-${edge.target.id}`,
                     source: newNode.id,
                     target: edge.target.id
-                };
+                });
             });
-
-            return [...incomingNodes, ...outgoingNodes];
         });
         removeNode(id);
-        edgesToAdd.forEach(addEdge);
     }
 
     function serialize(): string {
@@ -182,6 +177,7 @@ Edges: ${edgeStrings}`;
         },
         addNode,
         addEdge,
+        addChild,
         getNode,
         mapNodesById,
         removeEdge,
