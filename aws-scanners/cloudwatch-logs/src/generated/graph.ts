@@ -9,15 +9,14 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
-  GraphEdge,
-  EdgeTarget,
+  SelectedEdge,
+  SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const DescribeSubscriptionFiltersNodes = await evaluateSelector(
     context.account,
@@ -27,15 +26,13 @@ export async function getNodes(
   );
   state.push(...DescribeSubscriptionFiltersNodes);
 
-  return state.map((node) =>
-    formatNode(node, "cloudwatch-logs", "CloudWatchLogs", context, true),
-  );
+  return state.map((node) => formatNode(node, "CloudWatchLogs", context, true));
 }
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  const edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const edges: SelectedEdge[] = [];
   const DescribeSubscriptionFiltersState1 = await evaluateSelectorGlobally(
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
     stateConnector,
@@ -43,10 +40,8 @@ export async function getEdges(
   const DescribeSubscriptionFiltersEdges1 =
     DescribeSubscriptionFiltersState1.flatMap((state: any) => {
       const source = filterState(state, "logGroupName");
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "{target:destinationArn}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(state, "{target:destinationArn}");
       if (!target || !source) {
         return [];
       }

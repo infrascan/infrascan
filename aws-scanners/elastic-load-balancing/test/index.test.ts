@@ -115,7 +115,7 @@ t.test(
       );
       t.equal(nodes.length, 1);
       t.equal(nodes[0].id, elbArn);
-      t.equal(nodes[0].data.name, elbName);
+      t.equal(nodes[0].name, elbName);
     }
   },
 );

@@ -1,17 +1,16 @@
 import jmespath from "jmespath";
 import minimatch from "minimatch";
 import type {
-  GraphEdge,
-  GraphNode,
-  GraphElement,
   GetGlobalStateForServiceFunction,
   ResolveStateForServiceFunction,
+  SelectedNode,
+  SelectedEdge,
+  Graph,
 } from "@infrascan/shared-types";
 import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
 import type { StoredRole } from "./aws/helpers/iam";
 import type { ServiceNodesMap } from "./index";
-import type { Graph } from "@infrascan/core";
 
 /**
  * Parameters required to convert a scan output into an infrastructure graph.
@@ -33,38 +32,30 @@ export type GenerateGraphOptions = {
   getGlobalStateForServiceAndFunction: GetGlobalStateForServiceFunction;
 };
 
-export { GraphEdge, GraphNode, GraphElement, GetGlobalStateForServiceFunction };
+export { SelectedNode, GetGlobalStateForServiceFunction, Graph };
 
-const AWS_ACCOUNT_SERVICE_KEY = "AWS-Account";
-export function buildAccountNode(account: string): GraphNode {
+export const AWS_ACCOUNT_SERVICE_KEY = "AWS-Account";
+export function buildAccountNode(account: string): SelectedNode {
   const humanReadableAccountName = `AWS Account ${account}`;
   return {
-    group: "nodes",
     id: account,
-    data: {
-      id: account,
-      type: AWS_ACCOUNT_SERVICE_KEY,
-      name: humanReadableAccountName,
-    },
-    metadata: {
+    name: humanReadableAccountName,
+    type: AWS_ACCOUNT_SERVICE_KEY,
+    rawState: {
       name: humanReadableAccountName,
     },
   };
 }
 
-const AWS_REGION_SERVICE_KEY = "AWS-Region";
-export function buildRegionNode(account: string, region: string): GraphNode {
+export const AWS_REGION_SERVICE_KEY = "AWS-Region";
+export function buildRegionNode(account: string, region: string): SelectedNode {
   const humanReadableRegionName = `${region} (${account})`;
   return {
-    group: "nodes",
     id: `${account}-${region}`,
-    data: {
-      id: `${account}-${region}`,
-      type: AWS_REGION_SERVICE_KEY,
-      parent: account,
-      name: humanReadableRegionName,
-    },
-    metadata: {
+    type: AWS_REGION_SERVICE_KEY,
+    parent: account,
+    name: humanReadableRegionName,
+    rawState: {
       parent: account,
       name: humanReadableRegionName,
     },
@@ -75,23 +66,31 @@ export function buildRegionNode(account: string, region: string): GraphNode {
  * Add a node into the graph logging any errors that the graph module throws.
  * @param graph The in-memory graph
  * @param node The node to insert into the graph
+ * @param service The service that the node belongs to
  */
 export function addNodeToGraphUnchecked(
   graph: Graph,
-  node: GraphNode,
+  node: SelectedNode,
+  service: string,
 ) {
   try {
     graph.addNode({
       id: node.id,
-      name: node.id ?? node.data.name,
-      metadata: node.metadata,
-      parent: node.data.parent,
+      name: node.name ?? node.id,
+      metadata: node.rawState,
+      parent: node.parent,
+      service,
+      type: node.type,
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.warn(`An error occurred while inserting node ${node.id} into graph. ${err.message}`);
+      console.warn(
+        `An error occurred while inserting node ${node.id} into graph. ${err.message}`,
+      );
     } else {
-      console.warn(`An unexpected error occurred while inserting node ${node.id} into graph.`);
+      console.warn(
+        `An unexpected error occurred while inserting node ${node.id} into graph.`,
+      );
     }
   }
 }
@@ -101,21 +100,22 @@ export function addNodeToGraphUnchecked(
  * @param graph The in-memory graph
  * @param edge The edge to insert into the graph
  */
-export function addEdgeToGraphUnchecked(
-  graph: Graph,
-  edge: GraphEdge,
-) {
+export function addEdgeToGraphUnchecked(graph: Graph, edge: SelectedEdge) {
   try {
     graph.addEdge({
-      source: edge.data.source,
-      target: edge.data.target,
-      metadata: Object.assign(edge.metadata ?? {}, edge.data),
+      source: edge.source,
+      target: edge.target,
+      metadata: Object.assign(edge.metadata ?? {}, edge.metadata),
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.warn(`An error occurred while inserting edge ${edge.data.source}-${edge.data.target} into graph. ${err.message}`);
+      console.warn(
+        `An error occurred while inserting edge ${edge.source}-${edge.target} into graph. ${err.message}`,
+      );
     } else {
-      console.error(`An unexpected error occurred while inserting edge ${edge.data.source}-${edge.data.target} into graph.`);
+      console.error(
+        `An unexpected error occurred while inserting edge ${edge.source}-${edge.target} into graph.`,
+      );
     }
   }
 }
@@ -132,18 +132,10 @@ function formatRoleEdge(
   /* eslint-disable @typescript-eslint/no-explicit-any */
   statement?: any,
   roleArn?: string,
-): GraphEdge {
-  const edgeId = `${source}:${target}`;
+): SelectedEdge {
   return {
-    group: "edges",
-    id: edgeId,
-    data: {
-      id: edgeId,
-      name,
-      source,
-      target,
-      type: "edge",
-    },
+    source,
+    target,
     metadata: {
       roleArn,
       label: name,
@@ -275,7 +267,7 @@ export async function generateEdgesForRole(
   arn: string,
   executor: string,
   nodesMap: ServiceNodesMap,
-): Promise<GraphEdge[]> {
+): Promise<SelectedEdge[]> {
   const iamRole = iamStorage.getRole(arn);
   if (iamRole == null) {
     console.warn("Unknown role arn given to generate edges");

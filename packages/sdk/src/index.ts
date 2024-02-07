@@ -2,10 +2,10 @@ import type {
   ServiceModule,
   Provider,
   Connector,
-  GraphEdge,
   GraphPluginEvents,
   GraphPlugin,
-  GraphSerializer
+  GraphSerializer,
+  SelectedEdge,
 } from "@infrascan/shared-types";
 import { Graph } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
@@ -21,6 +21,8 @@ import {
 } from "./scan";
 
 import {
+  AWS_ACCOUNT_SERVICE_KEY,
+  AWS_REGION_SERVICE_KEY,
   addEdgeToGraphUnchecked,
   addNodeToGraphUnchecked,
   buildAccountNode,
@@ -45,7 +47,9 @@ export interface ServiceNodesMap {
 export default class Infrascan {
   private regionalScannerRegistry: ScannerRegistry;
   private globalScannerRegistry: ScannerRegistry;
-  private pluginRegistry: { [E in GraphPluginEvents]: Omit<GraphPlugin<E>, "event">[] };
+  private pluginRegistry: {
+    [E in GraphPluginEvents]: Omit<GraphPlugin<E>, "event">[];
+  };
 
   constructor() {
     this.regionalScannerRegistry = {};
@@ -54,7 +58,7 @@ export default class Infrascan {
       onAccountComplete: [],
       onGraphComplete: [],
       onRegionComplete: [],
-      onServiceComplete: []
+      onServiceComplete: [],
     };
   }
 
@@ -230,7 +234,7 @@ export default class Infrascan {
   async generateGraph<T>(
     scanMetadata: ScanMetadata[],
     connector: Connector,
-    graphSerializer: GraphSerializer<T>
+    graphSerializer: GraphSerializer<T>,
   ): Promise<T> {
     const serviceNodeMap: ServiceNodesMap = {};
     const graph = Graph();
@@ -246,7 +250,7 @@ export default class Infrascan {
     for (const { account, regions, defaultRegion } of scanMetadata) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
-      addNodeToGraphUnchecked(graph, accountNode);
+      addNodeToGraphUnchecked(graph, accountNode, AWS_ACCOUNT_SERVICE_KEY);
 
       for (const serviceScanner of globalServiceEntries) {
         if (serviceScanner.getNodes != null) {
@@ -256,21 +260,10 @@ export default class Infrascan {
             connector,
             context,
           );
-          if (serviceScanner.formatNode != null) {
-            /* eslint-disable @typescript-eslint/no-non-null-assertion */
-            const formattedNodes = scannerNodes.map((node) =>
-              serviceScanner.formatNode!(node, context),
-            );
-            formattedNodes.forEach((node) => {
-              addNodeToGraphUnchecked(graph, node);
-              serviceNodeIds.push(node.id);
-            });
-          } else {
-            scannerNodes.forEach((node) => {
-              addNodeToGraphUnchecked(graph, node);
-              serviceNodeIds.push(node.id);
-            });
-          }
+          scannerNodes.forEach((node) => {
+            addNodeToGraphUnchecked(graph, node, serviceScanner.service);
+            serviceNodeIds.push(node.id);
+          });
           serviceNodeMap[
             serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
           ] = serviceNodeIds;
@@ -284,7 +277,7 @@ export default class Infrascan {
       for (const region of regions) {
         context.region = region;
         const regionNode = buildRegionNode(account, region);
-        addNodeToGraphUnchecked(graph, regionNode);
+        addNodeToGraphUnchecked(graph, regionNode, AWS_REGION_SERVICE_KEY);
         for (const regionalServiceScanner of regionalServiceEntries) {
           if (regionalServiceScanner.getNodes != null) {
             const regionalServiceNodeIds: string[] = [];
@@ -293,35 +286,30 @@ export default class Infrascan {
               connector,
               context,
             );
-            if (regionalServiceScanner.formatNode != null) {
-              /* eslint-disable @typescript-eslint/no-non-null-assertion */
-              const formattedNodes = regionalNodes.map((node) =>
-                regionalServiceScanner.formatNode!(node, context),
+            regionalNodes.forEach((node) => {
+              addNodeToGraphUnchecked(
+                graph,
+                node,
+                regionalServiceScanner.service,
               );
-              formattedNodes.forEach((node) => {
-                addNodeToGraphUnchecked(graph, node);
-                regionalServiceNodeIds.push(node.id);
-              });
-            } else {
-              regionalNodes.forEach((node) => {
-                addNodeToGraphUnchecked(graph, node);
-                regionalServiceNodeIds.push(node.id);
-              });
-            }
-            const serviceNodes = serviceNodeMap[
-              regionalServiceScanner.arnLabel
-              ?? regionalServiceScanner.service.toLowerCase()
-            ];
+              regionalServiceNodeIds.push(node.id);
+            });
+            const serviceNodes =
+              serviceNodeMap[
+                regionalServiceScanner.arnLabel ??
+                  regionalServiceScanner.service.toLowerCase()
+              ];
             if (serviceNodes) {
               serviceNodes.push(...regionalServiceNodeIds);
             } else {
               serviceNodeMap[
                 regionalServiceScanner.arnLabel ??
-                regionalServiceScanner.service.toLowerCase()
+                  regionalServiceScanner.service.toLowerCase()
               ] = regionalServiceNodeIds;
             }
 
-            for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
+            for (const { id, handler } of this.pluginRegistry
+              .onServiceComplete) {
               console.log(`Running ${id} onServiceComplete`);
               await handler(graph, regionalServiceScanner.service, context);
             }
@@ -345,7 +333,7 @@ export default class Infrascan {
     for (const scanner of allServices) {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
-        const scannerEdges: GraphEdge[] = await scanner.getEdges(connector);
+        const scannerEdges: SelectedEdge[] = await scanner.getEdges(connector);
         scannerEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
       }
     }
@@ -356,7 +344,7 @@ export default class Infrascan {
         console.log(`Getting Role Edges: ${scanner.service}`);
         const resolvedRoles = await scanner.getIamRoles(connector);
         for (const { roleArn, executor } of resolvedRoles) {
-          const roleEdges: GraphEdge[] = await generateEdgesForRole(
+          const roleEdges: SelectedEdge[] = await generateEdgesForRole(
             iamStorage,
             roleArn,
             executor,

@@ -117,13 +117,13 @@ t.test(
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === topicArn && edge.data.target === snsArn,
+            edge.source === topicArn && edge.target === snsArn,
         ),
       );
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === topicArn && edge.data.target === sqsArn,
+            edge.source === topicArn && edge.target === sqsArn,
         ),
       );
     }

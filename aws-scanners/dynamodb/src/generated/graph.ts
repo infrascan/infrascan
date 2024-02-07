@@ -3,13 +3,12 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const DescribeTableNodes = await evaluateSelector(
     context.account,
@@ -19,7 +18,5 @@ export async function getNodes(
   );
   state.push(...DescribeTableNodes);
 
-  return state.map((node) =>
-    formatNode(node, "dynamodb", "DynamoDB", context, true),
-  );
+  return state.map((node) => formatNode(node, "DynamoDB", context, true));
 }

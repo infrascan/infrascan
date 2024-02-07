@@ -3,13 +3,12 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const GetQueueAttributesNodes = await evaluateSelector(
     context.account,
@@ -19,5 +18,5 @@ export async function getNodes(
   );
   state.push(...GetQueueAttributesNodes);
 
-  return state.map((node) => formatNode(node, "sqs", "SQS", context, true));
+  return state.map((node) => formatNode(node, "SQS", context, true));
 }

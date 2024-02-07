@@ -1,4 +1,4 @@
-import type { Edge, Graph, Node } from "@infrascan/shared-types";
+import type { Edge, Graph as _Graph, Node } from "@infrascan/shared-types";
 
 export class NodeConflictError extends Error {
     constructor(nodeId: string) {
@@ -32,13 +32,13 @@ export class EdgeNotFoundError extends Error {
  * useful for graphs which need to translate a node or set of nodes under a new parent, while maintaining their edges.
  * Specifically for infrascan, this is used to allow the basic system diagram translate nodes that exist under network primitives like VPCs without 
  * removing their existing edges.
- * @returns {Graph}
+ * @returns {_Graph}
  */
-export function Graph(): Graph {
+export function Graph(): _Graph {
     const nodes: Record<string, Node> = {};
     const edges: Record<string, Edge<Node>> = {};
 
-    function addNode(node: Pick<Node, "id" | "name" | "metadata" | "parent">) {
+    function addNode(node: Pick<Node, "id" | "name" | "metadata" | "parent" | "service">) {
         if (nodes[node.id] != null) {
             throw new NodeConflictError(node.id);
         }

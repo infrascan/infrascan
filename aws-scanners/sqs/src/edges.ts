@@ -2,8 +2,8 @@ import { GetQueueAttributesCommandOutput } from "@aws-sdk/client-sqs";
 import { evaluateSelectorGlobally, formatEdge } from "@infrascan/core";
 import type {
   Connector,
-  GraphEdge,
-  EdgeTarget,
+  SelectedEdge,
+  SelectedEdgeTarget,
   State,
 } from "@infrascan/shared-types";
 
@@ -13,8 +13,8 @@ interface RedrivePolicy {
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  const edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const edges: SelectedEdge[] = [];
   const GetQueueAttributesState = await evaluateSelectorGlobally(
     "SQS|GetQueueAttributes|[]",
     stateConnector,
@@ -31,7 +31,7 @@ export async function getEdges(
         return [];
       }
       const sourceQueueName = source.split(":").pop();
-      const target: EdgeTarget = {
+      const target: SelectedEdgeTarget = {
         target: parsedRedrivePolicy.deadLetterTargetArn,
         name: `${sourceQueueName ?? source} Deadletter Queue`,
       };

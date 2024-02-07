@@ -75,7 +75,7 @@ t.test(
       const nodes = await SQSScanner.getNodes(connector, testContext);
       t.equal(nodes.length, 1);
       t.equal(nodes[0].id, queueArn);
-      t.equal(nodes[0].data.name, queueArn);
+      t.equal(nodes[0].name, queueArn);
     }
   },
 );

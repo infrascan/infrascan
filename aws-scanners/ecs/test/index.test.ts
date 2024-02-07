@@ -117,7 +117,7 @@ t.test(
       // successfully found cluster node
       t.ok(
         nodes.find(
-          (node) => node.id === clusterArn && node.data.type === "ECS-Cluster" && node.data.parent === `${testContext.account}-${testContext.region}`,
+          (node) => node.id === clusterArn && node.type === "ECS-Cluster" && node.parent === `${testContext.account}-${testContext.region}`,
         ),
       );
 
@@ -126,8 +126,8 @@ t.test(
         nodes.find(
           (node) =>
             node.id === serviceArn &&
-            node.data.parent === clusterArn &&
-            node.data.type === "ECS-Service",
+            node.parent === clusterArn &&
+            node.type === "ECS-Service",
         ),
       );
       // successfully found task node with service as parent
@@ -135,8 +135,8 @@ t.test(
         nodes.find(
           (node) =>
             node.id === taskDefArn &&
-            node.data.parent === serviceArn &&
-            node.data.type === "ECS-Task",
+            node.parent === serviceArn &&
+            node.type === "ECS-Task",
         ),
       );
       // successfully found task node with cluster as parent
@@ -144,8 +144,8 @@ t.test(
         nodes.find(
           (node) =>
             node.id === scheduledTaskDefArn &&
-            node.data.parent === clusterArn &&
-            node.data.type === "ECS-Task",
+            node.parent === clusterArn &&
+            node.type === "ECS-Task",
         ),
       );
     }
@@ -290,7 +290,7 @@ t.test("No Services defined in the ECS Cluster", async () => {
     // successfully found cluster node
     t.ok(
       nodes.find(
-        (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
+        (node) => node.id === clusterArn && node.type === "ECS-Cluster",
       ),
     );
 
@@ -299,8 +299,8 @@ t.test("No Services defined in the ECS Cluster", async () => {
       nodes.find(
         (node) =>
           node.id === scheduledTaskDefArn &&
-          node.data.parent === clusterArn &&
-          node.data.type === "ECS-Task",
+          node.parent === clusterArn &&
+          node.type === "ECS-Task",
       ),
     );
   }
@@ -374,19 +374,16 @@ t.test("No Tasks found in the cluster", async () => {
     0,
   );
 
-  if (ECSScanner.getNodes != null) {
-    const nodes = await ECSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 1);
-    // successfully found cluster node
-    t.ok(
-      nodes.find(
-        (node) => node.id === clusterArn && node.data.type === "ECS-Cluster",
-      ),
-    );
-  }
+  const nodes = await ECSScanner.getNodes!(connector, testContext);
+  t.equal(nodes.length, 1);
+  // successfully found cluster node
+  t.ok(
+    nodes.find(
+      (node) => node.id === clusterArn && node.type === "ECS-Cluster",
+    ),
+  );
+  console.log(nodes);
 
-  if (ECSScanner.getIamRoles != null) {
-    const iamRoles = await ECSScanner.getIamRoles(connector);
-    t.equal(iamRoles.length, 0);
-  }
+  const iamRoles = await ECSScanner.getIamRoles!(connector);
+  t.equal(iamRoles.length, 0);
 });

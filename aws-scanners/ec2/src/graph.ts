@@ -2,7 +2,6 @@ import { evaluateSelector, formatNode } from "@infrascan/core";
 import type {
   AwsContext,
   Connector,
-  GraphNode,
   SelectedNode,
 } from "@infrascan/shared-types";
 import type {
@@ -14,8 +13,8 @@ import type {
 export async function getNodes(
   connector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
-  const ec2NetworkingNodes: GraphNode[] = [];
+): Promise<SelectedNode[]> {
+  const ec2NetworkingNodes: SelectedNode[] = [];
   const vpcs: Vpc[] = await evaluateSelector(
     context.account,
     context.region,
@@ -30,7 +29,7 @@ export async function getNodes(
     rawState: vpcInfo,
   })) ?? [];
 
-  const vpcNodes = rawVpcNodes.map((node) => formatNode(node, 'EC2', 'EC2-VPC', context, true));
+  const vpcNodes = rawVpcNodes.map((node) => formatNode(node, 'EC2-VPC', context, true));
   ec2NetworkingNodes.push(...vpcNodes);
 
   /**
@@ -52,7 +51,7 @@ export async function getNodes(
     name: AvailabilityZone,
   })) ?? [];
 
-  const azNodes = rawAzNodes.map((node) => formatNode(node, 'EC2', 'EC2-VPC-AZ', context, true));
+  const azNodes = rawAzNodes.map((node) => formatNode(node, 'EC2-VPC-AZ', context, true));
   ec2NetworkingNodes.push(...azNodes);
 
   const rawSubnets: SelectedNode[] = subnetsState.flatMap(({ VpcId, SubnetId, AvailabilityZone, ...subnetState }) => ({
@@ -63,7 +62,7 @@ export async function getNodes(
     rawState: subnetState
   })) ?? [];
 
-  const subnetNodes = rawSubnets.map((node) => formatNode(node, 'EC2', 'EC2-Subnet', context, true));
+  const subnetNodes = rawSubnets.map((node) => formatNode(node, 'EC2-Subnet', context, true));
   ec2NetworkingNodes.push(...subnetNodes);
 
   return ec2NetworkingNodes;

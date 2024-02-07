@@ -9,31 +9,30 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
-  GraphEdge,
-  EdgeTarget,
+  SelectedEdge,
+  SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const ListBucketsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "S3|ListBuckets|[]._result.Buckets[].{id:Name,name:Name}",
+    "S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
     stateConnector,
   );
   state.push(...ListBucketsNodes);
 
-  return state.map((node) => formatNode(node, "s3", "S3", context, false));
+  return state.map((node) => formatNode(node, "S3", context, false));
 }
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  const edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const edges: SelectedEdge[] = [];
   const GetBucketNotificationConfigurationState1 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -45,10 +44,11 @@ export async function getEdges(
         state,
         "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       );
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(
+          state,
+          "_result.TopicConfigurations | [].{target:TopicArn,name:Id}",
+        );
       if (!target || !source) {
         return [];
       }
@@ -70,10 +70,11 @@ export async function getEdges(
         state,
         "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       );
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(
+          state,
+          "_result.QueueConfigurations | [].{target:QueueArn,name:Id}",
+        );
       if (!target || !source) {
         return [];
       }
@@ -95,10 +96,11 @@ export async function getEdges(
         state,
         "_parameters.Bucket | [`arn:aws:s3:::`,@] | join('',@)",
       );
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(
+          state,
+          "_result.LambdaFunctionConfigurations | [].{target:LambdaFunctionArn,name:Id}",
+        );
       if (!target || !source) {
         return [];
       }

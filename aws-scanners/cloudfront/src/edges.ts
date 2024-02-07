@@ -3,16 +3,16 @@ import { minimatch } from "minimatch";
 import type { ListDistributionsCommandOutput } from "@aws-sdk/client-cloudfront";
 import type {
   Connector,
-  EdgeTarget,
-  GraphEdge,
+  SelectedEdgeTarget,
+  SelectedEdge,
   State,
 } from "@infrascan/shared-types";
 import type { ListBucketsCommandOutput } from "@aws-sdk/client-s3";
 
 async function generateEdgesForS3BackedDistributions(
   connector: Connector,
-): Promise<GraphEdge[]> {
-  const cloudfrontS3Edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const cloudfrontS3Edges: SelectedEdge[] = [];
   const cloudfrontDistributionsState: State<ListDistributionsCommandOutput>[] =
     await connector.getGlobalStateForServiceFunction(
       "CloudFront",
@@ -57,7 +57,7 @@ async function generateEdgesForS3BackedDistributions(
       );
 
       if (relevantS3Bucket) {
-        const distroTarget: EdgeTarget = {
+        const distroTarget: SelectedEdgeTarget = {
           name: `${bucketName} Distribution`,
           target: formatS3NodeId(bucketName),
         };
@@ -71,6 +71,6 @@ async function generateEdgesForS3BackedDistributions(
   return cloudfrontS3Edges;
 }
 
-export async function getEdges(connector: Connector): Promise<GraphEdge[]> {
+export async function getEdges(connector: Connector): Promise<SelectedEdge[]> {
   return generateEdgesForS3BackedDistributions(connector);
 }

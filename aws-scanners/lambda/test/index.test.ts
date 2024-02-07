@@ -71,7 +71,7 @@ t.test(
       const nodes = await LambdaScanner.getNodes(connector, testContext);
       t.equal(nodes.length, 1);
       t.equal(nodes[0].id, lambdaArn);
-      t.equal(nodes[0].data.name, lambdaName);
+      t.equal(nodes[0].name, lambdaName);
     }
 
     if (LambdaScanner.getIamRoles != null) {

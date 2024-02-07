@@ -67,10 +67,10 @@ export function serializeGraph(graph: Graph): CytoscapeGraph[] {
             id: node.id,
             data: {
                 id: node.id,
-                type: 'node',
                 parent: typeof node.parent === 'string' ? node.parent : node.parent?.id,
                 name: node.name,
-                service: node.metadata.service as string
+                service: node.service as string,
+                type: node.type ?? node.service ?? 'node'
             },
             metadata: node.metadata
         };

@@ -5,11 +5,10 @@ export * from './graph';
 import type {
   GenericParameterResolver,
   Connector,
-  EdgeTarget,
-  GraphEdge,
-  GraphNode,
   SelectedNode,
   AwsContext,
+  SelectedEdge,
+  SelectedEdgeTarget
 } from "@infrascan/shared-types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -91,20 +90,13 @@ export async function evaluateSelectorGlobally(
   return jmespath.search(aggregateState, selector.join("|"));
 }
 
-export function formatEdge(source: string, target: EdgeTarget): GraphEdge {
-  const edgeId = `${source}:${target.target}`;
+export function formatEdge(source: string, target: SelectedEdgeTarget): SelectedEdge {
   return {
-    group: "edges",
-    data: {
-      id: edgeId,
-      name: target.name,
-      source,
-      target: target.target,
-      type: "edge",
-    },
+    source,
+    target: target.target,
     metadata: {
-      label: target.name,
-    },
+      label: target.name
+    }
   };
 }
 
@@ -117,22 +109,16 @@ function resolveParentForNode(
 
 export function formatNode(
   selectedNode: SelectedNode,
-  service: string,
   defaultType: string,
   context: AwsContext,
   isRegionBound: boolean
-): GraphNode {
+): SelectedNode {
   return {
-    group: "nodes",
     id: selectedNode.id,
-    data: {
-      id: selectedNode.id,
-      name: selectedNode.name,
-      parent: selectedNode.parent ?? resolveParentForNode(context, isRegionBound),
-      service,
-      type: selectedNode.type ?? defaultType,
-    },
-    metadata: selectedNode.rawState,
+    name: selectedNode.name,
+    parent: selectedNode.parent ?? resolveParentForNode(context, isRegionBound),
+    type: selectedNode.type ?? defaultType,
+    rawState: selectedNode.rawState,
   };
 }
 

@@ -17,7 +17,6 @@
   ],
   "scripts": {
     "dev": "node ./dist/index.js",
-    "codegen": "node ./scripts/codegen ; npm run lint:fix",
     "build": "rm -rf dist ; tsup",
     "prepublish": "rm -rf dist ; tsup",
     "test": "echo \"Error: no test specified\"",
