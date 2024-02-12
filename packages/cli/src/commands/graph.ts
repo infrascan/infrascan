@@ -7,7 +7,7 @@ import {
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
-import { serializeGraph, GraphElement } from "@infrascan/cytoscape-serializer";
+import { serializeGraph, CytoscapeGraph } from "@infrascan/cytoscape-serializer";
 
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
@@ -18,7 +18,7 @@ function readScanMetadata(outputPath: string): ScanMetadata[] {
   return JSON.parse(scanMetadata);
 }
 
-function writeGraphOutput(outputPath: string, graphState: GraphElement[]) {
+function writeGraphOutput(outputPath: string, graphState: CytoscapeGraph[]) {
   writeFileSync(
     join(resolve(outputPath), "graph.json"),
     JSON.stringify(graphState),
@@ -66,7 +66,7 @@ export default class GraphCmd extends CommandLineAction {
       }
     });
 
-    const graphData = await this.infrascanClient.generateGraph(
+    const graphData = await this.infrascanClient.generateGraph<CytoscapeGraph[]>(
       scanMetadata,
       connector,
       serializeGraph,
