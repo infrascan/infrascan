@@ -1,5 +1,11 @@
 # @infrascan/shared-types
 
+## 0.3.0
+
+### Minor Changes
+
+- [#75](https://github.com/infrascan/infrascan/pull/75) [`4634235`](https://github.com/infrascan/infrascan/commit/4634235d61bd6bd817c6fb9e62add778218b69b6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add graph model interface to shared types package
+
 ## 0.2.4
 
 ### Patch Changes
