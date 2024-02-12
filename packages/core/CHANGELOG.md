@@ -1,5 +1,11 @@
 # @infrascan/core
 
+## 0.3.0
+
+### Minor Changes
+
+- [#77](https://github.com/infrascan/infrascan/pull/77) [`21d4ecf`](https://github.com/infrascan/infrascan/commit/21d4ecf4b7fec31f4ac7b2cc5857aa5d2b725075) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add in-memory graph model to decouple the infrascan packages from a single graphing library, and to make graph manipulation easier
+
 ## 0.2.3
 
 ### Patch Changes
