@@ -1,5 +1,18 @@
 # @infrascan/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- [#77](https://github.com/infrascan/infrascan/pull/77) [`21d4ecf`](https://github.com/infrascan/infrascan/commit/21d4ecf4b7fec31f4ac7b2cc5857aa5d2b725075) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Migrate all packages to consume new graph model
+
+### Patch Changes
+
+- Updated dependencies [[`21d4ecf`](https://github.com/infrascan/infrascan/commit/21d4ecf4b7fec31f4ac7b2cc5857aa5d2b725075), [`21d4ecf`](https://github.com/infrascan/infrascan/commit/21d4ecf4b7fec31f4ac7b2cc5857aa5d2b725075)]:
+  - @infrascan/cytoscape-serializer@0.2.0
+  - @infrascan/sdk@0.4.0
+  - @infrascan/aws@0.4.1
+
 ## 0.3.1
 
 ### Patch Changes
