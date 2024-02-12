@@ -81,7 +81,7 @@ t.test("Pulls the state as expected for step functions", async () => {
 
     const nodes = await SFNScanner.getNodes!(connector, testContext);
     t.equal(nodes.length, 1);
-    t.ok(nodes.find((statefunc) => statefunc.id === testStateMachineArn && statefunc.data.name === testStateMachineName));
+    t.ok(nodes.find((statefunc) => statefunc.id === testStateMachineArn && statefunc.name === testStateMachineName));
 
     const roles = await SFNScanner.getIamRoles!(connector);
     t.equal(roles.length, 1);

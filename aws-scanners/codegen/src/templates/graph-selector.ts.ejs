@@ -16,16 +16,15 @@ import type {
     AwsContext,
 <%_ if(hasNodes) { -%>
     SelectedNode, 
-    GraphNode,
 <%_ } -%>
 <%_ if(hasEdges) { -%>
-    GraphEdge, 
-    EdgeTarget
+    SelectedEdge,
+    SelectedEdgeTarget
 <%_ } -%>
 } from "@infrascan/shared-types";
 
 <%_ if(hasNodes){ -%>
-export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<GraphNode[]> {
+export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<SelectedNode[]> {
     const state: SelectedNode[] = [];
     <%_ let lastVariable = null; -%>
     <%_ locals.nodes.forEach((nodeSelector, idx) => { -%>
@@ -34,13 +33,12 @@ export async function getNodes(stateConnector: Connector, context: AwsContext): 
     <%_ if(nodesVariable === lastVariable) { -%>
     <%_      nodesVariable += idx; -%>
     <%_ } -%>
-    const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, '<%- nodeSelector %>', stateConnector);
+    const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, "<%- nodeSelector %>", stateConnector);
     state.push(...<%= nodesVariable %>);
     <%_ lastVariable = nodesVariable; -%>
     <% }); %>
     return state.map((node) => formatNode(
         node, 
-        "<%= service %>", 
         "<%= key %>", 
         context, 
         <%= callPerRegion %>
@@ -48,8 +46,8 @@ export async function getNodes(stateConnector: Connector, context: AwsContext): 
 }
 <%_ } -%>
 <% if(hasEdges){ %>
-export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> {
-    const edges: GraphEdge[] = [];
+export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[]> {
+    const edges: SelectedEdge[] = [];
     <%_ locals.edges.forEach(({ state, to, from }, idx) => { -%>
     <%_ const fnLabel = state.split('|')[1]; -%>
     <%_ const stateVariable = `${fnLabel}State${idx+1}`; -%>
@@ -57,7 +55,7 @@ export async function getEdges(stateConnector: Connector): Promise<GraphEdge[]> 
     const <%= stateVariable %> = await evaluateSelectorGlobally("<%- state %>", stateConnector);
     const <%= edgesVariable %> = <%= stateVariable %>.flatMap((state: any) => {
         const source = filterState(state, "<%- from %>");
-        const target: EdgeTarget | EdgeTarget[] | null = filterState(state, "<%- to %>");
+        const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null = filterState(state, "<%- to %>");
         if(!target || !source) {
             return [];
         }

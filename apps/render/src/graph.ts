@@ -1,10 +1,11 @@
 import type {
-  GraphEdge,
-  GraphElement,
-  GraphNode,
-} from "@infrascan/shared-types";
+  CytoscapeNode as Node,
+  CytoscapeEdge as Edge
+} from "@infrascan/cytoscape-serializer";
 
-function buildNode(id: string): GraphNode {
+type GraphElement = Node | Edge;
+
+function buildNode(id: string): Node {
   return {
     id,
     group: "nodes",
@@ -12,7 +13,7 @@ function buildNode(id: string): GraphNode {
   };
 }
 
-function buildEdge(id: string, source: string, target: string): GraphEdge {
+function buildEdge(id: string, source: string, target: string): Edge {
   return {
     group: "edges",
     data: { id, name: id, source, target, type: "edge" },

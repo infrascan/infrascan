@@ -51,7 +51,7 @@ t.test(
       const nodes = await RDSScanner.getNodes(connector, testContext);
       t.equal(nodes.length, 1);
       t.equal(nodes[0].id, dbId);
-      t.equal(nodes[0].data.name, dbName);
+      t.equal(nodes[0].name, dbName);
     }
   },
 );

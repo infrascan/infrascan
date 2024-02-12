@@ -28,7 +28,7 @@
     "splitting": false,
     "dts": true,
     "entry": [
-      "src/index.ts"
+      "src/**/*.ts"
     ],
     "format": [
       "esm",

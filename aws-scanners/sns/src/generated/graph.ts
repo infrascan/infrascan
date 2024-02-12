@@ -9,15 +9,14 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
-  GraphEdge,
-  EdgeTarget,
+  SelectedEdge,
+  SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const ListTopicsNodes = await evaluateSelector(
     context.account,
@@ -27,13 +26,13 @@ export async function getNodes(
   );
   state.push(...ListTopicsNodes);
 
-  return state.map((node) => formatNode(node, "sns", "SNS", context, true));
+  return state.map((node) => formatNode(node, "SNS", context, true));
 }
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  const edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const edges: SelectedEdge[] = [];
   const ListSubscriptionsByTopicState1 = await evaluateSelectorGlobally(
     "SNS|ListSubscriptionsByTopic|[]",
     stateConnector,
@@ -41,10 +40,11 @@ export async function getEdges(
   const ListSubscriptionsByTopicEdges1 = ListSubscriptionsByTopicState1.flatMap(
     (state: any) => {
       const source = filterState(state, "_parameters.TopicArn");
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "_result.Subscriptions[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(
+          state,
+          "_result.Subscriptions[?Protocol!=`https` && Protocol!=`http` && Protocol!=`email` && Protocol!=`email-json` && Protocol!=`sms`] | [].{target:Endpoint,name:SubscriptionArn}",
+        );
       if (!target || !source) {
         return [];
       }

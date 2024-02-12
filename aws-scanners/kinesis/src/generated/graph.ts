@@ -9,15 +9,14 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
-  GraphEdge,
-  EdgeTarget,
+  SelectedEdge,
+  SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const ListStreamsNodes = await evaluateSelector(
     context.account,
@@ -34,15 +33,13 @@ export async function getNodes(
   );
   state.push(...ListStreamConsumersNodes);
 
-  return state.map((node) =>
-    formatNode(node, "kinesis", "Kinesis", context, true),
-  );
+  return state.map((node) => formatNode(node, "Kinesis", context, true));
 }
 
 export async function getEdges(
   stateConnector: Connector,
-): Promise<GraphEdge[]> {
-  const edges: GraphEdge[] = [];
+): Promise<SelectedEdge[]> {
+  const edges: SelectedEdge[] = [];
   const ListStreamConsumersState1 = await evaluateSelectorGlobally(
     "Kinesis|ListStreamConsumers|[]",
     stateConnector,
@@ -50,10 +47,11 @@ export async function getEdges(
   const ListStreamConsumersEdges1 = ListStreamConsumersState1.flatMap(
     (state: any) => {
       const source = filterState(state, "_parameters.StreamARN");
-      const target: EdgeTarget | EdgeTarget[] | null = filterState(
-        state,
-        "_result.Consumers[].{target:ConsumerARN,name:ConsumerName}",
-      );
+      const target: SelectedEdgeTarget | SelectedEdgeTarget[] | null =
+        filterState(
+          state,
+          "_result.Consumers[].{target:ConsumerARN,name:ConsumerName}",
+        );
       if (!target || !source) {
         return [];
       }

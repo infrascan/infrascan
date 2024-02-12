@@ -14,6 +14,7 @@ module.exports = {
       "WithStatement",
     ],
     "no-await-in-loop": "off",
+    "max-classes-per-file": "off"
   },
   ignorePatterns: ["dist/**", "docs/**", ".eslintrc.js"],
 };

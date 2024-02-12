@@ -1,6 +1,6 @@
 import type { AwsCredentialIdentityProvider, RetryStrategy, RetryStrategyV2 } from "@aws-sdk/types";
 
-import type { GraphEdge, GraphNode } from "./graph";
+import type { SelectedEdge, SelectedNode } from "./graph";
 import type { BaseEdgeResolver } from "./config";
 
 /**
@@ -85,9 +85,9 @@ type GetterFn<T, P extends Provider> = (
 type GetNodeFn<T extends Provider> = (
   stateConnector: Connector,
   context: ProviderContextMap[T],
-) => Promise<GraphNode[]>;
+) => Promise<SelectedNode[]>;
 
-type GetEdgeFn = (stateConnector: Connector) => Promise<GraphEdge[]>;
+type GetEdgeFn = (stateConnector: Connector) => Promise<SelectedEdge[]>;
 
 export type Provider = "aws";
 
@@ -106,15 +106,6 @@ export type ProviderContext<T extends Provider> = {
   context: ProviderContextMap[T];
 };
 
-type FormatNodeFn<P extends Provider> = (
-  node: GraphNode,
-  context: ProviderContextMap[P],
-) => GraphNode;
-type FormatEdgeFn<P extends Provider> = (
-  node: GraphEdge,
-  context: ProviderContextMap[P],
-) => GraphEdge;
-
 export type EntityRoleData = {
   roleArn: string;
   executor: string;
@@ -131,9 +122,7 @@ export interface ServiceModule<T, P extends Provider> {
   getters: GetterFn<T, P>[];
   nodes?: string[];
   getNodes?: GetNodeFn<P>;
-  formatNode?: FormatNodeFn<P>;
   edges?: BaseEdgeResolver[];
   getEdges?: GetEdgeFn;
-  formatEdge?: FormatEdgeFn<P>;
   getIamRoles?: GetIamRoleFn;
 }

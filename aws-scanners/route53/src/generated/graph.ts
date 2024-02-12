@@ -3,13 +3,12 @@ import type {
   Connector,
   AwsContext,
   SelectedNode,
-  GraphNode,
 } from "@infrascan/shared-types";
 
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
-): Promise<GraphNode[]> {
+): Promise<SelectedNode[]> {
   const state: SelectedNode[] = [];
   const ListResourceRecordSetsNodes = await evaluateSelector(
     context.account,
@@ -19,7 +18,5 @@ export async function getNodes(
   );
   state.push(...ListResourceRecordSetsNodes);
 
-  return state.map((node) =>
-    formatNode(node, "route-53", "Route53", context, false),
-  );
+  return state.map((node) => formatNode(node, "Route53", context, false));
 }

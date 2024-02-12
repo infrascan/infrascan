@@ -10,13 +10,13 @@ import type {
   DescribeTargetGroupsCommandOutput,
   TargetGroup,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
-import type { Connector, GraphEdge, State } from "@infrascan/shared-types";
+import type { Connector, SelectedEdge, State } from "@infrascan/shared-types";
 
 type LoadBalancedService = Service & { loadBalancers: LoadBalancer[] };
 
 async function generateEdgesForECSResources(
   connector: Connector,
-): Promise<GraphEdge[]> {
+): Promise<SelectedEdge[]> {
   const ecsServiceState: State<DescribeServicesCommandOutput>[] =
     await connector.getGlobalStateForServiceFunction("ECS", "DescribeServices");
   const ecsServiceRecords = ecsServiceState
@@ -46,7 +46,7 @@ async function generateEdgesForECSResources(
     .filter((targetGroup) => targetGroup != null) as TargetGroup[];
 
   // Step over every load balanced ECS Service
-  const ecsLoadBalancingEdges: GraphEdge[] = [];
+  const ecsLoadBalancingEdges: SelectedEdge[] = [];
   // For each of their load balancer configs:
   // - Find the relevant target group
   // - Find the relevant task definition (down to the specific container)
@@ -92,6 +92,6 @@ async function generateEdgesForECSResources(
   return ecsLoadBalancingEdges;
 }
 
-export async function getEdges(connector: Connector): Promise<GraphEdge[]> {
+export async function getEdges(connector: Connector): Promise<SelectedEdge[]> {
   return generateEdgesForECSResources(connector);
 }

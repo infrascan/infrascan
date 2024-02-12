@@ -58,7 +58,7 @@ const S3Scanner: ScannerDefinition<"S3", typeof S3, S3Functions> = {
   ],
   // Node IDs are formatted through the `formatNode` function which already has context over the service being called,
   // so Node IDs can be passed as the raw name.
-  nodes: ["S3|ListBuckets|[]._result.Buckets[].{id:Name,name:Name}"],
+  nodes: ["S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}"],
   // Edge formatting is generic (as edges aren't tailored to the service to which they refer), so bucket names must be formatted here
   edges: [
     {

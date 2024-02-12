@@ -89,8 +89,8 @@ t.test(
       t.ok(
         edges.find(
           (edge) =>
-            edge.data.source === logGroupName &&
-            edge.data.target === destinationLambdaArn,
+            edge.source === logGroupName &&
+            edge.target === destinationLambdaArn,
         ),
       );
     }

@@ -102,11 +102,11 @@ t.test(
         t.equal(nodes.length, 5);
 
         // Node for VPC found
-        t.ok(nodes.find((node) => node.data.id === testVpcId && node.data.parent === `${testContext.account}-${testContext.region}`));
+        t.ok(nodes.find((node) => node.id === testVpcId && node.parent === `${testContext.account}-${testContext.region}`));
         // Node for Subnet's AZ found with VPC as parent
-        t.ok(nodes.find((node) => node.data.id === `${testVpcId}-${testAZ1}` && node.data.parent === testVpcId));
-        t.ok(nodes.find((node) => node.data.id === `${testVpcId}-${testAZ2}` && node.data.parent === testVpcId));
+        t.ok(nodes.find((node) => node.id === `${testVpcId}-${testAZ1}` && node.parent === testVpcId));
+        t.ok(nodes.find((node) => node.id === `${testVpcId}-${testAZ2}` && node.parent === testVpcId));
         // Node for Subnets found with AZ as parent
-        t.ok(nodes.find((node) => node.data.id === testSubnetId1 && node.data.parent === `${testVpcId}-${testAZ1}`));
-        t.ok(nodes.find((node) => node.data.id === testSubnetId2 && node.data.parent === `${testVpcId}-${testAZ2}`));
+        t.ok(nodes.find((node) => node.id === testSubnetId1 && node.parent === `${testVpcId}-${testAZ1}`));
+        t.ok(nodes.find((node) => node.id === testSubnetId2 && node.parent === `${testVpcId}-${testAZ2}`));
     });  

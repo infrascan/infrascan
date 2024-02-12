@@ -1,9 +1,5 @@
 import { readFileSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
-import type {
-  GraphElement,
-  GraphNode,
-} from "@infrascan/shared-types";
 import type { ScanMetadata } from "@infrascan/sdk";
 import {
   CommandLineAction,
@@ -11,6 +7,7 @@ import {
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
+import { serializeGraph, CytoscapeGraph } from "@infrascan/cytoscape-serializer";
 
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
@@ -21,7 +18,7 @@ function readScanMetadata(outputPath: string): ScanMetadata[] {
   return JSON.parse(scanMetadata);
 }
 
-function writeGraphOutput(outputPath: string, graphState: GraphElement[]) {
+function writeGraphOutput(outputPath: string, graphState: CytoscapeGraph[]) {
   writeFileSync(
     join(resolve(outputPath), "graph.json"),
     JSON.stringify(graphState),
@@ -59,21 +56,23 @@ export default class GraphCmd extends CommandLineAction {
       this._outputDirectory.value as string,
     );
     const connector = buildFsConnector(this._outputDirectory.value as string);
-    const graphData = await this.infrascanClient.generateGraph(
+
+    let nServicesScanned = 0;
+    this.infrascanClient.registerPlugin({
+      event: 'onServiceComplete',
+      id: 'countServicesScanner',
+      handler: () => {
+        nServicesScanned += 1;
+      }
+    });
+
+    const graphData = await this.infrascanClient.generateGraph<CytoscapeGraph[]>(
       scanMetadata,
       connector,
+      serializeGraph,
     );
-    const graphNodes = graphData.filter(
-      (elem) => elem.group === "nodes",
-    ) as GraphNode[];
-    const mappedServices = graphNodes.reduce((acc, node) => {
-      if (node?.data?.service) {
-        acc.add(node.data.service);
-      }
-      return acc;
-    }, new Set());
     console.log(
-      `Graph Complete. Found resources in ${mappedServices.size} services.`,
+      `Graph Complete. Found resources in ${nServicesScanned} services.`,
     );
     return writeGraphOutput(this._outputDirectory.value as string, graphData);
   }
