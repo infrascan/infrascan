@@ -62,7 +62,7 @@ export default class GraphCmd extends CommandLineAction {
       event: 'onServiceComplete',
       id: 'countServicesScanner',
       handler: () => {
-        nServicesScanned++;
+        nServicesScanned += 1;
       }
     });
 

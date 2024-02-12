@@ -1,7 +1,5 @@
 import jmespath from "jmespath";
 
-export * from './graph';
-
 import type {
   GenericParameterResolver,
   Connector,
@@ -10,6 +8,8 @@ import type {
   SelectedEdge,
   SelectedEdgeTarget
 } from "@infrascan/shared-types";
+
+export * from './graph';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluateSelector(

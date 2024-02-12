@@ -14,7 +14,6 @@ import {
 } from "@aws-sdk/credential-providers";
 import {
   loadSharedConfigFiles,
-  DEFAULT_PROFILE,
 } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
@@ -114,10 +113,10 @@ export default class ScanCmd extends CommandLineAction {
     const scanConfig = this._config.value
       ? getConfig(this._config.value)
       : ([
-          {
-            defaultRegion: defaultRegionFromEnv,
-          },
-        ] as ScanConfig);
+        {
+          defaultRegion: defaultRegionFromEnv,
+        },
+      ] as ScanConfig);
 
     const connector = buildFsConnector(this._outputDirectory.value as string, {
       createTargetDirectory: true,

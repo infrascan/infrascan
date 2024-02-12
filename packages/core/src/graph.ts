@@ -1,28 +1,10 @@
 import type { Edge, Graph as _Graph, Node } from "@infrascan/shared-types";
-
-export class NodeConflictError extends Error {
-    constructor(nodeId: string) {
-        super(`Node ${nodeId} already exists in graph.`);
-    }
-}
-
-export class EdgeConflictError extends Error {
-    constructor(edgeId: string) {
-        super(`Edge ${edgeId} already exists in graph.`);
-    }
-}
-
-export class NodeNotFoundError extends Error {
-    constructor(nodeId: string) {
-        super(`Node ${nodeId} not found in graph.`);
-    }
-}
-
-export class EdgeNotFoundError extends Error {
-    constructor(edgeId: string) {
-        super(`Edge ${edgeId} not found in graph.`);
-    }
-}
+import {
+    NodeConflictError,
+    NodeNotFoundError,
+    EdgeConflictError,
+    EdgeNotFoundError
+} from './errors';
 
 /**
  * In memory graph model used by the Infrascan SDK. 
@@ -37,6 +19,23 @@ export class EdgeNotFoundError extends Error {
 export function Graph(): _Graph {
     const nodes: Record<string, Node> = {};
     const edges: Record<string, Edge<Node>> = {};
+
+    function addChild(parent: string, child: string) {
+        const parentNode = nodes[parent];
+        const childNode = nodes[child];
+        if (parentNode == null) {
+            throw new NodeNotFoundError(parent);
+        }
+        if (childNode == null) {
+            throw new NodeNotFoundError(child);
+        }
+
+        if (parentNode.children == null) {
+            parentNode.children = {};
+        }
+        parentNode.children[childNode.id] = childNode;
+        childNode.parent = parentNode;
+    }
 
     function addNode(node: Pick<Node, "id" | "name" | "metadata" | "parent" | "service">) {
         if (nodes[node.id] != null) {
@@ -63,23 +62,6 @@ export function Graph(): _Graph {
         }
     }
 
-    function addChild(parent: string, child: string) {
-        const parentNode = nodes[parent];
-        const childNode = nodes[child];
-        if (parentNode == null) {
-            throw new NodeNotFoundError(parent);
-        }
-        if (childNode == null) {
-            throw new NodeNotFoundError(child);
-        }
-
-        if (parentNode.children == null) {
-            parentNode.children = {};
-        }
-        parentNode.children[childNode.id] = childNode;
-        childNode.parent = parentNode;
-    }
-
     function addEdge(edge: Pick<Edge<string>, "name" | "source" | "target" | "metadata">) {
         const edgeId = `${edge.source}-${edge.target}`;
         if (edges[edgeId] != null) {
@@ -104,17 +86,6 @@ export function Graph(): _Graph {
         targetNode.incomingEdges[preparedEdge.id] = preparedEdge;
     }
 
-    function removeNode(id: string): Node {
-        const node = nodes[id];
-        if (node == null) {
-            throw new NodeNotFoundError(id);
-        }
-        Object.keys(node.incomingEdges).forEach(removeEdge);
-        Object.keys(node.outgoingEdges).forEach(removeEdge);
-        delete nodes[id];
-        return node;
-    }
-
     function removeEdge(id: string): Edge<Node> {
         const edge = edges[id];
         if (edge == null) {
@@ -124,6 +95,17 @@ export function Graph(): _Graph {
         delete edge.source.outgoingEdges[id];
         delete edge.target.incomingEdges[id];
         return edge;
+    }
+
+    function removeNode(id: string): Node {
+        const node = nodes[id];
+        if (node == null) {
+            throw new NodeNotFoundError(id);
+        }
+        Object.keys(node.incomingEdges).forEach(removeEdge);
+        Object.keys(node.outgoingEdges).forEach(removeEdge);
+        delete nodes[id];
+        return node;
     }
 
     /**

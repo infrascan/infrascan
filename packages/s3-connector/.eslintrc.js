@@ -8,5 +8,5 @@ module.exports = {
   rules: {
     "no-await-in-loop": "off",
   },
-  ignorePatterns: ["dist/**", ".eslintrc.js"],
+  ignorePatterns: ["dist/**", ".eslintrc.js", "test/*.test.ts"],
 };
