@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Connector | Infrascan</title><meta name="description" content="Documentation for Infrascan"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>OnAccountCompletePlugin | Infrascan</title><meta name="description" content="Documentation for Infrascan"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -14,42 +14,30 @@
 <ul class="tsd-breadcrumb">
 <li><a href="../index.html">Infrascan</a></li>
 <li><a href="../modules/_infrascan_shared_types.html">@infrascan/shared-types</a></li>
-<li><a href="_infrascan_shared_types.Connector.html">Connector</a></li></ul>
-<h1>Interface Connector</h1></div>
-<section class="tsd-panel tsd-hierarchy">
-<h4>Hierarchy</h4>
-<ul class="tsd-hierarchy">
-<li><span class="target">Connector</span></li></ul></section><aside class="tsd-sources">
+<li><a href="_infrascan_shared_types.OnAccountCompletePlugin.html">OnAccountCompletePlugin</a></li></ul>
+<h1>Type alias OnAccountCompletePlugin</h1></div>
+<div class="tsd-signature"><span class="tsd-kind-type-alias">On<wbr/>Account<wbr/>Complete<wbr/>Plugin</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">graph</span>, <span class="tsd-kind-parameter">context</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<div class="tsd-type-declaration">
+<h4>Type declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter-signature">
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">graph</span>, <span class="tsd-kind-parameter">context</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>A plugin which is called everytime an account&#39;s nodes have been added to the graph.
+Receives the current graph state, and the current AWS Context.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">graph</span>: <a href="../interfaces/_infrascan_shared_types.Graph.html" class="tsd-signature-type tsd-kind-interface">Graph</a></h5></li>
+<li>
+<h5><span class="tsd-kind-parameter">context</span>: <a href="_infrascan_shared_types.AwsContext.html" class="tsd-signature-type tsd-kind-type-alias">AwsContext</a></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/shared-types/src/api.ts#L67">api.ts:67</a></li></ul></aside>
-<section class="tsd-panel-group tsd-index-group">
-<section class="tsd-panel tsd-index-panel">
-<details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
-<h5 class="tsd-index-heading uppercase" role="button" aria-expanded="false" tabIndex=0><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-chevronSmall"></use></svg> Index</h5></summary>
-<div class="tsd-accordion-details">
-<section class="tsd-index-section">
-<h3 class="tsd-index-heading">Properties</h3>
-<div class="tsd-index-list"><a href="_infrascan_shared_types.Connector.html#getGlobalStateForServiceFunction" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span></a>
-<a href="_infrascan_shared_types.Connector.html#onServiceScanCompleteCallback" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Service<wbr/>Scan<wbr/>Complete<wbr/>Callback</span></a>
-<a href="_infrascan_shared_types.Connector.html#resolveStateForServiceFunction" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span></a>
-</div></section></div></details></section></section>
-<section class="tsd-panel-group tsd-member-group">
-<h2>Properties</h2>
-<section class="tsd-panel tsd-member"><a id="getGlobalStateForServiceFunction" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span><a href="#getGlobalStateForServiceFunction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span><span class="tsd-signature-symbol">:</span> <a href="../types/_infrascan_shared_types.GetGlobalStateForServiceFunction.html" class="tsd-signature-type tsd-kind-type-alias">GetGlobalStateForServiceFunction</a></div><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/shared-types/src/api.ts#L70">api.ts:70</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member"><a id="onServiceScanCompleteCallback" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>on<wbr/>Service<wbr/>Scan<wbr/>Complete<wbr/>Callback</span><a href="#onServiceScanCompleteCallback" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">on<wbr/>Service<wbr/>Scan<wbr/>Complete<wbr/>Callback</span><span class="tsd-signature-symbol">:</span> <a href="../types/_infrascan_shared_types.ServiceScanCompleteCallbackFn.html" class="tsd-signature-type tsd-kind-type-alias">ServiceScanCompleteCallbackFn</a></div><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/shared-types/src/api.ts#L68">api.ts:68</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member"><a id="resolveStateForServiceFunction" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span><a href="#resolveStateForServiceFunction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span><span class="tsd-signature-symbol">:</span> <a href="../types/_infrascan_shared_types.ResolveStateForServiceFunction.html" class="tsd-signature-type tsd-kind-type-alias">ResolveStateForServiceFunction</a></div><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/shared-types/src/api.ts#L69">api.ts:69</a></li></ul></aside></section></section></div>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/shared-types/src/plugins.ts#L23">plugins.ts:23</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -64,14 +52,7 @@
 <li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
 <li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div>
 <div class="tsd-theme-toggle">
-<h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
-<details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary">
-<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg>On This Page</h3></summary>
-<div class="tsd-accordion-details">
-<ul>
-<li><a href="#getGlobalStateForServiceFunction" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Global<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span></a></li>
-<li><a href="#onServiceScanCompleteCallback" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>on<wbr/>Service<wbr/>Scan<wbr/>Complete<wbr/>Callback</span></a></li>
-<li><a href="#resolveStateForServiceFunction" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resolve<wbr/>State<wbr/>For<wbr/>Service<wbr/>Function</span></a></li></ul></div></details></div>
+<h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Infrascan</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">

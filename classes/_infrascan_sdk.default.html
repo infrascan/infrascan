@@ -21,7 +21,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">default</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L43">index.ts:43</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L47">index.ts:47</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -34,12 +34,14 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="_infrascan_sdk.default.html#globalScannerRegistry" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>global<wbr/>Scanner<wbr/>Registry</span></a>
+<a href="_infrascan_sdk.default.html#pluginRegistry" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>plugin<wbr/>Registry</span></a>
 <a href="_infrascan_sdk.default.html#regionalScannerRegistry" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>regional<wbr/>Scanner<wbr/>Registry</span></a>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Methods</h3>
 <div class="tsd-index-list"><a href="_infrascan_sdk.default.html#generateGraph" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>generate<wbr/>Graph</span></a>
 <a href="_infrascan_sdk.default.html#performScan" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>perform<wbr/>Scan</span></a>
+<a href="_infrascan_sdk.default.html#registerPlugin" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>register<wbr/>Plugin</span></a>
 <a href="_infrascan_sdk.default.html#registerScanner" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>register<wbr/>Scanner</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -51,44 +53,67 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <a href="_infrascan_sdk.default.html" class="tsd-signature-type tsd-kind-class">default</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L48">index.ts:48</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L56">index.ts:56</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="globalScannerRegistry" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>global<wbr/>Scanner<wbr/>Registry</span><a href="#globalScannerRegistry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">global<wbr/>Scanner<wbr/>Registry</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">ScannerRegistry</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L46">index.ts:46</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L50">index.ts:50</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-is-private"><a id="pluginRegistry" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>plugin<wbr/>Registry</span><a href="#pluginRegistry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">plugin<wbr/>Registry</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span><br/><span>    </span><span class="tsd-kind-property">onAccountComplete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onAccountComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">onGraphComplete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onGraphComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">onRegionComplete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onRegionComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span>    </span><span class="tsd-kind-property">onServiceComplete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onServiceComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span></div>
+<div class="tsd-type-declaration">
+<h4>Type declaration</h4>
+<ul class="tsd-parameters">
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">on<wbr/>Account<wbr/>Complete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onAccountComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">on<wbr/>Graph<wbr/>Complete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onGraphComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">on<wbr/>Region<wbr/>Complete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onRegionComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li>
+<li class="tsd-parameter">
+<h5><span class="tsd-kind-property">on<wbr/>Service<wbr/>Complete</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Omit</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;onServiceComplete&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;event&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L52">index.ts:52</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="regionalScannerRegistry" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>regional<wbr/>Scanner<wbr/>Registry</span><a href="#regionalScannerRegistry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">regional<wbr/>Scanner<wbr/>Registry</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">ScannerRegistry</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L44">index.ts:44</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L48">index.ts:48</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member"><a id="generateGraph" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>generate<wbr/>Graph</span><a href="#generateGraph" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
-<li class="tsd-signature tsd-anchor-link" id="generateGraph.generateGraph-1"><span class="tsd-kind-call-signature">generate<wbr/>Graph</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">scanMetadata</span>, <span class="tsd-kind-parameter">connector</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/_infrascan_shared_types.GraphElement.html" class="tsd-signature-type tsd-kind-type-alias">GraphElement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><a href="#generateGraph.generateGraph-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="generateGraph.generateGraph-1"><span class="tsd-kind-call-signature">generate<wbr/>Graph</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">scanMetadata</span>, <span class="tsd-kind-parameter">connector</span>, <span class="tsd-kind-parameter">graphSerializer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span><a href="#generateGraph.generateGraph-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Entrypoint function to convert one or more scans into an infrastructure graph.</p>
 <ul>
 <li>Example Code:</li>
 </ul>
-<pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">Infrascan</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;@infrascan/sdk&quot;</span><span class="hl-1">;</span><br/><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">BuildFsConnector</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;@infrascan/fs-connector&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">connector</span><span class="hl-1"> = </span><span class="hl-6">BuildFsConnector</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">infrascan</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">Infrascan</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">scanMetadata</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">infrascan</span><span class="hl-1">.</span><span class="hl-6">performScan</span><span class="hl-1">({ ... });</span><br/><span class="hl-2">infrascan</span><span class="hl-1">.</span><span class="hl-6">generateGraph</span><span class="hl-1">(</span><br/><span class="hl-1"> </span><span class="hl-2">scanMetadata</span><span class="hl-1">,</span><br/><span class="hl-1"> </span><span class="hl-2">connector</span><br/><span class="hl-1">).</span><span class="hl-6">then</span><span class="hl-1">(</span><span class="hl-4">function</span><span class="hl-1"> (</span><span class="hl-2">graphData</span><span class="hl-1">) {</span><br/><span class="hl-1"> </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-3">&quot;Graph Complete!&quot;</span><span class="hl-1">, </span><span class="hl-2">graphData</span><span class="hl-1">);</span><br/><span class="hl-1">}).</span><span class="hl-6">catch</span><span class="hl-1">(</span><span class="hl-4">function</span><span class="hl-1"> (</span><span class="hl-2">err</span><span class="hl-1">) {</span><br/><span class="hl-1"> </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">error</span><span class="hl-1">(</span><span class="hl-3">&quot;Failed to create graph&quot;</span><span class="hl-1">, </span><span class="hl-2">err</span><span class="hl-1">);</span><br/><span class="hl-1">});</span>
+<pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">Infrascan</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;@infrascan/sdk&quot;</span><span class="hl-1">;</span><br/><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">BuildFsConnector</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;@infrascan/fs-connector&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">connector</span><span class="hl-1"> = </span><span class="hl-6">BuildFsConnector</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">infrascan</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">Infrascan</span><span class="hl-1">();</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">scanMetadata</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">infrascan</span><span class="hl-1">.</span><span class="hl-6">performScan</span><span class="hl-1">({ ... });</span><br/><span class="hl-2">infrascan</span><span class="hl-1">.</span><span class="hl-6">generateGraph</span><span class="hl-1">(</span><br/><span class="hl-1"> </span><span class="hl-2">scanMetadata</span><span class="hl-1">,</span><br/><span class="hl-1"> </span><span class="hl-2">connector</span><span class="hl-1">,</span><br/><span class="hl-1"> (</span><span class="hl-2">graph</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> </span><span class="hl-2">graph</span><span class="hl-1">.</span><span class="hl-6">nodes</span><span class="hl-1">()</span><br/><span class="hl-1">).</span><span class="hl-6">then</span><span class="hl-1">(</span><span class="hl-4">function</span><span class="hl-1"> (</span><span class="hl-2">graphData</span><span class="hl-1">) {</span><br/><span class="hl-1"> </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-3">&quot;Graph Complete!&quot;</span><span class="hl-1">, </span><span class="hl-2">graphData</span><span class="hl-1">);</span><br/><span class="hl-1">}).</span><span class="hl-6">catch</span><span class="hl-1">(</span><span class="hl-4">function</span><span class="hl-1"> (</span><span class="hl-2">err</span><span class="hl-1">) {</span><br/><span class="hl-1"> </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">error</span><span class="hl-1">(</span><span class="hl-3">&quot;Failed to create graph&quot;</span><span class="hl-1">, </span><span class="hl-2">err</span><span class="hl-1">);</span><br/><span class="hl-1">});</span>
 </code><button>Copy</button></pre>
 </div>
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li>
+<h4><span class="tsd-kind-type-parameter">T</span></h4></li></ul></section>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
 <h5><span class="tsd-kind-parameter">scanMetadata</span>: <a href="../types/_infrascan_sdk.ScanMetadata.html" class="tsd-signature-type tsd-kind-type-alias">ScanMetadata</a><span class="tsd-signature-symbol">[]</span></h5></li>
 <li>
-<h5><span class="tsd-kind-parameter">connector</span>: <a href="../interfaces/_infrascan_shared_types.Connector.html" class="tsd-signature-type tsd-kind-interface">Connector</a></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/_infrascan_shared_types.GraphElement.html" class="tsd-signature-type tsd-kind-type-alias">GraphElement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<h5><span class="tsd-kind-parameter">connector</span>: <a href="../interfaces/_infrascan_shared_types.Connector.html" class="tsd-signature-type tsd-kind-interface">Connector</a></h5></li>
+<li>
+<h5><span class="tsd-kind-parameter">graphSerializer</span>: <a href="../types/_infrascan_shared_types.GraphSerializer.html" class="tsd-signature-type tsd-kind-type-alias">GraphSerializer</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L212">index.ts:212</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L236">index.ts:236</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="performScan" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>perform<wbr/>Scan</span><a href="#performScan" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -117,7 +142,32 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/_infrascan_sdk.ScanMetadata.html" class="tsd-signature-type tsd-kind-type-alias">ScanMetadata</a><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L97">index.ts:97</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L121">index.ts:121</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member"><a id="registerPlugin" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>register<wbr/>Plugin</span><a href="#registerPlugin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="registerPlugin.registerPlugin-1"><span class="tsd-kind-call-signature">register<wbr/>Plugin</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">E</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">plugin</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#registerPlugin.registerPlugin-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Register a plugin to be run during the lifecycle of the graph. Supported events are <a href="../types/_infrascan_shared_types.GraphPluginEvents.html" class="tsd-kind-type-alias">GraphPluginEvents</a>.
+Plugins registered for the same event will be run in order of registration.</p>
+</div>
+<section class="tsd-panel">
+<h4>Type Parameters</h4>
+<ul class="tsd-type-parameter-list">
+<li>
+<h4><span class="tsd-kind-type-parameter">E</span><span class="tsd-signature-symbol"> extends </span><a href="../types/_infrascan_shared_types.GraphPluginEvents.html" class="tsd-signature-type tsd-kind-type-alias">GraphPluginEvents</a></h4></li></ul></section>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><span class="tsd-kind-parameter">plugin</span>: <a href="../interfaces/_infrascan_shared_types.GraphPlugin.html" class="tsd-signature-type tsd-kind-interface">GraphPlugin</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">E</span><span class="tsd-signature-symbol">&gt;</span></h5>
+<div class="tsd-comment tsd-typography"><p>A plugin to be run on a specified lifecycle event within the graph.</p>
+</div>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L85">index.ts:85</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="registerScanner" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>register<wbr/>Scanner</span><a href="#registerScanner" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -130,7 +180,7 @@
 <h5><span class="tsd-kind-parameter">scanner</span>: <a href="../interfaces/_infrascan_shared_types.ServiceModule.html" class="tsd-signature-type tsd-kind-interface">ServiceModule</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">&quot;aws&quot;</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/70815a8/packages/sdk/src/index.ts#L54">index.ts:54</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/infrascan/infrascan/blob/21d4ecf/packages/sdk/src/index.ts#L68">index.ts:68</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -152,9 +202,11 @@
 <ul>
 <li><a href="#constructor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-512"></use></svg><span>constructor</span></a></li>
 <li><a href="#globalScannerRegistry" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>global<wbr/>Scanner<wbr/>Registry</span></a></li>
+<li><a href="#pluginRegistry" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>plugin<wbr/>Registry</span></a></li>
 <li><a href="#regionalScannerRegistry" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>regional<wbr/>Scanner<wbr/>Registry</span></a></li>
 <li><a href="#generateGraph" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>generate<wbr/>Graph</span></a></li>
 <li><a href="#performScan" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>perform<wbr/>Scan</span></a></li>
+<li><a href="#registerPlugin" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>register<wbr/>Plugin</span></a></li>
 <li><a href="#registerScanner" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2048"></use></svg><span>register<wbr/>Scanner</span></a></li></ul></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Infrascan</span></a>
