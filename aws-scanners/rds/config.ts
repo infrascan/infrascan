@@ -1,12 +1,8 @@
 import * as RDS from "@aws-sdk/client-rds";
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-export type RDSFunctions = "DescribeDBInstances"
-const RDSScanner: ScannerDefinition<
-  "RDS",
-  typeof RDS,
-  RDSFunctions
-> = {
+export type RDSFunctions = "DescribeDBInstances";
+const RDSScanner: ScannerDefinition<"RDS", typeof RDS, RDSFunctions> = {
   provider: "aws",
   service: "rds",
   clientKey: "RDS",
@@ -18,8 +14,8 @@ const RDSScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",
-  ]
+    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,arn:DBInstanceArn,name:DBName}",
+  ],
 };
 
 export default RDSScanner;

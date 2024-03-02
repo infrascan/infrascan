@@ -39,7 +39,7 @@ const SQSScanner: ScannerDefinition<"SQS", typeof SQS, SQSFunctions> = {
     },
   ],
   nodes: [
-    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueArn}",
+    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,arn:QueueArn,name:QueueArn}",
   ],
 };
 

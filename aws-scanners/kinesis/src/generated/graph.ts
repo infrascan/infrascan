@@ -21,14 +21,14 @@ export async function getNodes(
   const ListStreamsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,name:StreamName}",
+    "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,arn:StreamARN,name:StreamName}",
     stateConnector,
   );
   state.push(...ListStreamsNodes);
   const ListStreamConsumersNodes = await evaluateSelector(
     context.account,
     context.region,
-    "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,name:ConsumerName}",
+    "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,arn:ConsumerARN,name:ConsumerName}",
     stateConnector,
   );
   state.push(...ListStreamConsumersNodes);

@@ -21,7 +21,7 @@ export async function getNodes(
   const ListBucketsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
+    "S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),arn:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
     stateConnector,
   );
   state.push(...ListBucketsNodes);

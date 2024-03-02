@@ -13,7 +13,7 @@ export async function getNodes(
   const GetQueueAttributesNodes = await evaluateSelector(
     context.account,
     context.region,
-    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueArn}",
+    "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,arn:QueueArn,name:QueueArn}",
     stateConnector,
   );
   state.push(...GetQueueAttributesNodes);

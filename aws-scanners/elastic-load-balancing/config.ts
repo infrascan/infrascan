@@ -52,7 +52,7 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,arn:LoadBalancerArn,name:LoadBalancerName}",
   ],
 };
 

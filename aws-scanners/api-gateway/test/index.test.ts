@@ -72,11 +72,9 @@ t.test(
       ),
     );
 
-    if (ApiGatewayScanner.getNodes != null) {
-      const nodes = await ApiGatewayScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 2);
-      t.ok(nodes.find((node) => node.id === FirstApiEndpoint));
-      t.ok(nodes.find((node) => node.id === SecondApiEndpoint));
-    }
+    const nodes = await ApiGatewayScanner.getNodes!(connector, testContext);
+    t.equal(nodes.length, 2);
+    t.ok(nodes.find((node) => node.id === FirstApiEndpoint));
+    t.ok(nodes.find((node) => node.id === SecondApiEndpoint));
   },
 );

@@ -37,8 +37,8 @@ const KinesisScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,name:StreamName}",
-    "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,name:ConsumerName}",
+    "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,arn:StreamARN,name:StreamName}",
+    "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,arn:ConsumerARN,name:ConsumerName}",
   ],
   edges: [
     {

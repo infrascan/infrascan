@@ -4,50 +4,50 @@ import type { Graph } from "@infrascan/shared-types";
  * A node on the graph in Cytoscape format
  */
 export type CytoscapeNode = {
-    group: "nodes";
+  group: "nodes";
+  id: string;
+  data: {
     id: string;
-    data: {
-        id: string;
-        type: string;
-        /**
-         * Parent node (account, region etc)
-         */
-        parent?: string;
-        name?: string;
-        service?: string;
-    };
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    metadata?: any;
+    type: string;
+    /**
+     * Parent node (account, region etc)
+     */
+    parent?: string;
+    name?: string;
+    service?: string;
+  };
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  metadata?: any;
 };
 
 /**
  * An edge connecting two nodes within a graph
  */
 export type CytoscapeEdge = {
-    group: "edges";
+  group: "edges";
+  /**
+   * Unique ID for the edge
+   */
+  id?: string;
+  data: {
+    id: string;
+    name: string;
     /**
-     * Unique ID for the edge
+     * Source Node
      */
-    id?: string;
-    data: {
-        id: string;
-        name: string;
-        /**
-         * Source Node
-         */
-        source: string;
-        /**
-         * Target Node
-         */
-        target: string;
-        type: string;
-    };
-    metadata?: {
-        label: string;
-        roleArn?: string;
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        statement?: any;
-    };
+    source: string;
+    /**
+     * Target Node
+     */
+    target: string;
+    type: string;
+  };
+  metadata?: {
+    label: string;
+    roleArn?: string;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    statement?: any;
+  };
 };
 
 /**
@@ -56,39 +56,40 @@ export type CytoscapeEdge = {
 export type CytoscapeGraph = CytoscapeNode | CytoscapeEdge;
 
 export type EdgeTarget = {
-    name: string;
-    target: string;
+  name: string;
+  target: string;
 };
 
 export function serializeGraph(graph: Graph): CytoscapeGraph[] {
-    const nodes: CytoscapeNode[] = graph.nodes.map((node) => ({
-        group: "nodes",
-        id: node.id,
-        data: {
-            id: node.id,
-            parent: typeof node.parent === 'string' ? node.parent : node.parent?.id,
-            name: node.name,
-            service: node.service as string,
-            type: node.type ?? node.service ?? 'node'
-        },
-        metadata: node.metadata
-    }));
+  const nodes: CytoscapeNode[] = graph.nodes.map((node) => ({
+    group: "nodes",
+    id: node.id,
+    data: {
+      id: node.id,
+      arn: node.arn,
+      parent: node.parent,
+      name: node.name,
+      service: node.service as string,
+      type: node.type ?? node.service ?? "node",
+    },
+    metadata: node.metadata,
+  }));
 
-    const edges: CytoscapeEdge[] = graph.edges.map((edge) => ({
-        group: 'edges',
-        id: edge.id,
-        data: {
-            id: edge.id,
-            name: edge.name as string,
-            source: edge.source.id,
-            target: edge.target.id,
-            type: "edge",
-        },
-        metadata: {
-            label: edge.target.name,
-            ...edge.metadata
-        }
-    }));
+  const edges: CytoscapeEdge[] = graph.edges.map((edge) => ({
+    group: "edges",
+    id: edge.id,
+    data: {
+      id: edge.id,
+      name: edge.name as string,
+      source: edge.source,
+      target: edge.target,
+      type: "edge",
+    },
+    metadata: {
+      label: edge.name ?? edge.id,
+      ...edge.metadata,
+    },
+  }));
 
-    return [...nodes, ...edges];
+  return [...nodes, ...edges];
 }

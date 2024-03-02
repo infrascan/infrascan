@@ -13,7 +13,7 @@ export async function getNodes(
   const DescribeStateMachineNodes = await evaluateSelector(
     context.account,
     context.region,
-    "SFN|DescribeStateMachine|[]._result.{id:stateMachineArn,name:name,rawState:@}",
+    "SFN|DescribeStateMachine|[]._result.{id:stateMachineArn,arn:stateMachineArn,name:name,rawState:@}",
     stateConnector,
   );
   state.push(...DescribeStateMachineNodes);

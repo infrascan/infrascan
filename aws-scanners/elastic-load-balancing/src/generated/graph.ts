@@ -13,7 +13,7 @@ export async function getNodes(
   const DescribeLoadBalancersNodes = await evaluateSelector(
     context.account,
     context.region,
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
+    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,arn:LoadBalancerArn,name:LoadBalancerName}",
     stateConnector,
   );
   state.push(...DescribeLoadBalancersNodes);

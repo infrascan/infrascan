@@ -19,7 +19,7 @@ const CloudfrontScanner: ScannerDefinition<
     },
   ],
   nodes: [
-    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:Aliases.Items[0] || DomainName}",
+    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,arn:ARN,name:Aliases.Items[0] || DomainName}",
   ],
 };
 

@@ -13,7 +13,7 @@ export async function getNodes(
   const ListFunctionsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
+    "Lambda|ListFunctions|[]._result.Functions[].{id:FunctionArn,arn:FunctionArn,name:FunctionName}",
     stateConnector,
   );
   state.push(...ListFunctionsNodes);

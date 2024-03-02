@@ -13,7 +13,7 @@ export async function getNodes(
   const ListDistributionsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:Aliases.Items[0] || DomainName}",
+    "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,arn:ARN,name:Aliases.Items[0] || DomainName}",
     stateConnector,
   );
   state.push(...ListDistributionsNodes);

@@ -21,7 +21,7 @@ export async function getNodes(
   const ListTopicsNodes = await evaluateSelector(
     context.account,
     context.region,
-    "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
+    "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,arn:TopicArn,name:TopicArn}",
     stateConnector,
   );
   state.push(...ListTopicsNodes);

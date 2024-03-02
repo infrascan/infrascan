@@ -3,7 +3,11 @@ import type { ScannerDefinition } from "@infrascan/shared-types";
 
 export type LambdaFunctions = "ListFunctions" | "GetFunction";
 
-const LambdaScanner: ScannerDefinition<"Lambda", typeof Lambda, LambdaFunctions> = {
+const LambdaScanner: ScannerDefinition<
+  "Lambda",
+  typeof Lambda,
+  LambdaFunctions
+> = {
   provider: "aws",
   service: "lambda",
   clientKey: "Lambda",
@@ -28,7 +32,7 @@ const LambdaScanner: ScannerDefinition<"Lambda", typeof Lambda, LambdaFunctions>
     },
   ],
   nodes: [
-    "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
+    "Lambda|ListFunctions|[]._result.Functions[].{id:FunctionArn,arn:FunctionArn,name:FunctionName}",
   ],
   iamRoles: [
     "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",

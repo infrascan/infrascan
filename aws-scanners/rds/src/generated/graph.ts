@@ -13,7 +13,7 @@ export async function getNodes(
   const DescribeDBInstancesNodes = await evaluateSelector(
     context.account,
     context.region,
-    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",
+    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,arn:DBInstanceArn,name:DBName}",
     stateConnector,
   );
   state.push(...DescribeDBInstancesNodes);
