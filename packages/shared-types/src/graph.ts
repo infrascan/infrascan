@@ -57,6 +57,11 @@ export interface Graph {
   addChild: (parent: string, child: string) => void;
   getNode: (id: string) => Node | undefined;
   mapNodesById: (id: string, mapperFn: (node: Node) => Node[]) => void;
+  addAttributeForNode: (
+    nodeId: string,
+    attribute: string,
+    attributeValue: string,
+  ) => void;
   removeEdge: (id: string) => Edge;
   removeNode: (id: string) => Node;
   serialize: () => string;

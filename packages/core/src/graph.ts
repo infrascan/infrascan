@@ -170,6 +170,52 @@ Edges: ${edgeStrings}`;
     return nodes.get(id);
   }
 
+  function addAttributeForNode(
+    nodeId: string,
+    attribute: string,
+    attributeValue: string,
+  ) {
+    const targetNode = nodes.get(nodeId);
+    if (targetNode == null) {
+      throw new NodeNotFoundError(nodeId);
+    }
+
+    // If this attribute has been associated with another node, just add the edge.
+    const leafAttributeNodeId = `${attribute}:${attributeValue}`;
+    if (nodes.has(leafAttributeNodeId)) {
+      addEdge({
+        name: `${nodeId}:${leafAttributeNodeId}`,
+        source: leafAttributeNodeId,
+        target: nodeId,
+        metadata: {},
+      });
+      return;
+    }
+
+    // otherwise build out the attribute structure
+    let attributeNode = nodes.get(attribute);
+    if (attributeNode == null) {
+      attributeNode = {
+        id: attribute,
+        name: attribute,
+        type: "attribute",
+        metadata: {},
+        incomingEdges: new Set(),
+        outgoingEdges: new Set(),
+      };
+      nodes.set(attribute, attributeNode);
+    }
+
+    const leafNode = {
+      id: leafAttributeNodeId,
+      name: attributeValue,
+      type: "attribute",
+      metadata: {},
+      parent: attribute,
+    };
+    addNode(leafNode);
+  }
+
   return {
     get nodes(): Node[] {
       return Array.from(nodes.values());
@@ -180,6 +226,7 @@ Edges: ${edgeStrings}`;
     addNode,
     addEdge,
     addChild,
+    addAttributeForNode,
     getNode,
     mapNodesById,
     removeEdge,
