@@ -1,7 +1,8 @@
 import type {
   CytoscapeNode as Node,
-  CytoscapeEdge as Edge
+  CytoscapeEdge as Edge,
 } from "@infrascan/cytoscape-serializer";
+import type { Core, CytoscapeOptions } from "cytoscape";
 
 type GraphElement = Node | Edge;
 
@@ -45,16 +46,11 @@ async function getChecksum(content: string): Promise<string> {
   return decoder.decode(graphHashBuffer);
 }
 
-type CytoscapeGraphOptions = {
-  container: HTMLDivElement;
-  elements: GraphElement[];
-  style?: any[];
-  layout?: {
-    name: string;
-  };
+type CytoscapeGraphBuilder = (opts: CytoscapeOptions) => Core;
+export type RenderWindow = Window & {
+  cytoscape?: CytoscapeGraphBuilder;
+  graph?: Core;
 };
-type CytoscapeGraphBuilder = (opts: CytoscapeGraphOptions) => void;
-type RenderWindow = Window & { cytoscape?: CytoscapeGraphBuilder };
 let stylesheet = [
   {
     selector: "edge",
@@ -69,7 +65,7 @@ let stylesheet = [
 function updateRenderedGraph(graphContent: GraphElement[]) {
   const _window = window as RenderWindow;
   if (_window.cytoscape != null) {
-    _window.cytoscape({
+    _window.graph = _window.cytoscape({
       container: document.getElementById("graph-canvas") as HTMLDivElement,
       elements: graphContent,
       style: stylesheet,
@@ -87,6 +83,9 @@ export async function setupGraphEntryListener(textArea: HTMLTextAreaElement) {
     .then((response) => response.json())
     .then((stylesheetPayload) => {
       stylesheet = stylesheetPayload;
+    })
+    .catch((err) => {
+      console.error("Failed to load stylesheet", err.message);
     });
 
   // seed graph
