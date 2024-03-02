@@ -91,5 +91,5 @@ export function serializeGraph(graph: Graph): CytoscapeGraph[] {
     },
   }));
 
-  return [...nodes, ...edges];
+  return (nodes as CytoscapeGraph[]).concat(edges);
 }
