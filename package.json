@@ -4,7 +4,8 @@
     "apps/*",
     "aws-scanners/*",
     "internal/*",
-    "packages/*"
+    "packages/*",
+    "plugins/*"
   ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",

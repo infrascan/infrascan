@@ -58,7 +58,6 @@
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
     "eslint-config-custom": "*",
-    "ts-node": "^10.9.1",
     "tsconfig": "*",
     "typescript": "^5.1.3"
   }
