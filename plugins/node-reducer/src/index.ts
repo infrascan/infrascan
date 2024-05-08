@@ -1,14 +1,22 @@
 import { minimatch } from "minimatch";
 
-import type { Graph, GraphPlugin, Node } from "@infrascan/shared-types";
+import type {
+  Graph,
+  GraphPlugin,
+  Node,
+  Readable,
+  Writable,
+} from "@infrascan/shared-types";
 
 export interface GlobRule {
+  id: string;
   glob: string;
   reducedNodeSuffix: string;
   service: string;
 }
 
 export interface RegexRule {
+  id: string;
   regex: RegExp;
   reducedNodeSuffix: string;
   service: string;
@@ -41,7 +49,7 @@ function aggregateByService<T extends ServiceLike>(
   return serviceToRules;
 }
 
-function applyRule(rule: ReducerRule, node: Node): boolean {
+function applyRule(rule: ReducerRule, node: Readable<Node>): boolean {
   if (isGlobRule(rule)) {
     return minimatch(node.id, rule.glob);
   } else if (isRegexRule(rule)) {
@@ -53,7 +61,46 @@ function applyRule(rule: ReducerRule, node: Node): boolean {
 // Create new Node using `parent.id-suffix`
 // Migrate all existing Node edges to new Node
 // Delete all original Nodes
-function collapseNodes() {}
+function collapseNodes(
+  parent: string,
+  nodes: Readable<Node>[],
+  graph: Graph,
+  rule: ReducerRule,
+): Writable<Node> {
+  const newNode: Writable<Node> = {
+    id: `${parent}-${rule.id}`,
+    name: `${parent}-${rule.id}`,
+    metadata: {},
+    incomingEdges: {},
+    outgoingEdges: {},
+    parent,
+    service: rule.service,
+  };
+  graph.addNode(newNode);
+
+  for (const node of nodes) {
+    Object.values(node.outgoingEdges).forEach((outgoing) => {
+      graph.addEdge({
+        name: outgoing.name,
+        source: newNode.id,
+        target: outgoing.target.id,
+        metadata: {},
+      });
+      graph.removeEdge(outgoing.id);
+    });
+    Object.values(node.incomingEdges).forEach((incoming) => {
+      graph.addEdge({
+        name: incoming.name,
+        source: incoming.source.id,
+        target: newNode.id,
+        metadata: {},
+      });
+      graph.removeEdge(incoming.id);
+    });
+  }
+
+  return newNode;
+}
 
 function newNodeReducer(rules: Record<string, ReducerRule[]>) {
   return function reduceGraph(graph: Graph) {
@@ -74,16 +121,25 @@ function newNodeReducer(rules: Record<string, ReducerRule[]>) {
         // TODO: Nodes should be collapsed by parent
         // TODO: Only support child nodes for initial phase
         const nodesByParent = nodesToCollapse.reduce((acc, currentVal) => {
-          // TODO: Fix horrific parent typing on Nodes
-          const nodeParent = (currentVal.parent as string) ?? "none";
+          const nodeParent = currentVal.parent?.id ?? "none";
           if (acc[nodeParent] == null) {
             acc[nodeParent] = [];
           }
+          const nodeChildCount = Object.values(
+            currentVal.children ?? {},
+          ).length;
+          // Unclear how collapsing a node with children would work, ignore.
+          if (nodeChildCount > 0) {
+            return acc;
+          }
           acc[nodeParent].push(currentVal);
           return acc;
-        }, {} as Record<string, Node[]>);
+        }, {} as Record<string, Readable<Node>[]>);
 
-        nodesByParent;
+        for (const [parent, nodes] of Object.entries(nodesByParent)) {
+          collapseNodes(parent, nodes, graph, rule);
+          nodes.forEach((node) => graph.removeNode(node.id));
+        }
       }
     }
   };

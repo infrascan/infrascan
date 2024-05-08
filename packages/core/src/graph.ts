@@ -3,6 +3,7 @@ import type {
   Graph as _Graph,
   Node,
   Readable,
+  Writable,
 } from "@infrascan/shared-types";
 import {
   NodeConflictError,
@@ -44,16 +45,25 @@ export function Graph(): _Graph {
   }
 
   function addNode(
-    node: Pick<Node, "id" | "name" | "metadata" | "parent" | "service">,
+    node: Pick<
+      Writable<Node>,
+      "id" | "name" | "metadata" | "parent" | "service"
+    >,
   ) {
     if (nodes[node.id] != null) {
       throw new NodeConflictError(node.id);
     }
+    if (node.parent != null && nodes[node.parent] == null) {
+      throw new NodeNotFoundError(node.parent);
+    }
     try {
-      const completedNode: Node = Object.assign(node, {
+      const completedNode: Readable<Node> = {
+        id: node.id,
+        name: node.name,
+        metadata: node.metadata,
         incomingEdges: {},
         outgoingEdges: {},
-      });
+      };
       nodes[node.id] = completedNode;
       if (completedNode.parent != null) {
         // Parent is of type Node at this point.
@@ -71,7 +81,7 @@ export function Graph(): _Graph {
   }
 
   function addEdge(
-    edge: Pick<Edge<string>, "name" | "source" | "target" | "metadata">,
+    edge: Pick<Writable<Edge>, "name" | "source" | "target" | "metadata">,
   ) {
     const edgeId = `${edge.source}-${edge.target}`;
     if (edges[edgeId] != null) {
@@ -86,17 +96,19 @@ export function Graph(): _Graph {
       throw new NodeNotFoundError(edge.target);
     }
 
-    const preparedEdge: Edge<Node> = Object.assign(edge, {
+    const preparedEdge: Readable<Edge> = {
       id: edgeId,
+      metadata: edge.metadata,
+      name: edge.name,
       source: sourceNode,
       target: targetNode,
-    });
+    };
     edges[preparedEdge.id] = preparedEdge;
     sourceNode.outgoingEdges[preparedEdge.id] = preparedEdge;
     targetNode.incomingEdges[preparedEdge.id] = preparedEdge;
   }
 
-  function removeEdge(id: string): Edge<Node> {
+  function removeEdge(id: string): Readable<Edge> {
     const edge = edges[id];
     if (edge == null) {
       throw new EdgeNotFoundError(id);
@@ -107,7 +119,7 @@ export function Graph(): _Graph {
     return edge;
   }
 
-  function removeNode(id: string): Node {
+  function removeNode(id: string): Readable<Node> {
     const node = nodes[id];
     if (node == null) {
       throw new NodeNotFoundError(id);
@@ -123,7 +135,10 @@ export function Graph(): _Graph {
    * @param {string} id The ID of a node to map into many nodes. Useful for duplicating nodes under multiple parents.
    * @param {(node: Node) => Node[]} mapperFn The mapping function which produces some number of new nodes from the existing node.
    */
-  function mapNodesById(id: string, mapperFn: (node: Node) => Node[]) {
+  function mapNodesById(
+    id: string,
+    mapperFn: (node: Readable<Node>) => Writable<Node>[],
+  ) {
     const nodeToMap = nodes[id];
     const newNodes = mapperFn(nodeToMap);
     const incomingEdges = Object.values(nodeToMap.incomingEdges);
@@ -160,15 +175,15 @@ export function Graph(): _Graph {
 Edges: ${edgeStrings}`;
   }
 
-  function getNode(id: string): Node | undefined {
+  function getNode(id: string): Readable<Node> | undefined {
     return nodes[id];
   }
 
   return {
-    get nodes(): Node[] {
+    get nodes(): Readable<Node>[] {
       return Object.values(nodes);
     },
-    get edges(): Edge<Node>[] {
+    get edges(): Readable<Edge>[] {
       return Object.values(edges);
     },
     addNode,
