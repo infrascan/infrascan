@@ -55,6 +55,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "dependencies": {
+    "@infrascan/core": "*",
     "minimatch": "^9.0.4"
   }
 }

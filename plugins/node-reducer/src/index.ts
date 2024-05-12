@@ -1,3 +1,4 @@
+import { EdgeConflictError } from "@infrascan/core";
 import { minimatch } from "minimatch";
 
 import type {
@@ -6,6 +7,7 @@ import type {
   Node,
   Readable,
   Writable,
+  Edge,
 } from "@infrascan/shared-types";
 
 export interface GlobRule {
@@ -58,9 +60,26 @@ function applyRule(rule: ReducerRule, node: Readable<Node>): boolean {
   return false;
 }
 
-// Create new Node using `parent.id-suffix`
-// Migrate all existing Node edges to new Node
-// Delete all original Nodes
+function addEdgeToGraphIfNotExists(
+  graph: Graph,
+  edge: Pick<Writable<Edge>, "name" | "metadata" | "source" | "target">,
+) {
+  try {
+    graph.addEdge(edge);
+  } catch (err: unknown) {
+    if (err instanceof EdgeConflictError) {
+      return;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Collapse nodes matching the given rules.
+ * - Create a new Node using naming scheme: `{parent.id}-{rule.id}`
+ * - Migrate all matching nodes' edges to the new Node
+ * - Delete all original Nodes
+ */
 function collapseNodes(
   parent: string,
   nodes: Readable<Node>[],
@@ -80,21 +99,23 @@ function collapseNodes(
 
   for (const node of nodes) {
     Object.values(node.outgoingEdges).forEach((outgoing) => {
-      graph.addEdge({
+      const edgeToInsert = {
         name: outgoing.name,
         source: newNode.id,
         target: outgoing.target.id,
         metadata: {},
-      });
+      };
+      addEdgeToGraphIfNotExists(graph, edgeToInsert);
       graph.removeEdge(outgoing.id);
     });
     Object.values(node.incomingEdges).forEach((incoming) => {
-      graph.addEdge({
+      const edgeToInsert = {
         name: incoming.name,
         source: incoming.source.id,
         target: newNode.id,
         metadata: {},
-      });
+      };
+      addEdgeToGraphIfNotExists(graph, edgeToInsert);
       graph.removeEdge(incoming.id);
     });
   }
@@ -102,47 +123,48 @@ function collapseNodes(
   return newNode;
 }
 
-function newNodeReducer(rules: Record<string, ReducerRule[]>) {
-  return function reduceGraph(graph: Graph) {
-    const nodesByService = aggregateByService(graph.nodes);
-    for (const [service, serviceRules] of Object.entries(rules)) {
-      if (
-        nodesByService[service] == null ||
-        nodesByService[service]?.length === 0
-      ) {
-        continue;
-      }
+function reduceGraphWithRules(
+  rules: Record<string, ReducerRule[]>,
+  graph: Graph,
+) {
+  const nodesByService = aggregateByService(graph.nodes);
+  for (const [service, serviceRules] of Object.entries(rules)) {
+    if (
+      nodesByService[service] == null ||
+      nodesByService[service]?.length === 0
+    ) {
+      continue;
+    }
 
-      for (const rule of serviceRules) {
-        const nodesToCollapse = nodesByService[service].filter((node) =>
-          applyRule(rule, node),
-        );
+    for (const rule of serviceRules) {
+      const nodesToCollapse = nodesByService[service].filter((node) =>
+        applyRule(rule, node),
+      );
 
-        // TODO: Nodes should be collapsed by parent
-        // TODO: Only support child nodes for initial phase
-        const nodesByParent = nodesToCollapse.reduce((acc, currentVal) => {
-          const nodeParent = currentVal.parent?.id ?? "none";
-          if (acc[nodeParent] == null) {
-            acc[nodeParent] = [];
-          }
-          const nodeChildCount = Object.values(
-            currentVal.children ?? {},
-          ).length;
-          // Unclear how collapsing a node with children would work, ignore.
-          if (nodeChildCount > 0) {
-            return acc;
-          }
-          acc[nodeParent].push(currentVal);
-          return acc;
-        }, {} as Record<string, Readable<Node>[]>);
-
-        for (const [parent, nodes] of Object.entries(nodesByParent)) {
-          collapseNodes(parent, nodes, graph, rule);
-          nodes.forEach((node) => graph.removeNode(node.id));
+      const nodesByParent = nodesToCollapse.reduce((acc, currentVal) => {
+        const nodeParent = currentVal.parent?.id ?? "none";
+        if (acc[nodeParent] == null) {
+          acc[nodeParent] = [];
         }
+        const nodeChildCount = Object.values(currentVal.children ?? {}).length;
+        // Unclear how collapsing a node with children would work, ignore all non-leaf nodes.
+        if (nodeChildCount > 0) {
+          return acc;
+        }
+        acc[nodeParent].push(currentVal);
+        return acc;
+      }, {} as Record<string, Readable<Node>[]>);
+
+      for (const [parent, nodes] of Object.entries(nodesByParent)) {
+        collapseNodes(parent, nodes, graph, rule);
+        nodes.forEach((node) => graph.removeNode(node.id));
       }
     }
-  };
+  }
+}
+
+function newNodeReducer(rules: Record<string, ReducerRule[]>) {
+  return (graph: Graph) => reduceGraphWithRules(rules, graph);
 }
 
 export default function createPlugin(
