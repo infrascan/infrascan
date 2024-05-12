@@ -4,7 +4,7 @@ import {
   S3ServiceException,
 } from "@aws-sdk/client-s3";
 import t from "tap";
-import { mapNotFoundErrorToEmptyResponse, RichError } from "../src/middleware";
+import { mapNotFoundErrorToEmptyResponse, RichError } from "./middleware";
 
 function buildRichS3Error(err: { Code: string }): RichError {
   const exception = new S3ServiceException({

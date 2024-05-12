@@ -12,7 +12,7 @@ import {
   ListTagsForResourceCommand,
 } from "@aws-sdk/client-sns";
 import buildFsConnector from "@infrascan/fs-connector";
-import SNSScanner from "../src";
+import SNSScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -116,14 +116,12 @@ t.test(
 
       t.ok(
         edges.find(
-          (edge) =>
-            edge.source === topicArn && edge.target === snsArn,
+          (edge) => edge.source === topicArn && edge.target === snsArn,
         ),
       );
       t.ok(
         edges.find(
-          (edge) =>
-            edge.source === topicArn && edge.target === sqsArn,
+          (edge) => edge.source === topicArn && edge.target === sqsArn,
         ),
       );
     }

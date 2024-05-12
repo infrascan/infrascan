@@ -15,26 +15,11 @@
   "files": [
     "dist"
   ],
-  "tsup": {
-    "clean": true,
-    "cjsInterop": true,
-    "dts": true,
-    "splitting": false,
-    "sourcemap": false,
-    "entry": [
-      "src/**/*.ts"
-    ],
-    "format": [
-      "cjs",
-      "esm"
-    ],
-    "target": "node18"
-  },
   "scripts": {
     "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
-    "build": "rm -rf dist ; tsup",
-    "prepublish": "rm -rf dist ; tsup",
-    "test": "tap test/*.test.ts --allow-incomplete-coverage -- --typescript",
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "test": "tap src/**/*.test.ts --allow-incomplete-coverage -- --typescript",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
@@ -61,9 +46,10 @@
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.2.2",
     "@infrascan/shared-types": "^0.4.0",
+    "@infrascan/tsconfig": "*",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
-    "tsconfig": "^0.0.0"
+    "tap": "^18.7.0"
   },
   "dependencies": {
     "@aws-sdk/client-auto-scaling": "3.428.0",

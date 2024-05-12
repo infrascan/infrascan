@@ -16,26 +16,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; tsup",
-    "prepublish": "rm -rf dist ; tsup",
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "test": "echo \"Error: no test specified\"",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
     "clean": "rm -rf dist node_modules"
-  },
-  "tsup": {
-    "clean": true,
-    "cjsInterop": true,
-    "dts": true,
-    "splitting": false,
-    "entry": [
-      "src/index.ts"
-    ],
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "target": "node18"
   },
   "repository": {
     "type": "git",
@@ -55,7 +41,7 @@
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
     "@infrascan/sdk": "^0.4.0",
-    "tsconfig": "^0.0.0"
+    "@infrascan/tsconfig": "*"
   },
   "dependencies": {
     "@infrascan/aws-api-gateway-scanner": "^0.3.0",

@@ -10,11 +10,11 @@ import {
   DescribeTableCommand,
 } from "@aws-sdk/client-dynamodb";
 import buildFsConnector from "@infrascan/fs-connector";
-import DynamoDBScanner from "../src";
+import DynamoDBScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
-  env["DEBUG_STATE"] != null
+  env.DEBUG_STATE != null
     ? stateDirectoryPrefix
     : join(tmpdir(), stateDirectoryPrefix);
 const tmpDir = mkdtempSync(baseDirectory);

@@ -10,7 +10,7 @@ import {
   ListStreamConsumersCommand,
 } from "@aws-sdk/client-kinesis";
 import buildFsConnector from "@infrascan/fs-connector";
-import KinesisScanner from "../src";
+import KinesisScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

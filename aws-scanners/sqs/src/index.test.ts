@@ -11,7 +11,7 @@ import {
   GetQueueAttributesCommand,
 } from "@aws-sdk/client-sqs";
 import buildFsConnector from "@infrascan/fs-connector";
-import SQSScanner from "../src";
+import SQSScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

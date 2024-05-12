@@ -16,25 +16,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; tsup",
-    "prepublish": "rm -rf dist ; tsup",
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules",
-    "test": "tap test/*.test.ts --allow-incomplete-coverage -- --typescript"
-  },
-  "tsup": {
-    "clean": true,
-    "cjsInterop": true,
-    "splitting": false,
-    "dts": true,
-    "entry": [
-      "src/**/*.ts"
-    ],
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "target": "node18"
+    "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript"
   },
   "keywords": [
     "AWS",
@@ -50,7 +36,7 @@
     "@infrascan/shared-types": "^0.4.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-custom": "*",
-    "tap": "^18.5.7",
+    "tap": "^18.7.0",
     "tsconfig": "*",
     "typescript": "^5.1.6"
   },

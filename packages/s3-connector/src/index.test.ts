@@ -9,7 +9,7 @@ import {
 import t from "tap";
 import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
 import { resolve as resolvePath } from "path";
-import S3Connector from "../src";
+import S3Connector from ".";
 
 const testPrefix = "test-prefix";
 const testBucket = "test-bucket";
@@ -182,7 +182,7 @@ t.test(
     const buildResponseBody = () =>
       sdkStreamMixin(
         createReadStream(
-          resolvePath(__dirname, "./fixtures/ListFunctions.json"),
+          resolvePath(__dirname, "../fixtures/ListFunctions.json"),
         ),
       );
     mockedS3Client

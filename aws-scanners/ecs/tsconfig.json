@@ -1,13 +1,7 @@
 {
-  "extends": "tsconfig/base.json",
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "codegen.ts",
-    "config.ts",
-    "test/*.test.ts"
-  ],
+  "extends": "@infrascan/tsconfig/base.json",
+  "include": ["src"],
+  "exclude": ["codegen.ts", "config.ts", "test/*.test.ts"],
   "compilerOptions": {
     "target": "ES2015",
     "module": "Node16",

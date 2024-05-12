@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "source": "src/index.ts",
   "exports": {
     ".": {
       "require": "./dist/index.js",
@@ -16,24 +17,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist ; tsup",
-    "prepublish": "rm -rf dist ; tsup",
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
-  },
-  "tsup": {
-    "clean": true,
-    "cjsInterop": true,
-    "splitting": false,
-    "dts": true,
-    "entry": [
-      "index.ts"
-    ],
-    "format": [
-      "esm",
-      "cjs"
-    ],
-    "target": "node18"
   },
   "keywords": [
     "AWS",
