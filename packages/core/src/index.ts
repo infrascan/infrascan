@@ -6,10 +6,11 @@ import type {
   SelectedNode,
   AwsContext,
   SelectedEdge,
-  SelectedEdgeTarget
+  SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 
-export * from './graph';
+export * from "./graph";
+export * from "./errors";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluateSelector(
@@ -90,13 +91,16 @@ export async function evaluateSelectorGlobally(
   return jmespath.search(aggregateState, selector.join("|"));
 }
 
-export function formatEdge(source: string, target: SelectedEdgeTarget): SelectedEdge {
+export function formatEdge(
+  source: string,
+  target: SelectedEdgeTarget,
+): SelectedEdge {
   return {
     source,
     target: target.target,
     metadata: {
-      label: target.name
-    }
+      label: target.name,
+    },
   };
 }
 
@@ -104,14 +108,16 @@ function resolveParentForNode(
   context: AwsContext,
   isRegionBound: boolean,
 ): string {
-  return isRegionBound ? `${context.account}-${context.region}` : context.account;
+  return isRegionBound
+    ? `${context.account}-${context.region}`
+    : context.account;
 }
 
 export function formatNode(
   selectedNode: SelectedNode,
   defaultType: string,
   context: AwsContext,
-  isRegionBound: boolean
+  isRegionBound: boolean,
 ): SelectedNode {
   return {
     id: selectedNode.id,

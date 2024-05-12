@@ -1,0 +1,62 @@
+{
+  "name": "@infrascan/node-reducer-plugin",
+  "version": "0.1.0",
+  "description": "An Infrascan plugin to collapse similar nodes in your Graph down into a single node.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
+    "build": "rm -rf dist ; tsup"
+  },
+  "devDependencies": {
+    "@infrascan/shared-types": "^0.4.0",
+    "@types/node": "^20.12.10",
+    "tap": "^18.7.0",
+    "tsconfig": "*"
+  },
+  "tsup": {
+    "clean": true,
+    "cjsInterop": true,
+    "dts": true,
+    "splitting": false,
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "target": "node18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
+  "keywords": [
+    "AWS",
+    "Infrastructure Diagram",
+    "Infrastructure Graph",
+    "Cloud Infrastructure"
+  ],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/infrascan/infrascan/issues"
+  },
+  "homepage": "https://github.com/infrascan/infrascan#readme",
+  "dependencies": {
+    "@infrascan/core": "*",
+    "minimatch": "^9.0.4"
+  }
+}
