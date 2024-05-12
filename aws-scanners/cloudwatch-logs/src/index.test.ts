@@ -14,7 +14,7 @@ import CloudwatchLogsScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
-  env["DEBUG_STATE"] != null
+  env.DEBUG_STATE != null
     ? stateDirectoryPrefix
     : join(tmpdir(), stateDirectoryPrefix);
 const tmpDir = mkdtempSync(baseDirectory);

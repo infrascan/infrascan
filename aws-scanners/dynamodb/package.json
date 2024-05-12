@@ -42,9 +42,12 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
+    "@aws-sdk/credential-providers": "^3.427.0",
     "@infrascan/aws-codegen": "^0.1.0",
+    "@infrascan/fs-connector": "^0.2.0",
     "@infrascan/shared-types": "^0.4.0",
     "@infrascan/tsconfig": "*",
+    "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
     "tap": "^18.7.0"
   },
