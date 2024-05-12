@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-cloudfront-scanner",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Infrascan scanner definition for AWS Cloudfront",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -47,14 +47,14 @@
     "@infrascan/tsconfig": "*",
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.2.2",
-    "@infrascan/shared-types": "^0.4.0",
+    "@infrascan/shared-types": "^0.5.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
     "tap": "^18.7.0"
   },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "3.428.0",
-    "@infrascan/core": "0.3.0",
+    "@infrascan/core": "0.4.0",
     "minimatch": "^9.0.3"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Core library for use in service scanners and the SDK.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.4.0",
+    "@infrascan/shared-types": "^0.5.0",
     "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
