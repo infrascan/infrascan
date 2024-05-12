@@ -7,7 +7,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import { DescribeDBInstancesCommand } from "@aws-sdk/client-rds";
 import buildFsConnector from "@infrascan/fs-connector";
-import RDSScanner from "../src";
+import RDSScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

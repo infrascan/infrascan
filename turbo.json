@@ -4,37 +4,24 @@
     "codegen": {
       "cache": false
     },
+    "fmt": {
+      "cache": false
+    },
     "dev": {
-      "dependsOn": [
-        "codegen"
-      ],
+      "dependsOn": ["codegen"],
       "cache": false
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
-      ],
-      "inputs": [
-        "src/**/*.ts",
-        "test/**/*.ts"
-      ]
+      "dependsOn": ["^lint"],
+      "inputs": ["src/**/*.ts", "test/**/*.ts"]
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": [
-        "build"
-      ],
-      "inputs": [
-        "src/**/*.ts",
-        "test/**/*.ts"
-      ]
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.ts", "test/**/*.ts"]
     },
     "clean": {
       "cache": false

@@ -10,7 +10,7 @@ import {
   ListResourceRecordSetsCommand,
 } from "@aws-sdk/client-route-53";
 import buildFsConnector from "@infrascan/fs-connector";
-import Route53Scanner from "../src";
+import Route53Scanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

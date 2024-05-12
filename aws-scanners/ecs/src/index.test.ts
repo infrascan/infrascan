@@ -15,7 +15,7 @@ import {
   DescribeTaskDefinitionCommand,
 } from "@aws-sdk/client-ecs";
 import buildFsConnector from "@infrascan/fs-connector";
-import ECSScanner from "../src";
+import ECSScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -117,7 +117,10 @@ t.test(
       // successfully found cluster node
       t.ok(
         nodes.find(
-          (node) => node.id === clusterArn && node.type === "ECS-Cluster" && node.parent === `${testContext.account}-${testContext.region}`,
+          (node) =>
+            node.id === clusterArn &&
+            node.type === "ECS-Cluster" &&
+            node.parent === `${testContext.account}-${testContext.region}`,
         ),
       );
 
@@ -378,9 +381,7 @@ t.test("No Tasks found in the cluster", async () => {
   t.equal(nodes.length, 1);
   // successfully found cluster node
   t.ok(
-    nodes.find(
-      (node) => node.id === clusterArn && node.type === "ECS-Cluster",
-    ),
+    nodes.find((node) => node.id === clusterArn && node.type === "ECS-Cluster"),
   );
   console.log(nodes);
 

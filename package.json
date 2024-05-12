@@ -25,6 +25,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "codegen": "turbo run codegen",
+    "fmt": "turbo run fmt",
     "lint": "turbo run lint",
     "lint:all": "eslint .",
     "test": "turbo run test",

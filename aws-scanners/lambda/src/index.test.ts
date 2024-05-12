@@ -10,7 +10,7 @@ import {
   GetFunctionCommand,
 } from "@aws-sdk/client-lambda";
 import buildFsConnector from "@infrascan/fs-connector";
-import LambdaScanner from "../src";
+import LambdaScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
