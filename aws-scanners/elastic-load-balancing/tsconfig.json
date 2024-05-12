@@ -1,5 +1,5 @@
 {
-  "extends": "tsconfig/base.json",
+  "extends": "@infrascan/tsconfig/base.json",
   "exclude": ["codegen.ts", "config.ts", "test/*.test.ts"],
   "compilerOptions": {
     "target": "ES2015",

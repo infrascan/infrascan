@@ -10,7 +10,7 @@ import {
   DescribeSubscriptionFiltersCommand,
 } from "@aws-sdk/client-cloudwatch-logs";
 import buildFsConnector from "@infrascan/fs-connector";
-import CloudwatchLogsScanner from "../src";
+import CloudwatchLogsScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

@@ -13,7 +13,7 @@ import {
   GetBucketAclCommand,
 } from "@aws-sdk/client-s3";
 import buildFsConnector from "@infrascan/fs-connector";
-import S3Scanner from "../src";
+import S3Scanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -96,21 +96,18 @@ t.test(
 
     t.ok(
       edges.find(
-        (edge) =>
-          edge.source === bucketArn && edge.target === snsTopicArn,
+        (edge) => edge.source === bucketArn && edge.target === snsTopicArn,
+      ),
+    );
+    t.ok(
+      edges.find(
+        (edge) => edge.source === bucketArn && edge.target === sqsQueueArn,
       ),
     );
     t.ok(
       edges.find(
         (edge) =>
-          edge.source === bucketArn && edge.target === sqsQueueArn,
-      ),
-    );
-    t.ok(
-      edges.find(
-        (edge) =>
-          edge.source === bucketArn &&
-          edge.target === lambdaFunctionArn,
+          edge.source === bucketArn && edge.target === lambdaFunctionArn,
       ),
     );
   },

@@ -7,7 +7,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import { DescribeAutoScalingGroupsCommand } from "@aws-sdk/client-auto-scaling";
 import buildFsConnector from "@infrascan/fs-connector";
-import AutoscalingScanner from "../src";
+import AutoscalingScanner from "./index";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

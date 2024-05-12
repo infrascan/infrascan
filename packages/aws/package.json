@@ -55,7 +55,7 @@
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
     "@infrascan/sdk": "^0.4.0",
-    "tsconfig": "^0.0.0"
+    "@infrascan/tsconfig": "*"
   },
   "dependencies": {
     "@infrascan/aws-api-gateway-scanner": "^0.3.0",

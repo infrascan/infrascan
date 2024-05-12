@@ -1,5 +1,5 @@
 import t from "tap";
-import Cache from "../src/cache";
+import Cache from "./cache";
 
 t.test("Cache cannot be size 0", (tap) => {
   try {

@@ -7,7 +7,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import { ListDistributionsCommand } from "@aws-sdk/client-cloudfront";
 import buildFsConnector from "@infrascan/fs-connector";
-import CloudfrontScanner from "../src";
+import CloudfrontScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

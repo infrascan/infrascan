@@ -10,7 +10,7 @@ import {
   GetDomainNamesCommand,
 } from "@aws-sdk/client-apigatewayv2";
 import buildFsConnector from "@infrascan/fs-connector";
-import ApiGatewayScanner from "../src";
+import ApiGatewayScanner from "./index";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =

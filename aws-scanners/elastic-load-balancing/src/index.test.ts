@@ -12,7 +12,7 @@ import {
   DescribeRulesCommand,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
 import buildFsConnector from "@infrascan/fs-connector";
-import ElasticLoadBalancingScanner from "../src";
+import ElasticLoadBalancingScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
