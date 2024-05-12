@@ -36,7 +36,6 @@ t.test(
 t.test("applyRule regex rule with no match", (tap) => {
   const matches = applyRule(
     {
-      reducedNodeSuffix: "regex-test-1",
       regex: /^regex/g,
       id: "regex-test-1",
       service: "a",
@@ -56,7 +55,6 @@ t.test("applyRule regex rule with no match", (tap) => {
 t.test("applyRule regex rule with match", (tap) => {
   const matches = applyRule(
     {
-      reducedNodeSuffix: "regex-test-1",
       regex: /^regex/g,
       id: "regex-test-1",
       service: "a",
@@ -76,7 +74,6 @@ t.test("applyRule regex rule with match", (tap) => {
 t.test("applyRule glob rule with no match", (tap) => {
   const matches = applyRule(
     {
-      reducedNodeSuffix: "glob-test-1",
       glob: "lambda*",
       id: "glob-test-1",
       service: "a",
@@ -96,7 +93,6 @@ t.test("applyRule glob rule with no match", (tap) => {
 t.test("applyRule glob rule with match", (tap) => {
   const matches = applyRule(
     {
-      reducedNodeSuffix: "glob-test-1",
       glob: "lambda*",
       id: "glob-test-1",
       service: "a",

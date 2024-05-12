@@ -9,17 +9,25 @@ import type {
   Edge,
 } from "@infrascan/shared-types";
 
+/**
+ * Rule based on a glob selector. Globs are evaluated using the `minimatch` library.
+ *
+ * The id for the rule should be in kebab case, as it used as part of the id for the resulting nodes.
+ */
 export interface GlobRule {
   id: string;
   glob: string;
-  reducedNodeSuffix: string;
   service: string;
 }
 
+/**
+ * Rule based on a regex.
+ *
+ * The id for the rule should be in kebab case, as it used as part of the id for the resulting nodes.
+ */
 export interface RegexRule {
   id: string;
   regex: RegExp;
-  reducedNodeSuffix: string;
   service: string;
 }
 
