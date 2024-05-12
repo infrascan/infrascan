@@ -1,5 +1,12 @@
 # @infrascan/aws-kinesis-scanner
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`e28a6d9`](https://github.com/infrascan/infrascan/commit/e28a6d91eb36fa83e9a40a667eb39a15b2a45ccb)]:
+  - @infrascan/core@0.4.0
+
 ## 0.2.0
 
 ### Minor Changes
