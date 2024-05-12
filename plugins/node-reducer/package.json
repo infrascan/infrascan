@@ -16,12 +16,13 @@
     "dist"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
     "build": "rm -rf dist ; tsup"
   },
   "devDependencies": {
     "@infrascan/shared-types": "^0.4.0",
     "@types/node": "^20.12.10",
+    "tap": "^18.7.0",
     "tsconfig": "*"
   },
   "tsup": {

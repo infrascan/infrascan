@@ -63,16 +63,12 @@ export function Graph(): _Graph {
         metadata: node.metadata,
         incomingEdges: {},
         outgoingEdges: {},
+        service: node.service,
       };
       nodes[node.id] = completedNode;
-      if (completedNode.parent != null) {
+      if (node.parent != null) {
         // Parent is of type Node at this point.
-        addChild(
-          typeof completedNode.parent === "string"
-            ? completedNode.parent
-            : completedNode.parent.id,
-          node.id,
-        );
+        addChild(node.parent, node.id);
       }
     } catch (err: unknown) {
       delete nodes[node.id];
