@@ -12,9 +12,7 @@ import {
   fromNodeProviderChain,
   fromTemporaryCredentials,
 } from "@aws-sdk/credential-providers";
-import {
-  loadSharedConfigFiles,
-} from "@smithy/shared-ini-file-loader";
+import { loadSharedConfigFiles } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
 import { ScanConfig, getConfig, getDefaultRegion } from "../config";
@@ -107,16 +105,17 @@ export default class ScanCmd extends CommandLineAction {
     });
 
     const defaultRegionFromEnv = getDefaultRegion(awsConfig?.configFile);
-    const runtimeRegionsToScan =
-      this._regions.values.length > 0 ? this._regions.values : undefined;
+    const runtimeRegionsToScan = (
+      this._regions.values.length > 0 ? this._regions.values : undefined
+    ) as string[] | undefined;
 
     const scanConfig = this._config.value
       ? getConfig(this._config.value)
       : ([
-        {
-          defaultRegion: defaultRegionFromEnv,
-        },
-      ] as ScanConfig);
+          {
+            defaultRegion: defaultRegionFromEnv,
+          },
+        ] as ScanConfig);
 
     const connector = buildFsConnector(this._outputDirectory.value as string, {
       createTargetDirectory: true,
