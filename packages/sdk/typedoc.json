@@ -1,4 +1,9 @@
 {
   "extends": ["../../typedoc.base.json"],
   "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/sdk",
+  "out": "../../apps/documentation/docs/@infrascan/sdk",
+  "readmeFrontmatter": {
+    "category": "Core Packages"
+  }
 }

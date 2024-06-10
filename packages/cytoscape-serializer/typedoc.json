@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/cytoscape-serializer",
+  "out": "../../apps/documentation/docs/@infrascan/cytoscape-serializer",
+  "readmeFrontmatter": {
+    "category": "Core Packages"
+  }
+}

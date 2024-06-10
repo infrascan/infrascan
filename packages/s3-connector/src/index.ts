@@ -26,6 +26,11 @@ export default class S3Connector {
 
   cache: Cache<any>;
 
+  /**
+   * Constructor for the Infrascan S3 Connector. The connector is used to sync state with S3 during scans and subsequent graphing.
+   * To reduce overhead of S3 calls when fetching state for a graph, the connector comes with a bounded FIFO cache.
+   * @param {ConstructorArgs} S3ConstructorArgs Object containing the S3 Client, bucket prefix, bucket name, and cache size limit.
+   */
   constructor({ S3, prefix, bucket, cacheLimit }: ConstructorArgs) {
     this.S3 = S3;
     this.prefix = prefix;
@@ -33,6 +38,12 @@ export default class S3Connector {
     this.cache = new Cache(cacheLimit ?? 10);
   }
 
+  /**
+   * Performs an S3 putObject call with the provided state.
+   * @param filePath Destination for the s3 put operation
+   * @param state State to store
+   * @returns {Promise<PutObjectCommandOutput>} Result of S3 put object call
+   */
   async recordServiceCall(
     filePath: string,
     state: any,
@@ -62,9 +73,10 @@ export default class S3Connector {
   }
 
   /**
-   * Format for file paths is somewhat unintuitive — the account and region are put at the end of the path
-   * This makes it easier for retrieving global state by service and function call where only list by prefix is supported (e.g. S3)
-   * Example:
+   * Create the S3 Object path for a given service call. Uses the format: `prefix/service-functionName/account/region.json`.
+   * This format makes it easier for retrieving global state by service and function call where only list by prefix is supported.
+   *
+   * For example:
    * - /1234567890/us-east-1/Lambda/listFunctions.json cannot be globally listed by prefix, only by account and region
    * - /Lambda-listFunctions/1234567890/us-east-1.json can be listed by function which allows for cross account resolution
    */

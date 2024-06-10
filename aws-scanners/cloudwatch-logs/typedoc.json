@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/aws-cloudwatch-logs-scanner",
+  "out": "../../apps/documentation/docs/@infrascan/aws-cloudwatch-logs-scanner",
+  "readmeFrontmatter": {
+    "category": "AWS Scanners"
+  }
+}

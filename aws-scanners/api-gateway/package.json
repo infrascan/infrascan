@@ -23,7 +23,8 @@
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
     "clean": "rm -rf dist node_modules",
-    "test": "tap run src/**/*.test.ts --allow-incomplete-coverage -- --typescript"
+    "test": "tap run src/**/*.test.ts --allow-incomplete-coverage -- --typescript",
+    "docs": "typedoc"
   },
   "repository": {
     "type": "git",

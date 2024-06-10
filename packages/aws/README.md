@@ -2,7 +2,7 @@
 
 A convenience package to register all AWS scanners with an instance of the Infrascan SDK.
 
-### Usage
+## Usage
 
 ```js
 import registerAwsScanners from "@infrascan/aws";

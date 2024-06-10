@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/aws-elastic-load-balancing-scanner",
+  "out": "../../apps/documentation/docs/@infrascan/aws-elastic-load-balancing-scanner",
+  "readmeFrontmatter": {
+    "category": "AWS Scanners"
+  }
+}

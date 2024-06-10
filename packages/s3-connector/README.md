@@ -20,23 +20,21 @@ const credentials = fromIni({ profile: "dev" });
 const s3Client = new S3Client({ credentials });
 const connector = new S3Connector({
   S3: s3Client,
-  prefix: 'my-scan-tenant',
-  bucket: 'my-scan-output-bucket'
+  prefix: "my-scan-tenant",
+  bucket: "my-scan-output-bucket",
 });
 const infrascan = registerAwsScanners(new Infrascan());
 
-infrascan.performScan(
-  credentials,
-  connector
-).then(function (scanMetadata) {
-  console.log("Scan Complete!", scanMetadata);
-  return infrascan.generateGraph(
-    scanMetadata,
-    connector
-  );
-}).then(function (graphData) {
-  console.log("Graph generated!", graphData);
-}).catch(function (err) {
-  console.error("Failed to scan", err);
-});
+infrascan
+  .performScan(credentials, connector)
+  .then(function (scanMetadata) {
+    console.log("Scan Complete!", scanMetadata);
+    return infrascan.generateGraph(scanMetadata, connector);
+  })
+  .then(function (graphData) {
+    console.log("Graph generated!", graphData);
+  })
+  .catch(function (err) {
+    console.error("Failed to scan", err);
+  });
 ```

@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/s3-connector",
+  "out": "../../apps/documentation/docs/@infrascan/s3-connector",
+  "readmeFrontmatter": {
+    "category": "Connectors"
+  }
+}

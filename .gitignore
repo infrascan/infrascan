@@ -9,6 +9,10 @@ dumps
 .turbo
 dist
 .vscode
-docs
 .tap
 infrascan-test-state-*
+
+apps/documentation/docs/@infrascan
+apps/documentation/.docusaurus
+apps/documentation/build
+!apps/documentation/static

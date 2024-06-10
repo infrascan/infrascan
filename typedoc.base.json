@@ -1,5 +1,22 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "includeVersion": true,
-  "plugin": ["@mxssfd/typedoc-theme"]
+  "plugin": [
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-markdown",
+    "typedoc-plugin-frontmatter",
+    "./apps/documentation/typedoc-plugins/custom-frontmatter.mjs"
+  ],
+  "mergeReadme": true,
+  "enumMembersFormat": "table",
+  "parametersFormat": "table",
+  "propertiesFormat": "list",
+  "typeDeclarationFormat": "list",
+  "indexFormat": "table",
+  "useCodeBlocks": true,
+  "expandObjects": true,
+  "hidePageTitle": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "outputFileStrategy": "modules"
 }

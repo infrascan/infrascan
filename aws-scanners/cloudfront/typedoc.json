@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/aws-cloudfront-scanner",
+  "out": "../../apps/documentation/docs/@infrascan/aws-cloudfront-scanner",
+  "readmeFrontmatter": {
+    "category": "AWS Scanners"
+  }
+}

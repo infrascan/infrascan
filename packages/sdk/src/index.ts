@@ -44,15 +44,54 @@ export interface ServiceNodesMap {
   [key: string]: string[];
 }
 
-export default class Infrascan {
+class Infrascan {
+  /**
+   * Registry of Scanners which consume services that use a region based tenancy model within AWS.
+   * These services will be scanned once per requested region.
+   */
   private regionalScannerRegistry: ScannerRegistry;
 
+  /**
+   * Registry of Scanners which consume services that use a global tenancy model within AWS.
+   * These services will be scanned once.
+   */
   private globalScannerRegistry: ScannerRegistry;
 
+  /**
+   * Map of events to registered plugins. If multiple plugins are registered for a single event, they will be evaluated in FIFO order.
+   */
   private pluginRegistry: {
     [E in GraphPluginEvents]: Omit<GraphPlugin<E>, "event">[];
   };
 
+  /**
+   * @constructor Infrascan
+   * @returns {Infrascan}
+   *
+   * The interface for the Infrascan SDK. Maintains the scanner registry, and exposes the entrypoints for performing scans and generating graphs.
+   * By default, an instance of the SDK cannot scan or graph any services without first registering scanners. To get started quickly, use the {@link @infrascan/aws} package:
+   *
+   * ```ts
+   * import Infrascan from "@infrascan/sdk";
+   * import registerAwsScanners from "@infrascan/aws";
+   * import BuildFsConnector from "@infrascan/fs-connector";
+   * import { fromIni } from "@aws-sdk/credential-providers";
+   *
+   * const credentials = fromIni({ profile: "dev" });
+   * const connector = BuildFsConnector();
+   * const infrascan = new Infrascan();
+   * registerAwsScanners(infrascan);
+   *
+   * infrascan.performScan(
+   *  credentials,
+   *  connector,
+   * ).then(function (scanMetadata) {
+   *  console.log("Scan Complete!", scanMetadata);
+   * }).catch(function (err) {
+   *  console.error("Failed to scan", err);
+   * });
+   * ```
+   */
   constructor() {
     this.regionalScannerRegistry = {};
     this.globalScannerRegistry = {};
@@ -64,6 +103,11 @@ export default class Infrascan {
     };
   }
 
+  /**
+   * Register to a scanner to be used during the next scan.
+   * @param {ServiceModule<any, Provider>} scanner A scanner module
+   * @throws {Error} Throws if a scanner's key is already registered within the scanner registry.
+   */
   /* eslint-disable @typescript-eslint/no-explicit-any */
   registerScanner(scanner: ServiceModule<any, Provider>) {
     const targetRegistry = scanner.callPerRegion
@@ -90,7 +134,8 @@ export default class Infrascan {
   /**
    * Entrypoint for scanning an account. This is a long running async function.
    *
-   * When the account scan is complete, the {@link ScanMetadata} will be returned.
+   * The scan resolves account credentials from the provider given and identify the calling account, scans each of the global services,
+   * and then scans each of the regional services before returning the {@link ScanMetadata}.
    *
    * Example Code:
    * ```ts
@@ -117,11 +162,16 @@ export default class Infrascan {
    *  console.error("Failed to scan", err);
    * });
    * ```
+   *
+   * @param {ScanCredentialProvider} credentialProvider An AWS credential provider, or a factory which returns credentials per region.
+   * @param {Connector} connector A connector which persists state to be retrieved during graphing.
+   * @param {{ regions?: string[], defaultRegion?: string }} [opts] Options to control the scope of the scan. The default region will be used when scanning global services.
+   * @returns {Promise<ScanMetadata>}
    */
   async performScan(
     credentialProvider: ScanCredentialProvider,
     connector: Connector,
-    opts?: { regions?: string[]; defaultRegion?: string | undefined },
+    opts?: { regions?: string[]; defaultRegion?: string },
   ): Promise<ScanMetadata> {
     const defaultRegion = opts?.defaultRegion ?? AWS_DEFAULT_REGION;
     const credentials = await resolveCredentialsFromProvider(
@@ -213,6 +263,7 @@ export default class Infrascan {
 
   /**
    * Entrypoint function to convert one or more scans into an infrastructure graph.
+   * generateGraph requires the scanner modules to be registered on the SDK instance.
    *
    * * Example Code:
    * ```ts
@@ -232,6 +283,12 @@ export default class Infrascan {
    *  console.error("Failed to create graph", err);
    * });
    * ```
+   *
+   * @template {T} GraphOutput The output of generate graph is inferred from the graphSerializer provided.
+   * @param {ScanMetadata[]} scanMetadata The metadata for each account included in the scan.
+   * @param {Connector} connector A connector capable of resolving the state from a previous scan.
+   * @param {GraphSerializer<T>} graphSerializer A function which consumes the Infrascan Graph and produces a render-able set of Nodes and Edges. See {@link @infrascan/cytoscape-serializer}.
+   * @returns {Promise<T>} A promise resolving to the serialized graph object.
    */
   async generateGraph<T>(
     scanMetadata: ScanMetadata[],
@@ -298,15 +355,15 @@ export default class Infrascan {
             });
             const serviceNodes =
               serviceNodeMap[
-              regionalServiceScanner.arnLabel ??
-              regionalServiceScanner.service.toLowerCase()
+                regionalServiceScanner.arnLabel ??
+                  regionalServiceScanner.service.toLowerCase()
               ];
             if (serviceNodes) {
               serviceNodes.push(...regionalServiceNodeIds);
             } else {
               serviceNodeMap[
                 regionalServiceScanner.arnLabel ??
-                regionalServiceScanner.service.toLowerCase()
+                  regionalServiceScanner.service.toLowerCase()
               ] = regionalServiceNodeIds;
             }
 
@@ -362,3 +419,4 @@ export default class Infrascan {
 }
 
 export type { ScanMetadata, CredentialProviderFactory, ScanCredentialProvider };
+export default Infrascan;

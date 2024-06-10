@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/node-reducer-plugin",
+  "out": "../../apps/documentation/docs/@infrascan/node-reducer-plugin",
+  "readmeFrontmatter": {
+    "category": "Plugins"
+  }
+}

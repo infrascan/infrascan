@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/core",
+  "out": "../../apps/documentation/docs/@infrascan/core",
+  "readmeFrontmatter": {
+    "category": "Core Packages"
+  }
+}

@@ -1,4 +1,9 @@
 {
   "extends": ["../../typedoc.base.json"],
-  "entryPoints": ["index.ts"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/fs-connector",
+  "out": "../../apps/documentation/docs/@infrascan/fs-connector",
+  "readmeFrontmatter": {
+    "category": "Connectors"
+  }
 }

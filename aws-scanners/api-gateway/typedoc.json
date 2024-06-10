@@ -1,0 +1,9 @@
+{
+  "extends": ["../../typedoc.base.json"],
+  "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/aws-api-gateway-scanner",
+  "out": "../../apps/documentation/docs/@infrascan/aws-api-gateway-scanner",
+  "readmeFrontmatter": {
+    "category": "AWS Scanners"
+  }
+}

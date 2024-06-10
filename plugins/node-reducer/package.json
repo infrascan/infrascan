@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
-    "build": "rm -rf dist ; tsup"
+    "build": "rm -rf dist ; tsup",
+    "docs": "typedoc"
   },
   "devDependencies": {
     "@infrascan/shared-types": "^0.5.0",

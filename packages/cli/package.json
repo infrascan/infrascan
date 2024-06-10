@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "lint": "tsc --noEmit ; eslint .",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "docs": "typedoc"
   },
   "bin": {
     "infrascan": "./dist/index.mjs"

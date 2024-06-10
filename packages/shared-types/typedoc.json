@@ -1,4 +1,9 @@
 {
   "extends": ["../../typedoc.base.json"],
   "entryPoints": ["src/index.ts"],
+  "name": "@infrascan/shared-types",
+  "out": "../../apps/documentation/docs/@infrascan/shared-types",
+  "readmeFrontmatter": {
+    "category": "Core Packages"
+  }
 }

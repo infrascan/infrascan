@@ -4,7 +4,8 @@
   "description": "Shared types for multiple infrascan packages",
   "main": "src/index.ts",
   "scripts": {
-    "lint": "tsc --noEmit ; eslint ."
+    "lint": "tsc --noEmit ; eslint .",
+    "docs": "typedoc"
   },
   "keywords": [
     "Infrascan Typings"

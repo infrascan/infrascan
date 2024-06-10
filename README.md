@@ -11,7 +11,7 @@
 
 Infrascan is a set of open-source tools to help you make sense of your cloud infrastructure.
 
-![Example Infrastructure map of an AWS Account](./assets/infrastructure-diagram.png)
+![Example Infrastructure map of an AWS Account](./infrascan docs/docs/assets/infrastructure-diagram.png)
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
 

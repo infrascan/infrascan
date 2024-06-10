@@ -11,14 +11,26 @@ import type {
 } from "@infrascan/shared-types";
 import { IAMStorage, scanIamRole } from "./aws/helpers/iam";
 
+/**
+ * Type signature for a credential provider factory which produces an AWS credential provider based on the provided region.
+ */
 export type CredentialProviderFactory = (
   region: string,
 ) => AwsCredentialIdentityProvider | Promise<AwsCredentialIdentityProvider>;
 
+/**
+ * Union type for any accepted credential provider. Either an {@link AwsCredentialIdentityProvider} or a {@link CredentialProviderFactory}
+ */
 export type ScanCredentialProvider =
   | AwsCredentialIdentityProvider
   | CredentialProviderFactory;
 
+/**
+ * Naive helper function which determines if the given provider is a factory.
+ * Based on current type constraints, a simple function-type check is sufficient.
+ * @param {ScanCredentialProvider} provider
+ * @returns {boolean} isCredentialProviderFactory true if the provider is a factory function.
+ */
 function isCredentialProviderFactory(
   provider: ScanCredentialProvider,
 ): provider is CredentialProviderFactory {
@@ -27,7 +39,7 @@ function isCredentialProviderFactory(
 
 /**
  * In cases where the AWS config file isn't present to define a default region, the client SDKs will throw
- * a Region in Missing error. Supporting a credential provider factory allows the region to be provided when using STS internally.
+ * a Region is Missing error. Supporting a credential provider factory allows the region to be provided when using STS internally.
  */
 export async function resolveCredentialsFromProvider(
   provider: ScanCredentialProvider,
@@ -39,7 +51,12 @@ export async function resolveCredentialsFromProvider(
   return provider;
 }
 
-// Rather than relying on an account id being supplied, we fetch it from STS before scanning.
+/**
+ * Helper function to determine the account that we're currently authenticated with. This is done using the AWS STS GetCallerIdentity function.
+ * @param {AwsCredentialIdentityProvider} credentials
+ * @param {string} region
+ * @returns {GetCallerIdentityCommandOutput}
+ */
 export async function whoami(
   credentials: AwsCredentialIdentityProvider,
   region: string,
@@ -51,8 +68,13 @@ export async function whoami(
   return stsClient.getCallerIdentity({});
 }
 
-// If no regions are given for a scan, we retrieve all supported regions in this account.
-// This is exposed in the EC2 API.
+/**
+ * Helper function to get all active regions on a given account from the EC2 API.
+ * @param {AwsCredentialIdentityProvider} credentials
+ * @param {string} region
+ * @param {string[]} [regionFilter] An optional allowlist of regions.
+ * @returns The overlapping regions between the regionFilter and the available regions for the account.
+ */
 export async function getAllRegions(
   credentials: AwsCredentialIdentityProvider,
   region: string,
@@ -86,6 +108,16 @@ export type ScanMetadata = {
   defaultRegion: string;
 };
 
+/**
+ * Execute a scan against a single service
+ * @param {ServiceModule<unknown, "aws">} serviceScanner Some defined service scanner
+ * @param {AwsCredentialIdentityProvider} credentials
+ * @param {Connector} connector
+ * @param {IAMStorage} iamStorage
+ * @param {IAM} iamClient
+ * @param {AwsContext} context The current scan context
+ * @returns {Promise<void>} Resolves after all scan calls have completed, and the state has been persisted via the connector.
+ */
 export async function scanService(
   serviceScanner: ServiceModule<unknown, "aws">,
   credentials: AwsCredentialIdentityProvider,

@@ -25,6 +25,11 @@
     },
     "clean": {
       "cache": false
+    },
+    "docs": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.ts", "README.md", "typedoc.base.json"]
     }
   }
 }

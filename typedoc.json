@@ -1,6 +1,0 @@
-{
-  "entryPoints": ["packages/*", "internal/*"],
-  "name": "Infrascan",
-  "entryPointStrategy": "packages",
-  "includeVersion": true
-}
