@@ -1,5 +1,11 @@
 # @infrascan/shared-types
 
+## 0.5.1
+
+### Patch Changes
+
+- [#84](https://github.com/infrascan/infrascan/pull/84) [`437026c`](https://github.com/infrascan/infrascan/commit/437026cc278ec4b380bcaf3a7a675f3762ce3bea) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Bump aws client sdk versions to remove vulnerable dependency
+
 ## 0.5.0
 
 ### Minor Changes

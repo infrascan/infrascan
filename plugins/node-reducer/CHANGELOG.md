@@ -1,5 +1,14 @@
 # @infrascan/node-reducer-plugin
 
+## 0.2.1
+
+### Patch Changes
+
+- [#86](https://github.com/infrascan/infrascan/pull/86) [`d3110c2`](https://github.com/infrascan/infrascan/commit/d3110c2197be872ca72667aad552f33dead5271c) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Bug fixes: correctly invoke on graph complete plugins in sdk, correct Node structure in core and populate additional context in reducer plugin.
+
+- Updated dependencies [[`d3110c2`](https://github.com/infrascan/infrascan/commit/d3110c2197be872ca72667aad552f33dead5271c), [`437026c`](https://github.com/infrascan/infrascan/commit/437026cc278ec4b380bcaf3a7a675f3762ce3bea)]:
+  - @infrascan/core@0.4.1
+
 ## 0.2.0
 
 ### Minor Changes
