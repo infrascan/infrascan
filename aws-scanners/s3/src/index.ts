@@ -1,9 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
-import type {
-  AwsContext,
-  ServiceModule,
-} from "@infrascan/shared-types";
+import type { AwsContext, ServiceModule } from "@infrascan/shared-types";
 
 import type {
   AwsCredentialIdentityProvider,

@@ -32,10 +32,10 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   </div>
   <div class="side-drawer" id="graph-side-drawer">
     <textarea id="${NODES.GraphInput}">${JSON.stringify(
-  DEFAULT_GRAPH_CONTENT,
-  undefined,
-  2,
-)}</textarea>
+      DEFAULT_GRAPH_CONTENT,
+      undefined,
+      2,
+    )}</textarea>
   </div>
   <div id="${NODES.GraphCanvas}"></div>
   <div id="powered-by">

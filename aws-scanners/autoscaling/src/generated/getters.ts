@@ -21,9 +21,8 @@ export async function DescribeAutoScalingGroups(
   const preparedParams: DescribeAutoScalingGroupsCommandInput = {};
   try {
     const cmd = new DescribeAutoScalingGroupsCommand(preparedParams);
-    const result: DescribeAutoScalingGroupsCommandOutput = await client.send(
-      cmd,
-    );
+    const result: DescribeAutoScalingGroupsCommandOutput =
+      await client.send(cmd);
     state.push({
       _metadata: { account: context.account, region: context.region },
       _parameters: preparedParams,

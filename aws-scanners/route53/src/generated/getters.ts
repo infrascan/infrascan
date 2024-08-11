@@ -73,9 +73,8 @@ export async function ListResourceRecordSets(
     const preparedParams: ListResourceRecordSetsCommandInput = parameters;
     try {
       const cmd = new ListResourceRecordSetsCommand(preparedParams);
-      const result: ListResourceRecordSetsCommandOutput = await client.send(
-        cmd,
-      );
+      const result: ListResourceRecordSetsCommandOutput =
+        await client.send(cmd);
       state.push({
         _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,

@@ -1,12 +1,8 @@
 import { EC2Client } from "@aws-sdk/client-ec2";
 import type { ServiceModule } from "@infrascan/shared-types";
 import { getClient } from "./generated/client";
-import {
-  DescribeVpcs,
-  DescribeSubnets,
-} from "./generated/getters";
+import { DescribeVpcs, DescribeSubnets } from "./generated/getters";
 import { getNodes } from "./graph";
-
 
 const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   provider: "aws",

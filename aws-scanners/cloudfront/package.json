@@ -42,8 +42,8 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.433.0",
-    "@aws-sdk/credential-providers": "^3.427.0",
+    "@aws-sdk/client-s3": "3.624.0",
+    "@aws-sdk/credential-providers": "3.624.0",
     "@infrascan/tsconfig": "*",
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.2.2",
@@ -53,7 +53,7 @@
     "tap": "^18.7.0"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudfront": "3.428.0",
+    "@aws-sdk/client-cloudfront": "3.624.0",
     "@infrascan/core": "0.4.0",
     "minimatch": "^9.0.3"
   }

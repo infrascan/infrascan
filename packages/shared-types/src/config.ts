@@ -47,10 +47,8 @@ export type BaseScannerDefinition = {
 };
 
 type AsCommand<S extends string> = `${S}Command`;
-export type AvailableCommand<
-  Serv extends object,
-  Funcs extends string,
-> = AsCommand<Funcs> extends `${infer P}Command` & keyof Serv ? P : never;
+export type AvailableCommand<Serv extends object, Funcs extends string> =
+  AsCommand<Funcs> extends `${infer P}Command` & keyof Serv ? P : never;
 
 export type StateSelector<
   ServiceName extends string,

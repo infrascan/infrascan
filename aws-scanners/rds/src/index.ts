@@ -1,4 +1,4 @@
-import { RDSClient } from "@aws-sdk/client-rds"; 
+import { RDSClient } from "@aws-sdk/client-rds";
 import type { ServiceModule } from "@infrascan/shared-types";
 import { getClient } from "./generated/client";
 import { DescribeDBInstances } from "./generated/getters";

@@ -26,7 +26,7 @@ const ElasticLoadBalancingV2Scanner: ServiceModule<
     DescribeRules,
   ],
   getNodes,
-  getEdges
+  getEdges,
 };
 
 export default ElasticLoadBalancingV2Scanner;

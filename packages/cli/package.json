@@ -25,17 +25,18 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "dependencies": {
-    "@aws-sdk/credential-providers": "3.428.0",
+    "@aws-sdk/credential-providers": "3.624.0",
     "@infrascan/aws": "^0.4.1",
     "@infrascan/cytoscape-serializer": "^0.2.0",
     "@infrascan/fs-connector": "^0.2.2",
     "@infrascan/sdk": "^0.4.1",
     "@rushstack/ts-command-line": "^4.15.2",
     "@smithy/shared-ini-file-loader": "^2.2.2",
-    "minimatch": "^6.1.6"
+    "minimatch": "^6.1.6",
+    "open": "^10.1.0"
   },
   "devDependencies": {
-    "@aws-sdk/types": "3.428.0",
+    "@aws-sdk/types": "3.609.0",
     "@infrascan/shared-types": "^0.5.0",
     "@smithy/types": "^2.4.0",
     "ts-node": "^10.9.1",

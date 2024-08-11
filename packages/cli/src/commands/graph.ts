@@ -7,8 +7,10 @@ import {
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
-import { serializeGraph, CytoscapeGraph } from "@infrascan/cytoscape-serializer";
-
+import {
+  serializeGraph,
+  CytoscapeGraph,
+} from "@infrascan/cytoscape-serializer";
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
   const scanMetadata = readFileSync(
@@ -59,18 +61,16 @@ export default class GraphCmd extends CommandLineAction {
 
     let nServicesScanned = 0;
     this.infrascanClient.registerPlugin({
-      event: 'onServiceComplete',
-      id: 'countServicesScanner',
+      event: "onServiceComplete",
+      id: "countServicesScanner",
       handler: () => {
         nServicesScanned += 1;
-      }
+      },
     });
 
-    const graphData = await this.infrascanClient.generateGraph<CytoscapeGraph[]>(
-      scanMetadata,
-      connector,
-      serializeGraph,
-    );
+    const graphData = await this.infrascanClient.generateGraph<
+      CytoscapeGraph[]
+    >(scanMetadata, connector, serializeGraph);
     console.log(
       `Graph Complete. Found resources in ${nServicesScanned} services.`,
     );

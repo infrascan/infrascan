@@ -17,7 +17,7 @@ const AutoscalingScanner: ScannerDefinition<
     {
       fn: "DescribeAutoScalingGroups",
     },
-  ]
+  ],
 };
 
 export default AutoscalingScanner;
