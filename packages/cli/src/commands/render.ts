@@ -1,5 +1,6 @@
 import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   CommandLineAction,
@@ -60,7 +61,8 @@ export default class RenderCmd extends CommandLineAction {
     const populatedGraphView = await renderFile(
       resolve(
         dirname(fileURLToPath(import.meta.url)),
-        "./templates/index.html.ejs",
+        "templates",
+        "index.html.ejs",
       ),
       {
         graphData: JSON.stringify(graph),
@@ -71,9 +73,9 @@ export default class RenderCmd extends CommandLineAction {
     let output =
       this.#outputPath.value != null
         ? this.#outputPath.value
-        : mkdtempSync("infrascan-generated");
+        : mkdtempSync(`${tmpdir()}${sep}infrascan-generated-`);
     if (!output.endsWith(".html")) {
-      output = `${output}/index.html`;
+      output = `${output}${sep}index.html`;
     }
     writeFileSync(output, populatedGraphView);
     console.log(`Graph view written to ${output}`);
