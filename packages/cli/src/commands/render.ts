@@ -14,7 +14,9 @@ import type { Graph } from "@infrascan/shared-types";
 
 export default class RenderCmd extends CommandLineAction {
   #graphPath: CommandLineStringParameter;
+
   #outputPath: CommandLineStringParameter;
+
   #launchBrowser: CommandLineFlagParameter;
 
   public constructor() {
@@ -52,7 +54,7 @@ export default class RenderCmd extends CommandLineAction {
   protected async onExecute(): Promise<void> {
     const graphText = this.readGraphData();
     if (graphText == null) {
-      return process.exit(1);
+      process.exit(1);
     }
 
     const graph = JSON.parse(graphText) as Graph;
