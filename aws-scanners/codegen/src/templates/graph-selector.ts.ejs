@@ -22,9 +22,12 @@ import type {
     SelectedEdgeTarget
 <%_ } -%>
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 <%_ if(hasNodes){ -%>
+const nodesDebug = debug("<%= service %>:nodes");
 export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<SelectedNode[]> {
+    nodesDebug("Fetching nodes");
     const state: SelectedNode[] = [];
     <%_ let lastVariable = null; -%>
     <%_ locals.nodes.forEach((nodeSelector, idx) => { -%>
@@ -33,7 +36,10 @@ export async function getNodes(stateConnector: Connector, context: AwsContext): 
     <%_ if(nodesVariable === lastVariable) { -%>
     <%_      nodesVariable += idx; -%>
     <%_ } -%>
+    <%_ const escapedSelector = nodeSelector.replaceAll('`', "\\`"); -%>
+    nodesDebug("Evaluating <%- nodeSelector %>");
     const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, "<%- nodeSelector %>", stateConnector);
+    nodesDebug(`Evaluated <%- escapedSelector %>: ${<%= nodesVariable %>.length} Nodes found`);
     state.push(...<%= nodesVariable %>);
     <%_ lastVariable = nodesVariable; -%>
     <% }); %>
@@ -46,12 +52,16 @@ export async function getNodes(stateConnector: Connector, context: AwsContext): 
 }
 <%_ } -%>
 <% if(hasEdges){ %>
+const edgesDebug = debug("<%= service %>:edges");
 export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[]> {
+    edgesDebug("Fetching edges");
     const edges: SelectedEdge[] = [];
     <%_ locals.edges.forEach(({ state, to, from }, idx) => { -%>
     <%_ const fnLabel = state.split('|')[1]; -%>
     <%_ const stateVariable = `${fnLabel}State${idx+1}`; -%>
     <%_ const edgesVariable = `${fnLabel}Edges${idx+1}`; -%>
+    <%_ const escapedSelector = state.replaceAll('`', "\`"); -%>
+    edgesDebug("Evaluating <%- state %>");
     const <%= stateVariable %> = await evaluateSelectorGlobally("<%- state %>", stateConnector);
     const <%= edgesVariable %> = <%= stateVariable %>.flatMap((state: any) => {
         const source = filterState(state, "<%- from %>");
@@ -66,6 +76,7 @@ export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[
             return formatEdge(source, target);
         }
     });
+    edgesDebug(`Evaluated <%- escapedSelector %>: ${<%= edgesVariable %>.length} Edges found`);
     edges.push(...<%= edgesVariable %>);
     <%_ }); -%>
     return edges;

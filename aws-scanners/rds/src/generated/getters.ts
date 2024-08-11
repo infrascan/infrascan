@@ -10,14 +10,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function DescribeDBInstances(
   client: RDSClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("rds:DescribeDBInstances");
   const state: GenericState[] = [];
-  console.log("rds DescribeDBInstances");
+  getterDebug("DescribeDBInstances");
   const preparedParams: DescribeDBInstancesCommandInput = {};
   try {
     const cmd = new DescribeDBInstancesCommand(preparedParams);
@@ -38,6 +40,7 @@ export async function DescribeDBInstances(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

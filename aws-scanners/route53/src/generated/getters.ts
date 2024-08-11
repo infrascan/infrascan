@@ -14,14 +14,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListHostedZonesByName(
   client: Route53Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("route-53:ListHostedZonesByName");
   const state: GenericState[] = [];
-  console.log("route-53 ListHostedZonesByName");
+  getterDebug("ListHostedZonesByName");
   const preparedParams: ListHostedZonesByNameCommandInput = {};
   try {
     const cmd = new ListHostedZonesByNameCommand(preparedParams);
@@ -42,6 +44,7 @@ export async function ListHostedZonesByName(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -55,8 +58,9 @@ export async function ListResourceRecordSets(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("route-53:ListResourceRecordSets");
   const state: GenericState[] = [];
-  console.log("route-53 ListResourceRecordSets");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "HostedZoneId",
@@ -73,8 +77,9 @@ export async function ListResourceRecordSets(
     const preparedParams: ListResourceRecordSetsCommandInput = parameters;
     try {
       const cmd = new ListResourceRecordSetsCommand(preparedParams);
-      const result: ListResourceRecordSetsCommandOutput =
-        await client.send(cmd);
+      const result: ListResourceRecordSetsCommandOutput = await client.send(
+        cmd,
+      );
       state.push({
         _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,
@@ -92,6 +97,7 @@ export async function ListResourceRecordSets(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

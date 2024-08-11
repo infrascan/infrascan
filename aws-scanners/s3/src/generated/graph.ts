@@ -12,27 +12,39 @@ import type {
   SelectedEdge,
   SelectedEdgeTarget,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
+const nodesDebug = debug("s3:nodes");
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<SelectedNode[]> {
+  nodesDebug("Fetching nodes");
   const state: SelectedNode[] = [];
+  nodesDebug(
+    "Evaluating S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
+  );
   const ListBucketsNodes = await evaluateSelector(
     context.account,
     context.region,
     "S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
     stateConnector,
   );
+  nodesDebug(
+    `Evaluated S3|ListBuckets|[]._result.Buckets[].{id:[\`arn:aws:s3:::\`,Name] | join('',@),name:Name}: ${ListBucketsNodes.length} Nodes found`,
+  );
   state.push(...ListBucketsNodes);
 
   return state.map((node) => formatNode(node, "S3", context, false));
 }
 
+const edgesDebug = debug("s3:edges");
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<SelectedEdge[]> {
+  edgesDebug("Fetching edges");
   const edges: SelectedEdge[] = [];
+  edgesDebug("Evaluating S3|GetBucketNotificationConfiguration|[]");
   const GetBucketNotificationConfigurationState1 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -58,7 +70,11 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
+  edgesDebug(
+    `Evaluated S3|GetBucketNotificationConfiguration|[]: ${GetBucketNotificationConfigurationEdges1.length} Edges found`,
+  );
   edges.push(...GetBucketNotificationConfigurationEdges1);
+  edgesDebug("Evaluating S3|GetBucketNotificationConfiguration|[]");
   const GetBucketNotificationConfigurationState2 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -84,7 +100,11 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
+  edgesDebug(
+    `Evaluated S3|GetBucketNotificationConfiguration|[]: ${GetBucketNotificationConfigurationEdges2.length} Edges found`,
+  );
   edges.push(...GetBucketNotificationConfigurationEdges2);
+  edgesDebug("Evaluating S3|GetBucketNotificationConfiguration|[]");
   const GetBucketNotificationConfigurationState3 =
     await evaluateSelectorGlobally(
       "S3|GetBucketNotificationConfiguration|[]",
@@ -110,6 +130,9 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
+  edgesDebug(
+    `Evaluated S3|GetBucketNotificationConfiguration|[]: ${GetBucketNotificationConfigurationEdges3.length} Edges found`,
+  );
   edges.push(...GetBucketNotificationConfigurationEdges3);
   return edges;
 }

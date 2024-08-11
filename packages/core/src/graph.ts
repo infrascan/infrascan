@@ -47,7 +47,7 @@ export function Graph(): _Graph {
   function addNode(
     node: Pick<
       Writable<Node>,
-      "id" | "name" | "metadata" | "parent" | "service"
+      "id" | "name" | "metadata" | "parent" | "service" | "type"
     >,
   ) {
     if (nodes[node.id] != null) {
@@ -64,6 +64,7 @@ export function Graph(): _Graph {
         incomingEdges: {},
         outgoingEdges: {},
         service: node.service,
+        type: node.type,
       };
       nodes[node.id] = completedNode;
       if (node.parent != null) {

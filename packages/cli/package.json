@@ -4,7 +4,7 @@
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.mjs",
   "scripts": {
-    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/app.tsup.json ; cp -r ./src/templates ./dist/templates",
     "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
   },
@@ -32,6 +32,7 @@
     "@infrascan/sdk": "^0.4.1",
     "@rushstack/ts-command-line": "^4.15.2",
     "@smithy/shared-ini-file-loader": "^2.2.2",
+    "ejs": "^3.1.9",
     "minimatch": "^6.1.6",
     "open": "^10.1.0"
   },
@@ -39,6 +40,7 @@
     "@aws-sdk/types": "3.609.0",
     "@infrascan/shared-types": "^0.5.0",
     "@smithy/types": "^2.4.0",
+    "@types/ejs": "^3.1.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }

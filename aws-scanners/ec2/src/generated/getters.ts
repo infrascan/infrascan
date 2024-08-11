@@ -14,14 +14,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function DescribeVpcs(
   client: EC2Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ec2:DescribeVpcs");
   const state: GenericState[] = [];
-  console.log("ec2 DescribeVpcs");
+  getterDebug("DescribeVpcs");
   const preparedParams: DescribeVpcsCommandInput = {};
   try {
     const cmd = new DescribeVpcsCommand(preparedParams);
@@ -42,6 +44,7 @@ export async function DescribeVpcs(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -50,13 +53,15 @@ export async function DescribeVpcs(
     state,
   );
 }
+
 export async function DescribeSubnets(
   client: EC2Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ec2:DescribeSubnets");
   const state: GenericState[] = [];
-  console.log("ec2 DescribeSubnets");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId" },
   ];
@@ -80,6 +85,11 @@ export async function DescribeSubnets(
           _result: result,
         });
         pagingToken = result.NextToken;
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
       } catch (err: unknown) {
         if (err instanceof EC2ServiceException) {
           if (err?.$retryable) {
@@ -94,6 +104,7 @@ export async function DescribeSubnets(
       }
     } while (pagingToken != null);
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

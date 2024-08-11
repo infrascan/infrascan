@@ -17,14 +17,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListQueues(
   client: SQSClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sqs:ListQueues");
   const state: GenericState[] = [];
-  console.log("sqs ListQueues");
+  getterDebug("ListQueues");
   const preparedParams: ListQueuesCommandInput = {};
   try {
     const cmd = new ListQueuesCommand(preparedParams);
@@ -45,6 +47,7 @@ export async function ListQueues(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -58,8 +61,9 @@ export async function ListQueueTags(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sqs:ListQueueTags");
   const state: GenericState[] = [];
-  console.log("sqs ListQueueTags");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
   ];
@@ -91,6 +95,7 @@ export async function ListQueueTags(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -104,8 +109,9 @@ export async function GetQueueAttributes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sqs:GetQueueAttributes");
   const state: GenericState[] = [];
-  console.log("sqs GetQueueAttributes");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "QueueUrl", Selector: "SQS|ListQueues|[]._result.QueueUrls[]" },
     { Key: "AttributeNames", Value: ["All"] },
@@ -138,6 +144,7 @@ export async function GetQueueAttributes(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

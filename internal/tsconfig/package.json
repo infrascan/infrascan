@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "files": [
+    "app.tsup.json",
     "base.json",
     "tsup.json"
   ]

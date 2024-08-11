@@ -10,19 +10,22 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function DescribeAutoScalingGroups(
   client: AutoScalingClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("auto-scaling:DescribeAutoScalingGroups");
   const state: GenericState[] = [];
-  console.log("auto-scaling DescribeAutoScalingGroups");
+  getterDebug("DescribeAutoScalingGroups");
   const preparedParams: DescribeAutoScalingGroupsCommandInput = {};
   try {
     const cmd = new DescribeAutoScalingGroupsCommand(preparedParams);
-    const result: DescribeAutoScalingGroupsCommandOutput =
-      await client.send(cmd);
+    const result: DescribeAutoScalingGroupsCommandOutput = await client.send(
+      cmd,
+    );
     state.push({
       _metadata: { account: context.account, region: context.region },
       _parameters: preparedParams,
@@ -39,6 +42,7 @@ export async function DescribeAutoScalingGroups(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

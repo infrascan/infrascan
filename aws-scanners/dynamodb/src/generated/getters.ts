@@ -14,14 +14,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListTables(
   client: DynamoDBClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("dynamodb:ListTables");
   const state: GenericState[] = [];
-  console.log("dynamodb ListTables");
+  getterDebug("ListTables");
   const preparedParams: ListTablesCommandInput = {};
   try {
     const cmd = new ListTablesCommand(preparedParams);
@@ -42,6 +44,7 @@ export async function ListTables(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -55,8 +58,9 @@ export async function DescribeTable(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("dynamodb:DescribeTable");
   const state: GenericState[] = [];
-  console.log("dynamodb DescribeTable");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "TableName",
@@ -91,6 +95,7 @@ export async function DescribeTable(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

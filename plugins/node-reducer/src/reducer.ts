@@ -96,11 +96,14 @@ export function collapseNodes(
   const newNode: Writable<Node> = {
     id: `${parent}-${rule.id}`,
     name: `${parent}-${rule.id}`,
-    metadata: {},
+    metadata: {
+      count: nodes.length,
+    },
     incomingEdges: {},
     outgoingEdges: {},
     parent,
     service: rule.service,
+    type: nodes[0]?.type,
   };
   graph.addNode(newNode);
 

@@ -18,14 +18,16 @@ import type {
   AwsContext,
   EntityRoleData,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListStateMachines(
   client: SFNClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sfn:ListStateMachines");
   const state: GenericState[] = [];
-  console.log("sfn ListStateMachines");
+  getterDebug("Fetching state");
   let pagingToken: string | undefined;
   do {
     const preparedParams: ListStateMachinesCommandInput = {};
@@ -39,6 +41,11 @@ export async function ListStateMachines(
         _result: result,
       });
       pagingToken = result.nextToken;
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
+      } else {
+        getterDebug("No pagination token found in response");
+      }
     } catch (err: unknown) {
       if (err instanceof SFNServiceException) {
         if (err?.$retryable) {
@@ -52,6 +59,7 @@ export async function ListStateMachines(
       pagingToken = undefined;
     }
   } while (pagingToken != null);
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -65,8 +73,9 @@ export async function DescribeStateMachine(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sfn:DescribeStateMachine");
   const state: GenericState[] = [];
-  console.log("sfn DescribeStateMachine");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "stateMachineArn",
@@ -102,6 +111,7 @@ export async function DescribeStateMachine(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -114,6 +124,8 @@ export async function DescribeStateMachine(
 export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
+  const iamDebug = debug("sfn:iam");
+  iamDebug("Pulling IAM roles from state");
   const state: EntityRoleData[] = [];
   const DescribeStateMachineRoleState = (await evaluateSelectorGlobally(
     "SFN|DescribeStateMachine|[]._result.{roleArn:roleArn,executor:stateMachineArn}",

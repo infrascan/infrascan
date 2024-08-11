@@ -10,14 +10,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListDistributions(
   client: CloudFrontClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("cloudfront:ListDistributions");
   const state: GenericState[] = [];
-  console.log("cloudfront ListDistributions");
+  getterDebug("ListDistributions");
   const preparedParams: ListDistributionsCommandInput = {};
   try {
     const cmd = new ListDistributionsCommand(preparedParams);
@@ -38,6 +40,7 @@ export async function ListDistributions(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

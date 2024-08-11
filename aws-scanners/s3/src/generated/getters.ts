@@ -23,14 +23,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListBuckets(
   client: S3Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("s3:ListBuckets");
   const state: GenericState[] = [];
-  console.log("s3 ListBuckets");
+  getterDebug("ListBuckets");
   const preparedParams: ListBucketsCommandInput = {};
   try {
     const cmd = new ListBucketsCommand(preparedParams);
@@ -51,6 +53,7 @@ export async function ListBuckets(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -64,8 +67,9 @@ export async function GetBucketTagging(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("s3:GetBucketTagging");
   const state: GenericState[] = [];
-  console.log("s3 GetBucketTagging");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
   ];
@@ -97,6 +101,7 @@ export async function GetBucketTagging(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -110,8 +115,9 @@ export async function GetBucketNotificationConfiguration(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("s3:GetBucketNotificationConfiguration");
   const state: GenericState[] = [];
-  console.log("s3 GetBucketNotificationConfiguration");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
   ];
@@ -145,6 +151,7 @@ export async function GetBucketNotificationConfiguration(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -158,8 +165,9 @@ export async function GetBucketWebsite(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("s3:GetBucketWebsite");
   const state: GenericState[] = [];
-  console.log("s3 GetBucketWebsite");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
   ];
@@ -191,6 +199,7 @@ export async function GetBucketWebsite(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -204,8 +213,9 @@ export async function GetBucketAcl(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("s3:GetBucketAcl");
   const state: GenericState[] = [];
-  console.log("s3 GetBucketAcl");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "Bucket", Selector: "S3|ListBuckets|[]._result.Buckets[].Name" },
   ];
@@ -237,6 +247,7 @@ export async function GetBucketAcl(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

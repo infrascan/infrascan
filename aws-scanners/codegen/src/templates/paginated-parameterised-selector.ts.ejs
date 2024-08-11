@@ -1,10 +1,12 @@
+
 export async function <%= getter.id ?? getter.fn %>(
     client: <%= serviceClientClass %>, 
     stateConnector: Connector, 
     context: AwsContext
 ): Promise<void> {
+    const getterDebug = debug("<%= service %>:<%= getter.id ?? getter.fn %>");
     const state: GenericState[] = [];
-    console.log("<%= service %> <%= getter.id ?? getter.fn %>");
+    getterDebug("Fetching state");
     const resolvers = <%- JSON.stringify(getter.parameters) %>;
     const parameterQueue = await resolveFunctionCallParameters(context.account, context.region, resolvers, stateConnector) as <%= getter.id ?? getter.fn %>CommandInput[];
     for(const parameters of parameterQueue) {
@@ -21,6 +23,11 @@ export async function <%= getter.id ?? getter.fn %>(
                     _result: result 
                 });
                 pagingToken = result["<%= getter.paginationToken.response %>"];
+                if(pagingToken != null) {
+                    getterDebug("Found pagination token in response");
+                } else {
+                    getterDebug("No pagination token found in response");
+                }
             } catch(err: unknown) {
                 if(err instanceof <%= serviceErrorType %>) {
                     if(err?.$retryable) {
@@ -35,5 +42,6 @@ export async function <%= getter.id ?? getter.fn %>(
             }
         }while(pagingToken != null);
     }
+    getterDebug("Recording state");
     await stateConnector.onServiceScanCompleteCallback(context.account, context.region, "<%= clientKey %>", "<%= getter.id ?? getter.fn %>", state);
 }

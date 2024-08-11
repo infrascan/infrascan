@@ -18,14 +18,16 @@ import type {
   AwsContext,
   EntityRoleData,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListFunctions(
   client: LambdaClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("lambda:ListFunctions");
   const state: GenericState[] = [];
-  console.log("lambda ListFunctions");
+  getterDebug("Fetching state");
   let pagingToken: string | undefined;
   do {
     const preparedParams: ListFunctionsCommandInput = {};
@@ -39,6 +41,11 @@ export async function ListFunctions(
         _result: result,
       });
       pagingToken = result.NextMarker;
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
+      } else {
+        getterDebug("No pagination token found in response");
+      }
     } catch (err: unknown) {
       if (err instanceof LambdaServiceException) {
         if (err?.$retryable) {
@@ -52,6 +59,7 @@ export async function ListFunctions(
       pagingToken = undefined;
     }
   } while (pagingToken != null);
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -65,8 +73,9 @@ export async function GetFunction(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("lambda:GetFunction");
   const state: GenericState[] = [];
-  console.log("lambda GetFunction");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "FunctionName",
@@ -101,6 +110,7 @@ export async function GetFunction(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -113,6 +123,8 @@ export async function GetFunction(
 export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
+  const iamDebug = debug("lambda:iam");
+  iamDebug("Pulling IAM roles from state");
   const state: EntityRoleData[] = [];
   const GetFunctionRoleState = (await evaluateSelectorGlobally(
     "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
