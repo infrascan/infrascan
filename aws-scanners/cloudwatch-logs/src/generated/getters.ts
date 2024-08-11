@@ -14,14 +14,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function DescribeLogGroups(
   client: CloudWatchLogsClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("cloudwatch-logs:DescribeLogGroups");
   const state: GenericState[] = [];
-  console.log("cloudwatch-logs DescribeLogGroups");
+  getterDebug("Fetching state");
   let pagingToken: string | undefined;
   do {
     const preparedParams: DescribeLogGroupsCommandInput = {};
@@ -35,6 +37,11 @@ export async function DescribeLogGroups(
         _result: result,
       });
       pagingToken = result.nextToken;
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
+      } else {
+        getterDebug("No pagination token found in response");
+      }
     } catch (err: unknown) {
       if (err instanceof CloudWatchLogsServiceException) {
         if (err?.$retryable) {
@@ -48,6 +55,7 @@ export async function DescribeLogGroups(
       pagingToken = undefined;
     }
   } while (pagingToken != null);
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -56,13 +64,15 @@ export async function DescribeLogGroups(
     state,
   );
 }
+
 export async function DescribeSubscriptionFilters(
   client: CloudWatchLogsClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("cloudwatch-logs:DescribeSubscriptionFilters");
   const state: GenericState[] = [];
-  console.log("cloudwatch-logs DescribeSubscriptionFilters");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "logGroupName",
@@ -92,6 +102,11 @@ export async function DescribeSubscriptionFilters(
           _result: result,
         });
         pagingToken = result.nextToken;
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
       } catch (err: unknown) {
         if (err instanceof CloudWatchLogsServiceException) {
           if (err?.$retryable) {
@@ -106,6 +121,7 @@ export async function DescribeSubscriptionFilters(
       }
     } while (pagingToken != null);
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

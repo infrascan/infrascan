@@ -21,6 +21,7 @@ import type {
     EntityRoleData,
     <%_ } -%>
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 <% getters.forEach((getter) => { -%>
 <%_ if(getter.paginationToken != null && getter.parameters != null) { -%>

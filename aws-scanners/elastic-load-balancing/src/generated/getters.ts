@@ -20,14 +20,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function DescribeLoadBalancers(
   client: ElasticLoadBalancingV2Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("elastic-load-balancing-v2:DescribeLoadBalancers");
   const state: GenericState[] = [];
-  console.log("elastic-load-balancing-v2 DescribeLoadBalancers");
+  getterDebug("DescribeLoadBalancers");
   const preparedParams: DescribeLoadBalancersCommandInput = {};
   try {
     const cmd = new DescribeLoadBalancersCommand(preparedParams);
@@ -48,6 +50,7 @@ export async function DescribeLoadBalancers(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -61,8 +64,9 @@ export async function DescribeTargetGroups(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("elastic-load-balancing-v2:DescribeTargetGroups");
   const state: GenericState[] = [];
-  console.log("elastic-load-balancing-v2 DescribeTargetGroups");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "LoadBalancerArn",
@@ -98,6 +102,7 @@ export async function DescribeTargetGroups(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -111,8 +116,9 @@ export async function DescribeListeners(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("elastic-load-balancing-v2:DescribeListeners");
   const state: GenericState[] = [];
-  console.log("elastic-load-balancing-v2 DescribeListeners");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "LoadBalancerArn",
@@ -148,6 +154,7 @@ export async function DescribeListeners(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -161,8 +168,9 @@ export async function DescribeRules(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("elastic-load-balancing-v2:DescribeRules");
   const state: GenericState[] = [];
-  console.log("elastic-load-balancing-v2 DescribeRules");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "ListenerArn",
@@ -198,6 +206,7 @@ export async function DescribeRules(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

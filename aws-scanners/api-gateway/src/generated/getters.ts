@@ -13,14 +13,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function GetApis(
   client: ApiGatewayV2Client,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("apigatewayv2:GetApis");
   const state: GenericState[] = [];
-  console.log("apigatewayv2 GetApis");
+  getterDebug("GetApis");
   const preparedParams: GetApisCommandInput = {};
   try {
     const cmd = new GetApisCommand(preparedParams);
@@ -41,6 +43,7 @@ export async function GetApis(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -54,8 +57,9 @@ export async function GetDomainNames(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("apigatewayv2:GetDomainNames");
   const state: GenericState[] = [];
-  console.log("apigatewayv2 GetDomainNames");
+  getterDebug("GetDomainNames");
   const preparedParams: GetDomainNamesCommandInput = {};
   try {
     const cmd = new GetDomainNamesCommand(preparedParams);
@@ -76,6 +80,7 @@ export async function GetDomainNames(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

@@ -1,0 +1,10 @@
+{
+ "clean": true,
+ "cjsInterop": false,
+ "dts": false,
+ "splitting": false,
+ "sourcemap": false,
+ "entry": ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.ejs"],
+ "format": ["esm"],
+ "target": "node18"
+}

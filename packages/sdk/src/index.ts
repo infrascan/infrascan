@@ -234,7 +234,7 @@ export default class Infrascan {
    * ```
    */
   async generateGraph<T>(
-    scanMetadata: ScanMetadata[],
+    scanMetadata: ScanMetadata | ScanMetadata[],
     connector: Connector,
     graphSerializer: GraphSerializer<T>,
   ): Promise<T> {
@@ -249,7 +249,10 @@ export default class Infrascan {
     const globalServiceEntries = Object.values(this.globalScannerRegistry);
     const regionalServiceEntries = Object.values(this.regionalScannerRegistry);
 
-    for (const { account, regions, defaultRegion } of scanMetadata) {
+    const metadataList = Array.isArray(scanMetadata)
+      ? scanMetadata
+      : [scanMetadata];
+    for (const { account, regions, defaultRegion } of metadataList) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
       addNodeToGraphUnchecked(graph, accountNode, AWS_ACCOUNT_SERVICE_KEY);
@@ -355,6 +358,11 @@ export default class Infrascan {
           roleEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
         }
       }
+    }
+
+    for (const { id, handler } of this.pluginRegistry.onGraphComplete) {
+      console.log(`Running ${id} onGraphComplete`);
+      await handler(graph);
     }
 
     return graphSerializer(graph);

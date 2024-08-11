@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Infrascan Graph</title>
+ <link rel="icon" type="image/svg+xml" href="https://cdn.infrascan.io/img/logo.svg" />
+ <link 
+    rel="preload" 
+    as="fetch" 
+    type="application/json" 
+    href="https://cdn.infrascan.io/graph-styles/default.json" 
+    crossorigin 
+  />
+ <script 
+  src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js" 
+  integrity="sha512-EY3U1MWdgKx0P1dqTE4inlKz2cpXtWpsR1YUyD855Hs6RL/A0cyvrKh60EpE8wDZ814cTe1KgRK+sG0Rn792vQ=="
+  crossorigin="anonymous"
+ ></script>
+ <style>
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+  }
+  a:hover {
+    color: #535bf2;
+  }
+
+  body {
+    margin: 0;
+    min-width: 100vw;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 3.2em;
+    line-height: 1.1;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    margin: 0 auto;
+  }
+
+  #graph-canvas {
+    width: 100vw;
+    height: 100vh;
+    background-image: radial-gradient(
+      circle at 20px 20px,
+      rgba(255, 255, 255, 0.3) 1px,
+      transparent 0px
+    );
+    background-size: 40px 40px;
+  }
+
+  #powered-by {
+    height: 32px;
+    width: 128px;
+    border-radius: 32px;
+
+    display: flex;
+    align-items: center;
+
+    background-color: #fff;
+    position: absolute;
+    top: calc(100vh - 64px);
+    left: calc(100vw - 192px);
+
+    cursor: pointer;
+  }
+  #powered-by > img {
+    padding-left: 8px;
+  }
+  #powered-by > div {
+    padding-left: 8px;
+  }
+  #powered-by > * > p {
+    font-size: 0.5rem;
+  }
+  #powered-by > * > p,
+  #powered-by > * > h5 {
+    margin: 0;
+    color: #000;
+  }
+ </style>
+ <script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+   document.getElementById('powered-by')?.addEventListener("click", () => {
+     if (window != null) {
+       window?.open("https://infrascan.io", "_blank")?.focus();
+     }
+   });
+
+   const graphContent = <%- graphData %>;
+
+   if(window.cytoscape != null) {
+    fetch('https://cdn.infrascan.io/graph-styles/default.json')
+      .then((res) => res.json())
+      .then((graphStyle) => {
+        console.log(graphStyle);
+        window.graph = window.cytoscape({
+          container: document.getElementById("graph-canvas"),
+          elements: graphContent,
+          style: graphStyle,
+        });
+      });
+   }
+  });
+ </script>
+</head>
+<body>
+ <div id="app">
+  <div id="graph-canvas"></div>
+  <div id="powered-by">
+    <img src="https://cdn.infrascan.io/img/logo.svg" alt="Infrascan.io logo" />
+    <div>
+      <p>Powered By:</p>
+      <h5>Infrascan.io</h5>
+    </div>
+  </div>
+ </div>
+</body>
+</html>

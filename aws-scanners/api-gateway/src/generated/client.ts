@@ -5,12 +5,16 @@ import type {
   RetryStrategyV2,
 } from "@aws-sdk/types";
 import type { AwsContext } from "@infrascan/shared-types";
+import debug from "debug";
+
+const clientDebug = debug("apigatewayv2:client");
 
 export function getClient(
   credentials: AwsCredentialIdentityProvider,
   context: AwsContext,
   retryStrategy?: RetryStrategy | RetryStrategyV2,
 ): ApiGatewayV2Client {
+  clientDebug("Creating instance with context", context);
   return new ApiGatewayV2Client({
     credentials,
     region: context.region,

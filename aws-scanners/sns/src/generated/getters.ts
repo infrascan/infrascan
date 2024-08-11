@@ -20,14 +20,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListTopics(
   client: SNSClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sns:ListTopics");
   const state: GenericState[] = [];
-  console.log("sns ListTopics");
+  getterDebug("ListTopics");
   const preparedParams: ListTopicsCommandInput = {};
   try {
     const cmd = new ListTopicsCommand(preparedParams);
@@ -48,6 +50,7 @@ export async function ListTopics(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -61,8 +64,9 @@ export async function GetTopicAttributes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sns:GetTopicAttributes");
   const state: GenericState[] = [];
-  console.log("sns GetTopicAttributes");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "TopicArn",
@@ -97,6 +101,7 @@ export async function GetTopicAttributes(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -110,8 +115,9 @@ export async function ListSubscriptionsByTopic(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sns:ListSubscriptionsByTopic");
   const state: GenericState[] = [];
-  console.log("sns ListSubscriptionsByTopic");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "TopicArn",
@@ -128,8 +134,9 @@ export async function ListSubscriptionsByTopic(
     const preparedParams: ListSubscriptionsByTopicCommandInput = parameters;
     try {
       const cmd = new ListSubscriptionsByTopicCommand(preparedParams);
-      const result: ListSubscriptionsByTopicCommandOutput =
-        await client.send(cmd);
+      const result: ListSubscriptionsByTopicCommandOutput = await client.send(
+        cmd,
+      );
       state.push({
         _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,
@@ -147,6 +154,7 @@ export async function ListSubscriptionsByTopic(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -160,8 +168,9 @@ export async function ListTagsForResource(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("sns:ListTagsForResource");
   const state: GenericState[] = [];
-  console.log("sns ListTagsForResource");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "ResourceArn",
@@ -196,6 +205,7 @@ export async function ListTagsForResource(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

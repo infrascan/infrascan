@@ -12,27 +12,39 @@ import type {
   SelectedEdge,
   SelectedEdgeTarget,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
+const nodesDebug = debug("sns:nodes");
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<SelectedNode[]> {
+  nodesDebug("Fetching nodes");
   const state: SelectedNode[] = [];
+  nodesDebug(
+    "Evaluating SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
+  );
   const ListTopicsNodes = await evaluateSelector(
     context.account,
     context.region,
     "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
     stateConnector,
   );
+  nodesDebug(
+    `Evaluated SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}: ${ListTopicsNodes.length} Nodes found`,
+  );
   state.push(...ListTopicsNodes);
 
   return state.map((node) => formatNode(node, "SNS", context, true));
 }
 
+const edgesDebug = debug("sns:edges");
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<SelectedEdge[]> {
+  edgesDebug("Fetching edges");
   const edges: SelectedEdge[] = [];
+  edgesDebug("Evaluating SNS|ListSubscriptionsByTopic|[]");
   const ListSubscriptionsByTopicState1 = await evaluateSelectorGlobally(
     "SNS|ListSubscriptionsByTopic|[]",
     stateConnector,
@@ -54,6 +66,9 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     },
+  );
+  edgesDebug(
+    `Evaluated SNS|ListSubscriptionsByTopic|[]: ${ListSubscriptionsByTopicEdges1.length} Edges found`,
   );
   edges.push(...ListSubscriptionsByTopicEdges1);
   return edges;

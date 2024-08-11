@@ -14,14 +14,16 @@ import type {
   GenericState,
   AwsContext,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListStreams(
   client: KinesisClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("kinesis:ListStreams");
   const state: GenericState[] = [];
-  console.log("kinesis ListStreams");
+  getterDebug("Fetching state");
   let pagingToken: string | undefined;
   do {
     const preparedParams: ListStreamsCommandInput = {};
@@ -35,6 +37,11 @@ export async function ListStreams(
         _result: result,
       });
       pagingToken = result.NextToken;
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
+      } else {
+        getterDebug("No pagination token found in response");
+      }
     } catch (err: unknown) {
       if (err instanceof KinesisServiceException) {
         if (err?.$retryable) {
@@ -48,6 +55,7 @@ export async function ListStreams(
       pagingToken = undefined;
     }
   } while (pagingToken != null);
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -56,13 +64,15 @@ export async function ListStreams(
     state,
   );
 }
+
 export async function ListStreamConsumers(
   client: KinesisClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("kinesis:ListStreamConsumers");
   const state: GenericState[] = [];
-  console.log("kinesis ListStreamConsumers");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "StreamARN",
@@ -89,6 +99,11 @@ export async function ListStreamConsumers(
           _result: result,
         });
         pagingToken = result.NextToken;
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
       } catch (err: unknown) {
         if (err instanceof KinesisServiceException) {
           if (err?.$retryable) {
@@ -103,6 +118,7 @@ export async function ListStreamConsumers(
       }
     } while (pagingToken != null);
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,

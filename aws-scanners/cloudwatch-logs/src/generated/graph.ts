@@ -12,27 +12,41 @@ import type {
   SelectedEdge,
   SelectedEdgeTarget,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
+const nodesDebug = debug("cloudwatch-logs:nodes");
 export async function getNodes(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<SelectedNode[]> {
+  nodesDebug("Fetching nodes");
   const state: SelectedNode[] = [];
+  nodesDebug(
+    "Evaluating CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
+  );
   const DescribeSubscriptionFiltersNodes = await evaluateSelector(
     context.account,
     context.region,
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
     stateConnector,
   );
+  nodesDebug(
+    `Evaluated CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}: ${DescribeSubscriptionFiltersNodes.length} Nodes found`,
+  );
   state.push(...DescribeSubscriptionFiltersNodes);
 
   return state.map((node) => formatNode(node, "CloudWatchLogs", context, true));
 }
 
+const edgesDebug = debug("cloudwatch-logs:edges");
 export async function getEdges(
   stateConnector: Connector,
 ): Promise<SelectedEdge[]> {
+  edgesDebug("Fetching edges");
   const edges: SelectedEdge[] = [];
+  edgesDebug(
+    "Evaluating CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
+  );
   const DescribeSubscriptionFiltersState1 = await evaluateSelectorGlobally(
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]",
     stateConnector,
@@ -51,6 +65,9 @@ export async function getEdges(
       }
       return formatEdge(source, target);
     });
+  edgesDebug(
+    `Evaluated CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[]: ${DescribeSubscriptionFiltersEdges1.length} Edges found`,
+  );
   edges.push(...DescribeSubscriptionFiltersEdges1);
   return edges;
 }

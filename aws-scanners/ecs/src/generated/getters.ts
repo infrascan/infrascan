@@ -33,14 +33,16 @@ import type {
   AwsContext,
   EntityRoleData,
 } from "@infrascan/shared-types";
+import debug from "debug";
 
 export async function ListClusters(
   client: ECSClient,
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:ListClusters");
   const state: GenericState[] = [];
-  console.log("ecs ListClusters");
+  getterDebug("ListClusters");
   const preparedParams: ListClustersCommandInput = {};
   try {
     const cmd = new ListClustersCommand(preparedParams);
@@ -61,6 +63,7 @@ export async function ListClusters(
       console.log("Encountered unexpected error", err);
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -74,8 +77,9 @@ export async function DescribeClusters(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:DescribeClusters");
   const state: GenericState[] = [];
-  console.log("ecs DescribeClusters");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "clusters",
@@ -120,6 +124,7 @@ export async function DescribeClusters(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -133,8 +138,9 @@ export async function ListServices(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:ListServices");
   const state: GenericState[] = [];
-  console.log("ecs ListServices");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListClusters|[]._result.clusterArns[]" },
     { Key: "maxResults", Value: 100 },
@@ -167,6 +173,7 @@ export async function ListServices(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -180,8 +187,9 @@ export async function DescribeServices(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:DescribeServices");
   const state: GenericState[] = [];
-  console.log("ecs DescribeServices");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListServices|[]._parameters.cluster" },
     {
@@ -218,6 +226,7 @@ export async function DescribeServices(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -231,8 +240,9 @@ export async function ListTasks(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:ListTasks");
   const state: GenericState[] = [];
-  console.log("ecs ListTasks");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListClusters|[]._result.clusterArns[]" },
   ];
@@ -264,6 +274,7 @@ export async function ListTasks(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -277,8 +288,9 @@ export async function DescribeTasks(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:DescribeTasks");
   const state: GenericState[] = [];
-  console.log("ecs DescribeTasks");
+  getterDebug("Fetching state");
   const resolvers = [
     { Key: "cluster", Selector: "ECS|ListTasks|[]._parameters.cluster" },
     {
@@ -314,6 +326,7 @@ export async function DescribeTasks(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -327,8 +340,9 @@ export async function DescribeTaskDefinition(
   stateConnector: Connector,
   context: AwsContext,
 ): Promise<void> {
+  const getterDebug = debug("ecs:DescribeTaskDefinition");
   const state: GenericState[] = [];
-  console.log("ecs DescribeTaskDefinition");
+  getterDebug("Fetching state");
   const resolvers = [
     {
       Key: "taskDefinition",
@@ -346,8 +360,9 @@ export async function DescribeTaskDefinition(
     const preparedParams: DescribeTaskDefinitionCommandInput = parameters;
     try {
       const cmd = new DescribeTaskDefinitionCommand(preparedParams);
-      const result: DescribeTaskDefinitionCommandOutput =
-        await client.send(cmd);
+      const result: DescribeTaskDefinitionCommandOutput = await client.send(
+        cmd,
+      );
       state.push({
         _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,
@@ -365,6 +380,7 @@ export async function DescribeTaskDefinition(
       }
     }
   }
+  getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
     context.region,
@@ -377,6 +393,8 @@ export async function DescribeTaskDefinition(
 export async function getIamRoles(
   stateConnector: Connector,
 ): Promise<EntityRoleData[]> {
+  const iamDebug = debug("ecs:iam");
+  iamDebug("Pulling IAM roles from state");
   const state: EntityRoleData[] = [];
   const DescribeTaskDefinitionRoleState = (await evaluateSelectorGlobally(
     "ECS|DescribeTaskDefinition|[]._result.taskDefinition | [].{roleArn:taskRoleArn,executor:taskDefinitionArn}",
