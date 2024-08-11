@@ -22,7 +22,7 @@ export default class RenderCmd extends CommandLineAction {
       actionName: "render",
       summary: "Renders your Infrascan graph in your browser",
       documentation:
-        "Loads in the output of a graph command, and render it in a static webpage.",
+        "Loads in the output of a graph command, and render it in a static webpage.\n\nNote: this will only work with Cytoscape compatible graphs.",
     });
   }
 
