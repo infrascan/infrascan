@@ -3,7 +3,11 @@ import type { ScannerDefinition } from "@infrascan/shared-types";
 
 export type LambdaFunctions = "ListFunctions" | "GetFunction";
 
-const LambdaScanner: ScannerDefinition<"Lambda", typeof Lambda, LambdaFunctions> = {
+const LambdaScanner: ScannerDefinition<
+  "Lambda",
+  typeof Lambda,
+  LambdaFunctions
+> = {
   provider: "aws",
   service: "lambda",
   clientKey: "Lambda",

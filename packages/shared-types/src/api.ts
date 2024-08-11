@@ -1,4 +1,8 @@
-import type { AwsCredentialIdentityProvider, RetryStrategy, RetryStrategyV2 } from "@aws-sdk/types";
+import type {
+  AwsCredentialIdentityProvider,
+  RetryStrategy,
+  RetryStrategyV2,
+} from "@aws-sdk/types";
 
 import type { SelectedEdge, SelectedNode } from "./graph";
 import type { BaseEdgeResolver } from "./config";
@@ -73,7 +77,7 @@ export interface Connector {
 type ClientBuilder<T, P extends Provider> = (
   credentials: AwsCredentialIdentityProvider,
   context: ProviderContextMap[P],
-  retryStrategy?: RetryStrategy | RetryStrategyV2
+  retryStrategy?: RetryStrategy | RetryStrategyV2,
 ) => T;
 
 type GetterFn<T, P extends Provider> = (

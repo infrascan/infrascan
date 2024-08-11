@@ -128,9 +128,8 @@ export async function ListSubscriptionsByTopic(
     const preparedParams: ListSubscriptionsByTopicCommandInput = parameters;
     try {
       const cmd = new ListSubscriptionsByTopicCommand(preparedParams);
-      const result: ListSubscriptionsByTopicCommandOutput = await client.send(
-        cmd,
-      );
+      const result: ListSubscriptionsByTopicCommandOutput =
+        await client.send(cmd);
       state.push({
         _metadata: { account: context.account, region: context.region },
         _parameters: preparedParams,

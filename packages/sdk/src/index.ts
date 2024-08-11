@@ -298,15 +298,15 @@ export default class Infrascan {
             });
             const serviceNodes =
               serviceNodeMap[
-              regionalServiceScanner.arnLabel ??
-              regionalServiceScanner.service.toLowerCase()
+                regionalServiceScanner.arnLabel ??
+                  regionalServiceScanner.service.toLowerCase()
               ];
             if (serviceNodes) {
               serviceNodes.push(...regionalServiceNodeIds);
             } else {
               serviceNodeMap[
                 regionalServiceScanner.arnLabel ??
-                regionalServiceScanner.service.toLowerCase()
+                  regionalServiceScanner.service.toLowerCase()
               ] = regionalServiceNodeIds;
             }
 

@@ -1,9 +1,7 @@
 import * as DynamoDB from "@aws-sdk/client-dynamodb";
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-export type DynamoDBFunctions =
-  | "ListTables"
-  | "DescribeTable";
+export type DynamoDBFunctions = "ListTables" | "DescribeTable";
 const DynamoDBScanner: ScannerDefinition<
   "DynamoDB",
   typeof DynamoDB,
@@ -23,13 +21,12 @@ const DynamoDBScanner: ScannerDefinition<
       parameters: [
         {
           Key: "TableName",
-          Selector:
-            "DynamoDB|ListTables|[]._result.TableNames[]",
+          Selector: "DynamoDB|ListTables|[]._result.TableNames[]",
         },
-      ]
+      ],
     },
   ],
-  nodes: ["DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}"]
+  nodes: ["DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}"],
 };
 
 export default DynamoDBScanner;

@@ -24,15 +24,15 @@ const CloudWatchLogsScanner: ScannerDefinition<
       parameters: [
         {
           Key: "Filters",
-          Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId"
-        }
+          Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId",
+        },
       ],
       paginationToken: {
         request: "NextToken",
-        response: "NextToken"
-      }
+        response: "NextToken",
+      },
     },
-  ]
+  ],
 };
 
 export default CloudWatchLogsScanner;
