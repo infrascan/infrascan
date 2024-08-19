@@ -1,5 +1,19 @@
 # @infrascan/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- [#86](https://github.com/infrascan/infrascan/pull/86) [`d3110c2`](https://github.com/infrascan/infrascan/commit/d3110c2197be872ca72667aad552f33dead5271c) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Introduce render command to make it easier to open generated graphs in the browser.
+
+### Patch Changes
+
+- [#84](https://github.com/infrascan/infrascan/pull/84) [`437026c`](https://github.com/infrascan/infrascan/commit/437026cc278ec4b380bcaf3a7a675f3762ce3bea) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Bump aws client sdk versions to remove vulnerable dependency
+
+- Updated dependencies [[`d3110c2`](https://github.com/infrascan/infrascan/commit/d3110c2197be872ca72667aad552f33dead5271c), [`437026c`](https://github.com/infrascan/infrascan/commit/437026cc278ec4b380bcaf3a7a675f3762ce3bea)]:
+  - @infrascan/sdk@0.4.2
+  - @infrascan/cytoscape-serializer@0.2.1
+
 ## 0.4.0
 
 ### Minor Changes
