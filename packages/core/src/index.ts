@@ -13,12 +13,12 @@ export * from "./graph";
 export * from "./errors";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function evaluateSelector(
+export async function evaluateSelector<T = unknown>(
   account: string,
   region: string,
   rawSelector: string,
   connector: Connector,
-): Promise<any[]> {
+): Promise<T[]> {
   const [service, functionCall, ...selector] = rawSelector.split("|");
 
   const state = await connector.resolveStateForServiceFunction(
@@ -48,7 +48,7 @@ export async function resolveFunctionCallParameters(
   const allParamObjects: Record<string, string>[] = [];
   for (const { Key, Selector, Value } of parameters) {
     if (Selector) {
-      const parameterValues = await evaluateSelector(
+      const parameterValues = await evaluateSelector<any>(
         account,
         region,
         Selector,
