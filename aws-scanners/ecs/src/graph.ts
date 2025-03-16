@@ -18,20 +18,19 @@ import {
   type BaseState,
   type State,
   type KVPair,
-  type Network,
+  type TranslatedEntity,
   Unit,
+  CommandCallMetadata,
 } from "@infrascan/shared-types";
 
-import type { ECS, Cluster, Service, Deployments, ECSTask } from "./types";
+import type { ECS } from "./types";
 
 const nodesDebug = debug("ecs:nodes");
 
-const SELECTORS = Object.freeze({
-  clusters: "ECS|DescribeClusters|[]",
-  services: "ECS|DescribeServices|[]",
-  serviceTasks: "ECS|DescribeServices|[]",
-  standaloneTasks: "ECS|DescribeTasks|[]",
-});
+type WithCallContext<T, Input> = T & {
+  $metadata: CommandCallMetadata;
+  $parameters?: Input;
+};
 
 export type ECSState<T> = BaseState<T> & { ecs: ECS };
 
@@ -41,320 +40,400 @@ function mapKvPair<T extends { name?: string; value?: string }>(
   return { key: kvPair.name, value: kvPair.value };
 }
 
-function translateClusterDataToSchema(cluster: AwsCluster): Cluster {
-  return {
-    executeCommandConfiguration:
-      cluster.configuration?.executeCommandConfiguration,
-    managedStorageConfiguration:
-      cluster.configuration?.managedStorageConfiguration,
-    registeredContainerInstancesCount:
-      cluster.registeredContainerInstancesCount,
-    runningTasksCount: cluster.runningTasksCount,
-    pendingTasksCount: cluster.pendingTasksCount,
-    activeServicesCount: cluster.activeServicesCount,
-    statistics: cluster.statistics?.map(mapKvPair),
-    settings: cluster.settings?.map(mapKvPair),
-    capacityProviders: cluster.capacityProviders,
-    defaultCapacityProviderStrategy: cluster.defaultCapacityProviderStrategy,
-    attachments: cluster.attachments,
-    attachmentStatus: cluster.attachmentsStatus,
-    serviceConnectDefaults: cluster.serviceConnectDefaults,
-    status: cluster.status,
-  };
-}
+export const ClusterEntity: TranslatedEntity<
+  ECSState<DescribeClustersCommandInput>,
+  State<DescribeClustersCommandOutput[], DescribeClustersCommandInput>,
+  WithCallContext<AwsCluster, DescribeClustersCommandInput>
+> = {
+  version: "0.1.0",
+  debugLabel: "ecs-clusters",
+  provider: "aws",
+  command: "DescribeClusters",
+  category: "ecs",
+  subcategory: "clusters",
+  nodeType: "ecs-cluster",
+  selector: "ECS|DescribeClusters|[]",
 
-async function getClusterNodes(stateConnector: Connector, context: AwsContext) {
-  nodesDebug("Fetching ECS cluster nodes");
-  const describeClusterState = await evaluateSelector<
-    State<DescribeClustersCommandOutput[], DescribeClustersCommandInput>
-  >(context.account, context.region, SELECTORS.clusters, stateConnector);
-
-  const state: ECSState<DescribeClustersCommandInput>[] = [];
-  for (const describeClusterCall of describeClusterState) {
-    const clusters = describeClusterCall._result.flatMap(
-      (result) => result.clusters ?? [],
+  getState(stateConnector, context) {
+    return evaluateSelector(
+      context.account,
+      context.region,
+      ClusterEntity.selector,
+      stateConnector,
     );
-    for (const cluster of clusters) {
-      state.push({
-        $metadata: {
-          version: "0.1.0",
-          timestamp: describeClusterCall._metadata.timestamp,
+  },
+  translate(val) {
+    return val._result
+      .flatMap((result) => result.clusters ?? [])
+      .map((cluster) =>
+        Object.assign(cluster, {
+          $parameters: val._parameters,
+          $metadata: val._metadata,
+        }),
+      );
+  },
+  components: {
+    $metadata(val) {
+      return {
+        version: ClusterEntity.version,
+        timestamp: val.$metadata.timestamp,
+      };
+    },
+    $graph(val) {
+      return {
+        id: val.clusterArn!,
+        label: val.clusterName!,
+        nodeType: ClusterEntity.nodeType,
+      };
+    },
+    $source(val) {
+      return {
+        command: ClusterEntity.command,
+        parameters: val.$parameters,
+      };
+    },
+    tenant(val) {
+      return {
+        tenantId: val.$metadata.account,
+        provider: ClusterEntity.provider,
+        partition: val.$metadata.partition,
+      };
+    },
+    location(val) {
+      return {
+        code: val.$metadata.region,
+      };
+    },
+    resource(val) {
+      return {
+        id: val.clusterArn!,
+        name: val.clusterName!,
+        category: ClusterEntity.category,
+        subcategory: ClusterEntity.subcategory,
+      };
+    },
+    ecs(val) {
+      return {
+        cluster: {
+          executeCommandConfiguration:
+            val.configuration?.executeCommandConfiguration,
+          managedStorageConfiguration:
+            val.configuration?.managedStorageConfiguration,
+          registeredContainerInstancesCount:
+            val.registeredContainerInstancesCount,
+          runningTasksCount: val.runningTasksCount,
+          pendingTasksCount: val.pendingTasksCount,
+          activeServicesCount: val.activeServicesCount,
+          statistics: val.statistics?.map(mapKvPair),
+          settings: val.settings?.map(mapKvPair),
+          capacityProviders: val.capacityProviders,
+          defaultCapacityProviderStrategy: val.defaultCapacityProviderStrategy,
+          attachments: val.attachments,
+          attachmentStatus: val.attachmentsStatus,
+          serviceConnectDefaults: val.serviceConnectDefaults,
+          status: val.status,
         },
-        $graph: {
-          id: cluster.clusterArn!,
-          label: cluster.clusterName!,
-          nodeType: "ecs-cluster",
-        },
-        $source: {
-          command: "DescribeClusters",
-          parameters: describeClusterCall._parameters,
-        },
-        tenant: {
-          tenantId: context.account,
-          provider: "aws",
-          partition: context.partition,
-        },
-        location: {
-          code: context.region,
-        },
-        resource: {
-          id: cluster.clusterArn!,
-          name: cluster.clusterName!,
-          category: "ecs",
-          subcategory: "cluster",
-        },
-        ecs: {
-          cluster: translateClusterDataToSchema(cluster),
-        },
-        tags: cluster.tags,
-      });
-    }
-  }
-  return state;
-}
+      };
+    },
+    tags(val) {
+      return val.tags;
+    },
+  },
+};
 
 function toLowerCase<T extends string>(val: T): Lowercase<T> {
   return val.toLowerCase() as Lowercase<T>;
 }
 
-function translateServiceDataToSchema(service: AwsService): Service {
-  return {
-    serviceRegistries: service.serviceRegistries,
-    status: service.status,
-    launchType: service.launchType,
-    capacityProviderStrategy: service.capacityProviderStrategy,
-    taskDefinition: service.taskDefinition,
-    desiredCount: service.desiredCount,
-    runningCount: service.runningCount,
-    pendingCount: service.pendingCount,
-    placement: {
-      constraints: service.placementConstraints,
-      strategy: service.placementStrategy,
-    },
-    schedulingStrategy: service.schedulingStrategy
-      ? toLowerCase(service.schedulingStrategy)
-      : undefined,
-  };
-}
+export const ServiceEntity: TranslatedEntity<
+  ECSState<DescribeServicesCommandInput>,
+  State<DescribeServicesCommandOutput[], DescribeServicesCommandInput>,
+  WithCallContext<AwsService, DescribeServicesCommandInput>
+> = {
+  version: "0.1.0",
+  debugLabel: "ecs-services",
+  provider: "aws",
+  command: "DescribeServices",
+  category: "ecs",
+  subcategory: "services",
+  nodeType: "ecs-service",
+  selector: "ECS|DescribeServices|[]",
 
-function translateServiceDeployments(service: AwsService): Deployments {
-  return {
-    circuitBreaker: service.deploymentConfiguration?.deploymentCircuitBreaker,
-    alarms: service.deploymentConfiguration?.alarms,
-    rollout: {
-      maximumHealthyPct: service.deploymentConfiguration?.maximumPercent,
-      minimumHealthyPct: service.deploymentConfiguration?.minimumHealthyPercent,
-    },
-    controller: service.deploymentController,
-  };
-}
-
-function translateServiceNetworkConfig(service: AwsService): Network {
-  const publicIpStatus =
-    service.networkConfiguration?.awsvpcConfiguration?.assignPublicIp ===
-    "ENABLED"
-      ? "enabled"
-      : "disabled";
-  return {
-    publicIp: {
-      status: publicIpStatus,
-    },
-    securityGroups:
-      service.networkConfiguration?.awsvpcConfiguration?.securityGroups,
-    targetSubnets: service.networkConfiguration?.awsvpcConfiguration?.subnets,
-  };
-}
-
-async function getServiceNodes(stateConnector: Connector, context: AwsContext) {
-  nodesDebug("Fetching ECS service nodes");
-  const describeServicesCalls = await evaluateSelector<
-    State<DescribeServicesCommandOutput[], DescribeServicesCommandInput>
-  >(context.account, context.region, SELECTORS.services, stateConnector);
-
-  const state: ECSState<DescribeServicesCommandInput>[] = [];
-  for (const describeServicesCall of describeServicesCalls) {
-    const services = describeServicesCall._result.flatMap(
-      (result) => result.services ?? [],
+  async getState(stateConnector: Connector, context: AwsContext) {
+    return evaluateSelector(
+      context.account,
+      context.region,
+      ServiceEntity.selector,
+      stateConnector,
     );
-    for (const service of services) {
-      state.push({
-        $metadata: {
-          version: "0.1.0",
-          timestamp: describeServicesCall._metadata.timestamp,
+  },
+
+  translate(val) {
+    return val._result
+      .flatMap((result) => result.services ?? [])
+      .map((service) =>
+        Object.assign(service, {
+          $parameters: val._parameters,
+          $metadata: val._metadata,
+        }),
+      );
+  },
+
+  components: {
+    $graph(val) {
+      return {
+        id: val.serviceArn!,
+        label: val.serviceName!,
+        parent: val.clusterArn!,
+        nodeType: ServiceEntity.nodeType,
+      };
+    },
+    $metadata(val) {
+      return {
+        version: ServiceEntity.version,
+        timestamp: val.$metadata.timestamp,
+      };
+    },
+    $source(val) {
+      return {
+        command: ServiceEntity.command,
+        parameters: val.$parameters,
+      };
+    },
+    tenant(val) {
+      return {
+        tenantId: val.$metadata.account,
+        partition: val.$metadata.partition,
+        provider: ServiceEntity.provider,
+      };
+    },
+    location(val) {
+      return {
+        code: val.$metadata.region,
+      };
+    },
+    resource(val) {
+      return {
+        id: val.serviceArn!,
+        name: val.serviceName!,
+        category: "ecs",
+        subcategory: "service",
+      };
+    },
+    ecs(val) {
+      return {
+        platform: {
+          version: val.platformVersion,
+          family: val.platformFamily,
         },
-        $graph: {
-          id: service.serviceArn!,
-          label: service.serviceName!,
-          parent: service.clusterArn,
-          nodeType: "ecs-service",
-        },
-        $source: {
-          command: "DescribeServices",
-          parameters: describeServicesCall._parameters,
-        },
-        tenant: {
-          tenantId: context.account,
-          provider: "aws",
-          partition: context.partition,
-        },
-        location: {
-          code: context.region,
-        },
-        resource: {
-          id: service.serviceArn!,
-          name: service.serviceName!,
-          category: "ecs",
-          subcategory: "service",
-        },
-        ecs: {
-          platform: {
-            version: service.platformVersion,
-            family: service.platformFamily,
+        service: {
+          serviceRegistries: val.serviceRegistries,
+          status: val.status,
+          launchType: val.launchType,
+          capacityProviderStrategy: val.capacityProviderStrategy,
+          taskDefinition: val.taskDefinition,
+          desiredCount: val.desiredCount,
+          runningCount: val.runningCount,
+          pendingCount: val.pendingCount,
+          placement: {
+            constraints: val.placementConstraints,
+            strategy: val.placementStrategy,
           },
-          service: translateServiceDataToSchema(service),
-          deployments: translateServiceDeployments(service),
+          schedulingStrategy: val.schedulingStrategy
+            ? toLowerCase(val.schedulingStrategy)
+            : undefined,
         },
-        network: translateServiceNetworkConfig(service),
-        audit: {
-          createdAt: service.createdAt,
-          createdBy: service.createdBy,
-        },
-        iam: {
-          roles:
-            service.roleArn != null
-              ? [
-                  {
-                    label: "service-role",
-                    arn: service.roleArn,
-                  },
-                ]
-              : [],
-        },
-        loadBalancers: service.loadBalancers,
-        tags: service.tags,
-        healthcheck: {
-          gracePeriod: {
-            value: service.healthCheckGracePeriodSeconds,
-            unit: Unit.Second,
+        deployments: {
+          circuitBreaker: val.deploymentConfiguration?.deploymentCircuitBreaker,
+          alarms: val.deploymentConfiguration?.alarms,
+          rollout: {
+            minimumHealthyPct:
+              val.deploymentConfiguration?.minimumHealthyPercent,
+            maximumHealthyPct: val.deploymentConfiguration?.maximumPercent,
           },
+          controller: val.deploymentController,
         },
-      });
-    }
-  }
-  return state;
-}
+      };
+    },
+    network(val) {
+      const publicIpStatus =
+        val.networkConfiguration?.awsvpcConfiguration?.assignPublicIp ===
+        "ENABLED"
+          ? "enabled"
+          : "disabled";
+      return {
+        publicIp: {
+          status: publicIpStatus,
+        },
+        securityGroups:
+          val.networkConfiguration?.awsvpcConfiguration?.securityGroups,
+        targetSubnets: val.networkConfiguration?.awsvpcConfiguration?.subnets,
+      };
+    },
+    audit(val) {
+      return {
+        createdAt: val.createdAt,
+        createdBy: val.createdBy,
+      };
+    },
+    iam(val) {
+      return {
+        roles:
+          val.roleArn != null
+            ? [{ label: "service-role", arn: val.roleArn }]
+            : [],
+      };
+    },
+    loadBalancers(val) {
+      return val.loadBalancers;
+    },
+    tags(val) {
+      return val.tags;
+    },
+    healthcheck(val) {
+      return {
+        gracePeriod: {
+          value: val.healthCheckGracePeriodSeconds,
+          unit: Unit.Second,
+        },
+      };
+    },
+  },
+};
 
-function translateTaskDataToSchema(task: Task): ECSTask {
-  return {
-    version: task.version,
-    attachments: task.attachments,
-    attributes: task.attributes,
-    capacityProviderName: task.capacityProviderName,
-    connectivity: task.connectivity,
-    connectivityAt: task.connectivityAt,
-    containerInstanceArn: task.containerInstanceArn,
-    containers: task.containers,
-    cpu: task.cpu,
-    desiredStatus: task.desiredStatus,
-    enableExecuteCommand: task.enableExecuteCommand,
-    executionStoppedAt: task.executionStoppedAt,
-    group: task.group,
-    healthStatus: task.healthStatus,
-    inferenceAccelerators: task.inferenceAccelerators,
-    lastStatus: task.lastStatus,
-    launchType: task.launchType,
-    memory: task.memory,
-    overrides: task.overrides,
-    pullStartedAt: task.pullStartedAt,
-    pullStoppedAt: task.pullStoppedAt,
-    startedAt: task.startedAt,
-    startedBy: task.startedBy,
-    stopCode: task.stopCode,
-    stoppedAt: task.stoppedAt,
-    stoppedReason: task.stoppedReason,
-    stoppingAt: task.stoppingAt,
-    tags: task.tags,
-    taskArn: task.taskArn,
-    taskDefinitionArn: task.taskDefinitionArn,
-    ephemeralStorage: task.ephemeralStorage,
-    fargateEphemeralStorage: task.fargateEphemeralStorage,
-  };
-}
+export const TaskEntity: TranslatedEntity<
+  ECSState<DescribeTasksCommandInput>,
+  State<DescribeTasksCommandOutput[], DescribeTasksCommandInput>,
+  WithCallContext<Task, DescribeTasksCommandInput>
+> = {
+  version: "0.1.0",
+  debugLabel: "ecs-tasks",
+  provider: "aws",
+  command: "DescribeTasks",
+  category: "ecs",
+  subcategory: "tasks",
+  nodeType: "ecs-task",
+  selector: "ECS|DescribeTasks|[]",
 
-async function getTaskNodes(stateConnector: Connector, context: AwsContext) {
-  nodesDebug("Fetching ECS task nodes");
-  const describeTasksCalls = await evaluateSelector<
-    State<DescribeTasksCommandOutput[], DescribeTasksCommandInput>
-  >(context.account, context.region, SELECTORS.standaloneTasks, stateConnector);
-
-  const state: ECSState<DescribeTasksCommandInput>[] = [];
-  for (const describeTasksCall of describeTasksCalls) {
-    const tasks = describeTasksCall._result.flatMap(
-      (result) => result.tasks ?? [],
+  getState(stateConnector, context) {
+    return evaluateSelector(
+      context.account,
+      context.region,
+      TaskEntity.selector,
+      stateConnector,
     );
-    for (const task of tasks) {
-      state.push({
-        $metadata: {
-          version: "0.1.0",
-          timestamp: describeTasksCall._metadata.timestamp,
+  },
+  translate(val) {
+    return val._result
+      .flatMap((result) => result.tasks ?? [])
+      .map((task) =>
+        Object.assign(task, {
+          $parameters: val._parameters,
+          $metadata: val._metadata,
+        }),
+      );
+  },
+  components: {
+    $metadata(val) {
+      return {
+        version: TaskEntity.version,
+        timestamp: val.$metadata.timestamp,
+      };
+    },
+    $graph(val) {
+      return {
+        id: val.taskArn!,
+        label: val.taskArn!,
+        parent: val.clusterArn,
+        nodeType: TaskEntity.nodeType,
+      };
+    },
+    $source(val) {
+      return {
+        command: TaskEntity.command,
+        parameters: val.$parameters,
+      };
+    },
+    tenant(val) {
+      return {
+        tenantId: val.$metadata.account,
+        provider: TaskEntity.provider,
+        partition: val.$metadata.partition,
+      };
+    },
+    location(val) {
+      return {
+        code: val.$metadata.region,
+        zone: val.availabilityZone,
+      };
+    },
+    resource(val) {
+      return {
+        id: val.taskArn!,
+        name: val.taskArn!,
+        category: TaskEntity.category,
+        subcategory: TaskEntity.subcategory,
+      };
+    },
+    ecs(val) {
+      return {
+        platform: {
+          version: val.platformVersion,
+          family: val.platformFamily,
         },
-        $graph: {
-          id: task.taskArn!,
-          label: task.taskArn!,
-          parent: task.clusterArn,
-          nodeType: "ecs-task",
+        task: {
+          version: val.version,
+          attachments: val.attachments,
+          attributes: val.attributes,
+          capacityProviderName: val.capacityProviderName,
+          connectivity: val.connectivity,
+          connectivityAt: val.connectivityAt,
+          containerInstanceArn: val.containerInstanceArn,
+          containers: val.containers,
+          cpu: val.cpu,
+          desiredStatus: val.desiredStatus,
+          enableExecuteCommand: val.enableExecuteCommand,
+          executionStoppedAt: val.executionStoppedAt,
+          group: val.group,
+          healthStatus: val.healthStatus,
+          inferenceAccelerators: val.inferenceAccelerators,
+          lastStatus: val.lastStatus,
+          launchType: val.launchType,
+          memory: val.memory,
+          overrides: val.overrides,
+          pullStartedAt: val.pullStartedAt,
+          pullStoppedAt: val.pullStoppedAt,
+          startedAt: val.startedAt,
+          startedBy: val.startedBy,
+          stopCode: val.stopCode,
+          stoppedAt: val.stoppedAt,
+          stoppedReason: val.stoppedReason,
+          stoppingAt: val.stoppingAt,
+          tags: val.tags,
+          taskArn: val.taskArn,
+          taskDefinitionArn: val.taskDefinitionArn,
+          ephemeralStorage: val.ephemeralStorage,
+          fargateEphemeralStorage: val.fargateEphemeralStorage,
         },
-        $source: {
-          command: "DescribeTasks",
-          parameters: describeTasksCall._parameters,
-        },
-        tenant: {
-          tenantId: context.account,
-          provider: "aws",
-          partition: context.partition,
-        },
-        location: {
-          code: context.region,
-          zone: task.availabilityZone,
-        },
-        resource: {
-          id: task.taskArn!,
-          name: task.taskArn!,
-          category: "ecs",
-          subcategory: "task",
-        },
-        ecs: {
-          platform: {
-            version: task.platformVersion,
-            family: task.platformFamily,
-          },
-          task: translateTaskDataToSchema(task),
-        },
-        network: {
-          ...translateServiceNetworkConfig(task),
-        },
-        audit: {
-          createdAt: task.createdAt,
-        },
-        tags: task.tags,
-        healthcheck: {
-          status: task.healthStatus,
-        },
-      });
-    }
-  }
-  return state;
-}
+      };
+    },
+    audit(val) {
+      return {
+        createdAt: val.createdAt,
+      };
+    },
+    tags(val) {
+      return val.tags;
+    },
+    healthcheck(val) {
+      return {
+        status: val.healthStatus,
+      };
+    },
+  },
+};
 
-export async function _getNodes(
-  stateConnector: Connector,
-  context: AwsContext,
-) {
-  const clusters = await getClusterNodes(stateConnector, context);
-  const services = await getServiceNodes(stateConnector, context);
-  const tasks = await getTaskNodes(stateConnector, context);
-  return [...clusters, ...services, ...tasks];
-}
+export const entities = [ClusterEntity, ServiceEntity, TaskEntity];
 
 export async function getNodes(
   stateConnector: Connector,

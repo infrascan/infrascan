@@ -1,9 +1,14 @@
+import { AwsContext, Connector } from "api";
+
+export interface CommandCallMetadata {
+  account: string;
+  region: string;
+  partition?: string;
+  timestamp: string;
+}
+
 export type State<O, I = unknown> = {
-  _metadata: {
-    account: string;
-    region: string;
-    timestamp: string;
-  };
+  _metadata: CommandCallMetadata;
   _result: O;
   _parameters?: I;
 };
@@ -265,3 +270,52 @@ export interface BaseState<T = unknown> {
   audit?: Audit;
   tags?: KVPair[];
 }
+
+/**
+ * Generic type signature for any ode responsible for translating between data types
+ */
+type Translate<A, B> = (val: A) => B;
+
+/**
+ * Definition of a an entity's translators to convert the raw input state into the common schema
+ */
+export type ComponentFactory<Input, Schema = BaseState<unknown>> = {
+  [ComponentName in keyof Schema]: Translate<Input, Schema[ComponentName]>;
+};
+
+interface CommonEntity<Schema, RawState, TranslatedState = RawState> {
+  version: string;
+  selector: string;
+  debugLabel: string;
+  provider: string;
+  command: string;
+  category: string;
+  subcategory: string;
+  nodeType: string;
+
+  getState: (state: Connector, context: AwsContext) => Promise<RawState[]>;
+  components: ComponentFactory<TranslatedState, Schema>;
+}
+
+/**
+ * Entity which can act directly on its raw state, and does not require any pre-processing before
+ */
+export interface SimpleEntity<Schema, State>
+  extends CommonEntity<Schema, State> {
+  translate?: never;
+}
+
+/**
+ * Entity which needs to translate its stored raw state before it can produce the standard schema
+ */
+export interface TranslatedEntity<Schema, RawState, TranslatedState>
+  extends CommonEntity<Schema, RawState, TranslatedState> {
+  translate: Translate<RawState, TranslatedState[]>;
+}
+
+/**
+ * Discriminated union type for both simple and translated entities
+ */
+export type EntityETL<Schema, RawState, TranslatedState = RawState> =
+  | SimpleEntity<Schema, RawState>
+  | TranslatedEntity<Schema, RawState, TranslatedState>;

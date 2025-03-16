@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`ECS-Cluster`,rawState:@}",
   );
-  const DescribeClustersNodes = await evaluateSelector(
+  const DescribeClustersNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`ECS-Cluster`,rawState:@}",
@@ -29,7 +29,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`ECS-Service`,rawState:@}",
   );
-  const DescribeServicesNodes = await evaluateSelector(
+  const DescribeServicesNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`ECS-Service`,rawState:@}",
@@ -42,7 +42,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`ECS-Task`,rawState:@}",
   );
-  const DescribeServicesNodes2 = await evaluateSelector(
+  const DescribeServicesNodes2 = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`ECS-Task`,rawState:@}",
@@ -55,7 +55,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`ECS-Task`,rawState:@}",
   );
-  const DescribeTasksNodes = await evaluateSelector(
+  const DescribeTasksNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`ECS-Task`,rawState:@}",

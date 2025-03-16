@@ -7,8 +7,10 @@ import type {
   AwsContext,
   SelectedEdge,
   SelectedEdgeTarget,
+  EntityETL,
 } from "@infrascan/shared-types";
 
+export * from "./entity";
 export * from "./graph";
 export * from "./errors";
 
