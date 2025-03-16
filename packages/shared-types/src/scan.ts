@@ -111,6 +111,10 @@ export interface Resource {
    */
   name: string;
   /**
+   * The recorded description for the resource
+   */
+  description?: string;
+  /**
    * The resource level policy which dictates access
    */
   policy?: Record<string, unknown>;

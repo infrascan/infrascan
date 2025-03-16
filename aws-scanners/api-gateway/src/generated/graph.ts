@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ApiGatewayV2|GetApis|[]._result.Items | [].{id:ApiEndpoint}",
   );
-  const GetApisNodes = await evaluateSelector(
+  const GetApisNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ApiGatewayV2|GetApis|[]._result.Items | [].{id:ApiEndpoint}",
