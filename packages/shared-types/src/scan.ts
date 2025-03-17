@@ -87,7 +87,7 @@ export interface Location {
   /**
    * The availability zone/datacenter that the resource is in e.g. us-east-1a
    */
-  zone?: string;
+  zone?: string[];
 }
 
 /**
@@ -207,6 +207,7 @@ export interface Network {
    * The information relating to a specific VPC.
    */
   vpc?: {
+    id?: string;
     dhcpOptionsId?: string;
     state?: string;
     instanceTenancy?: string;
