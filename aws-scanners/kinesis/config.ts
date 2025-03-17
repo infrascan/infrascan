@@ -1,7 +1,10 @@
 import * as Kinesis from "@aws-sdk/client-kinesis";
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-export type KinesisFunctions = "ListStreams" | "ListStreamConsumers";
+export type KinesisFunctions =
+  | "DescribeStreamSummary"
+  | "ListStreams"
+  | "ListStreamConsumers";
 
 const KinesisScanner: ScannerDefinition<
   "Kinesis",
@@ -20,6 +23,16 @@ const KinesisScanner: ScannerDefinition<
         request: "NextToken",
         response: "NextToken",
       },
+    },
+    {
+      fn: "DescribeStreamSummary",
+      parameters: [
+        {
+          Key: "StreamARN",
+          Selector:
+            "Kinesis|ListStreams|[]._result.StreamSummaries[].StreamARN",
+        },
+      ],
     },
     {
       fn: "ListStreamConsumers",
