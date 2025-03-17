@@ -273,6 +273,10 @@ export interface EncryptionConfig {
   keyId?: string;
 }
 
+export interface DeadLetterConfig {
+  targetId?: string;
+}
+
 /**
  * Base state type to be extended on a per-service basis with the service specific context to use for linking.
  * Attribute specific information can be found on each type.
@@ -281,6 +285,7 @@ export interface BaseState<T = unknown> {
   $metadata: StateMetadata;
   $graph: GraphInfo;
   $source?: Source<T>;
+  deadLetter?: DeadLetterConfig;
   tenant: Tenant;
   location?: Location;
   loadBalancers?: LoadBalancer[];
