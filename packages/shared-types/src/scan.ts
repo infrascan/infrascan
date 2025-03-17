@@ -150,6 +150,8 @@ export interface DNS {
   domains: string[];
 }
 
+export type PublicIpStatus = "enabled" | "disabled";
+
 /**
  * The network information for a scanned resource which aims to cover both resources being assigned an address
  * and the networking resource itself (VPC, subnet)
@@ -159,7 +161,7 @@ export interface Network {
    * Information about the public IP of the resource
    */
   publicIp?: {
-    status?: "enabled" | "disabled";
+    status?: PublicIpStatus;
     address?: string;
   };
   /**
