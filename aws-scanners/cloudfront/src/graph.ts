@@ -11,7 +11,7 @@ import type {
   TranslatedEntity,
   BaseState,
   State,
-  CommandCallMetadata,
+  WithCallContext,
 } from "@infrascan/shared-types";
 
 export type CloudfrontDistribution =
@@ -22,11 +22,6 @@ export type CloudfrontDistribution =
       defaultCacheBehaviour?: DefaultCacheBehavior;
     };
   };
-
-type WithCallContext<T, Input> = T & {
-  $metadata: CommandCallMetadata;
-  $parameters?: Input;
-};
 
 export const CloudfrontDistributionEntity: TranslatedEntity<
   CloudfrontDistribution,

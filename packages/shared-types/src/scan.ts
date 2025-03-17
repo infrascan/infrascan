@@ -239,7 +239,15 @@ export interface LoadBalancer {
   targetGroupArn?: string;
 }
 
-export enum Unit {
+export enum SizeUnit {
+  Bytes = "B",
+  Megabytes = "MB",
+  Mebibytes = "MiB",
+  Gigabytes = "GB",
+  Gibibytes = "GiB",
+}
+
+export enum TimeUnit {
   Second = "s",
   Millisecond = "ms",
   Minute = "m",
@@ -247,12 +255,21 @@ export enum Unit {
   Day = "d",
 }
 
+export interface QualifiedMeasure<T> {
+  unit: T;
+  value: number;
+}
+
 export interface HealthcheckConfig {
   status?: string;
-  gracePeriod?: {
-    value?: number;
-    unit?: Unit;
-  };
+  gracePeriod?: QualifiedMeasure<TimeUnit>;
+}
+
+/**
+ * Structure for tracking resources which have an associated encryption key
+ */
+export interface EncryptionConfig {
+  keyId?: string;
 }
 
 /**
@@ -273,6 +290,7 @@ export interface BaseState<T = unknown> {
   network?: Network;
   audit?: Audit;
   tags?: KVPair[];
+  encryption?: EncryptionConfig;
 }
 
 /**
@@ -323,3 +341,8 @@ export interface TranslatedEntity<Schema, RawState, TranslatedState>
 export type EntityETL<Schema, RawState, TranslatedState = RawState> =
   | SimpleEntity<Schema, RawState>
   | TranslatedEntity<Schema, RawState, TranslatedState>;
+
+export type WithCallContext<T, Input> = T & {
+  $metadata: CommandCallMetadata;
+  $parameters?: Input;
+};

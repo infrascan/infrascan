@@ -1,4 +1,4 @@
-import { evaluateSelector, formatNode } from "@infrascan/core";
+import { evaluateSelector, formatNode, toLowerCase } from "@infrascan/core";
 import debug from "debug";
 import type {
   Cluster as AwsCluster,
@@ -19,18 +19,13 @@ import {
   type State,
   type KVPair,
   type TranslatedEntity,
-  Unit,
-  CommandCallMetadata,
+  type WithCallContext,
+  TimeUnit,
 } from "@infrascan/shared-types";
 
 import type { ECS } from "./types";
 
 const nodesDebug = debug("ecs:nodes");
-
-type WithCallContext<T, Input> = T & {
-  $metadata: CommandCallMetadata;
-  $parameters?: Input;
-};
 
 export type ECSState<T> = BaseState<T> & { ecs: ECS };
 
@@ -140,10 +135,6 @@ export const ClusterEntity: TranslatedEntity<
     },
   },
 };
-
-function toLowerCase<T extends string>(val: T): Lowercase<T> {
-  return val.toLowerCase() as Lowercase<T>;
-}
 
 export const ServiceEntity: TranslatedEntity<
   ECSState<DescribeServicesCommandInput>,
@@ -291,10 +282,14 @@ export const ServiceEntity: TranslatedEntity<
       return val.tags;
     },
     healthcheck(val) {
+      if (val.healthCheckGracePeriodSeconds == null) {
+        return undefined;
+      }
+
       return {
         gracePeriod: {
           value: val.healthCheckGracePeriodSeconds,
-          unit: Unit.Second,
+          unit: TimeUnit.Second,
         },
       };
     },

@@ -1,7 +1,7 @@
 import type {
   BaseState,
   TranslatedEntity,
-  CommandCallMetadata,
+  WithCallContext,
   State,
 } from "@infrascan/shared-types";
 import {
@@ -37,11 +37,6 @@ export type ApiGateway = BaseState<GetApisCommandInput> & {
     version?: string;
     warnings?: string[];
   };
-};
-
-type WithCallContext<T, Input> = T & {
-  $metadata: CommandCallMetadata;
-  $parameters?: Input;
 };
 
 export const ApiGatewayEntity: TranslatedEntity<

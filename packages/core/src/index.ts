@@ -7,7 +7,6 @@ import type {
   AwsContext,
   SelectedEdge,
   SelectedEdgeTarget,
-  EntityETL,
 } from "@infrascan/shared-types";
 
 export * from "./entity";
@@ -136,4 +135,8 @@ export function filterState(state: any, selector: string): any {
 
 export function formatS3NodeId(id: string): string {
   return `arn:aws:s3:::${id}`;
+}
+
+export function toLowerCase<T extends string>(val: T): Lowercase<T> {
+  return val.toLowerCase() as Lowercase<T>;
 }
