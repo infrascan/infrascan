@@ -12,6 +12,7 @@ import {
   QualifiedMeasure,
   SizeUnit,
   TimeUnit,
+  KVPair,
 } from "@infrascan/shared-types";
 
 export interface CodeDetails {
@@ -21,6 +22,12 @@ export interface CodeDetails {
   location?: string;
   repositoryType?: string;
   resolvedImageUri?: string;
+  packageType?: PackageType;
+}
+
+interface Layer {
+  arn?: string;
+  size?: QualifiedMeasure<SizeUnit>;
 }
 
 export interface FunctionDetails {
@@ -28,6 +35,8 @@ export interface FunctionDetails {
   runtime?: string;
   memorySize?: QualifiedMeasure<SizeUnit>;
   timeout?: QualifiedMeasure<TimeUnit>;
+  layers?: Layer[];
+  environment?: KVPair[];
 }
 
 export interface ConcurrencyDetails {
@@ -40,7 +49,7 @@ export type LambdaFunction = BaseState<GetFunctionCommandInput> & {
     type?: Lowercase<PackageType>;
     supportedArchitectures?: string[];
     code?: CodeDetails;
-    function: {};
+    function?: FunctionDetails;
   };
 };
 
@@ -201,6 +210,24 @@ export const LambdaFunctionEntity: TranslatedEntity<
                   unit: TimeUnit.Second,
                 }
               : undefined,
+          layers: val.Configuration?.Layers?.map((layer) => ({
+            arn: layer.Arn,
+            size:
+              layer.CodeSize != null
+                ? {
+                    value: layer.CodeSize,
+                    unit: SizeUnit.Bytes,
+                  }
+                : undefined,
+          })),
+          environment: val.Configuration?.Environment?.Variables
+            ? Object.entries(val.Configuration.Environment.Variables).map(
+                ([key, value]) => ({
+                  key,
+                  value,
+                }),
+              )
+            : [],
         },
       };
     },
