@@ -117,7 +117,7 @@ export interface Resource {
   /**
    * The resource level policy which dictates access
    */
-  policy?: Record<string, unknown>;
+  policy?: string;
 }
 
 export interface Role {
