@@ -9,6 +9,7 @@ import {
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
 import { getEdges } from "./edges";
+import { ElasticLoadBalancerEntity } from "./graph";
 
 const ElasticLoadBalancingV2Scanner: ServiceModule<
   ElasticLoadBalancingV2Client,
@@ -27,6 +28,7 @@ const ElasticLoadBalancingV2Scanner: ServiceModule<
   ],
   getNodes,
   getEdges,
+  entities: [ElasticLoadBalancerEntity],
 };
 
 export default ElasticLoadBalancingV2Scanner;

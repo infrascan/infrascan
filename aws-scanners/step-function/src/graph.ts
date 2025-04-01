@@ -23,12 +23,12 @@ export interface StepFunction {
   };
 }
 
-export type StepFunctionEntity = BaseState<DescribeStateMachineCommandInput> & {
+export type StepFunctionState = BaseState<DescribeStateMachineCommandInput> & {
   stepFunction: StepFunction;
 };
 
 export const StepFunctionEntity: TranslatedEntity<
-  StepFunctionEntity,
+  StepFunctionState,
   State<DescribeStateMachineCommandOutput[], DescribeStateMachineCommandInput>,
   WithCallContext<
     DescribeStateMachineCommandOutput,

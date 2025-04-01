@@ -1,4 +1,4 @@
-import { AwsContext, Connector } from "api";
+import { AwsContext, Connector } from "./api";
 
 export interface CommandCallMetadata {
   account: string;
@@ -313,7 +313,7 @@ export type ComponentFactory<Input, Schema = BaseState<unknown>> = {
   [ComponentName in keyof Schema]: Translate<Input, Schema[ComponentName]>;
 };
 
-interface CommonEntity<Schema, RawState, TranslatedState = RawState> {
+export interface CommonEntity<Schema, RawState, TranslatedState = RawState> {
   version: string;
   selector: string;
   debugLabel: string;

@@ -17,6 +17,7 @@ import {
 } from "./generated/getters";
 import { getNodes, getEdges } from "./generated/graph";
 import { registerMiddleware } from "./middleware";
+import { S3Entity } from "./graph";
 
 export function getClient(
   credentials: AwsCredentialIdentityProvider,
@@ -48,6 +49,7 @@ const S3Scanner: ServiceModule<S3Client, "aws"> = {
   ],
   getNodes,
   getEdges,
+  entities: [S3Entity],
 };
 
 export default S3Scanner;

@@ -36,7 +36,11 @@ export async function ListStateMachines(
       const cmd = new ListStateMachinesCommand(preparedParams);
       const result: ListStateMachinesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -95,7 +99,11 @@ export async function DescribeStateMachine(
       const cmd = new DescribeStateMachineCommand(preparedParams);
       const result: DescribeStateMachineCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

@@ -25,7 +25,11 @@ export async function ListDistributions(
     const cmd = new ListDistributionsCommand(preparedParams);
     const result: ListDistributionsCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: new Date().toISOString(),
+      },
       _parameters: preparedParams,
       _result: result,
     });

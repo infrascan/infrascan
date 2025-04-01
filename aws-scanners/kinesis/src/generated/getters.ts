@@ -32,7 +32,11 @@ export async function ListStreams(
       const cmd = new ListStreamsCommand(preparedParams);
       const result: ListStreamsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -94,7 +98,11 @@ export async function ListStreamConsumers(
         const cmd = new ListStreamConsumersCommand(preparedParams);
         const result: ListStreamConsumersCommandOutput = await client.send(cmd);
         state.push({
-          _metadata: { account: context.account, region: context.region },
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: new Date().toISOString(),
+          },
           _parameters: preparedParams,
           _result: result,
         });

@@ -35,7 +35,11 @@ export async function DescribeLoadBalancers(
     const cmd = new DescribeLoadBalancersCommand(preparedParams);
     const result: DescribeLoadBalancersCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: new Date().toISOString(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -86,7 +90,11 @@ export async function DescribeTargetGroups(
       const cmd = new DescribeTargetGroupsCommand(preparedParams);
       const result: DescribeTargetGroupsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -138,7 +146,11 @@ export async function DescribeListeners(
       const cmd = new DescribeListenersCommand(preparedParams);
       const result: DescribeListenersCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -190,7 +202,11 @@ export async function DescribeRules(
       const cmd = new DescribeRulesCommand(preparedParams);
       const result: DescribeRulesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

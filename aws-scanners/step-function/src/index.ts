@@ -7,6 +7,7 @@ import {
   getIamRoles,
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
+import { StepFunctionEntity } from "./graph";
 
 const SFNScanner: ServiceModule<SFNClient, "aws"> = {
   provider: "aws",
@@ -17,6 +18,7 @@ const SFNScanner: ServiceModule<SFNClient, "aws"> = {
   getters: [ListStateMachines, DescribeStateMachine],
   getNodes,
   getIamRoles,
+  entities: [StepFunctionEntity],
 };
 
 export default SFNScanner;

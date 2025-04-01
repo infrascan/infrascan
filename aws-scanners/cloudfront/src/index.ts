@@ -3,6 +3,7 @@ import type { ServiceModule } from "@infrascan/shared-types";
 import { getClient } from "./generated/client";
 import { ListDistributions } from "./generated/getters";
 import { getNodes } from "./generated/graph";
+import { CloudfrontDistributionEntity } from "./graph";
 import { getEdges } from "./edges";
 
 const CloudFrontScanner: ServiceModule<CloudFrontClient, "aws"> = {
@@ -14,6 +15,7 @@ const CloudFrontScanner: ServiceModule<CloudFrontClient, "aws"> = {
   getters: [ListDistributions],
   getNodes,
   getEdges,
+  entities: [CloudfrontDistributionEntity],
 };
 
 export default CloudFrontScanner;

@@ -7,6 +7,7 @@ import {
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
 import { getEdges } from "./edges";
+import { Route53RecordEntity } from "./graph";
 
 const Route53Scanner: ServiceModule<Route53Client, "aws"> = {
   provider: "aws",
@@ -17,6 +18,7 @@ const Route53Scanner: ServiceModule<Route53Client, "aws"> = {
   getters: [ListHostedZonesByName, ListResourceRecordSets],
   getNodes,
   getEdges,
+  entities: [Route53RecordEntity],
 };
 
 export default Route53Scanner;

@@ -32,7 +32,11 @@ export async function ListQueues(
     const cmd = new ListQueuesCommand(preparedParams);
     const result: ListQueuesCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: new Date().toISOString(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -79,7 +83,11 @@ export async function ListQueueTags(
       const cmd = new ListQueueTagsCommand(preparedParams);
       const result: ListQueueTagsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -128,7 +136,11 @@ export async function GetQueueAttributes(
       const cmd = new GetQueueAttributesCommand(preparedParams);
       const result: GetQueueAttributesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: new Date().toISOString(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

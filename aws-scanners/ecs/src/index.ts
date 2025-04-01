@@ -12,6 +12,7 @@ import {
   getIamRoles,
 } from "./generated/getters";
 import { getNodes } from "./generated/graph";
+import { entities } from "./graph";
 
 const ECSScanner: ServiceModule<ECSClient, "aws"> = {
   provider: "aws",
@@ -30,6 +31,7 @@ const ECSScanner: ServiceModule<ECSClient, "aws"> = {
   ],
   getNodes,
   getIamRoles,
+  entities,
 };
 
 export default ECSScanner;

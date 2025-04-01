@@ -6,6 +6,7 @@ import type {
 
 import type { SelectedEdge, SelectedNode } from "./graph";
 import type { BaseEdgeResolver } from "./config";
+import type { TranslatedEntity, BaseState } from "./scan";
 
 /**
  * Callback to store state from a specific function call
@@ -116,7 +117,15 @@ export type EntityRoleData = {
 };
 type GetIamRoleFn = (stateConnector: Connector) => Promise<EntityRoleData[]>;
 
-export interface ServiceModule<T, P extends Provider> {
+export interface ServiceModule<
+  T,
+  P extends Provider,
+  E extends TranslatedEntity<BaseState, any, any> = TranslatedEntity<
+    BaseState,
+    any,
+    any
+  >,
+> {
   provider: P;
   service: string;
   arnLabel?: string;
@@ -129,4 +138,5 @@ export interface ServiceModule<T, P extends Provider> {
   edges?: BaseEdgeResolver[];
   getEdges?: GetEdgeFn;
   getIamRoles?: GetIamRoleFn;
+  entities?: E[];
 }
