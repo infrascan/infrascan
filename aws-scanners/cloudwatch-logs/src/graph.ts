@@ -26,7 +26,7 @@ export type CloudwatchLogGroup = BaseState<DescribeLogGroupsCommandInput> & {
 
 export const CloudwatchLogGroupEntity: TranslatedEntity<
   CloudwatchLogGroup,
-  State<DescribeLogGroupsCommandOutput[], DescribeLogGroupsCommandInput>,
+  State<DescribeLogGroupsCommandOutput, DescribeLogGroupsCommandInput>,
   WithCallContext<LogGroup, DescribeLogGroupsCommandInput>
 > = {
   version: "0.1.0",
@@ -48,14 +48,12 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap(({ logGroups }) => logGroups ?? [])
-      .map((group) =>
-        Object.assign(group, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    return (val._result.logGroups ?? []).map((group) =>
+      Object.assign(group, {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      }),
+    );
   },
 
   components: {

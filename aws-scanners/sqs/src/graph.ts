@@ -32,7 +32,7 @@ export type SQSSchema = BaseState<GetQueueAttributesCommandInput> & {
 
 export const SQSEntity: TranslatedEntity<
   SQSSchema,
-  State<GetQueueAttributesCommandOutput[], GetQueueAttributesCommandInput>,
+  State<GetQueueAttributesCommandOutput, GetQueueAttributesCommandInput>,
   WithCallContext<QueueAttributes, GetQueueAttributesCommandInput>
 > = {
   version: "0.1.0",
@@ -54,11 +54,13 @@ export const SQSEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.map((attributes) => ({
-      ...(attributes.Attributes ?? {}),
-      $metadata: val._metadata,
-      $parameters: val._parameters,
-    }));
+    return [
+      {
+        ...(val._result.Attributes ?? {}),
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      },
+    ];
   },
 
   components: {

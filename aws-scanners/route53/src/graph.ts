@@ -27,7 +27,7 @@ export type Route53Record = BaseState<ListResourceRecordSetsCommandInput> & {
 export const Route53RecordEntity: TranslatedEntity<
   Route53Record,
   State<
-    ListResourceRecordSetsCommandOutput[],
+    ListResourceRecordSetsCommandOutput,
     ListResourceRecordSetsCommandInput
   >,
   WithCallContext<ResourceRecordSet, ListResourceRecordSetsCommandInput>
@@ -51,8 +51,7 @@ export const Route53RecordEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((record) => record.ResourceRecordSets ?? [])
+    return (val._result.ResourceRecordSets ?? [])
       .filter((record) => record.Type === "A")
       .map((record) =>
         Object.assign(record, {

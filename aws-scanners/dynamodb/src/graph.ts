@@ -178,7 +178,7 @@ function mapReplicaDescription(replica: ReplicaDescription): TableDescription {
 
 export const DynamoDbTableEntity: TranslatedEntity<
   DynamoTable,
-  State<DescribeTableCommandOutput[], DescribeTableCommandInput>,
+  State<DescribeTableCommandOutput, DescribeTableCommandInput>,
   WithCallContext<
     TableDescription & { tableType: TableTypeDetails },
     DescribeTableCommandInput
@@ -203,42 +203,41 @@ export const DynamoDbTableEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.flatMap((table) => {
-      const tables = [];
-      if (table.Table != null) {
+    const tables = [];
+    const table = val._result;
+    if (table.Table != null) {
+      tables.push(
+        Object.assign(table.Table, {
+          tableType: { isReplica: false },
+          $metadata: val._metadata,
+          $parameters: val._parameters,
+        }),
+      );
+    }
+    // If the table has associated replicas - map their keys so they can be treated as actual tables, with a reference back to the primary
+    if (table.Table?.Replicas != null) {
+      table.Table.Replicas.forEach((replica) => {
+        const replicaAsTable = mapReplicaDescription(replica);
         tables.push(
-          Object.assign(table.Table, {
-            tableType: { isReplica: false },
-            $metadata: val._metadata,
+          Object.assign(replicaAsTable, {
+            tableType: {
+              isReplica: true,
+              source: table.Table!.TableArn!,
+              status:
+                replica.ReplicaStatus != null
+                  ? toLowerCase(replica.ReplicaStatus)
+                  : undefined,
+            },
+            $metadata: {
+              ...val._metadata,
+              region: replica.RegionName ?? val._metadata.region,
+            },
             $parameters: val._parameters,
           }),
         );
-      }
-      // If the table has associated replicas - map their keys so they can be treated as actual tables, with a reference back to the primary
-      if (table.Table?.Replicas != null) {
-        table.Table.Replicas.forEach((replica) => {
-          const replicaAsTable = mapReplicaDescription(replica);
-          tables.push(
-            Object.assign(replicaAsTable, {
-              tableType: {
-                isReplica: true,
-                source: table.Table!.TableArn!,
-                status:
-                  replica.ReplicaStatus != null
-                    ? toLowerCase(replica.ReplicaStatus)
-                    : undefined,
-              },
-              $metadata: {
-                ...val._metadata,
-                region: replica.RegionName ?? val._metadata.region,
-              },
-              $parameters: val._parameters,
-            }),
-          );
-        });
-      }
-      return tables;
-    });
+      });
+    }
+    return tables;
   },
 
   components: {

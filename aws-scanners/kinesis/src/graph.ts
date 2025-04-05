@@ -39,10 +39,7 @@ type StreamDescription = DescribeStreamSummaryCommandOutput & {
 
 export const KinesisStreamEntity: TranslatedEntity<
   KinesisStream,
-  State<
-    DescribeStreamSummaryCommandOutput[],
-    DescribeStreamSummaryCommandInput
-  >,
+  State<DescribeStreamSummaryCommandOutput, DescribeStreamSummaryCommandInput>,
   WithCallContext<StreamDescriptionSummary, DescribeStreamSummaryCommandInput>
 > = {
   version: "0.1.0",
@@ -64,17 +61,17 @@ export const KinesisStreamEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .filter(
-        (stream): stream is StreamDescription =>
-          stream.StreamDescriptionSummary != null,
-      )
-      .map((stream) =>
-        Object.assign(stream.StreamDescriptionSummary, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    if (val._result.StreamDescriptionSummary == null) {
+      return [];
+    }
+    const enrichedDescription = Object.assign(
+      val._result.StreamDescriptionSummary,
+      {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      },
+    );
+    return [enrichedDescription];
   },
 
   components: {
@@ -160,7 +157,7 @@ export type KinesisConsumer = BaseState<DescribeStreamSummaryCommandInput> & {
 
 export const KinesisConsumerEntity: TranslatedEntity<
   KinesisStream,
-  State<ListStreamConsumersCommandOutput[], ListStreamConsumersInput>,
+  State<ListStreamConsumersCommandOutput, ListStreamConsumersInput>,
   WithCallContext<Consumer, ListStreamConsumersInput>
 > = {
   version: "0.1.0",
@@ -182,14 +179,12 @@ export const KinesisConsumerEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((kinesisStreams) => kinesisStreams.Consumers ?? [])
-      .map((stream) =>
-        Object.assign(stream, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    return (val._result.Consumers ?? []).map((stream) =>
+      Object.assign(stream, {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      }),
+    );
   },
 
   components: {

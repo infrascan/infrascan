@@ -55,7 +55,7 @@ export type LambdaFunction = BaseState<GetFunctionCommandInput> & {
 
 export const LambdaFunctionEntity: TranslatedEntity<
   LambdaFunction,
-  State<GetFunctionCommandOutput[], GetFunctionCommandInput>,
+  State<GetFunctionCommandOutput, GetFunctionCommandInput>,
   WithCallContext<GetFunctionCommandOutput, GetFunctionCommandInput>
 > = {
   version: "0.1.0",
@@ -77,12 +77,12 @@ export const LambdaFunctionEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.map((func) =>
-      Object.assign(func, {
+    return [
+      Object.assign(val._result, {
         $metadata: val._metadata,
         $parameters: val._parameters,
       }),
-    );
+    ];
   },
 
   components: {

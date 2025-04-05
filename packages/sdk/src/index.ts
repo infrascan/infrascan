@@ -266,7 +266,9 @@ export default class Infrascan {
             connector,
             context,
           );
-          const preparedState = graphableEntity.translate(retrievedState);
+          const preparedState = retrievedState.flatMap((stateEntry) =>
+            graphableEntity.translate(stateEntry),
+          );
           const components = Object.entries(graphableEntity.components);
           preparedState.forEach((value) => {
             const node = Object.fromEntries(
@@ -291,14 +293,16 @@ export default class Infrascan {
         const regionNode = buildRegionNode(account, region);
         addNodeToGraphUnchecked(graph, regionNode, AWS_REGION_SERVICE_KEY);
         for (const regionalServiceScanner of regionalServiceEntries) {
+          console.log(`Getting Nodes: ${regionalServiceScanner.service}`);
           for (const regionalServiceEntities of regionalServiceScanner.entities ??
             []) {
             const retrievedState = await regionalServiceEntities.getState(
               connector,
               context,
             );
-            const preparedState =
-              regionalServiceEntities.translate(retrievedState);
+            const preparedState = retrievedState.flatMap((stateEntry) =>
+              regionalServiceEntities.translate(stateEntry),
+            );
             const components = Object.entries(
               regionalServiceEntities.components,
             );

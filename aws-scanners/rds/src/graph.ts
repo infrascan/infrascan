@@ -37,7 +37,7 @@ export type RDSInstance = BaseState<DescribeDBInstancesCommandInput> & {
 
 export const RDSInstanceEntity: TranslatedEntity<
   RDSInstance,
-  State<DescribeDBInstancesCommandOutput[], DescribeDBInstancesCommandInput>,
+  State<DescribeDBInstancesCommandOutput, DescribeDBInstancesCommandInput>,
   WithCallContext<DBInstance, DescribeDBInstancesCommandInput>
 > = {
   version: "0.1.0",
@@ -59,14 +59,12 @@ export const RDSInstanceEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((instance) => instance.DBInstances ?? [])
-      .map((instance) =>
-        Object.assign(instance, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    return (val._result.DBInstances ?? []).map((instance) =>
+      Object.assign(instance, {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      }),
+    );
   },
 
   components: {

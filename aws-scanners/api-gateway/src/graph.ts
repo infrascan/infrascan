@@ -41,7 +41,7 @@ export type ApiGateway = BaseState<GetApisCommandInput> & {
 
 export const ApiGatewayEntity: TranslatedEntity<
   ApiGateway,
-  State<GetApisCommandOutput[], GetApisCommandInput>,
+  State<GetApisCommandOutput, GetApisCommandInput>,
   WithCallContext<Api, GetApisCommandInput>
 > = {
   version: "0.1.0",
@@ -63,14 +63,12 @@ export const ApiGatewayEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((apis) => apis.Items ?? [])
-      .map((api) =>
-        Object.assign(api, {
-          $parameters: val._parameters,
-          $metadata: val._metadata,
-        }),
-      );
+    return (val._result.Items ?? []).map((api) =>
+      Object.assign(api, {
+        $parameters: val._parameters,
+        $metadata: val._metadata,
+      }),
+    );
   },
 
   components: {

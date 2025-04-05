@@ -13,7 +13,7 @@ import {
 
 export const S3Entity: TranslatedEntity<
   BaseState<ListBucketsCommandInput>,
-  State<ListBucketsCommandOutput[], ListBucketsCommandInput>,
+  State<ListBucketsCommandOutput, ListBucketsCommandInput>,
   WithCallContext<Bucket, ListBucketsCommandInput>
 > = {
   version: "0.1.0",
@@ -35,12 +35,11 @@ export const S3Entity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((response) => response.Buckets ?? [])
-      .map((bucket: Bucket) =>
-        ({ ...bucket, $metadata: val._metadata,
-          $parameters: val._parameters,}),
-      );
+    return (val._result.Buckets ?? []).map((bucket: Bucket) => ({
+      ...bucket,
+      $metadata: val._metadata,
+      $parameters: val._parameters,
+    }));
   },
 
   components: {

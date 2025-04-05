@@ -25,7 +25,7 @@ export type CloudfrontDistribution =
 
 export const CloudfrontDistributionEntity: TranslatedEntity<
   CloudfrontDistribution,
-  State<ListDistributionsCommandOutput[], ListDistributionsCommandInput>,
+  State<ListDistributionsCommandOutput, ListDistributionsCommandInput>,
   WithCallContext<DistributionSummary, ListDistributionsCommandInput>
 > = {
   version: "0.1.0",
@@ -47,14 +47,12 @@ export const CloudfrontDistributionEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((distributions) => distributions.DistributionList?.Items ?? [])
-      .map((distribution) =>
-        Object.assign(distribution, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    return (val._result.DistributionList?.Items ?? []).map((distribution) =>
+      Object.assign(distribution, {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      }),
+    );
   },
 
   components: {

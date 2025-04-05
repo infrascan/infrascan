@@ -25,7 +25,6 @@ import type {
   KVPair,
   TranslatedEntity,
   WithCallContext,
-  TimeUnit,
 } from "@infrascan/shared-types";
 
 import type { ECS } from "./types";
@@ -42,7 +41,7 @@ function mapKvPair<T extends { name?: string; value?: string }>(
 
 export const ClusterEntity: TranslatedEntity<
   ECSState<DescribeClustersCommandInput>,
-  State<DescribeClustersCommandOutput[], DescribeClustersCommandInput>,
+  State<DescribeClustersCommandOutput, DescribeClustersCommandInput>,
   WithCallContext<AwsCluster, DescribeClustersCommandInput>
 > = {
   version: "0.1.0",
@@ -63,14 +62,12 @@ export const ClusterEntity: TranslatedEntity<
     );
   },
   translate(val) {
-    return val._result
-      .flatMap((result) => result.clusters ?? [])
-      .map((cluster) =>
-        Object.assign(cluster, {
-          $parameters: val._parameters,
-          $metadata: val._metadata,
-        }),
-      );
+    return (val._result.clusters ?? []).map((cluster) =>
+      Object.assign(cluster, {
+        $parameters: val._parameters,
+        $metadata: val._metadata,
+      }),
+    );
   },
   components: {
     $metadata(val) {
@@ -143,7 +140,7 @@ export const ClusterEntity: TranslatedEntity<
 
 export const ServiceEntity: TranslatedEntity<
   ECSState<DescribeServicesCommandInput>,
-  State<DescribeServicesCommandOutput[], DescribeServicesCommandInput>,
+  State<DescribeServicesCommandOutput, DescribeServicesCommandInput>,
   WithCallContext<AwsService, DescribeServicesCommandInput>
 > = {
   version: "0.1.0",
@@ -165,14 +162,12 @@ export const ServiceEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((result) => result.services ?? [])
-      .map((service) =>
-        Object.assign(service, {
-          $parameters: val._parameters,
-          $metadata: val._metadata,
-        }),
-      );
+    return (val._result.services ?? []).map((service) =>
+      Object.assign(service, {
+        $parameters: val._parameters,
+        $metadata: val._metadata,
+      }),
+    );
   },
 
   components: {
@@ -303,7 +298,7 @@ export const ServiceEntity: TranslatedEntity<
 
 export const TaskEntity: TranslatedEntity<
   ECSState<DescribeTasksCommandInput>,
-  State<DescribeTasksCommandOutput[], DescribeTasksCommandInput>,
+  State<DescribeTasksCommandOutput, DescribeTasksCommandInput>,
   WithCallContext<Task, DescribeTasksCommandInput>
 > = {
   version: "0.1.0",
@@ -324,14 +319,12 @@ export const TaskEntity: TranslatedEntity<
     );
   },
   translate(val) {
-    return val._result
-      .flatMap((result) => result.tasks ?? [])
-      .map((task) =>
-        Object.assign(task, {
-          $parameters: val._parameters,
-          $metadata: val._metadata,
-        }),
-      );
+    return (val._result.tasks ?? []).map((task) =>
+      Object.assign(task, {
+        $parameters: val._parameters,
+        $metadata: val._metadata,
+      }),
+    );
   },
   components: {
     $metadata(val) {

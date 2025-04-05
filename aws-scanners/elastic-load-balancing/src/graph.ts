@@ -41,10 +41,7 @@ export type ElasticLoadBalancer =
 
 export const ElasticLoadBalancerEntity: TranslatedEntity<
   ElasticLoadBalancer,
-  State<
-    DescribeLoadBalancersCommandOutput[],
-    DescribeLoadBalancersCommandInput
-  >,
+  State<DescribeLoadBalancersCommandOutput, DescribeLoadBalancersCommandInput>,
   WithCallContext<LoadBalancer, DescribeLoadBalancersCommandInput>
 > = {
   version: "0.1.0",
@@ -66,14 +63,12 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result
-      .flatMap((loadBalancers) => loadBalancers.LoadBalancers ?? [])
-      .map((loadBalancer) =>
-        Object.assign(loadBalancer, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
-      );
+    return (val._result.LoadBalancers ?? []).map((loadBalancer) =>
+      Object.assign(loadBalancer, {
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      }),
+    );
   },
 
   components: {

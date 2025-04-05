@@ -51,7 +51,7 @@ export type SNSEntity = BaseState<GetTopicAttributesCommandInput> & {
 
 export const SNSTopicEntity: TranslatedEntity<
   SNSEntity,
-  State<GetTopicAttributesCommandOutput[], GetTopicAttributesCommandInput>,
+  State<GetTopicAttributesCommandOutput, GetTopicAttributesCommandInput>,
   WithCallContext<TopicAttributes, GetTopicAttributesCommandInput>
 > = {
   version: "0.1.0",
@@ -73,10 +73,13 @@ export const SNSTopicEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.map((response) =>
-      ({ ...response.Attributes, $metadata: val._metadata,
-        $parameters: val._parameters,}),
-    );
+    return [
+      {
+        ...val._result,
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      },
+    ];
   },
 
   components: {

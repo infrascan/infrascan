@@ -29,7 +29,7 @@ export type StepFunctionState = BaseState<DescribeStateMachineCommandInput> & {
 
 export const StepFunctionEntity: TranslatedEntity<
   StepFunctionState,
-  State<DescribeStateMachineCommandOutput[], DescribeStateMachineCommandInput>,
+  State<DescribeStateMachineCommandOutput, DescribeStateMachineCommandInput>,
   WithCallContext<
     DescribeStateMachineCommandOutput,
     DescribeStateMachineCommandInput
@@ -54,10 +54,13 @@ export const StepFunctionEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.map((stateMachine) =>
-      ({ ...stateMachine, $metadata: val._metadata,
-        $parameters: val._parameters,}),
-    );
+    return [
+      {
+        ...val._result,
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      },
+    ];
   },
 
   components: {
