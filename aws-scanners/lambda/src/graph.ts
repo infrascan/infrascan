@@ -137,8 +137,8 @@ export const LambdaFunctionEntity: TranslatedEntity<
         return [];
       }
       return Object.entries(val.Tags).map(([key, value]) => ({
-        key: key,
-        value: value,
+        key,
+        value,
       }));
     },
 

@@ -74,10 +74,8 @@ export const SNSTopicEntity: TranslatedEntity<
 
   translate(val) {
     return val._result.map((response) =>
-      Object.assign({}, response.Attributes, {
-        $metadata: val._metadata,
-        $parameters: val._parameters,
-      }),
+      ({ ...response.Attributes, $metadata: val._metadata,
+        $parameters: val._parameters,}),
     );
   },
 

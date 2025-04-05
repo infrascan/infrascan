@@ -24,7 +24,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,name:StreamName}",
   );
-  const ListStreamsNodes = await evaluateSelector(
+  const ListStreamsNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,name:StreamName}",
@@ -37,7 +37,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,name:ConsumerName}",
   );
-  const ListStreamConsumersNodes = await evaluateSelector(
+  const ListStreamConsumersNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,name:ConsumerName}",

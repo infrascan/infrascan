@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",
   );
-  const DescribeDBInstancesNodes = await evaluateSelector(
+  const DescribeDBInstancesNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",

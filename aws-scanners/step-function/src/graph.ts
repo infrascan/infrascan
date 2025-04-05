@@ -55,10 +55,8 @@ export const StepFunctionEntity: TranslatedEntity<
 
   translate(val) {
     return val._result.map((stateMachine) =>
-      Object.assign({}, stateMachine, {
-        $metadata: val._metadata,
-        $parameters: val._parameters,
-      }),
+      ({ ...stateMachine, $metadata: val._metadata,
+        $parameters: val._parameters,}),
     );
   },
 

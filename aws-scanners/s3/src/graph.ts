@@ -38,10 +38,8 @@ export const S3Entity: TranslatedEntity<
     return val._result
       .flatMap((response) => response.Buckets ?? [])
       .map((bucket: Bucket) =>
-        Object.assign({}, bucket, {
-          $metadata: val._metadata,
-          $parameters: val._parameters,
-        }),
+        ({ ...bucket, $metadata: val._metadata,
+          $parameters: val._parameters,}),
       );
   },
 

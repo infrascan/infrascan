@@ -24,7 +24,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
   );
-  const DescribeSubscriptionFiltersNodes = await evaluateSelector(
+  const DescribeSubscriptionFiltersNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",

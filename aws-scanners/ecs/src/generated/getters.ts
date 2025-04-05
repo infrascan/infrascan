@@ -51,7 +51,6 @@ export async function ListClusters(
       _metadata: {
         account: context.account,
         region: context.region,
-        partition: context.partition,
         timestamp: new Date().toISOString(),
       },
       _parameters: preparedParams,
@@ -116,7 +115,6 @@ export async function DescribeClusters(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,
@@ -170,7 +168,6 @@ export async function ListServices(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,
@@ -228,7 +225,6 @@ export async function DescribeServices(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,
@@ -281,7 +277,6 @@ export async function ListTasks(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,
@@ -338,7 +333,6 @@ export async function DescribeTasks(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,
@@ -397,7 +391,6 @@ export async function DescribeTaskDefinition(
         _metadata: {
           account: context.account,
           region: context.region,
-          partition: context.partition,
           timestamp: new Date().toISOString(),
         },
         _parameters: preparedParams,

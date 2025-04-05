@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating SFN|DescribeStateMachine|[]._result.{id:stateMachineArn,name:name,rawState:@}",
   );
-  const DescribeStateMachineNodes = await evaluateSelector(
+  const DescribeStateMachineNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "SFN|DescribeStateMachine|[]._result.{id:stateMachineArn,name:name,rawState:@}",

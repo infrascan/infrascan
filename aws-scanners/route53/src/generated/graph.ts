@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating Route53|ListResourceRecordSets|[]._result.ResourceRecordSets[?Type==`A`] | [].{id:Name,name:Name}",
   );
-  const ListResourceRecordSetsNodes = await evaluateSelector(
+  const ListResourceRecordSetsNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "Route53|ListResourceRecordSets|[]._result.ResourceRecordSets[?Type==`A`] | [].{id:Name,name:Name}",

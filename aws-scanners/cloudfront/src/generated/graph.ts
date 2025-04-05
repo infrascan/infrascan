@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:Aliases.Items[0] || DomainName}",
   );
-  const ListDistributionsNodes = await evaluateSelector(
+  const ListDistributionsNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "CloudFront|ListDistributions|[]._result.DistributionList.Items[].{id:ARN,name:Aliases.Items[0] || DomainName}",

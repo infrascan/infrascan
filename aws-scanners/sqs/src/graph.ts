@@ -55,10 +55,8 @@ export const SQSEntity: TranslatedEntity<
 
   translate(val) {
     return val._result.map((attributes) =>
-      Object.assign({}, attributes.Attributes ?? {}, {
-        $metadata: val._metadata,
-        $parameters: val._parameters,
-      }),
+      ({ ...attributes.Attributes ?? {}, $metadata: val._metadata,
+        $parameters: val._parameters,}),
     );
   },
 

@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
   );
-  const DescribeLoadBalancersNodes = await evaluateSelector(
+  const DescribeLoadBalancersNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",

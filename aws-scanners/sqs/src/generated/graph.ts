@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueArn}",
   );
-  const GetQueueAttributesNodes = await evaluateSelector(
+  const GetQueueAttributesNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "SQS|GetQueueAttributes|[]._result.Attributes.{id:QueueArn,name:QueueArn}",

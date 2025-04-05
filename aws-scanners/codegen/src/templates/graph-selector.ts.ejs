@@ -38,7 +38,7 @@ export async function getNodes(stateConnector: Connector, context: AwsContext): 
     <%_ } -%>
     <%_ const escapedSelector = nodeSelector.replaceAll('`', "\\`"); -%>
     nodesDebug("Evaluating <%- nodeSelector %>");
-    const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, "<%- nodeSelector %>", stateConnector);
+    const <%= nodesVariable %> = await evaluateSelector<SelectedNode>(context.account, context.region, "<%- nodeSelector %>", stateConnector);
     nodesDebug(`Evaluated <%- escapedSelector %>: ${<%= nodesVariable %>.length} Nodes found`);
     state.push(...<%= nodesVariable %>);
     <%_ lastVariable = nodesVariable; -%>

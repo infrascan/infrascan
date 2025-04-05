@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
   );
-  const ListFunctionsNodes = await evaluateSelector(
+  const ListFunctionsNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",

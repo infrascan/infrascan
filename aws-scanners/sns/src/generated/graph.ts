@@ -24,7 +24,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
   );
-  const ListTopicsNodes = await evaluateSelector(
+  const ListTopicsNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",

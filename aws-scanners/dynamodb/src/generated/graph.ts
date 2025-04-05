@@ -16,7 +16,7 @@ export async function getNodes(
   nodesDebug(
     "Evaluating DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}",
   );
-  const DescribeTableNodes = await evaluateSelector(
+  const DescribeTableNodes = await evaluateSelector<SelectedNode>(
     context.account,
     context.region,
     "DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}",

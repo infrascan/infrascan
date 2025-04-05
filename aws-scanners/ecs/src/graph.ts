@@ -359,7 +359,7 @@ export const TaskEntity: TranslatedEntity<
     location(val) {
       return {
         code: val.$metadata.region,
-        zone: val.availabilityZone,
+        zone: val.availabilityZone ? [val.availabilityZone] : [],
       };
     },
     resource(val) {
