@@ -3,12 +3,12 @@ import type {
   GetFunctionCommandOutput,
   PackageType,
 } from "@aws-sdk/client-lambda";
-import { evaluateSelector, toLowerCase } from "@infrascan/core";
-import {
-  type TranslatedEntity,
-  type BaseState,
-  type State,
-  type WithCallContext,
+import { evaluateSelector, toLowerCase, Size, Time } from "@infrascan/core";
+import type {
+  TranslatedEntity,
+  BaseState,
+  State,
+  WithCallContext,
   QualifiedMeasure,
   SizeUnit,
   TimeUnit,
@@ -95,8 +95,8 @@ export const LambdaFunctionEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.Configuration?.FunctionArn!,
-        label: val.Configuration?.FunctionName!,
+        id: val.Configuration!.FunctionArn!,
+        label: val.Configuration!.FunctionName!,
         nodeType: LambdaFunctionEntity.nodeType,
       };
     },
@@ -124,8 +124,8 @@ export const LambdaFunctionEntity: TranslatedEntity<
 
     resource(val) {
       return {
-        id: val.Configuration?.FunctionArn!,
-        name: val.Configuration?.FunctionName!,
+        id: val.Configuration!.FunctionArn!,
+        name: val.Configuration!.FunctionName!,
         category: LambdaFunctionEntity.category,
         subcategory: LambdaFunctionEntity.subcategory,
         description: val.Configuration?.Description,
@@ -184,7 +184,7 @@ export const LambdaFunctionEntity: TranslatedEntity<
             val.Configuration?.CodeSize != null
               ? {
                   value: val.Configuration?.CodeSize,
-                  unit: SizeUnit.Bytes,
+                  unit: Size.Bytes,
                 }
               : undefined,
           sha256: val.Configuration?.CodeSha256,
@@ -200,14 +200,14 @@ export const LambdaFunctionEntity: TranslatedEntity<
             val.Configuration?.MemorySize != null
               ? {
                   value: val.Configuration?.MemorySize,
-                  unit: SizeUnit.Megabytes,
+                  unit: Size.Megabytes,
                 }
               : undefined,
           timeout:
             val.Configuration?.Timeout != null
               ? {
                   value: val.Configuration?.Timeout,
-                  unit: TimeUnit.Second,
+                  unit: Time.Seconds,
                 }
               : undefined,
           layers: val.Configuration?.Layers?.map((layer) => ({
@@ -216,7 +216,7 @@ export const LambdaFunctionEntity: TranslatedEntity<
               layer.CodeSize != null
                 ? {
                     value: layer.CodeSize,
-                    unit: SizeUnit.Bytes,
+                    unit: Size.Bytes,
                   }
                 : undefined,
           })),

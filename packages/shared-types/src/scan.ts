@@ -7,11 +7,11 @@ export interface CommandCallMetadata {
   timestamp: string;
 }
 
-export type State<O, I = unknown> = {
+export interface State<O, I = unknown> {
   _metadata: CommandCallMetadata;
   _result: O;
   _parameters?: I;
-};
+}
 
 export type GenericState = State<unknown>;
 
@@ -242,21 +242,9 @@ export interface LoadBalancer {
   targetGroupArn?: string;
 }
 
-export enum SizeUnit {
-  Bytes = "B",
-  Megabytes = "MB",
-  Mebibytes = "MiB",
-  Gigabytes = "GB",
-  Gibibytes = "GiB",
-}
+export type SizeUnit = "B" | "MB" | "MiB" | "GB" | "GiB";
 
-export enum TimeUnit {
-  Second = "s",
-  Millisecond = "ms",
-  Minute = "m",
-  Hour = "h",
-  Day = "d",
-}
+export type TimeUnit = "s" | "ms" | "m" | "h" | "d";
 
 export interface QualifiedMeasure<T> {
   unit: T;
@@ -330,8 +318,8 @@ export interface CommonEntity<Schema, RawState, TranslatedState = RawState> {
 /**
  * Entity which can act directly on its raw state, and does not require any pre-processing before
  */
-export interface SimpleEntity<Schema, State>
-  extends CommonEntity<Schema, State> {
+export interface SimpleEntity<Schema, RawState>
+  extends CommonEntity<Schema, RawState> {
   translate?: never;
 }
 

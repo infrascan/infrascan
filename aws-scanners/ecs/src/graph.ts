@@ -1,4 +1,9 @@
-import { evaluateSelector, formatNode, toLowerCase } from "@infrascan/core";
+import {
+  evaluateSelector,
+  formatNode,
+  toLowerCase,
+  Time,
+} from "@infrascan/core";
 import debug from "debug";
 import type {
   Cluster as AwsCluster,
@@ -11,15 +16,15 @@ import type {
   DescribeTasksCommandOutput,
   Task,
 } from "@aws-sdk/client-ecs";
-import {
-  type Connector,
-  type AwsContext,
-  type SelectedNode,
-  type BaseState,
-  type State,
-  type KVPair,
-  type TranslatedEntity,
-  type WithCallContext,
+import type {
+  Connector,
+  AwsContext,
+  SelectedNode,
+  BaseState,
+  State,
+  KVPair,
+  TranslatedEntity,
+  WithCallContext,
   TimeUnit,
 } from "@infrascan/shared-types";
 
@@ -289,7 +294,7 @@ export const ServiceEntity: TranslatedEntity<
       return {
         gracePeriod: {
           value: val.healthCheckGracePeriodSeconds,
-          unit: TimeUnit.Second,
+          unit: Time.Seconds,
         },
       };
     },

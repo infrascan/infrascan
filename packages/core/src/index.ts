@@ -7,11 +7,28 @@ import type {
   AwsContext,
   SelectedEdge,
   SelectedEdgeTarget,
+  TimeUnit,
+  SizeUnit,
 } from "@infrascan/shared-types";
 
-export * from "./entity";
 export * from "./graph";
 export * from "./errors";
+
+export const Size = {
+  Bytes: "B" as SizeUnit,
+  Megabytes: "MB" as SizeUnit,
+  Mebibytes: "MiB" as SizeUnit,
+  Gigabytes: "GB" as SizeUnit,
+  Gibibytes: "GiB" as SizeUnit,
+} as const;
+
+export const Time = {
+  Seconds: "s" as TimeUnit,
+  Milliseconds: "ms" as TimeUnit,
+  Minutes: "m" as TimeUnit,
+  Hours: "h" as TimeUnit,
+  Days: "d" as TimeUnit,
+} as const;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function evaluateSelector<T = unknown>(

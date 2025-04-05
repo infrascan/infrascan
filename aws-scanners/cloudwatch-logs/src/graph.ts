@@ -3,13 +3,13 @@ import type {
   DescribeLogGroupsCommandOutput,
   LogGroup,
 } from "@aws-sdk/client-cloudwatch-logs";
-import { evaluateSelector, toLowerCase } from "@infrascan/core";
-import {
-  type TranslatedEntity,
-  type BaseState,
-  type State,
-  type WithCallContext,
-  type QualifiedMeasure,
+import { evaluateSelector, toLowerCase, Time, Size } from "@infrascan/core";
+import type {
+  TranslatedEntity,
+  BaseState,
+  State,
+  WithCallContext,
+  QualifiedMeasure,
   TimeUnit,
   SizeUnit,
 } from "@infrascan/shared-types";
@@ -130,14 +130,14 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
         retentionPeriod:
           val.retentionInDays != null
             ? {
-                unit: TimeUnit.Day,
+                unit: Time.Days,
                 value: val.retentionInDays,
               }
             : undefined,
         size:
           val.storedBytes != null
             ? {
-                unit: SizeUnit.Bytes,
+                unit: Size.Bytes,
                 value: val.storedBytes,
               }
             : undefined,

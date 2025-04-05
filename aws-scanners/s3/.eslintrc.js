@@ -5,8 +5,14 @@ module.exports = {
     project: "./tsconfig.json",
     tsconfigRootDir: __dirname,
   },
-  "rules": {
-    "no-param-reassign": [2, { "props": false }]
+  rules: {
+    "no-param-reassign": [2, { props: false }],
   },
-  ignorePatterns: ["dist/**", ".eslintrc.js", "config.ts", "codegen.ts", "test/*.test.ts"]
+  ignorePatterns: [
+    "dist/**",
+    ".eslintrc.js",
+    "config.ts",
+    "codegen.ts",
+    "**/*.test.ts",
+  ],
 };

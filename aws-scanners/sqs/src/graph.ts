@@ -26,12 +26,12 @@ export interface SQS {
   redrivePolicy?: string;
 }
 
-export type SQSEntity = BaseState<GetQueueAttributesCommandInput> & {
+export type SQSSchema = BaseState<GetQueueAttributesCommandInput> & {
   sqs: SQS;
 };
 
 export const SQSEntity: TranslatedEntity<
-  SQSEntity,
+  SQSSchema,
   State<GetQueueAttributesCommandOutput[], GetQueueAttributesCommandInput>,
   WithCallContext<QueueAttributes, GetQueueAttributesCommandInput>
 > = {
@@ -54,10 +54,11 @@ export const SQSEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return val._result.map((attributes) =>
-      ({ ...attributes.Attributes ?? {}, $metadata: val._metadata,
-        $parameters: val._parameters,}),
-    );
+    return val._result.map((attributes) => ({
+      ...(attributes.Attributes ?? {}),
+      $metadata: val._metadata,
+      $parameters: val._parameters,
+    }));
   },
 
   components: {
@@ -69,7 +70,7 @@ export const SQSEntity: TranslatedEntity<
     },
 
     $graph(val) {
-      const queueName = val.QueueArn?.split(":").pop()!;
+      const queueName = val.QueueArn!.split(":").pop()!;
       return {
         id: val.QueueArn!,
         label: queueName,
@@ -105,7 +106,7 @@ export const SQSEntity: TranslatedEntity<
     },
 
     resource(val) {
-      const queueName = val.QueueArn?.split(":").pop()!;
+      const queueName = val.QueueArn!.split(":").pop()!;
       return {
         id: val.QueueArn!,
         name: queueName,

@@ -11,14 +11,14 @@ import type {
   ScalarAttributeType,
   TableDescription,
 } from "@aws-sdk/client-dynamodb";
-import { evaluateSelector, toLowerCase } from "@infrascan/core";
+import { evaluateSelector, toLowerCase, Size } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
   type State,
   type WithCallContext,
-  QualifiedMeasure,
-  SizeUnit,
+  type QualifiedMeasure,
+  type SizeUnit,
 } from "@infrascan/shared-types";
 
 export interface KeySchema {
@@ -113,7 +113,7 @@ function mapBaseIndex(
     size:
       receivedIndex.IndexSizeBytes != null
         ? {
-            unit: SizeUnit.Bytes,
+            unit: Size.Bytes,
             value: receivedIndex.IndexSizeBytes,
           }
         : undefined,
@@ -222,7 +222,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
             Object.assign(replicaAsTable, {
               tableType: {
                 isReplica: true,
-                source: table.Table?.TableArn!,
+                source: table.Table!.TableArn!,
                 status:
                   replica.ReplicaStatus != null
                     ? toLowerCase(replica.ReplicaStatus)
@@ -325,7 +325,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
         size:
           val.TableSizeBytes != null
             ? {
-                unit: SizeUnit.Bytes,
+                unit: Size.Bytes,
                 value: val.TableSizeBytes,
               }
             : undefined,

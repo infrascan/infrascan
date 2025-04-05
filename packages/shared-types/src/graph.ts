@@ -6,6 +6,7 @@ export interface SelectedNode {
   name?: string;
   parent?: string;
   type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawState?: any;
 }
 
@@ -26,16 +27,19 @@ export type ElementType<ReadType, WriteType> = {
   readonly _write: WriteType;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ElementRecord<K extends keyof any, R, W> = ElementType<
   Record<K, Readable<R>>,
   Record<K, Writable<W>>
 >;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ReadType<T> = T extends ElementType<infer R, any> ? Readable<R> : T;
 export type Readable<T> = {
   [K in keyof T]: ReadType<T[K]>;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WriteType<T> = T extends ElementType<any, infer W>
   ? Writable<W>
   : T;

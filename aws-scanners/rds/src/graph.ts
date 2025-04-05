@@ -4,11 +4,11 @@ import type {
   DescribeDBInstancesCommandOutput,
 } from "@aws-sdk/client-rds";
 import { evaluateSelector } from "@infrascan/core";
-import {
-  type TranslatedEntity,
-  type BaseState,
-  type State,
-  type WithCallContext,
+import type {
+  TranslatedEntity,
+  BaseState,
+  State,
+  WithCallContext,
   PublicIpStatus,
 } from "@infrascan/shared-types";
 
