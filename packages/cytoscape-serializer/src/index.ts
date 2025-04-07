@@ -49,14 +49,23 @@ export type EdgeTarget = {
 };
 
 export function serializeGraph(graph: Graph): CytoscapeGraph[] {
-  const nodes: CytoscapeNode[] = graph.nodes.map((node) => ({
-    group: "nodes",
-    data: Object.assign(structuredClone(node), {
-      id: node.$graph.id,
-      parent: node.$graph.parent,
-      name: node.$graph.label,
-    }),
-  }));
+  const nodes: CytoscapeNode[] = graph.nodes.map((node) => {
+    const {
+      parent,
+      incomingEdges,
+      outgoingEdges,
+      children,
+      ...structuredNode
+    } = node;
+    return {
+      group: "nodes",
+      data: Object.assign(structuredNode, {
+        id: node.$graph.id,
+        parent: node.$graph.parent,
+        name: node.$graph.label,
+      }),
+    };
+  });
 
   const edges: CytoscapeEdge[] = graph.edges.map((edge) => ({
     group: "edges",
