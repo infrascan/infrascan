@@ -4,6 +4,7 @@ import type {
   Node,
   Readable,
   Writable,
+  BaseState,
 } from "@infrascan/shared-types";
 import {
   NodeConflictError,
@@ -40,39 +41,32 @@ export function Graph(): _Graph {
       parentNode.children = {};
     }
 
-    parentNode.children[childNode.id] = childNode;
+    parentNode.children[childNode.$graph.id] = childNode;
     childNode.parent = parentNode;
   }
 
-  function addNode(
-    node: Pick<
-      Writable<Node>,
-      "id" | "name" | "metadata" | "parent" | "service" | "type"
-    >,
-  ) {
-    if (nodes[node.id] != null) {
-      throw new NodeConflictError(node.id);
+  function addNode(node: BaseState<unknown>) {
+    if (nodes[node.$graph.id] != null) {
+      throw new NodeConflictError(node.$graph.id);
     }
-    if (node.parent != null && nodes[node.parent] == null) {
-      throw new NodeNotFoundError(node.parent);
+    if (node.$graph.parent != null && nodes[node.$graph.parent] == null) {
+      throw new NodeNotFoundError(node.$graph.parent);
     }
     try {
       const completedNode: Readable<Node> = {
-        id: node.id,
-        name: node.name,
-        metadata: node.metadata,
+        ...structuredClone(node),
         incomingEdges: {},
         outgoingEdges: {},
-        service: node.service,
-        type: node.type,
+        children: undefined,
+        parent: undefined,
       };
-      nodes[node.id] = completedNode;
-      if (node.parent != null) {
+      nodes[node.$graph.id] = completedNode;
+      if (node.$graph.parent != null) {
         // Parent is of type Node at this point.
-        addChild(node.parent, node.id);
+        addChild(node.$graph.parent, node.$graph.id);
       }
     } catch (err: unknown) {
-      delete nodes[node.id];
+      delete nodes[node.$graph.id];
       throw err;
     }
   }
@@ -145,16 +139,16 @@ export function Graph(): _Graph {
       incomingEdges.forEach((edge) => {
         addEdge({
           ...edge,
-          source: edge.source.id,
-          target: newNode.id,
+          source: edge.source.$graph.id,
+          target: newNode.$graph.id,
         });
       });
 
       outgoingEdges.forEach((edge) => {
         addEdge({
           ...edge,
-          source: newNode.id,
-          target: edge.target.id,
+          source: newNode.$graph.id,
+          target: edge.target.$graph.id,
         });
       });
     });
@@ -163,10 +157,10 @@ export function Graph(): _Graph {
 
   function serialize(): string {
     const nodeStrings = Object.values(nodes)
-      .map((node) => `id: ${node.id}`)
+      .map((node) => `id: ${node.$graph.id}`)
       .join(", ");
     const edgeStrings = Object.values(edges)
-      .map((edge) => `${edge.source.id} -> ${edge.target.id}`)
+      .map((edge) => `${edge.source.$graph.id} -> ${edge.target.$graph.id}`)
       .join(", ");
     return `Nodes: ${nodeStrings}
 Edges: ${edgeStrings}`;

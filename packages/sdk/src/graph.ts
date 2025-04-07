@@ -7,6 +7,8 @@ import type {
   SelectedEdge,
   Graph,
   BaseState,
+  Writable,
+  Node,
 } from "@infrascan/shared-types";
 import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
@@ -98,17 +100,9 @@ export function buildRegionNode(account: string, region: string): BaseState {
 export function addNodeToGraphUnchecked<T extends BaseState>(
   graph: Graph,
   node: T,
-  service: string,
 ) {
   try {
-    graph.addNode({
-      id: node.$graph.id,
-      name: node.$graph.label ?? node.$graph.id,
-      metadata: node as unknown as Record<string, unknown>,
-      parent: node.$graph.parent,
-      service,
-      type: node.$graph.nodeType,
-    });
+    graph.addNode(node);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn(

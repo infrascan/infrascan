@@ -256,7 +256,7 @@ export default class Infrascan {
     for (const { account, regions, defaultRegion } of metadataList) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
-      addNodeToGraphUnchecked(graph, accountNode, AWS_ACCOUNT_SERVICE_KEY);
+      addNodeToGraphUnchecked(graph, accountNode);
 
       for (const serviceScanner of globalServiceEntries) {
         const serviceNodeIds: string[] = [];
@@ -274,7 +274,7 @@ export default class Infrascan {
             const node = Object.fromEntries(
               components.map(([label, factory]) => [label, factory(value)]),
             ) as unknown as BaseState;
-            addNodeToGraphUnchecked(graph, node, serviceScanner.service);
+            addNodeToGraphUnchecked(graph, node);
             serviceNodeIds.push(node.$graph.id);
             serviceNodeMap[
               serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
@@ -291,7 +291,7 @@ export default class Infrascan {
         context.region = region;
         const regionalServiceNodeIds: string[] = [];
         const regionNode = buildRegionNode(account, region);
-        addNodeToGraphUnchecked(graph, regionNode, AWS_REGION_SERVICE_KEY);
+        addNodeToGraphUnchecked(graph, regionNode);
         for (const regionalServiceScanner of regionalServiceEntries) {
           console.log(`Getting Nodes: ${regionalServiceScanner.service}`);
           for (const regionalServiceEntities of regionalServiceScanner.entities ??
@@ -310,11 +310,7 @@ export default class Infrascan {
               const node = Object.fromEntries(
                 components.map(([label, factory]) => [label, factory(value)]),
               ) as unknown as BaseState;
-              addNodeToGraphUnchecked(
-                graph,
-                node,
-                regionalServiceScanner.service,
-              );
+              addNodeToGraphUnchecked(graph, node);
               regionalServiceNodeIds.push(node.$graph.id);
             });
           }
