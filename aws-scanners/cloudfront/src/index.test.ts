@@ -89,11 +89,5 @@ t.test(
       ListDistributionsCommand,
     ).length;
     t.equal(callCount, 1);
-
-    if (CloudfrontScanner.getNodes != null) {
-      const nodes = await CloudfrontScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.ok(nodes.find((node) => node.id === distributionArn));
-    }
   },
 );

@@ -60,12 +60,6 @@ t.test(
       .commandCalls(DescribeTableCommand)
       .at(0)?.args;
     t.equal(firstCallArgs?.[0].input.TableName, testTable);
-
-    if (DynamoDBScanner.getNodes != null) {
-      const nodes = await DynamoDBScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.ok(nodes.find((node) => node.id === tableArn));
-    }
   },
 );
 
@@ -94,9 +88,4 @@ t.test("No Tables returned from ListTablesCommand", async () => {
   const describeTableCallCount =
     mockedDynamoClient.commandCalls(DescribeTableCommand).length;
   t.equal(describeTableCallCount, 0);
-
-  if (DynamoDBScanner.getNodes != null) {
-    const nodes = await DynamoDBScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 });

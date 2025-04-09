@@ -104,12 +104,6 @@ t.test(
     )[0]?.args?.[0].input;
     t.equal(listTagsForResourceArgs.ResourceArn, topicArn);
 
-    if (SNSScanner.getNodes != null) {
-      const nodes = await SNSScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, topicArn);
-    }
-
     if (SNSScanner.getEdges != null) {
       const edges = await SNSScanner.getEdges(connector);
       t.equal(edges.length, 2);
@@ -153,11 +147,6 @@ t.test("No sns topics returned from ListTopicsCommand", async () => {
     0,
   );
   t.equal(mockedSNSClient.commandCalls(ListTagsForResourceCommand).length, 0);
-
-  if (SNSScanner.getNodes != null) {
-    const nodes = await SNSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 
   if (SNSScanner.getEdges != null) {
     const edges = await SNSScanner.getEdges(connector);

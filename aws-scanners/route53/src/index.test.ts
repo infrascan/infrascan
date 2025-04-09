@@ -112,15 +112,6 @@ t.test(
       .at(0)?.args;
     t.equal(listResourceRecordSets?.[0].input.HostedZoneId, hostedZoneId);
 
-    if (Route53Scanner.getNodes != null) {
-      const nodes = await Route53Scanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 4);
-      t.ok(nodes.find((node) => node.id === cloudfrontRecordName));
-      t.ok(nodes.find((node) => node.id === apiGatewayRecordName));
-      t.ok(nodes.find((node) => node.id === s3RecordName));
-      t.ok(nodes.find((node) => node.id === elbRecordName));
-    }
-
     connector.onServiceScanCompleteCallback(
       testContext.account,
       testContext.region,
@@ -179,11 +170,6 @@ t.test(
       mockedRoute53Client.commandCalls(ListResourceRecordSetsCommand).length,
       0,
     );
-
-    if (Route53Scanner.getNodes != null) {
-      const nodes = await Route53Scanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 0);
-    }
 
     // TODO; have a better way to seed/use fixtures for cross-service edges
     if (Route53Scanner.getEdges != null) {

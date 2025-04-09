@@ -74,15 +74,6 @@ t.test(
       .at(0)?.args;
     t.equal(firstCallArgs?.[0].input.logGroupName, logGroupName);
 
-    if (CloudwatchLogsScanner.getNodes != null) {
-      const nodes = await CloudwatchLogsScanner.getNodes(
-        connector,
-        testContext,
-      );
-      t.equal(nodes.length, 1);
-      t.ok(nodes.find((node) => node.id === logGroupName));
-    }
-
     if (CloudwatchLogsScanner.getEdges != null) {
       const edges = await CloudwatchLogsScanner.getEdges(connector);
       t.equal(edges.length, 1);
@@ -126,11 +117,6 @@ t.test("No Log groups returned from DescribeLogGroups command", async () => {
     DescribeSubscriptionFiltersCommand,
   ).length;
   t.equal(subscriptionCallCount, 0);
-
-  if (CloudwatchLogsScanner.getNodes != null) {
-    const nodes = await CloudwatchLogsScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 
   if (CloudwatchLogsScanner.getEdges != null) {
     const edges = await CloudwatchLogsScanner.getEdges(connector);

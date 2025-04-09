@@ -67,13 +67,6 @@ t.test(
       .at(0)?.args;
     t.equal(getFunctionArgs?.[0].input.FunctionName, lambdaArn);
 
-    if (LambdaScanner.getNodes != null) {
-      const nodes = await LambdaScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, lambdaArn);
-      t.equal(nodes[0].name, lambdaName);
-    }
-
     if (LambdaScanner.getIamRoles != null) {
       const roles = await LambdaScanner.getIamRoles(connector);
       t.equal(roles.length, 1);
@@ -103,9 +96,4 @@ t.test("No functions returned from ListFunctionsCommand", async () => {
 
   t.equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
   t.equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 0);
-
-  if (LambdaScanner.getNodes != null) {
-    const nodes = await LambdaScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 });

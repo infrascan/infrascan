@@ -85,12 +85,6 @@ t.test(
     t.equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 1);
     t.equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 1);
 
-    const nodes = await S3Scanner.getNodes!(connector, testContext);
-    t.equal(nodes.length, 1);
-    // preformat
-    t.equal(nodes[0].id, `arn:aws:s3:::${bucketName}`);
-    t.equal(nodes[0].name, bucketName);
-
     const edges = await S3Scanner.getEdges!(connector);
     t.equal(edges.length, 3);
 
@@ -140,9 +134,6 @@ t.test("No Buckets returned from ListBucketsCommand", async () => {
   );
   t.equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 0);
   t.equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 0);
-
-  const nodes = await S3Scanner.getNodes!(connector, testContext);
-  t.equal(nodes.length, 0);
 
   const edges = await S3Scanner.getEdges!(connector);
   t.equal(edges.length, 0);

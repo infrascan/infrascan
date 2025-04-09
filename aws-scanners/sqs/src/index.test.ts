@@ -70,13 +70,6 @@ t.test(
     const listQueueTagArgs =
       mockedSQSClient.commandCalls(ListQueueTagsCommand)[0]?.args?.[0].input;
     t.equal(listQueueTagArgs.QueueUrl, queueUrl);
-
-    if (SQSScanner.getNodes != null) {
-      const nodes = await SQSScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, queueArn);
-      t.equal(nodes[0].name, queueArn);
-    }
   },
 );
 
@@ -101,9 +94,4 @@ t.test("No SQS queues returned from ListQueuesCommand", async () => {
   t.equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
   t.equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 0);
   t.equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 0);
-
-  if (SQSScanner.getNodes != null) {
-    const nodes = await SQSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 });

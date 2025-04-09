@@ -44,9 +44,6 @@ t.test(
       mockedSFNClient.commandCalls(DescribeStateMachineCommand).length,
       0,
     );
-
-    const nodes = await SFNScanner.getNodes!(connector, testContext);
-    t.equal(nodes.length, 0);
   },
 );
 
@@ -86,16 +83,6 @@ t.test("Pulls the state as expected for step functions", async () => {
 
   t.equal(mockedSFNClient.commandCalls(ListStateMachinesCommand).length, 1);
   t.equal(mockedSFNClient.commandCalls(DescribeStateMachineCommand).length, 1);
-
-  const nodes = await SFNScanner.getNodes!(connector, testContext);
-  t.equal(nodes.length, 1);
-  t.ok(
-    nodes.find(
-      (statefunc) =>
-        statefunc.id === testStateMachineArn &&
-        statefunc.name === testStateMachineName,
-    ),
-  );
 
   const roles = await SFNScanner.getIamRoles!(connector);
   t.equal(roles.length, 1);

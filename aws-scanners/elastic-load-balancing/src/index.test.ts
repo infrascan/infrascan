@@ -107,16 +107,6 @@ t.test(
       .commandCalls(DescribeRulesCommand)
       .at(0)?.args;
     t.equal(describeRulesArgs?.[0].input.ListenerArn, listenerArn);
-
-    if (ElasticLoadBalancingScanner.getNodes != null) {
-      const nodes = await ElasticLoadBalancingScanner.getNodes(
-        connector,
-        testContext,
-      );
-      t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, elbArn);
-      t.equal(nodes[0].name, elbName);
-    }
   },
 );
 
@@ -153,14 +143,6 @@ t.test(
     );
     t.equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 0);
     t.equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
-
-    if (ElasticLoadBalancingScanner.getNodes != null) {
-      const nodes = await ElasticLoadBalancingScanner.getNodes(
-        connector,
-        testContext,
-      );
-      t.equal(nodes.length, 0);
-    }
   },
 );
 
@@ -212,12 +194,4 @@ t.test("No Listeners returned from DescribeListenersCommand", async () => {
   t.equal(mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length, 1);
   t.equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 1);
   t.equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
-
-  if (ElasticLoadBalancingScanner.getNodes != null) {
-    const nodes = await ElasticLoadBalancingScanner.getNodes(
-      connector,
-      testContext,
-    );
-    t.equal(nodes.length, 1);
-  }
 });

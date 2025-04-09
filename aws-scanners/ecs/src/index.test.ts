@@ -111,48 +111,6 @@ t.test(
       1,
     );
 
-    if (ECSScanner.getNodes != null) {
-      const nodes = await ECSScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 4);
-      // successfully found cluster node
-      t.ok(
-        nodes.find(
-          (node) =>
-            node.id === clusterArn &&
-            node.type === "ECS-Cluster" &&
-            node.parent === `${testContext.account}-${testContext.region}`,
-        ),
-      );
-
-      // successfully found service node with cluster as parent
-      t.ok(
-        nodes.find(
-          (node) =>
-            node.id === serviceArn &&
-            node.parent === clusterArn &&
-            node.type === "ECS-Service",
-        ),
-      );
-      // successfully found task node with service as parent
-      t.ok(
-        nodes.find(
-          (node) =>
-            node.id === taskDefArn &&
-            node.parent === serviceArn &&
-            node.type === "ECS-Task",
-        ),
-      );
-      // successfully found task node with cluster as parent
-      t.ok(
-        nodes.find(
-          (node) =>
-            node.id === scheduledTaskDefArn &&
-            node.parent === clusterArn &&
-            node.type === "ECS-Task",
-        ),
-      );
-    }
-
     if (ECSScanner.getIamRoles != null) {
       const iamRoles = await ECSScanner.getIamRoles(connector);
       t.equal(iamRoles.length, 2);
@@ -204,11 +162,6 @@ t.test("No Clusters in the account, should skip subsequent calls", async () => {
     mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
     0,
   );
-
-  if (ECSScanner.getNodes != null) {
-    const nodes = await ECSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 
   if (ECSScanner.getIamRoles != null) {
     const iamRoles = await ECSScanner.getIamRoles(connector);
@@ -287,27 +240,6 @@ t.test("No Services defined in the ECS Cluster", async () => {
     1,
   );
 
-  if (ECSScanner.getNodes != null) {
-    const nodes = await ECSScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 2);
-    // successfully found cluster node
-    t.ok(
-      nodes.find(
-        (node) => node.id === clusterArn && node.type === "ECS-Cluster",
-      ),
-    );
-
-    // successfully found task node with cluster as parent
-    t.ok(
-      nodes.find(
-        (node) =>
-          node.id === scheduledTaskDefArn &&
-          node.parent === clusterArn &&
-          node.type === "ECS-Task",
-      ),
-    );
-  }
-
   if (ECSScanner.getIamRoles != null) {
     const iamRoles = await ECSScanner.getIamRoles(connector);
     t.equal(iamRoles.length, 2);
@@ -376,14 +308,6 @@ t.test("No Tasks found in the cluster", async () => {
     mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
     0,
   );
-
-  const nodes = await ECSScanner.getNodes!(connector, testContext);
-  t.equal(nodes.length, 1);
-  // successfully found cluster node
-  t.ok(
-    nodes.find((node) => node.id === clusterArn && node.type === "ECS-Cluster"),
-  );
-  console.log(nodes);
 
   const iamRoles = await ECSScanner.getIamRoles!(connector);
   t.equal(iamRoles.length, 0);

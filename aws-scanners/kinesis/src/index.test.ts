@@ -93,15 +93,6 @@ t.test(
       consumerPaginationToken,
     );
 
-    if (KinesisScanner.getNodes != null) {
-      const nodes = await KinesisScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 2);
-      t.equal(nodes[0].id, kinesisStreamArn);
-      t.equal(nodes[0].name, kinesisStreamName);
-      t.equal(nodes[1].id, consumerArn);
-      t.equal(nodes[1].name, consumerName);
-    }
-
     if (KinesisScanner.getEdges != null) {
       const edges = await KinesisScanner.getEdges(connector);
       t.equal(edges.length, 1);
@@ -134,9 +125,4 @@ t.test("No streams returned from ListStreamsCommand", async () => {
     mockedKinesisClient.commandCalls(ListStreamConsumersCommand).length,
     0,
   );
-
-  if (KinesisScanner.getNodes != null) {
-    const nodes = await KinesisScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
 });
