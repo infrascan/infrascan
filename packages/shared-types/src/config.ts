@@ -38,8 +38,6 @@ export type BaseScannerDefinition = {
   callPerRegion: boolean;
   // Scanner functions for pulling state from a service
   getters: BaseGetter[];
-  // Scrapers for pulling Nodes from service state
-  nodes?: GenericNodeSelector[];
   // Scrapers for pulling Edges from service state
   edges?: BaseEdgeResolver[];
   // Scrapers for pulling IAM Roles from service state, used to generate permission based edges
@@ -47,8 +45,10 @@ export type BaseScannerDefinition = {
 };
 
 type AsCommand<S extends string> = `${S}Command`;
-export type AvailableCommand<Serv extends object, Funcs extends string> =
-  AsCommand<Funcs> extends `${infer P}Command` & keyof Serv ? P : never;
+export type AvailableCommand<
+  Serv extends object,
+  Funcs extends string,
+> = AsCommand<Funcs> extends `${infer P}Command` & keyof Serv ? P : never;
 
 export type StateSelector<
   ServiceName extends string,
@@ -124,7 +124,6 @@ export type ScannerDefinition<
   skipClientBuilder?: boolean;
   callPerRegion: boolean;
   getters: ServiceGetter<ServiceName, Serv, Funcs>[];
-  nodes?: StateSelector<ServiceName, Serv, Funcs>[];
   edges?: EdgeSelector<ServiceName, Serv, Funcs>[];
   iamRoles?: StateSelector<ServiceName, Serv, Funcs>[];
 };

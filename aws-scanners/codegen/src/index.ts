@@ -48,7 +48,7 @@ export default async function generateScanner(
     }
   }
 
-  if (scannerDefinition.edges != null || scannerDefinition.nodes != null) {
+  if (scannerDefinition.edges != null) {
     const graphTargetPath = join(config.basePath, "generated/graph.ts");
     if (existsSync(graphTargetPath) && !config.overwrite) {
       console.warn(

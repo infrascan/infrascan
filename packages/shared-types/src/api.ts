@@ -133,7 +133,6 @@ export interface ServiceModule<
   getClient: ClientBuilder<T, P>;
   callPerRegion: boolean;
   getters: GetterFn<T, P>[];
-  nodes?: string[];
   getNodes?: GetNodeFn<P>;
   edges?: BaseEdgeResolver[];
   getEdges?: GetEdgeFn;

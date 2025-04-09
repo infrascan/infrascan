@@ -29,9 +29,6 @@ const Route53Scanner: ScannerDefinition<
       ],
     },
   ],
-  nodes: [
-    "Route53|ListResourceRecordSets|[]._result.ResourceRecordSets[?Type==`A`] | [].{id:Name,name:Name}",
-  ],
 };
 
 export default Route53Scanner;

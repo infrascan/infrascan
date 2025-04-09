@@ -15,7 +15,7 @@ import {
   GetBucketWebsite,
   GetBucketAcl,
 } from "./generated/getters";
-import { getNodes, getEdges } from "./generated/graph";
+import { getEdges } from "./generated/graph";
 import { registerMiddleware } from "./middleware";
 import { S3Entity } from "./graph";
 
@@ -47,7 +47,6 @@ const S3Scanner: ServiceModule<S3Client, "aws"> = {
     GetBucketWebsite,
     GetBucketAcl,
   ],
-  getNodes,
   getEdges,
   entities: [S3Entity],
 };

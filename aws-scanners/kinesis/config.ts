@@ -49,10 +49,6 @@ const KinesisScanner: ScannerDefinition<
       },
     },
   ],
-  nodes: [
-    "Kinesis|ListStreams|[]._result.StreamSummaries[].{id:StreamARN,name:StreamName}",
-    "Kinesis|ListStreamConsumers|[]._result.Consumers[].{id:ConsumerARN,name:ConsumerName}",
-  ],
   edges: [
     {
       state: "Kinesis|ListStreamConsumers|[]",

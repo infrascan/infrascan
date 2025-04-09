@@ -7,7 +7,6 @@ import {
   DescribeListeners,
   DescribeRules,
 } from "./generated/getters";
-import { getNodes } from "./generated/graph";
 import { getEdges } from "./edges";
 import { ElasticLoadBalancerEntity } from "./graph";
 
@@ -26,7 +25,6 @@ const ElasticLoadBalancingV2Scanner: ServiceModule<
     DescribeListeners,
     DescribeRules,
   ],
-  getNodes,
   getEdges,
   entities: [ElasticLoadBalancerEntity],
 };

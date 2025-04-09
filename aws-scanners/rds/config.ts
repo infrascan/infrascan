@@ -13,9 +13,6 @@ const RDSScanner: ScannerDefinition<"RDS", typeof RDS, RDSFunctions> = {
       fn: "DescribeDBInstances",
     },
   ],
-  nodes: [
-    "RDS|DescribeDBInstances|[]._result.DBInstances | [].{id:DBInstanceIdentifier,name:DBName}",
-  ],
 };
 
 export default RDSScanner;

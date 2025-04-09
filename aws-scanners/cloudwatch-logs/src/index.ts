@@ -5,7 +5,7 @@ import {
   DescribeLogGroups,
   DescribeSubscriptionFilters,
 } from "./generated/getters";
-import { getNodes, getEdges } from "./generated/graph";
+import { getEdges } from "./generated/graph";
 import { CloudwatchLogGroupEntity } from "./graph";
 
 const CloudWatchLogsScanner: ServiceModule<CloudWatchLogsClient, "aws"> = {
@@ -16,7 +16,6 @@ const CloudWatchLogsScanner: ServiceModule<CloudWatchLogsClient, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [DescribeLogGroups, DescribeSubscriptionFilters],
-  getNodes,
   getEdges,
   entities: [CloudwatchLogGroupEntity],
 };

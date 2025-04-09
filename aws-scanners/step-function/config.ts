@@ -27,9 +27,6 @@ const SFNScanner: ScannerDefinition<"SFN", typeof SFN, SFNFunctions> = {
       ],
     },
   ],
-  nodes: [
-    "SFN|DescribeStateMachine|[]._result.{id:stateMachineArn,name:name,rawState:@}",
-  ],
   iamRoles: [
     "SFN|DescribeStateMachine|[]._result.{roleArn:roleArn,executor:stateMachineArn}",
   ],

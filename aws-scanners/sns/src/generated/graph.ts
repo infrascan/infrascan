@@ -1,42 +1,14 @@
 import {
-  evaluateSelector,
-  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
 } from "@infrascan/core";
 import type {
   Connector,
-  AwsContext,
-  SelectedNode,
   SelectedEdge,
   SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 import debug from "debug";
-
-const nodesDebug = debug("sns:nodes");
-export async function getNodes(
-  stateConnector: Connector,
-  context: AwsContext,
-): Promise<SelectedNode[]> {
-  nodesDebug("Fetching nodes");
-  const state: SelectedNode[] = [];
-  nodesDebug(
-    "Evaluating SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
-  );
-  const ListTopicsNodes = await evaluateSelector<SelectedNode>(
-    context.account,
-    context.region,
-    "SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}: ${ListTopicsNodes.length} Nodes found`,
-  );
-  state.push(...ListTopicsNodes);
-
-  return state.map((node) => formatNode(node, "SNS", context, true));
-}
 
 const edgesDebug = debug("sns:edges");
 export async function getEdges(
