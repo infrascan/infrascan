@@ -28,7 +28,7 @@ export async function ListDistributions(
       _metadata: {
         account: context.account,
         region: context.region,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       _parameters: preparedParams,
       _result: result,

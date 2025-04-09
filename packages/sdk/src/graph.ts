@@ -48,7 +48,7 @@ export function buildAccountNode(account: string): BaseState {
     },
     $metadata: {
       version: "0.1.0",
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
     },
     tenant: {
       provider: "aws",
@@ -74,7 +74,7 @@ export function buildRegionNode(account: string, region: string): BaseState {
     },
     $metadata: {
       version: "0.1.0",
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
     },
     tenant: {
       provider: "aws",

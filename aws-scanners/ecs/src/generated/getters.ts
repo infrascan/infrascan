@@ -51,7 +51,7 @@ export async function ListClusters(
       _metadata: {
         account: context.account,
         region: context.region,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       _parameters: preparedParams,
       _result: result,
@@ -115,7 +115,7 @@ export async function DescribeClusters(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -168,7 +168,7 @@ export async function ListServices(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -225,7 +225,7 @@ export async function DescribeServices(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -277,7 +277,7 @@ export async function ListTasks(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -333,7 +333,7 @@ export async function DescribeTasks(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -391,7 +391,7 @@ export async function DescribeTaskDefinition(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,

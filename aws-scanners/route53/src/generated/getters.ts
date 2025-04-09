@@ -32,7 +32,7 @@ export async function ListHostedZonesByName(
       _metadata: {
         account: context.account,
         region: context.region,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       _parameters: preparedParams,
       _result: result,
@@ -88,7 +88,7 @@ export async function ListResourceRecordSets(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,

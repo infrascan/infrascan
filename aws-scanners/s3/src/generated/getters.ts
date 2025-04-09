@@ -41,7 +41,7 @@ export async function ListBuckets(
       _metadata: {
         account: context.account,
         region: context.region,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       _parameters: preparedParams,
       _result: result,
@@ -92,7 +92,7 @@ export async function GetBucketTagging(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -146,7 +146,7 @@ export async function GetBucketNotificationConfiguration(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -198,7 +198,7 @@ export async function GetBucketWebsite(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -250,7 +250,7 @@ export async function GetBucketAcl(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,

@@ -38,7 +38,7 @@ export async function ListStreams(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -100,7 +100,7 @@ export async function DescribeStreamSummary(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -159,7 +159,7 @@ export async function ListStreamConsumers(
           _metadata: {
             account: context.account,
             region: context.region,
-            timestamp: new Date().toISOString(),
+            timestamp: Date.now(),
           },
           _parameters: preparedParams,
           _result: result,

@@ -35,7 +35,7 @@ export async function ListQueues(
       _metadata: {
         account: context.account,
         region: context.region,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       _parameters: preparedParams,
       _result: result,
@@ -86,7 +86,7 @@ export async function ListQueueTags(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,
@@ -139,7 +139,7 @@ export async function GetQueueAttributes(
         _metadata: {
           account: context.account,
           region: context.region,
-          timestamp: new Date().toISOString(),
+          timestamp: Date.now(),
         },
         _parameters: preparedParams,
         _result: result,

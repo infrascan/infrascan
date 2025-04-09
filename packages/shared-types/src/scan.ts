@@ -4,7 +4,7 @@ export interface CommandCallMetadata {
   account: string;
   region: string;
   partition?: string;
-  timestamp: string;
+  timestamp: number;
 }
 
 export interface State<O, I = unknown> {
@@ -20,7 +20,10 @@ export type GenericState = State<unknown>;
  */
 export interface StateMetadata {
   version: string;
-  timestamp: string;
+  /**
+   * Epoch value (in ms)
+   */
+  timestamp: number;
 }
 
 /**

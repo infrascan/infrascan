@@ -3,14 +3,8 @@
   "version": "0.2.1",
   "description": "A graph serializer which produces nodes and edges compatible with Cytoscape.js",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "files": [
     "dist"
   ],
