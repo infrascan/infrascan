@@ -9,8 +9,10 @@ import {
   ListFunctionsCommand,
   GetFunctionCommand,
 } from "@aws-sdk/client-lambda";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import LambdaScanner from ".";
+import { LambdaFunction } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -22,7 +24,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Lambda, and formatted as expected",
-  async () => {
+  async ({ equal, ok }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -59,24 +61,45 @@ t.test(
       await scannerFn(lambdaClient, connector, testContext);
     }
 
-    t.equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
-    t.equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 1);
+    equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
+    equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 1);
 
     const getFunctionArgs = mockedLambdaClient
       .commandCalls(GetFunctionCommand)
       .at(0)?.args;
-    t.equal(getFunctionArgs?.[0].input.FunctionName, lambdaArn);
+    equal(getFunctionArgs?.[0].input.FunctionName, lambdaArn);
 
     if (LambdaScanner.getIamRoles != null) {
       const roles = await LambdaScanner.getIamRoles(connector);
-      t.equal(roles.length, 1);
-      t.equal(roles[0].roleArn, lambdaRole);
-      t.equal(roles[0].executor, lambdaArn);
+      equal(roles.length, 1);
+      equal(roles[0].roleArn, lambdaRole);
+      equal(roles[0].executor, lambdaArn);
+    }
+
+    for (const entity of LambdaScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        equal(node.iam?.roles[0].arn, lambdaRole);
+        ok((node as unknown as LambdaFunction).lambda);
+      }
     }
   },
 );
 
-t.test("No functions returned from ListFunctionsCommand", async () => {
+t.test("No functions returned from ListFunctionsCommand", async ({ equal }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -94,6 +117,6 @@ t.test("No functions returned from ListFunctionsCommand", async () => {
     await scannerFn(lambdaClient, connector, testContext);
   }
 
-  t.equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
-  t.equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 0);
+  equal(mockedLambdaClient.commandCalls(ListFunctionsCommand).length, 1);
+  equal(mockedLambdaClient.commandCalls(GetFunctionCommand).length, 0);
 });

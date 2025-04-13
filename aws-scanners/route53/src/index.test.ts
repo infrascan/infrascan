@@ -9,8 +9,10 @@ import {
   ListHostedZonesByNameCommand,
   ListResourceRecordSetsCommand,
 } from "@aws-sdk/client-route-53";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import Route53Scanner from ".";
+import { Route53Record } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -22,7 +24,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Route53, and formatted as expected",
-  async () => {
+  async ({ equal, ok }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -97,12 +99,12 @@ t.test(
       await scannerFn(route53Client, connector, testContext);
     }
 
-    t.equal(
+    equal(
       mockedRoute53Client.commandCalls(ListHostedZonesByNameCommand).length,
       1,
     );
 
-    t.equal(
+    equal(
       mockedRoute53Client.commandCalls(ListResourceRecordSetsCommand).length,
       1,
     );
@@ -110,7 +112,7 @@ t.test(
     const listResourceRecordSets = mockedRoute53Client
       .commandCalls(ListResourceRecordSetsCommand)
       .at(0)?.args;
-    t.equal(listResourceRecordSets?.[0].input.HostedZoneId, hostedZoneId);
+    equal(listResourceRecordSets?.[0].input.HostedZoneId, hostedZoneId);
 
     connector.onServiceScanCompleteCallback(
       testContext.account,
@@ -136,14 +138,35 @@ t.test(
     // TODO; have a better way to seed/use fixtures for cross-service edges
     if (Route53Scanner.getEdges != null) {
       const edges = await Route53Scanner.getEdges(connector);
-      t.equal(edges.length, 0);
+      equal(edges.length, 0);
+    }
+
+    for (const entity of Route53Scanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        equal(node.dns?.domains.length, 1);
+        ok((node as unknown as Route53Record).route53);
+      }
     }
   },
 );
 
 t.test(
   "No hosted zones returned from ListHostedZonesByNameCommand",
-  async () => {
+  async ({ equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -161,12 +184,12 @@ t.test(
       await scannerFn(route53Client, connector, testContext);
     }
 
-    t.equal(
+    equal(
       mockedRoute53Client.commandCalls(ListHostedZonesByNameCommand).length,
       1,
     );
 
-    t.equal(
+    equal(
       mockedRoute53Client.commandCalls(ListResourceRecordSetsCommand).length,
       0,
     );
@@ -174,7 +197,7 @@ t.test(
     // TODO; have a better way to seed/use fixtures for cross-service edges
     if (Route53Scanner.getEdges != null) {
       const edges = await Route53Scanner.getEdges(connector);
-      t.equal(edges.length, 0);
+      equal(edges.length, 0);
     }
   },
 );

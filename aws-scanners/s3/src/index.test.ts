@@ -12,6 +12,7 @@ import {
   GetBucketWebsiteCommand,
   GetBucketAclCommand,
 } from "@aws-sdk/client-s3";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import S3Scanner from ".";
 
@@ -25,7 +26,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from RDS, and formatted as expected",
-  async () => {
+  async ({ equal, ok }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -75,39 +76,58 @@ t.test(
       await scannerFn(s3Client, connector, testContext);
     }
 
-    t.equal(mockedS3Client.commandCalls(ListBucketsCommand).length, 1);
-    t.equal(mockedS3Client.commandCalls(GetBucketTaggingCommand).length, 1);
-    t.equal(
+    equal(mockedS3Client.commandCalls(ListBucketsCommand).length, 1);
+    equal(mockedS3Client.commandCalls(GetBucketTaggingCommand).length, 1);
+    equal(
       mockedS3Client.commandCalls(GetBucketNotificationConfigurationCommand)
         .length,
       1,
     );
-    t.equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 1);
-    t.equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 1);
+    equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 1);
+    equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 1);
 
     const edges = await S3Scanner.getEdges!(connector);
-    t.equal(edges.length, 3);
+    equal(edges.length, 3);
 
-    t.ok(
+    ok(
       edges.find(
         (edge) => edge.source === bucketArn && edge.target === snsTopicArn,
       ),
     );
-    t.ok(
+    ok(
       edges.find(
         (edge) => edge.source === bucketArn && edge.target === sqsQueueArn,
       ),
     );
-    t.ok(
+    ok(
       edges.find(
         (edge) =>
           edge.source === bucketArn && edge.target === lambdaFunctionArn,
       ),
     );
+
+    for (const entity of S3Scanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+      }
+    }
   },
 );
 
-t.test("No Buckets returned from ListBucketsCommand", async () => {
+t.test("No Buckets returned from ListBucketsCommand", async ({ equal, ok }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -125,16 +145,16 @@ t.test("No Buckets returned from ListBucketsCommand", async () => {
     await scannerFn(s3Client, connector, testContext);
   }
 
-  t.equal(mockedS3Client.commandCalls(ListBucketsCommand).length, 1);
-  t.equal(mockedS3Client.commandCalls(GetBucketTaggingCommand).length, 0);
-  t.equal(
+  equal(mockedS3Client.commandCalls(ListBucketsCommand).length, 1);
+  equal(mockedS3Client.commandCalls(GetBucketTaggingCommand).length, 0);
+  equal(
     mockedS3Client.commandCalls(GetBucketNotificationConfigurationCommand)
       .length,
     0,
   );
-  t.equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 0);
-  t.equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 0);
+  equal(mockedS3Client.commandCalls(GetBucketWebsiteCommand).length, 0);
+  equal(mockedS3Client.commandCalls(GetBucketAclCommand).length, 0);
 
   const edges = await S3Scanner.getEdges!(connector);
-  t.equal(edges.length, 0);
+  equal(edges.length, 0);
 });

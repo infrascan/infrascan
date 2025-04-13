@@ -13,9 +13,12 @@ import {
   ListTasksCommand,
   DescribeTasksCommand,
   DescribeTaskDefinitionCommand,
+  DescribeClustersCommandInput,
 } from "@aws-sdk/client-ecs";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import ECSScanner from ".";
+import { ECSState } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -27,7 +30,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from ECS, and formatted as expected",
-  async () => {
+  async ({ ok, equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -100,21 +103,21 @@ t.test(
       await scannerFn(ecsClient, connector, testContext);
     }
 
-    t.equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
-    t.equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
-    t.equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
-    t.equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 1);
-    t.equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
-    t.equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 1);
-    t.equal(
+    equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 1);
+    equal(
       mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
       1,
     );
 
     if (ECSScanner.getIamRoles != null) {
       const iamRoles = await ECSScanner.getIamRoles(connector);
-      t.equal(iamRoles.length, 2);
-      t.ok(
+      equal(iamRoles.length, 2);
+      ok(
         iamRoles.find(
           (role) =>
             role.executor === scheduledTaskDefArn &&
@@ -122,7 +125,7 @@ t.test(
         ),
       );
 
-      t.ok(
+      ok(
         iamRoles.find(
           (role) =>
             role.executor === scheduledTaskDefArn &&
@@ -130,46 +133,69 @@ t.test(
         ),
       );
     }
+
+    for (const entity of ECSScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        ok((node as unknown as ECSState<unknown>).ecs);
+      }
+    }
   },
 );
 
-t.test("No Clusters in the account, should skip subsequent calls", async () => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ecsClient = ECSScanner.getClient(fromProcess(), testContext);
+t.test(
+  "No Clusters in the account, should skip subsequent calls",
+  async ({ equal }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ecsClient = ECSScanner.getClient(fromProcess(), testContext);
 
-  const mockedEcsClient = mockClient(ecsClient);
+    const mockedEcsClient = mockClient(ecsClient);
 
-  // Mock each of the functions used to pull state
-  mockedEcsClient.on(ListClustersCommand).resolves({
-    clusterArns: [],
-  });
+    // Mock each of the functions used to pull state
+    mockedEcsClient.on(ListClustersCommand).resolves({
+      clusterArns: [],
+    });
 
-  for (const scannerFn of ECSScanner.getters) {
-    await scannerFn(ecsClient, connector, testContext);
-  }
+    for (const scannerFn of ECSScanner.getters) {
+      await scannerFn(ecsClient, connector, testContext);
+    }
 
-  t.equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 0);
-  t.equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 0);
-  // Scanner should skip ListServices if no services given
-  t.equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
-  t.equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 0);
-  t.equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 0);
-  t.equal(
-    mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
-    0,
-  );
+    equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
+    equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 0);
+    equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 0);
+    // Scanner should skip ListServices if no services given
+    equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
+    equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 0);
+    equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 0);
+    equal(
+      mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
+      0,
+    );
 
-  if (ECSScanner.getIamRoles != null) {
-    const iamRoles = await ECSScanner.getIamRoles(connector);
-    t.equal(iamRoles.length, 0);
-  }
-});
+    if (ECSScanner.getIamRoles != null) {
+      const iamRoles = await ECSScanner.getIamRoles(connector);
+      equal(iamRoles.length, 0);
+    }
+  },
+);
 
-t.test("No Services defined in the ECS Cluster", async () => {
+t.test("No Services defined in the ECS Cluster", async ({ equal, ok }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -228,29 +254,26 @@ t.test("No Services defined in the ECS Cluster", async () => {
     await scannerFn(ecsClient, connector, testContext);
   }
 
-  t.equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
   // Scanner should skip ListServices if no services given
-  t.equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
-  t.equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 1);
-  t.equal(
-    mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
-    1,
-  );
+  equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
+  equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length, 1);
 
   if (ECSScanner.getIamRoles != null) {
     const iamRoles = await ECSScanner.getIamRoles(connector);
-    t.equal(iamRoles.length, 2);
-    t.ok(
+    equal(iamRoles.length, 2);
+    ok(
       iamRoles.find(
         (role) =>
           role.executor === scheduledTaskDefArn && role.roleArn === taskRoleArn,
       ),
     );
 
-    t.ok(
+    ok(
       iamRoles.find(
         (role) =>
           role.executor === scheduledTaskDefArn &&
@@ -260,7 +283,7 @@ t.test("No Services defined in the ECS Cluster", async () => {
   }
 });
 
-t.test("No Tasks found in the cluster", async () => {
+t.test("No Tasks found in the cluster", async ({ equal }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -297,18 +320,15 @@ t.test("No Tasks found in the cluster", async () => {
     await scannerFn(ecsClient, connector, testContext);
   }
 
-  t.equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(ListClustersCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(DescribeClustersCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(ListServicesCommand).length, 1);
   // Scanner should skip ListServices if no services given
-  t.equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
-  t.equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
-  t.equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 0);
-  t.equal(
-    mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length,
-    0,
-  );
+  equal(mockedEcsClient.commandCalls(DescribeServicesCommand).length, 0);
+  equal(mockedEcsClient.commandCalls(ListTasksCommand).length, 1);
+  equal(mockedEcsClient.commandCalls(DescribeTasksCommand).length, 0);
+  equal(mockedEcsClient.commandCalls(DescribeTaskDefinitionCommand).length, 0);
 
   const iamRoles = await ECSScanner.getIamRoles!(connector);
-  t.equal(iamRoles.length, 0);
+  equal(iamRoles.length, 0);
 });

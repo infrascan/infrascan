@@ -75,7 +75,7 @@ export const SNSTopicEntity: TranslatedEntity<
   translate(val) {
     return [
       {
-        ...val._result,
+        ...(val._result.Attributes ?? {}),
         $metadata: val._metadata,
         $parameters: val._parameters,
       },

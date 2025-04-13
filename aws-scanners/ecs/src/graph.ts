@@ -207,8 +207,8 @@ export const ServiceEntity: TranslatedEntity<
       return {
         id: val.serviceArn!,
         name: val.serviceName!,
-        category: "ecs",
-        subcategory: "service",
+        category: ServiceEntity.category,
+        subcategory: ServiceEntity.subcategory,
       };
     },
     ecs(val) {

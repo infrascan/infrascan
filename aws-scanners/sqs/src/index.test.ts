@@ -10,8 +10,10 @@ import {
   ListQueueTagsCommand,
   GetQueueAttributesCommand,
 } from "@aws-sdk/client-sqs";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import SQSScanner from ".";
+import { SQSSchema } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -23,7 +25,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from SQS, and formatted as expected",
-  async () => {
+  async ({ equal, ok }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -57,41 +59,64 @@ t.test(
       await scannerFn(sqsClient, connector, testContext);
     }
 
-    t.equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
-    t.equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 1);
-    t.equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 1);
+    equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
+    equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 1);
+    equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 1);
 
     const getAttributesArgs = mockedSQSClient.commandCalls(
       GetQueueAttributesCommand,
     )[0]?.args?.[0].input;
-    t.equal(getAttributesArgs.QueueUrl, queueUrl);
-    t.equal(getAttributesArgs.AttributeNames?.[0], "All");
+    equal(getAttributesArgs.QueueUrl, queueUrl);
+    equal(getAttributesArgs.AttributeNames?.[0], "All");
 
     const listQueueTagArgs =
       mockedSQSClient.commandCalls(ListQueueTagsCommand)[0]?.args?.[0].input;
-    t.equal(listQueueTagArgs.QueueUrl, queueUrl);
+    equal(listQueueTagArgs.QueueUrl, queueUrl);
+
+    for (const entity of SQSScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        ok((node as unknown as SQSSchema).sqs);
+      }
+    }
   },
 );
 
-t.test("No SQS queues returned from ListQueuesCommand", async () => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const sqsClient = SQSScanner.getClient(fromProcess(), testContext);
+t.test(
+  "No SQS queues returned from ListQueuesCommand",
+  async ({ equal, ok }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const sqsClient = SQSScanner.getClient(fromProcess(), testContext);
 
-  const mockedSQSClient = mockClient(sqsClient);
+    const mockedSQSClient = mockClient(sqsClient);
 
-  // Mock each of the functions used to pull state
-  mockedSQSClient.on(ListQueuesCommand).resolves({
-    QueueUrls: [],
-  });
+    // Mock each of the functions used to pull state
+    mockedSQSClient.on(ListQueuesCommand).resolves({
+      QueueUrls: [],
+    });
 
-  for (const scannerFn of SQSScanner.getters) {
-    await scannerFn(sqsClient, connector, testContext);
-  }
+    for (const scannerFn of SQSScanner.getters) {
+      await scannerFn(sqsClient, connector, testContext);
+    }
 
-  t.equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
-  t.equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 0);
-  t.equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 0);
-});
+    equal(mockedSQSClient.commandCalls(ListQueuesCommand).length, 1);
+    equal(mockedSQSClient.commandCalls(ListQueueTagsCommand).length, 0);
+    equal(mockedSQSClient.commandCalls(GetQueueAttributesCommand).length, 0);
+  },
+);

@@ -7,8 +7,6 @@ import type {
   SelectedEdge,
   Graph,
   BaseState,
-  Writable,
-  Node,
 } from "@infrascan/shared-types";
 import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";

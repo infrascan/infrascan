@@ -66,7 +66,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.logGroupArn!,
+        id: (val.logGroupArn ?? val.arn)!,
         label: val.logGroupName!,
         nodeType: CloudwatchLogGroupEntity.nodeType,
       };

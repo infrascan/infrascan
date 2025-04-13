@@ -9,6 +9,8 @@ import type {
   SelectedEdgeTarget,
   TimeUnit,
   SizeUnit,
+  TranslatedEntity,
+  BaseState,
 } from "@infrascan/shared-types";
 
 export * from "./graph";
@@ -156,4 +158,20 @@ export function formatS3NodeId(id: string): string {
 
 export function toLowerCase<T extends string>(val: T): Lowercase<T> {
   return val.toLowerCase() as Lowercase<T>;
+}
+
+export async function* generateNodesFromEntity<
+  E extends TranslatedEntity<BaseState, any, any>,
+>(connector: Connector, context: AwsContext, entity: E) {
+  const retrievedState = await entity.getState(connector, context);
+  const preparedState = retrievedState.flatMap((stateEntry) =>
+    entity.translate(stateEntry),
+  );
+  const components = Object.entries(entity.components);
+  for (const value of preparedState) {
+    const node = Object.fromEntries(
+      components.map(([label, factory]) => [label, factory(value)]),
+    ) as unknown as BaseState;
+    yield node;
+  }
 }
