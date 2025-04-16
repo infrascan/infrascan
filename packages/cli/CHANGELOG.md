@@ -1,5 +1,19 @@
 # @infrascan/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- [#89](https://github.com/infrascan/infrascan/pull/89) [`913867b73a72791c79a69ebfec8bf94331654c1d`](https://github.com/infrascan/infrascan/commit/913867b73a72791c79a69ebfec8bf94331654c1d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update CLI to use new scanners, adopting breaking change in graph output
+
+### Patch Changes
+
+- Updated dependencies [[`913867b73a72791c79a69ebfec8bf94331654c1d`](https://github.com/infrascan/infrascan/commit/913867b73a72791c79a69ebfec8bf94331654c1d)]:
+  - @infrascan/cytoscape-serializer@0.3.0
+  - @infrascan/fs-connector@0.3.0
+  - @infrascan/aws@0.5.0
+  - @infrascan/sdk@0.5.0
+
 ## 0.5.0
 
 ### Minor Changes

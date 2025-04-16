@@ -16,7 +16,7 @@
     "ejs": "^3.1.9"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.5.0",
+    "@infrascan/shared-types": "^0.6.0",
     "@infrascan/tsconfig": "*",
     "@types/ejs": "^3.1.5",
     "@types/node": "^20.3.1",

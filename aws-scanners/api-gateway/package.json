@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-api-gateway-scanner",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Infrascan scanner definition for AWS Api Gateway",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -44,8 +44,8 @@
     "@aws-sdk/credential-providers": "3.624.0",
     "@aws-sdk/types": "3.609.0",
     "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/fs-connector": "^0.2.2",
-    "@infrascan/shared-types": "^0.5.1",
+    "@infrascan/fs-connector": "^0.3.0",
+    "@infrascan/shared-types": "^0.6.0",
     "@infrascan/tsconfig": "*",
     "@types/debug": "^4",
     "aws-sdk-client-mock": "^3.0.0",
@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-apigatewayv2": "3.624.0",
-    "@infrascan/core": "0.4.1",
+    "@infrascan/core": "0.5.0",
     "debug": "^4"
   }
 }
