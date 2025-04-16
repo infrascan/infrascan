@@ -28,7 +28,11 @@ export async function GetApis(
     const cmd = new GetApisCommand(preparedParams);
     const result: GetApisCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -65,7 +69,11 @@ export async function GetDomainNames(
     const cmd = new GetDomainNamesCommand(preparedParams);
     const result: GetDomainNamesCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });

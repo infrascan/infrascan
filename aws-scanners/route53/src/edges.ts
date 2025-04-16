@@ -24,7 +24,10 @@ import type {
   Subscription,
 } from "@aws-sdk/client-sns";
 
-import type { GetBucketWebsiteOutput } from "@aws-sdk/client-s3";
+import type {
+  GetBucketWebsiteCommandInput,
+  GetBucketWebsiteOutput,
+} from "@aws-sdk/client-s3";
 import type { Connector, State, SelectedEdge } from "@infrascan/shared-types";
 
 type AliasRecordsByService = {
@@ -96,15 +99,20 @@ export async function resolveS3Edges(
   s3ConnectedDomains: ResourceRecordSet[],
   stateConnector: Connector,
 ): Promise<SelectedEdge[]> {
-  const s3State: State<GetBucketWebsiteOutput[]>[] =
-    await evaluateSelectorGlobally("S3|GetBucketWebsite|[]", stateConnector);
+  const s3State: State<
+    GetBucketWebsiteOutput[],
+    GetBucketWebsiteCommandInput
+  >[] = await evaluateSelectorGlobally(
+    "S3|GetBucketWebsite|[]",
+    stateConnector,
+  );
 
   return s3ConnectedDomains
     .map(({ Name }) => {
       const s3Bucket = s3State.find(
-        ({ _parameters }) => `${_parameters.Bucket}.` === Name,
+        ({ _parameters }) => `${_parameters?.Bucket}.` === Name,
       );
-      if (s3Bucket && Name) {
+      if (s3Bucket && Name && s3Bucket._parameters?.Bucket) {
         /* eslint-disable no-underscore-dangle */
         const formattedS3Arn = formatS3NodeId(s3Bucket._parameters.Bucket);
         return formatEdge(Name, { name: Name, target: formattedS3Arn });

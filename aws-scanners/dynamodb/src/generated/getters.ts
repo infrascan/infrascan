@@ -29,7 +29,11 @@ export async function ListTables(
     const cmd = new ListTablesCommand(preparedParams);
     const result: ListTablesCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -79,7 +83,11 @@ export async function DescribeTable(
       const cmd = new DescribeTableCommand(preparedParams);
       const result: DescribeTableCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

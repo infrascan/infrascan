@@ -1,57 +1,15 @@
-<%_ const hasNodes = locals.nodes && locals.nodes.length > 0; -%>
-<%_ const hasEdges = locals.edges && locals.edges.length > 0; -%>
 import { 
-<%_ if(hasNodes) { -%>
-    evaluateSelector, 
-    formatNode,
-<%_ } -%>
-<%_ if(hasEdges) { -%>
     evaluateSelectorGlobally, 
     filterState, 
     formatEdge
-<%_ } -%>
 } from "@infrascan/core";
 import type { 
     Connector,
-    AwsContext,
-<%_ if(hasNodes) { -%>
-    SelectedNode, 
-<%_ } -%>
-<%_ if(hasEdges) { -%>
     SelectedEdge,
     SelectedEdgeTarget
-<%_ } -%>
 } from "@infrascan/shared-types";
 import debug from "debug";
 
-<%_ if(hasNodes){ -%>
-const nodesDebug = debug("<%= service %>:nodes");
-export async function getNodes(stateConnector: Connector, context: AwsContext): Promise<SelectedNode[]> {
-    nodesDebug("Fetching nodes");
-    const state: SelectedNode[] = [];
-    <%_ let lastVariable = null; -%>
-    <%_ locals.nodes.forEach((nodeSelector, idx) => { -%>
-    <%_ const fnLabel = nodeSelector.split('|')[1]; -%>
-    <%_ let nodesVariable = `${fnLabel}Nodes`; -%>
-    <%_ if(nodesVariable === lastVariable) { -%>
-    <%_      nodesVariable += idx; -%>
-    <%_ } -%>
-    <%_ const escapedSelector = nodeSelector.replaceAll('`', "\\`"); -%>
-    nodesDebug("Evaluating <%- nodeSelector %>");
-    const <%= nodesVariable %> = await evaluateSelector(context.account, context.region, "<%- nodeSelector %>", stateConnector);
-    nodesDebug(`Evaluated <%- escapedSelector %>: ${<%= nodesVariable %>.length} Nodes found`);
-    state.push(...<%= nodesVariable %>);
-    <%_ lastVariable = nodesVariable; -%>
-    <% }); %>
-    return state.map((node) => formatNode(
-        node, 
-        "<%= key %>", 
-        context, 
-        <%= callPerRegion %>
-    ));
-}
-<%_ } -%>
-<% if(hasEdges){ %>
 const edgesDebug = debug("<%= service %>:edges");
 export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[]> {
     edgesDebug("Fetching edges");
@@ -81,4 +39,3 @@ export async function getEdges(stateConnector: Connector): Promise<SelectedEdge[
     <%_ }); -%>
     return edges;
 }
-<% } %>

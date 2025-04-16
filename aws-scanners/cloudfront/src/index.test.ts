@@ -7,6 +7,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import { ListDistributionsCommand } from "@aws-sdk/client-cloudfront";
 import buildFsConnector from "@infrascan/fs-connector";
+import { generateNodesFromEntity } from "@infrascan/core";
 import CloudfrontScanner from ".";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
@@ -19,7 +20,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Cloudfront, and formatted as expected",
-  async () => {
+  async ({ ok, equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -33,49 +34,48 @@ t.test(
 
     // Mock each of the functions used to pull state
     const distributionArn = "arn:aws:0000000:us-east-1:cloudfront:distribution";
+    const mockDistribution = {
+      Id: "",
+      ARN: distributionArn,
+      Status: "",
+      LastModifiedTime: new Date(),
+      DomainName: "foo.com",
+      Aliases: {
+        Quantity: 0,
+      },
+      Origins: {
+        Quantity: 0,
+        Items: [],
+      },
+      DefaultCacheBehavior: {
+        TargetOriginId: "",
+        ViewerProtocolPolicy: "",
+      },
+      CacheBehaviors: {
+        Quantity: 0,
+      },
+      CustomErrorResponses: {
+        Quantity: 0,
+      },
+      Comment: "",
+      PriceClass: "",
+      Enabled: true,
+      ViewerCertificate: {},
+      Staging: false,
+      Restrictions: {
+        GeoRestriction: { RestrictionType: "", Quantity: 0 },
+      },
+      WebACLId: "",
+      HttpVersion: "",
+      IsIPV6Enabled: true,
+    };
     mockedCloudfrontClient.on(ListDistributionsCommand).resolves({
       DistributionList: {
         Marker: "",
         MaxItems: 10,
         Quantity: 1,
         IsTruncated: false,
-        Items: [
-          {
-            Id: "",
-            ARN: distributionArn,
-            Status: "",
-            LastModifiedTime: new Date(),
-            DomainName: "",
-            Aliases: {
-              Quantity: 0,
-            },
-            Origins: {
-              Quantity: 0,
-              Items: [],
-            },
-            DefaultCacheBehavior: {
-              TargetOriginId: "",
-              ViewerProtocolPolicy: "",
-            },
-            CacheBehaviors: {
-              Quantity: 0,
-            },
-            CustomErrorResponses: {
-              Quantity: 0,
-            },
-            Comment: "",
-            PriceClass: "",
-            Enabled: true,
-            ViewerCertificate: {},
-            Staging: false,
-            Restrictions: {
-              GeoRestriction: { RestrictionType: "", Quantity: 0 },
-            },
-            WebACLId: "",
-            HttpVersion: "",
-            IsIPV6Enabled: true,
-          },
-        ],
+        Items: [mockDistribution],
       },
     });
 
@@ -88,12 +88,27 @@ t.test(
     const callCount = mockedCloudfrontClient.commandCalls(
       ListDistributionsCommand,
     ).length;
-    t.equal(callCount, 1);
+    equal(callCount, 1);
 
-    if (CloudfrontScanner.getNodes != null) {
-      const nodes = await CloudfrontScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.ok(nodes.find((node) => node.id === distributionArn));
+    for (const entity of CloudfrontScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        equal(node.dns?.domains.length, 1);
+        equal(node.dns?.domains[0], mockDistribution.DomainName);
+      }
     }
   },
 );

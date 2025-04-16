@@ -31,9 +31,6 @@ const LambdaScanner: ScannerDefinition<
       ],
     },
   ],
-  nodes: [
-    "Lambda|ListFunctions|[]._result.Functions[].{id: FunctionArn,name:FunctionName}",
-  ],
   iamRoles: [
     "Lambda|GetFunction|[]._result.Configuration | [].{roleArn:Role,executor:FunctionArn}",
   ],

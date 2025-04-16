@@ -6,8 +6,8 @@ import {
   ListQueueTags,
   GetQueueAttributes,
 } from "./generated/getters";
-import { getNodes } from "./generated/graph";
 import { getEdges } from "./edges";
+import { SQSEntity } from "./graph";
 
 const SQSScanner: ServiceModule<SQSClient, "aws"> = {
   provider: "aws",
@@ -16,8 +16,8 @@ const SQSScanner: ServiceModule<SQSClient, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [ListQueues, ListQueueTags, GetQueueAttributes],
-  getNodes,
   getEdges,
+  entities: [SQSEntity],
 };
 
 export default SQSScanner;

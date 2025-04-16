@@ -5,6 +5,7 @@ module.exports = {
     "no-console": "off",
     "no-undef-init": "off",
     "no-await-in-loop": "off",
+    "no-underscore-dangle": "off",
     "no-restricted-syntax": [
       "warn",
       "ForInStatement",

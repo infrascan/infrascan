@@ -5,10 +5,8 @@ import type { Graph } from "@infrascan/shared-types";
  */
 export type CytoscapeNode = {
   group: "nodes";
-  id: string;
   data: {
     id: string;
-    type: string;
     /**
      * Parent node (account, region etc)
      */
@@ -16,8 +14,6 @@ export type CytoscapeNode = {
     name?: string;
     service?: string;
   };
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  metadata?: any;
 };
 
 /**
@@ -28,7 +24,6 @@ export type CytoscapeEdge = {
   /**
    * Unique ID for the edge
    */
-  id?: string;
   data: {
     id: string;
     name: string;
@@ -40,13 +35,6 @@ export type CytoscapeEdge = {
      * Target Node
      */
     target: string;
-    type: string;
-  };
-  metadata?: {
-    label: string;
-    roleArn?: string;
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    statement?: any;
   };
 };
 
@@ -61,32 +49,32 @@ export type EdgeTarget = {
 };
 
 export function serializeGraph(graph: Graph): CytoscapeGraph[] {
-  const nodes: CytoscapeNode[] = graph.nodes.map((node) => ({
-    group: "nodes",
-    id: node.id,
-    data: {
-      id: node.id,
-      parent: typeof node.parent === "string" ? node.parent : node.parent?.id,
-      name: node.name,
-      service: node.service as string,
-      type: node.type ?? node.service ?? "node",
-    },
-    metadata: node.metadata,
-  }));
+  const nodes: CytoscapeNode[] = graph.nodes.map((node) => {
+    const {
+      parent,
+      incomingEdges,
+      outgoingEdges,
+      children,
+      ...structuredNode
+    } = node;
+    return {
+      group: "nodes",
+      data: Object.assign(structuredNode, {
+        id: node.$graph.id,
+        parent: node.$graph.parent,
+        name: node.$graph.label,
+      }),
+    };
+  });
 
   const edges: CytoscapeEdge[] = graph.edges.map((edge) => ({
     group: "edges",
-    id: edge.id,
     data: {
       id: edge.id,
       name: edge.name as string,
-      source: edge.source.id,
-      target: edge.target.id,
-      type: "edge",
-    },
-    metadata: {
-      label: edge.target.name,
-      ...edge.metadata,
+      source: edge.source.$graph.id,
+      target: edge.target.$graph.id,
+      metadata: edge.metadata,
     },
   }));
 

@@ -5,6 +5,9 @@ import {
   ListStreamsCommand,
   ListStreamsCommandInput,
   ListStreamsCommandOutput,
+  DescribeStreamSummaryCommand,
+  DescribeStreamSummaryCommandInput,
+  DescribeStreamSummaryCommandOutput,
   ListStreamConsumersCommand,
   ListStreamConsumersCommandInput,
   ListStreamConsumersCommandOutput,
@@ -32,7 +35,11 @@ export async function ListStreams(
       const cmd = new ListStreamsCommand(preparedParams);
       const result: ListStreamsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -61,6 +68,61 @@ export async function ListStreams(
     context.region,
     "Kinesis",
     "ListStreams",
+    state,
+  );
+}
+export async function DescribeStreamSummary(
+  client: KinesisClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("kinesis:DescribeStreamSummary");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [
+    {
+      Key: "StreamARN",
+      Selector: "Kinesis|ListStreams|[]._result.StreamSummaries[].StreamARN",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as DescribeStreamSummaryCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: DescribeStreamSummaryCommandInput = parameters;
+    try {
+      const cmd = new DescribeStreamSummaryCommand(preparedParams);
+      const result: DescribeStreamSummaryCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+    } catch (err: unknown) {
+      if (err instanceof KinesisServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+    }
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "Kinesis",
+    "DescribeStreamSummary",
     state,
   );
 }
@@ -94,7 +156,11 @@ export async function ListStreamConsumers(
         const cmd = new ListStreamConsumersCommand(preparedParams);
         const result: ListStreamConsumersCommandOutput = await client.send(cmd);
         state.push({
-          _metadata: { account: context.account, region: context.region },
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: Date.now(),
+          },
           _parameters: preparedParams,
           _result: result,
         });

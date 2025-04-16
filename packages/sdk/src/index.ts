@@ -6,8 +6,9 @@ import type {
   GraphPlugin,
   GraphSerializer,
   SelectedEdge,
+  BaseState,
 } from "@infrascan/shared-types";
-import { Graph } from "@infrascan/core";
+import { Graph, generateNodesFromEntity } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "aws/helpers/iam";
 import {
@@ -21,8 +22,6 @@ import {
 } from "./scan";
 
 import {
-  AWS_ACCOUNT_SERVICE_KEY,
-  AWS_REGION_SERVICE_KEY,
   addEdgeToGraphUnchecked,
   addNodeToGraphUnchecked,
   buildAccountNode,
@@ -255,69 +254,63 @@ export default class Infrascan {
     for (const { account, regions, defaultRegion } of metadataList) {
       const context = { account, region: defaultRegion };
       const accountNode = buildAccountNode(account);
-      addNodeToGraphUnchecked(graph, accountNode, AWS_ACCOUNT_SERVICE_KEY);
+      addNodeToGraphUnchecked(graph, accountNode);
 
       for (const serviceScanner of globalServiceEntries) {
-        if (serviceScanner.getNodes != null) {
-          const serviceNodeIds: string[] = [];
-          console.log(`Getting Nodes: ${serviceScanner.service}`);
-          const scannerNodes = await serviceScanner.getNodes(
+        const serviceNodeIds: string[] = [];
+        console.log(`Getting Nodes: ${serviceScanner.service}`);
+        for (const graphableEntity of serviceScanner.entities ?? []) {
+          const nodeProducer = generateNodesFromEntity(
             connector,
             context,
+            graphableEntity,
           );
-          scannerNodes.forEach((node) => {
-            addNodeToGraphUnchecked(graph, node, serviceScanner.service);
-            serviceNodeIds.push(node.id);
-          });
-          serviceNodeMap[
-            serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
-          ] = serviceNodeIds;
-          for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
-            console.log(`Running ${id} onServiceComplete`);
-            await handler(graph, serviceScanner.service, context);
+          for await (const node of nodeProducer) {
+            addNodeToGraphUnchecked(graph, node);
+            serviceNodeIds.push(node.$graph.id);
+            serviceNodeMap[
+              serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
+            ] = serviceNodeIds;
           }
+        }
+        for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
+          console.log(`Running ${id} onServiceComplete`);
+          await handler(graph, serviceScanner.service, context);
         }
       }
 
       for (const region of regions) {
         context.region = region;
+        const regionalServiceNodeIds: string[] = [];
         const regionNode = buildRegionNode(account, region);
-        addNodeToGraphUnchecked(graph, regionNode, AWS_REGION_SERVICE_KEY);
+        addNodeToGraphUnchecked(graph, regionNode);
         for (const regionalServiceScanner of regionalServiceEntries) {
-          if (regionalServiceScanner.getNodes != null) {
-            const regionalServiceNodeIds: string[] = [];
-            console.log(`Getting Nodes: ${regionalServiceScanner.service}`);
-            const regionalNodes = await regionalServiceScanner.getNodes(
+          console.log(`Getting Nodes: ${regionalServiceScanner.service}`);
+          const regionalEntities = regionalServiceScanner.entities ?? [];
+          for (const regionalServiceEntity of regionalEntities) {
+            const nodeProducer = generateNodesFromEntity(
               connector,
               context,
+              regionalServiceEntity,
             );
-            regionalNodes.forEach((node) => {
-              addNodeToGraphUnchecked(
-                graph,
-                node,
-                regionalServiceScanner.service,
-              );
-              regionalServiceNodeIds.push(node.id);
-            });
-            const serviceNodes =
-              serviceNodeMap[
-                regionalServiceScanner.arnLabel ??
-                  regionalServiceScanner.service.toLowerCase()
-              ];
-            if (serviceNodes) {
-              serviceNodes.push(...regionalServiceNodeIds);
-            } else {
-              serviceNodeMap[
-                regionalServiceScanner.arnLabel ??
-                  regionalServiceScanner.service.toLowerCase()
-              ] = regionalServiceNodeIds;
+            for await (const node of nodeProducer) {
+              addNodeToGraphUnchecked(graph, node);
+              regionalServiceNodeIds.push(node.$graph.id);
             }
+          }
 
-            for (const { id, handler } of this.pluginRegistry
-              .onServiceComplete) {
-              console.log(`Running ${id} onServiceComplete`);
-              await handler(graph, regionalServiceScanner.service, context);
-            }
+          const serviceLabel =
+            regionalServiceScanner.arnLabel ??
+            regionalServiceScanner.service.toLowerCase();
+
+          if (serviceNodeMap[serviceLabel] == null) {
+            serviceNodeMap[serviceLabel] = [];
+          }
+          serviceNodeMap[serviceLabel].push(...regionalServiceNodeIds);
+
+          for (const { id, handler } of this.pluginRegistry.onServiceComplete) {
+            console.log(`Running ${id} onServiceComplete`);
+            await handler(graph, regionalServiceScanner.service, context);
           }
         }
 

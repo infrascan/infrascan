@@ -38,7 +38,11 @@ export async function ListBuckets(
     const cmd = new ListBucketsCommand(preparedParams);
     const result: ListBucketsCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -85,7 +89,11 @@ export async function GetBucketTagging(
       const cmd = new GetBucketTaggingCommand(preparedParams);
       const result: GetBucketTaggingCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -135,7 +143,11 @@ export async function GetBucketNotificationConfiguration(
       const result: GetBucketNotificationConfigurationCommandOutput =
         await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -183,7 +195,11 @@ export async function GetBucketWebsite(
       const cmd = new GetBucketWebsiteCommand(preparedParams);
       const result: GetBucketWebsiteCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -231,7 +247,11 @@ export async function GetBucketAcl(
       const cmd = new GetBucketAclCommand(preparedParams);
       const result: GetBucketAclCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

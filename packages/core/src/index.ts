@@ -7,18 +7,38 @@ import type {
   AwsContext,
   SelectedEdge,
   SelectedEdgeTarget,
+  TimeUnit,
+  SizeUnit,
+  TranslatedEntity,
+  BaseState,
 } from "@infrascan/shared-types";
 
 export * from "./graph";
 export * from "./errors";
 
+export const Size = {
+  Bytes: "B" as SizeUnit,
+  Megabytes: "MB" as SizeUnit,
+  Mebibytes: "MiB" as SizeUnit,
+  Gigabytes: "GB" as SizeUnit,
+  Gibibytes: "GiB" as SizeUnit,
+} as const;
+
+export const Time = {
+  Seconds: "s" as TimeUnit,
+  Milliseconds: "ms" as TimeUnit,
+  Minutes: "m" as TimeUnit,
+  Hours: "h" as TimeUnit,
+  Days: "d" as TimeUnit,
+} as const;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export async function evaluateSelector(
+export async function evaluateSelector<T = unknown>(
   account: string,
   region: string,
   rawSelector: string,
   connector: Connector,
-): Promise<any[]> {
+): Promise<T[]> {
   const [service, functionCall, ...selector] = rawSelector.split("|");
 
   const state = await connector.resolveStateForServiceFunction(
@@ -48,7 +68,7 @@ export async function resolveFunctionCallParameters(
   const allParamObjects: Record<string, string>[] = [];
   for (const { Key, Selector, Value } of parameters) {
     if (Selector) {
-      const parameterValues = await evaluateSelector(
+      const parameterValues = await evaluateSelector<any>(
         account,
         region,
         Selector,
@@ -134,4 +154,24 @@ export function filterState(state: any, selector: string): any {
 
 export function formatS3NodeId(id: string): string {
   return `arn:aws:s3:::${id}`;
+}
+
+export function toLowerCase<T extends string>(val: T): Lowercase<T> {
+  return val.toLowerCase() as Lowercase<T>;
+}
+
+export async function* generateNodesFromEntity<
+  E extends TranslatedEntity<BaseState, any, any>,
+>(connector: Connector, context: AwsContext, entity: E) {
+  const retrievedState = await entity.getState(connector, context);
+  const preparedState = retrievedState.flatMap((stateEntry) =>
+    entity.translate(stateEntry),
+  );
+  const components = Object.entries(entity.components);
+  for (const value of preparedState) {
+    const node = Object.fromEntries(
+      components.map(([label, factory]) => [label, factory(value)]),
+    ) as unknown as BaseState;
+    yield node;
+  }
 }

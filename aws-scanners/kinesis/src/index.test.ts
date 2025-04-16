@@ -9,6 +9,7 @@ import {
   ListStreamsCommand,
   ListStreamConsumersCommand,
 } from "@aws-sdk/client-kinesis";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import KinesisScanner from ".";
 
@@ -22,7 +23,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Kinesis, and formatted as expected",
-  async () => {
+  async ({ ok, equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -43,6 +44,8 @@ t.test(
             StreamARN: kinesisStreamArn,
             StreamName: kinesisStreamName,
             StreamStatus: "ACTIVE",
+            StreamCreationTimestamp: new Date().toISOString(),
+            KeyId: "arn:aws:kms:us-east-1:0000000000:key:foobar",
           },
         ],
         NextToken: listStreamsPaginationToken,
@@ -71,8 +74,8 @@ t.test(
       await scannerFn(kinesisClient, connector, testContext);
     }
 
-    t.equal(mockedKinesisClient.commandCalls(ListStreamsCommand).length, 2);
-    t.equal(
+    equal(mockedKinesisClient.commandCalls(ListStreamsCommand).length, 2);
+    equal(
       mockedKinesisClient.commandCalls(ListStreamConsumersCommand).length,
       2,
     );
@@ -80,7 +83,7 @@ t.test(
     const listStreamsCommandArgs = mockedKinesisClient
       .commandCalls(ListStreamsCommand)
       .at(1)?.args;
-    t.equal(
+    equal(
       listStreamsCommandArgs?.[0].input.NextToken,
       listStreamsPaginationToken,
     );
@@ -88,30 +91,42 @@ t.test(
     const listStreamsConsumerCommandArgs = mockedKinesisClient
       .commandCalls(ListStreamConsumersCommand)
       .at(1)?.args;
-    t.equal(
+    equal(
       listStreamsConsumerCommandArgs?.[0].input.NextToken,
       consumerPaginationToken,
     );
 
-    if (KinesisScanner.getNodes != null) {
-      const nodes = await KinesisScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 2);
-      t.equal(nodes[0].id, kinesisStreamArn);
-      t.equal(nodes[0].name, kinesisStreamName);
-      t.equal(nodes[1].id, consumerArn);
-      t.equal(nodes[1].name, consumerName);
-    }
-
     if (KinesisScanner.getEdges != null) {
       const edges = await KinesisScanner.getEdges(connector);
-      t.equal(edges.length, 1);
-      t.equal(edges[0].source, kinesisStreamArn);
-      t.equal(edges[0].target, consumerArn);
+      equal(edges.length, 1);
+      equal(edges[0].source, kinesisStreamArn);
+      equal(edges[0].target, consumerArn);
+    }
+
+    for (const entity of KinesisScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        ok(node.audit?.createdAt);
+        ok(node.encryption?.keyId);
+      }
     }
   },
 );
 
-t.test("No streams returned from ListStreamsCommand", async () => {
+t.test("No streams returned from ListStreamsCommand", async ({ equal }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -129,14 +144,6 @@ t.test("No streams returned from ListStreamsCommand", async () => {
     await scannerFn(kinesisClient, connector, testContext);
   }
 
-  t.equal(mockedKinesisClient.commandCalls(ListStreamsCommand).length, 1);
-  t.equal(
-    mockedKinesisClient.commandCalls(ListStreamConsumersCommand).length,
-    0,
-  );
-
-  if (KinesisScanner.getNodes != null) {
-    const nodes = await KinesisScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
+  equal(mockedKinesisClient.commandCalls(ListStreamsCommand).length, 1);
+  equal(mockedKinesisClient.commandCalls(ListStreamConsumersCommand).length, 0);
 });

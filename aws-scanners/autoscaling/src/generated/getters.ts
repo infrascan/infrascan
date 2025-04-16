@@ -27,7 +27,11 @@ export async function DescribeAutoScalingGroups(
       cmd,
     );
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });

@@ -26,7 +26,6 @@ const DynamoDBScanner: ScannerDefinition<
       ],
     },
   ],
-  nodes: ["DynamoDB|DescribeTable|[].{id:_result.Table.TableArn}"],
 };
 
 export default DynamoDBScanner;

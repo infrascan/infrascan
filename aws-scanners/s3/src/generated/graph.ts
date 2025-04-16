@@ -1,42 +1,14 @@
 import {
-  evaluateSelector,
-  formatNode,
   evaluateSelectorGlobally,
   filterState,
   formatEdge,
 } from "@infrascan/core";
 import type {
   Connector,
-  AwsContext,
-  SelectedNode,
   SelectedEdge,
   SelectedEdgeTarget,
 } from "@infrascan/shared-types";
 import debug from "debug";
-
-const nodesDebug = debug("s3:nodes");
-export async function getNodes(
-  stateConnector: Connector,
-  context: AwsContext,
-): Promise<SelectedNode[]> {
-  nodesDebug("Fetching nodes");
-  const state: SelectedNode[] = [];
-  nodesDebug(
-    "Evaluating S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
-  );
-  const ListBucketsNodes = await evaluateSelector(
-    context.account,
-    context.region,
-    "S3|ListBuckets|[]._result.Buckets[].{id:[`arn:aws:s3:::`,Name] | join('',@),name:Name}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated S3|ListBuckets|[]._result.Buckets[].{id:[\`arn:aws:s3:::\`,Name] | join('',@),name:Name}: ${ListBucketsNodes.length} Nodes found`,
-  );
-  state.push(...ListBucketsNodes);
-
-  return state.map((node) => formatNode(node, "S3", context, false));
-}
 
 const edgesDebug = debug("s3:edges");
 export async function getEdges(

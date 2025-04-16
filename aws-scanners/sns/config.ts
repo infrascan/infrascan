@@ -44,7 +44,6 @@ const SNSScanner: ScannerDefinition<"SNS", typeof SNS, SNSFunctions> = {
       ],
     },
   ],
-  nodes: ["SNS|ListTopics|[]._result.Topics[].{id:TopicArn,name:TopicArn}"],
   edges: [
     {
       state: "SNS|ListSubscriptionsByTopic|[]",

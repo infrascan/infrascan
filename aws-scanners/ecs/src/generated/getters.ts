@@ -48,7 +48,11 @@ export async function ListClusters(
     const cmd = new ListClustersCommand(preparedParams);
     const result: ListClustersCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -108,7 +112,11 @@ export async function DescribeClusters(
       const cmd = new DescribeClustersCommand(preparedParams);
       const result: DescribeClustersCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -157,7 +165,11 @@ export async function ListServices(
       const cmd = new ListServicesCommand(preparedParams);
       const result: ListServicesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -210,7 +222,11 @@ export async function DescribeServices(
       const cmd = new DescribeServicesCommand(preparedParams);
       const result: DescribeServicesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -258,7 +274,11 @@ export async function ListTasks(
       const cmd = new ListTasksCommand(preparedParams);
       const result: ListTasksCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -310,7 +330,11 @@ export async function DescribeTasks(
       const cmd = new DescribeTasksCommand(preparedParams);
       const result: DescribeTasksCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -364,7 +388,11 @@ export async function DescribeTaskDefinition(
         cmd,
       );
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

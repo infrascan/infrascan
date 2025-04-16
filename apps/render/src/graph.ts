@@ -8,16 +8,15 @@ type GraphElement = Node | Edge;
 
 function buildNode(id: string): Node {
   return {
-    id,
     group: "nodes",
-    data: { id, type: "node" },
+    data: { id },
   };
 }
 
 function buildEdge(id: string, source: string, target: string): Edge {
   return {
     group: "edges",
-    data: { id, name: id, source, target, type: "edge" },
+    data: { id, name: id, source, target },
   };
 }
 

@@ -11,7 +11,7 @@ export async function <%= getter.id ?? getter.fn %>(
         const cmd = new <%= getter.fn %>Command(preparedParams);
         const result: <%= getter.fn %>CommandOutput = await client.send(cmd);
         state.push({ _metadata: 
-            { account: context.account, region: context.region }, 
+            { account: context.account, region: context.region, timestamp: Date.now() }, 
             _parameters: preparedParams, 
             _result: result 
         });

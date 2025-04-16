@@ -7,6 +7,7 @@ import type {
   Readable,
   Writable,
   Edge,
+  BaseState,
 } from "@infrascan/shared-types";
 
 /**
@@ -41,18 +42,16 @@ function isRegexRule(rule: ReducerRule): rule is GlobRule {
   return "regex" in rule;
 }
 
-export type ServiceLike = { service?: string };
-
-export function aggregateByService<T extends ServiceLike>(
+export function aggregateByService<T extends BaseState>(
   items: T[],
 ): Record<string, T[]> {
   const serviceToRules: Record<string, T[]> = {};
   for (const item of items) {
-    if (item.service != null) {
-      if (serviceToRules[item.service] == null) {
-        serviceToRules[item.service] = [];
+    if (item.resource.category != null) {
+      if (serviceToRules[item.resource.category] == null) {
+        serviceToRules[item.resource.category] = [];
       }
-      serviceToRules[item.service].push(item);
+      serviceToRules[item.resource.category].push(item);
     }
   }
   return serviceToRules;
@@ -60,9 +59,10 @@ export function aggregateByService<T extends ServiceLike>(
 
 export function applyRule(rule: ReducerRule, node: Readable<Node>): boolean {
   if (isGlobRule(rule)) {
-    return minimatch(node.id, rule.glob);
-  } else if (isRegexRule(rule)) {
-    return rule.regex.test(node.id);
+    return minimatch(node.$graph.id, rule.glob);
+  }
+  if (isRegexRule(rule)) {
+    return rule.regex.test(node.$graph.id);
   }
   return false;
 }
@@ -94,16 +94,29 @@ export function collapseNodes(
   rule: ReducerRule,
 ): Writable<Node> {
   const newNode: Writable<Node> = {
-    id: `${parent}-${rule.id}`,
-    name: `${parent}-${rule.id}`,
-    metadata: {
-      count: nodes.length,
+    $graph: {
+      id: `${parent}-${rule.id}`,
+      label: `${parent}-${rule.id}`,
+      parent,
+      nodeType: nodes[0]?.$graph.nodeType,
     },
+    tenant: nodes[0].tenant,
+    $metadata: nodes[0].$metadata,
+    resource: {
+      category: rule.service,
+      subcategory: rule.id,
+      id: `${parent}-${rule.id}`,
+      name: `${parent}-${rule.id}`,
+    },
+    tags: [
+      {
+        key: `${rule.id}::count`,
+        value: `${nodes.length}`,
+      },
+    ],
     incomingEdges: {},
     outgoingEdges: {},
     parent,
-    service: rule.service,
-    type: nodes[0]?.type,
   };
   graph.addNode(newNode);
 
@@ -111,8 +124,8 @@ export function collapseNodes(
     Object.values(node.outgoingEdges).forEach((outgoing) => {
       const edgeToInsert = {
         name: outgoing.name,
-        source: newNode.id,
-        target: outgoing.target.id,
+        source: newNode.$graph.id,
+        target: outgoing.target.$graph.id,
         metadata: {},
       };
       addEdgeToGraphIfNotExists(graph, edgeToInsert);
@@ -121,8 +134,8 @@ export function collapseNodes(
     Object.values(node.incomingEdges).forEach((incoming) => {
       const edgeToInsert = {
         name: incoming.name,
-        source: incoming.source.id,
-        target: newNode.id,
+        source: incoming.source.$graph.id,
+        target: newNode.$graph.id,
         metadata: {},
       };
       addEdgeToGraphIfNotExists(graph, edgeToInsert);
@@ -139,20 +152,12 @@ export function reduceGraphWithRules(
 ) {
   const nodesByService = aggregateByService(graph.nodes);
   for (const [service, serviceRules] of Object.entries(rules)) {
-    if (
-      nodesByService[service] == null ||
-      nodesByService[service]?.length === 0
-    ) {
-      continue;
-    }
-
     for (const rule of serviceRules) {
-      const nodesToCollapse = nodesByService[service].filter((node) =>
-        applyRule(rule, node),
-      );
+      const nodesToCollapse =
+        nodesByService[service]?.filter((node) => applyRule(rule, node)) ?? [];
 
       const nodesByParent = nodesToCollapse.reduce((acc, currentVal) => {
-        const nodeParent = currentVal.parent?.id ?? "none";
+        const nodeParent = currentVal.$graph.parent ?? "none";
         if (acc[nodeParent] == null) {
           acc[nodeParent] = [];
         }
@@ -167,7 +172,7 @@ export function reduceGraphWithRules(
 
       for (const [parent, nodes] of Object.entries(nodesByParent)) {
         collapseNodes(parent, nodes, graph, rule);
-        nodes.forEach((node) => graph.removeNode(node.id));
+        nodes.forEach((node) => graph.removeNode(node.$graph.id));
       }
     }
   }

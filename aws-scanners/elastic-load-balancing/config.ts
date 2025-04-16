@@ -51,9 +51,6 @@ const ElasticLoadBalancingScanner: ScannerDefinition<
       ],
     },
   ],
-  nodes: [
-    "ElasticLoadBalancingV2|DescribeLoadBalancers|[]._result.LoadBalancers | [].{id:LoadBalancerArn,name:LoadBalancerName}",
-  ],
 };
 
 export default ElasticLoadBalancingScanner;

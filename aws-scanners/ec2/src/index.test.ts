@@ -20,23 +20,26 @@ const baseDirectory =
 const tmpDir = mkdtempSync(baseDirectory);
 const connector = buildFsConnector(tmpDir);
 
-t.test("When no VPCs are returned, subnets aren't scanned", async () => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
+t.test(
+  "When no VPCs are returned, subnets aren't scanned",
+  async ({ equal }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
 
-  const mockedEc2Client = mockClient(ec2Client);
+    const mockedEc2Client = mockClient(ec2Client);
 
-  mockedEc2Client.on(DescribeVpcsCommand).resolves({
-    Vpcs: [],
-  });
+    mockedEc2Client.on(DescribeVpcsCommand).resolves({
+      Vpcs: [],
+    });
 
-  for (const scannerFn of EC2Scanner.getters) {
-    await scannerFn(ec2Client, connector, testContext);
-  }
+    for (const scannerFn of EC2Scanner.getters) {
+      await scannerFn(ec2Client, connector, testContext);
+    }
 
-  t.equal(mockedEc2Client.commandCalls(DescribeVpcsCommand).length, 1);
-  t.equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 0);
-});
+    equal(mockedEc2Client.commandCalls(DescribeVpcsCommand).length, 1);
+    equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 0);
+  },
+);

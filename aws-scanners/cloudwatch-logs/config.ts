@@ -38,9 +38,6 @@ const CloudWatchLogsScanner: ScannerDefinition<
       },
     },
   ],
-  nodes: [
-    "CloudWatchLogs|DescribeSubscriptionFilters|[]._result.subscriptionFilters[].{id:logGroupName,name:logGroupName}",
-  ],
   edges: [
     {
       state:

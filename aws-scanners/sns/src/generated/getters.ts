@@ -35,7 +35,11 @@ export async function ListTopics(
     const cmd = new ListTopicsCommand(preparedParams);
     const result: ListTopicsCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -85,7 +89,11 @@ export async function GetTopicAttributes(
       const cmd = new GetTopicAttributesCommand(preparedParams);
       const result: GetTopicAttributesCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -138,7 +146,11 @@ export async function ListSubscriptionsByTopic(
         cmd,
       );
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -189,7 +201,11 @@ export async function ListTagsForResource(
       const cmd = new ListTagsForResourceCommand(preparedParams);
       const result: ListTagsForResourceCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

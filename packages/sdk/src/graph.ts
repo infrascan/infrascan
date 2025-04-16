@@ -6,6 +6,7 @@ import type {
   SelectedNode,
   SelectedEdge,
   Graph,
+  BaseState,
 } from "@infrascan/shared-types";
 import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
@@ -35,28 +36,54 @@ export type GenerateGraphOptions = {
 export { SelectedNode, GetGlobalStateForServiceFunction, Graph };
 
 export const AWS_ACCOUNT_SERVICE_KEY = "AWS-Account";
-export function buildAccountNode(account: string): SelectedNode {
+export function buildAccountNode(account: string): BaseState {
   const humanReadableAccountName = `AWS Account ${account}`;
   return {
-    id: account,
-    name: humanReadableAccountName,
-    type: AWS_ACCOUNT_SERVICE_KEY,
-    rawState: {
+    $graph: {
+      id: account,
+      label: humanReadableAccountName,
+      nodeType: AWS_ACCOUNT_SERVICE_KEY,
+    },
+    $metadata: {
+      version: "0.1.0",
+      timestamp: Date.now(),
+    },
+    tenant: {
+      provider: "aws",
+      tenantId: account,
+    },
+    resource: {
+      id: account,
+      category: "account",
       name: humanReadableAccountName,
     },
   };
 }
 
 export const AWS_REGION_SERVICE_KEY = "AWS-Region";
-export function buildRegionNode(account: string, region: string): SelectedNode {
+export function buildRegionNode(account: string, region: string): BaseState {
   const humanReadableRegionName = `${region} (${account})`;
   return {
-    id: `${account}-${region}`,
-    type: AWS_REGION_SERVICE_KEY,
-    parent: account,
-    name: humanReadableRegionName,
-    rawState: {
+    $graph: {
+      id: `${account}-${region}`,
+      label: humanReadableRegionName,
+      nodeType: AWS_REGION_SERVICE_KEY,
       parent: account,
+    },
+    $metadata: {
+      version: "0.1.0",
+      timestamp: Date.now(),
+    },
+    tenant: {
+      provider: "aws",
+      tenantId: account,
+    },
+    location: {
+      code: region,
+    },
+    resource: {
+      id: `${account}-${region}`,
+      category: "account",
       name: humanReadableRegionName,
     },
   };
@@ -68,28 +95,20 @@ export function buildRegionNode(account: string, region: string): SelectedNode {
  * @param node The node to insert into the graph
  * @param service The service that the node belongs to
  */
-export function addNodeToGraphUnchecked(
+export function addNodeToGraphUnchecked<T extends BaseState>(
   graph: Graph,
-  node: SelectedNode,
-  service: string,
+  node: T,
 ) {
   try {
-    graph.addNode({
-      id: node.id,
-      name: node.name ?? node.id,
-      metadata: node.rawState,
-      parent: node.parent,
-      service,
-      type: node.type,
-    });
+    graph.addNode(node);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.warn(
-        `An error occurred while inserting node ${node.id} into graph. ${err.message}`,
+        `An error occurred while inserting node ${node.$graph.id} into graph. ${err.message}`,
       );
     } else {
       console.warn(
-        `An unexpected error occurred while inserting node ${node.id} into graph.`,
+        `An unexpected error occurred while inserting node ${node.$graph.id} into graph.`,
       );
     }
   }

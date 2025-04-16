@@ -9,8 +9,10 @@ import {
   ListTablesCommand,
   DescribeTableCommand,
 } from "@aws-sdk/client-dynamodb";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import DynamoDBScanner from ".";
+import { DynamoTable } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -22,7 +24,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from DynamoDB, and formatted as expected",
-  async () => {
+  async ({ ok, equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -42,6 +44,10 @@ t.test(
       Table: {
         TableName: testTable,
         TableArn: tableArn,
+        SSEDescription: {
+          KMSMasterKeyArn: "arn:aws:kms:us-east-1:0000000000:key:abcdef",
+        },
+        CreationDateTime: new Date().toISOString(),
       },
     });
 
@@ -51,25 +57,40 @@ t.test(
 
     const logGroupCallCount =
       mockedDynamoClient.commandCalls(ListTablesCommand).length;
-    t.equal(logGroupCallCount, 1);
+    equal(logGroupCallCount, 1);
 
     const describeTableCallCount =
       mockedDynamoClient.commandCalls(DescribeTableCommand).length;
-    t.equal(describeTableCallCount, 1);
+    equal(describeTableCallCount, 1);
     const firstCallArgs = mockedDynamoClient
       .commandCalls(DescribeTableCommand)
       .at(0)?.args;
-    t.equal(firstCallArgs?.[0].input.TableName, testTable);
+    equal(firstCallArgs?.[0].input.TableName, testTable);
 
-    if (DynamoDBScanner.getNodes != null) {
-      const nodes = await DynamoDBScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 1);
-      t.ok(nodes.find((node) => node.id === tableArn));
+    for (const entity of DynamoDBScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        ok(node.audit);
+        ok(node.encryption?.keyId);
+      }
     }
   },
 );
 
-t.test("No Tables returned from ListTablesCommand", async () => {
+t.test("No Tables returned from ListTablesCommand", async ({ equal }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -89,14 +110,9 @@ t.test("No Tables returned from ListTablesCommand", async () => {
 
   const logGroupCallCount =
     mockedDynamoClient.commandCalls(ListTablesCommand).length;
-  t.equal(logGroupCallCount, 1);
+  equal(logGroupCallCount, 1);
 
   const describeTableCallCount =
     mockedDynamoClient.commandCalls(DescribeTableCommand).length;
-  t.equal(describeTableCallCount, 0);
-
-  if (DynamoDBScanner.getNodes != null) {
-    const nodes = await DynamoDBScanner.getNodes(connector, testContext);
-    t.equal(nodes.length, 0);
-  }
+  equal(describeTableCallCount, 0);
 });

@@ -19,7 +19,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Autoscaling, and formatted as expected",
-  async () => {
+  async ({ equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -56,6 +56,6 @@ t.test(
     const callCount = mockedAutoscalingClient.commandCalls(
       DescribeAutoScalingGroupsCommand,
     ).length;
-    t.equal(callCount, 1);
+    equal(callCount, 1);
   },
 );

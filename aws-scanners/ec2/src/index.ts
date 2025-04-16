@@ -10,6 +10,7 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [DescribeVpcs, DescribeSubnets],
+  entities: [],
 };
 
 export default EC2Scanner;

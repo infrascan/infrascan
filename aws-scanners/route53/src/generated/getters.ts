@@ -29,7 +29,11 @@ export async function ListHostedZonesByName(
     const cmd = new ListHostedZonesByNameCommand(preparedParams);
     const result: ListHostedZonesByNameCommandOutput = await client.send(cmd);
     state.push({
-      _metadata: { account: context.account, region: context.region },
+      _metadata: {
+        account: context.account,
+        region: context.region,
+        timestamp: Date.now(),
+      },
       _parameters: preparedParams,
       _result: result,
     });
@@ -81,7 +85,11 @@ export async function ListResourceRecordSets(
         cmd,
       );
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });

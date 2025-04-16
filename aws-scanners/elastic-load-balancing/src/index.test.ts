@@ -11,6 +11,7 @@ import {
   DescribeListenersCommand,
   DescribeRulesCommand,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import ElasticLoadBalancingScanner from ".";
 
@@ -24,7 +25,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from Elastic Load Balancing, and formatted as expected",
-  async () => {
+  async ({ ok, equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -82,47 +83,51 @@ t.test(
       await scannerFn(elbClient, connector, testContext);
     }
 
-    t.equal(
-      mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length,
-      1,
-    );
-    t.equal(
-      mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length,
-      1,
-    );
-    t.equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 1);
-    t.equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 1);
 
     const describeTargetGroupsArgs = mockedElbClient
       .commandCalls(DescribeTargetGroupsCommand)
       .at(0)?.args;
-    t.equal(describeTargetGroupsArgs?.[0].input.LoadBalancerArn, elbArn);
+    equal(describeTargetGroupsArgs?.[0].input.LoadBalancerArn, elbArn);
 
     const describeListenersArgs = mockedElbClient
       .commandCalls(DescribeListenersCommand)
       .at(0)?.args;
-    t.equal(describeListenersArgs?.[0].input.LoadBalancerArn, elbArn);
+    equal(describeListenersArgs?.[0].input.LoadBalancerArn, elbArn);
 
     const describeRulesArgs = mockedElbClient
       .commandCalls(DescribeRulesCommand)
       .at(0)?.args;
-    t.equal(describeRulesArgs?.[0].input.ListenerArn, listenerArn);
+    equal(describeRulesArgs?.[0].input.ListenerArn, listenerArn);
 
-    if (ElasticLoadBalancingScanner.getNodes != null) {
-      const nodes = await ElasticLoadBalancingScanner.getNodes(
+    for (const entity of ElasticLoadBalancingScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
         connector,
         testContext,
+        entity,
       );
-      t.equal(nodes.length, 1);
-      t.equal(nodes[0].id, elbArn);
-      t.equal(nodes[0].name, elbName);
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        equal(node.dns?.domains.length, 1);
+      }
     }
   },
 );
 
 t.test(
   "No Load Balancers returned from DescribeLoadBalancersCommand",
-  async () => {
+  async ({ equal }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -143,81 +148,62 @@ t.test(
       await scannerFn(elbClient, connector, testContext);
     }
 
-    t.equal(
-      mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length,
-      1,
-    );
-    t.equal(
-      mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length,
-      0,
-    );
-    t.equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 0);
-    t.equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
-
-    if (ElasticLoadBalancingScanner.getNodes != null) {
-      const nodes = await ElasticLoadBalancingScanner.getNodes(
-        connector,
-        testContext,
-      );
-      t.equal(nodes.length, 0);
-    }
+    equal(mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length, 0);
+    equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 0);
+    equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
   },
 );
 
-t.test("No Listeners returned from DescribeListenersCommand", async () => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const elbClient = ElasticLoadBalancingScanner.getClient(
-    fromProcess(),
-    testContext,
-  );
-
-  const mockedElbClient = mockClient(elbClient);
-
-  // Mock each of the functions used to pull state
-  const elbName = "test-lb";
-  const elbArn = `arn:aws:elasticloadbalancing:${testContext.region}:${testContext.account}:loadbalancer/app/${elbName}/00000000000`;
-  mockedElbClient.on(DescribeLoadBalancersCommand).resolves({
-    LoadBalancers: [
-      {
-        LoadBalancerArn: elbArn,
-        DNSName: `${elbName}-0000000000.${testContext.region}.elb.amazonaws.com`,
-        LoadBalancerName: elbName,
-      },
-    ],
-  });
-
-  const targetGroupName = "test-target-group";
-  const targetGroupArn = `arn:aws:elasticloadbalancing:${testContext.region}:${testContext.account}:targetgroup/${targetGroupName}/000000000000`;
-  mockedElbClient.on(DescribeTargetGroupsCommand).resolves({
-    TargetGroups: [
-      {
-        TargetGroupArn: targetGroupArn,
-        TargetGroupName: targetGroupName,
-      },
-    ],
-  });
-
-  mockedElbClient.on(DescribeListenersCommand).resolves({
-    Listeners: [],
-  });
-
-  for (const scannerFn of ElasticLoadBalancingScanner.getters) {
-    await scannerFn(elbClient, connector, testContext);
-  }
-
-  t.equal(mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length, 1);
-  t.equal(mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length, 1);
-  t.equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 1);
-  t.equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
-
-  if (ElasticLoadBalancingScanner.getNodes != null) {
-    const nodes = await ElasticLoadBalancingScanner.getNodes(
-      connector,
+t.test(
+  "No Listeners returned from DescribeListenersCommand",
+  async ({ equal }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const elbClient = ElasticLoadBalancingScanner.getClient(
+      fromProcess(),
       testContext,
     );
-    t.equal(nodes.length, 1);
-  }
-});
+
+    const mockedElbClient = mockClient(elbClient);
+
+    // Mock each of the functions used to pull state
+    const elbName = "test-lb";
+    const elbArn = `arn:aws:elasticloadbalancing:${testContext.region}:${testContext.account}:loadbalancer/app/${elbName}/00000000000`;
+    mockedElbClient.on(DescribeLoadBalancersCommand).resolves({
+      LoadBalancers: [
+        {
+          LoadBalancerArn: elbArn,
+          DNSName: `${elbName}-0000000000.${testContext.region}.elb.amazonaws.com`,
+          LoadBalancerName: elbName,
+        },
+      ],
+    });
+
+    const targetGroupName = "test-target-group";
+    const targetGroupArn = `arn:aws:elasticloadbalancing:${testContext.region}:${testContext.account}:targetgroup/${targetGroupName}/000000000000`;
+    mockedElbClient.on(DescribeTargetGroupsCommand).resolves({
+      TargetGroups: [
+        {
+          TargetGroupArn: targetGroupArn,
+          TargetGroupName: targetGroupName,
+        },
+      ],
+    });
+
+    mockedElbClient.on(DescribeListenersCommand).resolves({
+      Listeners: [],
+    });
+
+    for (const scannerFn of ElasticLoadBalancingScanner.getters) {
+      await scannerFn(elbClient, connector, testContext);
+    }
+
+    equal(mockedElbClient.commandCalls(DescribeLoadBalancersCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeTargetGroupsCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeListenersCommand).length, 1);
+    equal(mockedElbClient.commandCalls(DescribeRulesCommand).length, 0);
+  },
+);

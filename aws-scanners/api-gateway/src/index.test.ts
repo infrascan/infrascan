@@ -9,8 +9,10 @@ import {
   GetApisCommand,
   GetDomainNamesCommand,
 } from "@aws-sdk/client-apigatewayv2";
+import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import ApiGatewayScanner from "./index";
+import { ApiGateway } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -22,7 +24,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from API-Gateway, and formatted as expected",
-  async () => {
+  async ({ equal, ok }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -45,12 +47,14 @@ t.test(
           Name: "first-api",
           ProtocolType: "HTTP",
           RouteSelectionExpression: "default",
+          DisableExecuteApiEndpoint: true,
         },
         {
           ApiEndpoint: SecondApiEndpoint,
           Name: "second-api",
           ProtocolType: "HTTP",
           RouteSelectionExpression: "default",
+          DisableExecuteApiEndpoint: false,
         },
       ],
     });
@@ -72,11 +76,32 @@ t.test(
       ),
     );
 
-    if (ApiGatewayScanner.getNodes != null) {
-      const nodes = await ApiGatewayScanner.getNodes(connector, testContext);
-      t.equal(nodes.length, 2);
-      t.ok(nodes.find((node) => node.id === FirstApiEndpoint));
-      t.ok(nodes.find((node) => node.id === SecondApiEndpoint));
+    equal(ApiGatewayScanner.entities?.length, 1);
+    for (const entity of ApiGatewayScanner.entities ?? []) {
+      const nodeProducer = generateNodesFromEntity(
+        connector,
+        testContext,
+        entity,
+      );
+      for await (const node of nodeProducer) {
+        ok(node.$graph.id);
+        ok(node.$graph.label);
+        ok(node.$metadata.version);
+        equal(node.tenant.tenantId, testContext.account);
+        equal(node.tenant.provider, "aws");
+        ok(node.location?.code);
+        equal(node.$source?.command, entity.command);
+        equal(node.resource.category, entity.category);
+        equal(node.resource.subcategory, entity.subcategory);
+        equal((node as unknown as ApiGateway).apiGateway.protocol, "HTTP");
+        if (
+          (node as unknown as ApiGateway).apiGateway.disableExecuteApiEndpoint
+        ) {
+          equal(node.dns?.domains.length, 0);
+        } else {
+          equal(node.dns?.domains.length, 1);
+        }
+      }
     }
   },
 );

@@ -36,7 +36,11 @@ export async function ListFunctions(
       const cmd = new ListFunctionsCommand(preparedParams);
       const result: ListFunctionsCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
@@ -94,7 +98,11 @@ export async function GetFunction(
       const cmd = new GetFunctionCommand(preparedParams);
       const result: GetFunctionCommandOutput = await client.send(cmd);
       state.push({
-        _metadata: { account: context.account, region: context.region },
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
         _parameters: preparedParams,
         _result: result,
       });
