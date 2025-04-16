@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-lambda-scanner",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Infrascan scanner definition for AWS Lambda",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -43,8 +43,8 @@
   "devDependencies": {
     "@aws-sdk/credential-providers": "3.624.0",
     "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/fs-connector": "^0.2.2",
-    "@infrascan/shared-types": "^0.5.1",
+    "@infrascan/fs-connector": "^0.3.0",
+    "@infrascan/shared-types": "^0.6.0",
     "@infrascan/tsconfig": "*",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "3.624.0",
-    "@infrascan/core": "0.4.1",
+    "@infrascan/core": "0.5.0",
     "debug": "^4"
   }
 }

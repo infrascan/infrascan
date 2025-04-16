@@ -1,5 +1,11 @@
 # @infrascan/core
 
+## 0.5.0
+
+### Minor Changes
+
+- [#89](https://github.com/infrascan/infrascan/pull/89) [`913867b73a72791c79a69ebfec8bf94331654c1d`](https://github.com/infrascan/infrascan/commit/913867b73a72791c79a69ebfec8bf94331654c1d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Migrate graph output to a standard schema for easier search/filter
+
 ## 0.4.1
 
 ### Patch Changes
