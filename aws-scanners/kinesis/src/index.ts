@@ -15,7 +15,7 @@ const KinesisScanner: ServiceModule<KinesisClient, "aws"> = {
   key: "Kinesis",
   getClient,
   callPerRegion: true,
-  getters: [DescribeStreamSummary, ListStreams, ListStreamConsumers],
+  getters: [ListStreams, DescribeStreamSummary, ListStreamConsumers],
   getEdges,
   entities: [KinesisConsumerEntity, KinesisStreamEntity],
 };
