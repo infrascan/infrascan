@@ -57,11 +57,16 @@ export function serializeGraph(graph: Graph): CytoscapeGraph[] {
       children,
       ...structuredNode
     } = node;
+
+    const defaultParent =
+      node.location?.code && node.tenant.tenantId
+        ? `${node.tenant.tenantId}-${node.location?.code}`
+        : node.tenant.tenantId;
     return {
       group: "nodes",
       data: Object.assign(structuredNode, {
         id: node.$graph.id,
-        parent: node.$graph.parent,
+        parent: node.$graph.parent ?? defaultParent,
         name: node.$graph.label,
       }),
     };
