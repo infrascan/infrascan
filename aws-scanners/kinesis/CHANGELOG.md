@@ -1,5 +1,11 @@
 # @infrascan/aws-kinesis-scanner
 
+## 0.3.1
+
+### Patch Changes
+
+- [#91](https://github.com/infrascan/infrascan/pull/91) [`3c942d67bd4484e434fb8131e28a3daee8b01425`](https://github.com/infrascan/infrascan/commit/3c942d67bd4484e434fb8131e28a3daee8b01425) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Export missing getter for kinesis scanner to include Describe Stream Summary command.
+
 ## 0.3.0
 
 ### Minor Changes
