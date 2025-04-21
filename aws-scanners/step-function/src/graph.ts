@@ -42,7 +42,7 @@ export const StepFunctionEntity: TranslatedEntity<
   category: "stepfunctions",
   subcategory: "state-machine",
   nodeType: "step-function",
-  selector: "StepFunctions|DescribeStateMachine|[]",
+  selector: "SFN|DescribeStateMachine|[]",
 
   getState(state, context) {
     return evaluateSelector(
