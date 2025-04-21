@@ -1,5 +1,11 @@
 # @infrascan/cytoscape-serializer
 
+## 0.3.1
+
+### Patch Changes
+
+- [`8ae006041db7a0c71f459cb9c4b520e05e130f9d`](https://github.com/infrascan/infrascan/commit/8ae006041db7a0c71f459cb9c4b520e05e130f9d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add default parent for nodes
+
 ## 0.3.0
 
 ### Minor Changes
