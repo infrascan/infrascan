@@ -1,5 +1,11 @@
 # @infrascan/aws-step-function-scanner
 
+## 0.3.1
+
+### Patch Changes
+
+- [#93](https://github.com/infrascan/infrascan/pull/93) [`ea1ef2cd0bce9e2ebc839a1520a4a1f138273f00`](https://github.com/infrascan/infrascan/commit/ea1ef2cd0bce9e2ebc839a1520a4a1f138273f00) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Correct service name in selector
+
 ## 0.3.0
 
 ### Minor Changes
