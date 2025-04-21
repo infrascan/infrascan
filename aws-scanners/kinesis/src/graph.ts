@@ -45,7 +45,7 @@ export const KinesisStreamEntity: TranslatedEntity<
   version: "0.1.0",
   debugLabel: "kinesis",
   provider: "aws",
-  command: "ListStreams",
+  command: "DescribeStreamSummary",
   category: "kinesis",
   subcategory: "stream",
   nodeType: "kinesis-stream",
