@@ -8,6 +8,7 @@ import { fromProcess } from "@aws-sdk/credential-providers";
 import {
   ListStreamsCommand,
   ListStreamConsumersCommand,
+  DescribeStreamSummaryCommand,
 } from "@aws-sdk/client-kinesis";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
@@ -69,6 +70,16 @@ t.test(
         NextToken: consumerPaginationToken,
       })
       .resolvesOnce({ Consumers: [] });
+
+    mockedKinesisClient.on(DescribeStreamSummaryCommand).resolvesOnce({
+      StreamDescriptionSummary: {
+        StreamName: kinesisStreamName,
+        StreamARN: kinesisStreamArn,
+        StreamStatus: "ACTIVE",
+        KeyId: "arn:aws:kms:us-east-1:0000000000:key:foobar",
+        StreamCreationTimestamp: new Date().toISOString(),
+      },
+    });
 
     for (const scannerFn of KinesisScanner.getters) {
       await scannerFn(kinesisClient, connector, testContext);
