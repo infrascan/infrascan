@@ -80,7 +80,9 @@ export const RDSInstanceEntity: TranslatedEntity<
         id: val.DBInstanceIdentifier!,
         label: val.DBName!,
         nodeType: RDSInstanceEntity.nodeType,
-        parent: val.DBClusterIdentifier ?? undefined,
+        parent:
+          val.DBClusterIdentifier ??
+          `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

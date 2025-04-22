@@ -87,6 +87,7 @@ export const KinesisStreamEntity: TranslatedEntity<
         id: val.StreamARN!,
         label: val.StreamName!,
         nodeType: KinesisStreamEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 
@@ -200,6 +201,7 @@ export const KinesisConsumerEntity: TranslatedEntity<
         id: val.ConsumerARN!,
         label: val.ConsumerName!,
         nodeType: KinesisConsumerEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

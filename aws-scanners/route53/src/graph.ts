@@ -74,6 +74,7 @@ export const Route53RecordEntity: TranslatedEntity<
         id: val.Name!,
         label: val.Name!,
         nodeType: Route53RecordEntity.nodeType,
+        parent: val.$metadata.account,
       };
     },
 
@@ -89,12 +90,6 @@ export const Route53RecordEntity: TranslatedEntity<
         tenantId: val.$metadata.account,
         provider: Route53RecordEntity.provider,
         partition: val.$metadata.partition,
-      };
-    },
-
-    location(val) {
-      return {
-        code: val.$metadata.region,
       };
     },
 

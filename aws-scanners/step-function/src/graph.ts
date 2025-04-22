@@ -76,6 +76,7 @@ export const StepFunctionEntity: TranslatedEntity<
         id: val.stateMachineArn!,
         label: val.name!,
         nodeType: StepFunctionEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

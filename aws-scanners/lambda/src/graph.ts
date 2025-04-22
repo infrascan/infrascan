@@ -98,6 +98,7 @@ export const LambdaFunctionEntity: TranslatedEntity<
         id: val.Configuration!.FunctionArn!,
         label: val.Configuration!.FunctionName!,
         nodeType: LambdaFunctionEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

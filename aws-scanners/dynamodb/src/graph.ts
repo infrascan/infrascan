@@ -253,6 +253,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
         id: val.TableArn!,
         label: val.TableName!,
         nodeType: DynamoDbTableEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

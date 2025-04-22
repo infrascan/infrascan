@@ -68,6 +68,7 @@ export const CloudfrontDistributionEntity: TranslatedEntity<
         id: val.ARN!,
         label: val.DomainName!,
         nodeType: CloudfrontDistributionEntity.nodeType,
+        parent: val.$metadata.account,
       };
     },
 
@@ -93,12 +94,6 @@ export const CloudfrontDistributionEntity: TranslatedEntity<
         tenantId: val.$metadata.account,
         provider: CloudfrontDistributionEntity.provider,
         partition: val.$metadata.partition,
-      };
-    },
-
-    location(val) {
-      return {
-        code: val.$metadata.region,
       };
     },
 

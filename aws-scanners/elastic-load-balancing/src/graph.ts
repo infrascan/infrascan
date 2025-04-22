@@ -84,6 +84,7 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
         id: val.LoadBalancerArn!,
         label: val.LoadBalancerName!,
         nodeType: getNodeType(val.Type),
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 
