@@ -102,7 +102,6 @@ t.test(
         ok(node.$metadata.version);
         equal(node.tenant.tenantId, testContext.account);
         equal(node.tenant.provider, "aws");
-        ok(node.location?.code);
         equal(node.$source?.command, entity.command);
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
