@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-step-function-scanner",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Infrascan scanner definition for AWS Step Functions",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

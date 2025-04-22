@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-kinesis-scanner",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Infrascan scanner definition for AWS Kinesis",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
