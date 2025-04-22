@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-ecs-scanner",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Infrascan scanner definition for AWS ECS",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

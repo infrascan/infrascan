@@ -1,5 +1,11 @@
 # @infrascan/aws-dynamodb-scanner
 
+## 0.4.1
+
+### Patch Changes
+
+- [#96](https://github.com/infrascan/infrascan/pull/96) [`1049c14ce1aa7bde7224a42c27d0e04dac418cbe`](https://github.com/infrascan/infrascan/commit/1049c14ce1aa7bde7224a42c27d0e04dac418cbe) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add default parent value to $graph attribute for all scanners to correctly nest under region/account
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-route53-scanner",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Infrascan scanner definition for AWS Route53",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-dynamodb-scanner",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Infrascan scanner definition for AWS DynamoDB",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
