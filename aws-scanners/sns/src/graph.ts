@@ -95,6 +95,7 @@ export const SNSTopicEntity: TranslatedEntity<
         id: val.TopicArn!,
         label: val.TopicArn!.split(":").pop()!,
         nodeType: SNSTopicEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

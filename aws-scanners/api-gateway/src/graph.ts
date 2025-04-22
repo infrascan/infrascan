@@ -84,6 +84,7 @@ export const ApiGatewayEntity: TranslatedEntity<
         id: val.ApiEndpoint!,
         label: val.ApiEndpoint!,
         nodeType: ApiGatewayEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

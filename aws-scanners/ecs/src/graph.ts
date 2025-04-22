@@ -81,6 +81,7 @@ export const ClusterEntity: TranslatedEntity<
         id: val.clusterArn!,
         label: val.clusterName!,
         nodeType: ClusterEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
     $source(val) {

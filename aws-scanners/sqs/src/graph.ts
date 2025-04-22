@@ -77,6 +77,7 @@ export const SQSEntity: TranslatedEntity<
         id: val.QueueArn!,
         label: queueName,
         nodeType: SQSEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 

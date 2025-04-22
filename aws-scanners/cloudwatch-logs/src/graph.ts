@@ -69,6 +69,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
         id: (val.logGroupArn ?? val.arn)!,
         label: val.logGroupName!,
         nodeType: CloudwatchLogGroupEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 
