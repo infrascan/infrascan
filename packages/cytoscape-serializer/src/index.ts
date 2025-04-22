@@ -68,6 +68,7 @@ export function serializeGraph(graph: Graph): CytoscapeGraph[] {
         id: node.$graph.id,
         parent: node.$graph.parent ?? defaultParent,
         name: node.$graph.label,
+        type: node.$graph.nodeType,
       }),
     };
   });
