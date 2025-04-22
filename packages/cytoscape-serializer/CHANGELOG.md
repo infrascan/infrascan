@@ -1,5 +1,11 @@
 # @infrascan/cytoscape-serializer
 
+## 0.3.2
+
+### Patch Changes
+
+- [#99](https://github.com/infrascan/infrascan/pull/99) [`e71d0146f802fd0eb93ada12972ae1d905ee809d`](https://github.com/infrascan/infrascan/commit/e71d0146f802fd0eb93ada12972ae1d905ee809d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add type to node data
+
 ## 0.3.1
 
 ### Patch Changes
