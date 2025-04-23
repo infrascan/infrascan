@@ -1,5 +1,12 @@
 # @infrascan/aws
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`316320a39bfd64a9feab735d83c054031abf2cf0`](https://github.com/infrascan/infrascan/commit/316320a39bfd64a9feab735d83c054031abf2cf0)]:
+  - @infrascan/aws-ecs-scanner@0.5.0
+
 ## 0.5.0
 
 ### Minor Changes

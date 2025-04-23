@@ -1,5 +1,11 @@
 # @infrascan/aws-ecs-scanner
 
+## 0.5.0
+
+### Minor Changes
+
+- [#101](https://github.com/infrascan/infrascan/pull/101) [`316320a39bfd64a9feab735d83c054031abf2cf0`](https://github.com/infrascan/infrascan/commit/316320a39bfd64a9feab735d83c054031abf2cf0) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update ECS Task scans to more appropriately label the task nodes, and correct their parent assignment. This release also captures context from the ECS task's attached network interface.
+
 ## 0.4.1
 
 ### Patch Changes

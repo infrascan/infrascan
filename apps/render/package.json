@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@infrascan/cytoscape-serializer": "^0.3.2",
-    "@infrascan/shared-types": "^0.6.0",
+    "@infrascan/shared-types": "^0.6.1",
     "@types/cytoscape": "^3.19.16",
     "typescript": "^5.0.2",
     "vite": "^4.4.0"
