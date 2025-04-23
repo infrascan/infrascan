@@ -14,6 +14,7 @@ import type {
   DescribeServicesCommandOutput,
   DescribeTasksCommandInput,
   DescribeTasksCommandOutput,
+  KeyValuePair,
   Task,
 } from "@aws-sdk/client-ecs";
 import type {
@@ -297,6 +298,14 @@ export const ServiceEntity: TranslatedEntity<
   },
 };
 
+interface EniDetails {
+  subnetId?: string;
+  networkInterfaceId?: string;
+  macAddress?: string;
+  privateDnsName?: string;
+  privateIPv4Address?: string;
+}
+
 export const TaskEntity: TranslatedEntity<
   ECSState<DescribeTasksCommandInput>,
   State<DescribeTasksCommandOutput, DescribeTasksCommandInput>,
@@ -335,10 +344,26 @@ export const TaskEntity: TranslatedEntity<
       };
     },
     $graph(val) {
+      let parent = val.clusterArn;
+      if (val.group?.startsWith("service:") && val.clusterArn != null) {
+        // Cluster ARN: arn:aws:ecs:region:account:cluster/cluster-name
+        // Service ARN: arn:aws:ecs:region:account:service/cluster-name/service-name
+        const clusterName = val.clusterArn.slice(
+          val.clusterArn.lastIndexOf("/") + 1,
+        );
+        const serviceName = val.group.slice(8);
+        parent = `arn:aws:ecs:${val.$metadata.region}:${val.$metadata.account}:service/${clusterName}/${serviceName}`;
+      }
+
+      const startOfTaskDefName = val.taskDefinitionArn?.lastIndexOf("/");
+      const label = startOfTaskDefName
+        ? val.taskDefinitionArn?.slice(startOfTaskDefName + 1)
+        : val.taskArn;
+
       return {
-        id: val.taskArn!,
-        label: val.taskArn!,
-        parent: val.clusterArn,
+        id: val.taskDefinitionArn ?? val.taskArn!,
+        label: label!,
+        parent,
         nodeType: TaskEntity.nodeType,
       };
     },
@@ -362,9 +387,14 @@ export const TaskEntity: TranslatedEntity<
       };
     },
     resource(val) {
+      const startOfTaskDefName = val.taskDefinitionArn?.lastIndexOf("/");
+      const label = startOfTaskDefName
+        ? val.taskDefinitionArn?.slice(startOfTaskDefName + 1)
+        : val.taskArn;
+
       return {
-        id: val.taskArn!,
-        name: val.taskArn!,
+        id: val.taskDefinitionArn ?? val.taskArn!,
+        name: label!,
         category: TaskEntity.category,
         subcategory: TaskEntity.subcategory,
       };
@@ -424,69 +454,33 @@ export const TaskEntity: TranslatedEntity<
         status: val.healthStatus,
       };
     },
+
+    network(val) {
+      const eniAttachment = val.attachments?.find(
+        ({ type }) => type === "ElasticNetworkInterface",
+      );
+
+      const eniDetails = Object.fromEntries(
+        eniAttachment?.details
+          ?.filter(
+            (entry): entry is Required<KeyValuePair> =>
+              entry.name != null && entry.value != null,
+          )
+          ?.map(({ name, value }) => [name, value]) ?? [],
+      ) as EniDetails;
+
+      return {
+        assignedAddresses: {
+          ipv4: eniDetails.privateIPv4Address,
+        },
+        targetSubnets: eniDetails.subnetId ? [eniDetails.subnetId] : [],
+        attachedEni: {
+          interfaceId: eniDetails.networkInterfaceId,
+          macAddress: eniDetails.macAddress,
+        },
+      };
+    },
   },
 };
 
 export const entities = [ClusterEntity, ServiceEntity, TaskEntity];
-
-export async function getNodes(
-  stateConnector: Connector,
-  context: AwsContext,
-): Promise<SelectedNode[]> {
-  nodesDebug("Fetching nodes");
-  const state: SelectedNode[] = [];
-  nodesDebug(
-    "Evaluating ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`ECS-Cluster`,rawState:@}",
-  );
-  const DescribeClustersNodes = await evaluateSelector<any>(
-    context.account,
-    context.region,
-    "ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:`ECS-Cluster`,rawState:@}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated ECS|DescribeClusters|[]._result.clusters | [].{id:clusterArn,name:clusterName,type:\`ECS-Cluster\`,rawState:@}: ${DescribeClustersNodes.length} Nodes found`,
-  );
-  state.push(...DescribeClustersNodes);
-  nodesDebug(
-    "Evaluating ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`ECS-Service`,rawState:@}",
-  );
-  const DescribeServicesNodes = await evaluateSelector<any>(
-    context.account,
-    context.region,
-    "ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:`ECS-Service`,rawState:@}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated ECS|DescribeServices|[]._result.services | [].{id:serviceArn,parent:clusterArn,name:serviceName,type:\`ECS-Service\`,rawState:@}: ${DescribeServicesNodes.length} Nodes found`,
-  );
-  state.push(...DescribeServicesNodes);
-  nodesDebug(
-    "Evaluating ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`ECS-Task`,rawState:@}",
-  );
-  const DescribeServicesNodes2 = await evaluateSelector<any>(
-    context.account,
-    context.region,
-    "ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:`ECS-Task`,rawState:@}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated ECS|DescribeServices|[]._result.services | [].{id:taskDefinition,parent:serviceArn,type:\`ECS-Task\`,rawState:@}: ${DescribeServicesNodes2.length} Nodes found`,
-  );
-  state.push(...DescribeServicesNodes2);
-  nodesDebug(
-    "Evaluating ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`ECS-Task`,rawState:@}",
-  );
-  const DescribeTasksNodes = await evaluateSelector<any>(
-    context.account,
-    context.region,
-    "ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:`ECS-Task`,rawState:@}",
-    stateConnector,
-  );
-  nodesDebug(
-    `Evaluated ECS|DescribeTasks|[]._result.tasks | [].{id:taskDefinitionArn,parent:clusterArn,type:\`ECS-Task\`,rawState:@}: ${DescribeTasksNodes.length} Nodes found`,
-  );
-  state.push(...DescribeTasksNodes);
-
-  return state.map((node) => formatNode(node, "ECS", context, true));
-}

@@ -218,6 +218,11 @@ export interface Network {
     instanceTenancy?: string;
     default?: boolean;
   };
+
+  attachedEni?: {
+    interfaceId?: string;
+    macAddress?: string;
+  };
 }
 
 /**
