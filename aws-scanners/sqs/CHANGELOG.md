@@ -1,5 +1,11 @@
 # @infrascan/aws-sqs-scanner
 
+## 0.4.2
+
+### Patch Changes
+
+- [#104](https://github.com/infrascan/infrascan/pull/104) [`3564c22b57f84ddf6a3c373c4d8dfd7bbc9bbbeb`](https://github.com/infrascan/infrascan/commit/3564c22b57f84ddf6a3c373c4d8dfd7bbc9bbbeb) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Correct CreatedAt timestamp to be ms instead of seconds
+
 ## 0.4.1
 
 ### Patch Changes
