@@ -89,8 +89,19 @@ export const SQSEntity: TranslatedEntity<
     },
 
     audit(val) {
+      if (val.CreatedTimestamp == null) {
+        return { createdAt: undefined };
+      }
+      const numericTs = parseInt(val.CreatedTimestamp, 10);
+      const orderOfMagnitude = Math.floor(Math.log10(numericTs));
+      if (orderOfMagnitude === 9) {
+        return {
+          createdAt: `${numericTs * 1e3}`,
+        };
+      }
+
       return {
-        createdAt: val.CreatedTimestamp,
+        createdAt: `${numericTs}`,
       };
     },
 
