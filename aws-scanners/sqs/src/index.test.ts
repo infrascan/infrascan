@@ -49,9 +49,11 @@ t.test(
       },
     });
 
+    const createdTs = Math.floor(Date.now() / 1e3);
     mockedSQSClient.on(GetQueueAttributesCommand).resolves({
       Attributes: {
         QueueArn: queueArn,
+        CreatedTimestamp: createdTs.toString(),
       },
     });
 
@@ -89,6 +91,7 @@ t.test(
         equal(node.$source?.command, entity.command);
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
+        equal(node.audit?.createdAt, `${createdTs * 1e3}`);
         ok((node as unknown as SQSSchema).sqs);
       }
     }
