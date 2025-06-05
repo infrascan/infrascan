@@ -19,4 +19,6 @@ const SFNScanner: ServiceModule<SFNClient, "aws"> = {
   entities: [StepFunctionEntity],
 };
 
+export type { GraphState, StepFunctionState } from "./graph";
+
 export default SFNScanner;

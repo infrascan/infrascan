@@ -16,6 +16,21 @@ import SNSScanner from "@infrascan/aws-sns-scanner";
 import SFNScanner from "@infrascan/aws-step-function-scanner";
 import SQSScanner from "@infrascan/aws-sqs-scanner";
 
+export type * as ApiGateway from "@infrascan/aws-api-gateway-scanner";
+export type * as Cloudfront from "@infrascan/aws-cloudfront-scanner";
+export type * as CloudwatchLogs from "@infrascan/aws-cloudwatch-logs-scanner";
+export type * as DynamoDB from "@infrascan/aws-dynamodb-scanner";
+export type * as ECS from "@infrascan/aws-ecs-scanner";
+export type * as ElasticLoadBalancing from "@infrascan/aws-elastic-load-balancing-scanner";
+export type * as Kinesis from "@infrascan/aws-kinesis-scanner";
+export type * as Lambda from "@infrascan/aws-lambda-scanner";
+export type * as RDS from "@infrascan/aws-rds-scanner";
+export type * as Route53 from "@infrascan/aws-route53-scanner";
+export type * as S3 from "@infrascan/aws-s3-scanner";
+export type * as SNS from "@infrascan/aws-sns-scanner";
+export type * as SQS from "@infrascan/aws-sqs-scanner";
+export type * as StepFunction from "@infrascan/aws-step-function-scanner";
+
 export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
   infrascanClient.registerScanner(ApiGatewayScanner);
   infrascanClient.registerScanner(AutoscalingScanner);

@@ -14,4 +14,5 @@ const DynamoDBScanner: ServiceModule<DynamoDBClient, "aws"> = {
   entities: [DynamoDbTableEntity],
 };
 
+export type { GraphState, DynamoState } from "./graph";
 export default DynamoDBScanner;

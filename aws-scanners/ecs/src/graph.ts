@@ -1,10 +1,4 @@
-import {
-  evaluateSelector,
-  formatNode,
-  toLowerCase,
-  Time,
-} from "@infrascan/core";
-import debug from "debug";
+import { evaluateSelector, toLowerCase, Time } from "@infrascan/core";
 import type {
   Cluster as AwsCluster,
   Service as AwsService,
@@ -20,7 +14,6 @@ import type {
 import type {
   Connector,
   AwsContext,
-  SelectedNode,
   BaseState,
   State,
   KVPair,
@@ -30,9 +23,10 @@ import type {
 
 import type { ECS } from "./types";
 
-const nodesDebug = debug("ecs:nodes");
-
 export type ECSState<T> = BaseState<T> & { ecs: ECS };
+export type ClusterGraphState = ECSState<DescribeClustersCommandInput>;
+export type ServiceGraphState = ECSState<DescribeServicesCommandInput>;
+export type TaskGraphState = ECSState<DescribeTasksCommandInput>;
 
 function mapKvPair<T extends { name?: string; value?: string }>(
   kvPair: T,

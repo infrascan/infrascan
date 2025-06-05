@@ -20,4 +20,5 @@ const KinesisScanner: ServiceModule<KinesisClient, "aws"> = {
   entities: [KinesisConsumerEntity, KinesisStreamEntity],
 };
 
+export type { GraphState, KinesisState } from "./graph";
 export default KinesisScanner;

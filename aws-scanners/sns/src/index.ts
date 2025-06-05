@@ -26,4 +26,6 @@ const SNSScanner: ServiceModule<SNSClient, "aws"> = {
   entities: [SNSTopicEntity],
 };
 
+export type { GraphState, SNS, TopicAttributes } from "./graph";
+
 export default SNSScanner;

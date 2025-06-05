@@ -20,4 +20,5 @@ const CloudWatchLogsScanner: ServiceModule<CloudWatchLogsClient, "aws"> = {
   entities: [CloudwatchLogGroupEntity],
 };
 
+export type { GraphState, LogGroupState } from "./graph";
 export default CloudWatchLogsScanner;

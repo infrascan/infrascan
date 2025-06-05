@@ -29,4 +29,5 @@ const ElasticLoadBalancingV2Scanner: ServiceModule<
   entities: [ElasticLoadBalancerEntity],
 };
 
+export type { GraphState, ElasticLoadBalancerState } from "./graph";
 export default ElasticLoadBalancingV2Scanner;

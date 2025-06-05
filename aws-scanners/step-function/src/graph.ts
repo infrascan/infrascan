@@ -27,6 +27,8 @@ export type StepFunctionState = BaseState<DescribeStateMachineCommandInput> & {
   stepFunction: StepFunction;
 };
 
+export type GraphState = StepFunctionState;
+
 export const StepFunctionEntity: TranslatedEntity<
   StepFunctionState,
   State<DescribeStateMachineCommandOutput, DescribeStateMachineCommandInput>,

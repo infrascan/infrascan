@@ -11,6 +11,7 @@ import {
   type WithCallContext,
 } from "@infrascan/shared-types";
 
+export type GraphState = BaseState<ListBucketsCommandInput>;
 export const S3Entity: TranslatedEntity<
   BaseState<ListBucketsCommandInput>,
   State<ListBucketsCommandOutput, ListBucketsCommandInput>,

@@ -51,4 +51,6 @@ const S3Scanner: ServiceModule<S3Client, "aws"> = {
   entities: [S3Entity],
 };
 
+export type { GraphState } from "./graph";
+
 export default S3Scanner;
