@@ -16,4 +16,10 @@ const CloudFrontScanner: ServiceModule<CloudFrontClient, "aws"> = {
   entities: [CloudfrontDistributionEntity],
 };
 
+export type {
+  OriginGroup,
+  CacheBehavior,
+  DefaultCacheBehavior,
+} from "@aws-sdk/client-cloudfront";
+export type { GraphState, DistributionState } from "./graph";
 export default CloudFrontScanner;

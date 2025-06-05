@@ -14,15 +14,18 @@ import type {
   SizeUnit,
 } from "@infrascan/shared-types";
 
+export interface LogGroupState {
+  dataProtectionStatus?: string;
+  accessClass?: string;
+  metricFilterCount?: number;
+  retentionPeriod?: QualifiedMeasure<TimeUnit>;
+  size?: QualifiedMeasure<SizeUnit>;
+}
+
 export type CloudwatchLogGroup = BaseState<DescribeLogGroupsCommandInput> & {
-  logGroup: {
-    dataProtectionStatus?: string;
-    accessClass?: string;
-    metricFilterCount?: number;
-    retentionPeriod?: QualifiedMeasure<TimeUnit>;
-    size?: QualifiedMeasure<SizeUnit>;
-  };
+  logGroup: LogGroupState;
 };
+export type GraphState = CloudwatchLogGroup;
 
 export const CloudwatchLogGroupEntity: TranslatedEntity<
   CloudwatchLogGroup,

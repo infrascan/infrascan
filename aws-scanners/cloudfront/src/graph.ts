@@ -14,14 +14,18 @@ import type {
   WithCallContext,
 } from "@infrascan/shared-types";
 
+export interface DistributionState {
+  originGroups?: OriginGroup[];
+  cacheBehaviours?: CacheBehavior[];
+  defaultCacheBehaviour?: DefaultCacheBehavior;
+}
+
 export type CloudfrontDistribution =
   BaseState<ListDistributionsCommandInput> & {
-    distribution: {
-      originGroups?: OriginGroup[];
-      cacheBehaviours?: CacheBehavior[];
-      defaultCacheBehaviour?: DefaultCacheBehavior;
-    };
+    distribution: DistributionState;
   };
+
+export type GraphState = CloudfrontDistribution;
 
 export const CloudfrontDistributionEntity: TranslatedEntity<
   CloudfrontDistribution,

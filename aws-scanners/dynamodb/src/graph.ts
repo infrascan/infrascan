@@ -92,15 +92,18 @@ export interface PrimaryDetails {
 }
 export type TableTypeDetails = ReplicaDetails | PrimaryDetails;
 
+export interface DynamoState {
+  tableType: TableTypeDetails;
+  indexes: DynamoIndexes;
+  archive: Archive;
+  attributes?: Attribute[];
+  size?: QualifiedMeasure<SizeUnit>;
+}
+
 export type DynamoTable = BaseState<DescribeTableCommandInput> & {
-  dynamo: {
-    tableType: TableTypeDetails;
-    indexes: DynamoIndexes;
-    archive: Archive;
-    attributes?: Attribute[];
-    size?: QualifiedMeasure<SizeUnit>;
-  };
+  dynamo: DynamoState;
 };
+export type GraphState = DynamoTable;
 
 function mapBaseIndex(
   receivedIndex:

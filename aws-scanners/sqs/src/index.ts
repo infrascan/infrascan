@@ -20,4 +20,6 @@ const SQSScanner: ServiceModule<SQSClient, "aws"> = {
   entities: [SQSEntity],
 };
 
+export type { GraphState, SQS, QueueAttributes } from "./graph";
+
 export default SQSScanner;

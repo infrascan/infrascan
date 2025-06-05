@@ -25,7 +25,7 @@ export interface CodeDetails {
   packageType?: PackageType;
 }
 
-interface Layer {
+export interface Layer {
   arn?: string;
   size?: QualifiedMeasure<SizeUnit>;
 }
@@ -43,15 +43,19 @@ export interface ConcurrencyDetails {
   reservedConcurrentExecutions?: number;
 }
 
+export interface LambdaState {
+  concurrency?: ConcurrencyDetails;
+  type?: Lowercase<PackageType>;
+  supportedArchitectures?: string[];
+  code?: CodeDetails;
+  function?: FunctionDetails;
+}
+
 export type LambdaFunction = BaseState<GetFunctionCommandInput> & {
-  lambda: {
-    concurrency?: ConcurrencyDetails;
-    type?: Lowercase<PackageType>;
-    supportedArchitectures?: string[];
-    code?: CodeDetails;
-    function?: FunctionDetails;
-  };
+  lambda: LambdaState;
 };
+
+export type GraphState = LambdaFunction;
 
 export const LambdaFunctionEntity: TranslatedEntity<
   LambdaFunction,

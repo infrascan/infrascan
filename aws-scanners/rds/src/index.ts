@@ -14,4 +14,6 @@ const RDSScanner: ServiceModule<RDSClient, "aws"> = {
   entities: [RDSInstanceEntity],
 };
 
+export type { GraphState, RDSState } from "./graph";
+
 export default RDSScanner;

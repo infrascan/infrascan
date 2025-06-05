@@ -27,13 +27,17 @@ export interface ActivityStream {
   streamName?: string;
 }
 
+export interface RDSState {
+  engine?: EngineDetails;
+  associatedRoles?: AssociatedRole[];
+  activityStream?: ActivityStream;
+}
+
 export type RDSInstance = BaseState<DescribeDBInstancesCommandInput> & {
-  rds: {
-    engine?: EngineDetails;
-    associatedRoles?: AssociatedRole[];
-    activityStream?: ActivityStream;
-  };
+  rds: RDSState;
 };
+
+export type GraphState = RDSInstance;
 
 export const RDSInstanceEntity: TranslatedEntity<
   RDSInstance,

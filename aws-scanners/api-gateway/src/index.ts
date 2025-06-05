@@ -14,4 +14,5 @@ const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
   entities: [ApiGatewayEntity],
 };
 
+export type { GraphState, ApiGatewayState, Cors, Selections } from "./graph";
 export default ApiGatewayV2Scanner;

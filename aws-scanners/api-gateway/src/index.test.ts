@@ -11,8 +11,7 @@ import {
 } from "@aws-sdk/client-apigatewayv2";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
-import ApiGatewayScanner from "./index";
-import { ApiGateway } from "./graph";
+import ApiGatewayScanner, { type Graph } from "./index";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -93,9 +92,13 @@ t.test(
         equal(node.$source?.command, entity.command);
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
-        equal((node as unknown as ApiGateway).apiGateway.protocol, "HTTP");
+        equal(
+          (node as unknown as Graph.ApiGateway).apiGateway.protocol,
+          "HTTP",
+        );
         if (
-          (node as unknown as ApiGateway).apiGateway.disableExecuteApiEndpoint
+          (node as unknown as Graph.ApiGateway).apiGateway
+            .disableExecuteApiEndpoint
         ) {
           equal(node.dns?.domains.length, 0);
         } else {

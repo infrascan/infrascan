@@ -26,16 +26,16 @@ export interface ConsumerDetails {
   status?: Lowercase<ConsumerStatus>;
 }
 
+export interface KinesisState {
+  stream?: StreamDetails;
+  consumer?: ConsumerDetails;
+}
+
 export type KinesisStream = BaseState<DescribeStreamSummaryCommandInput> & {
-  kinesis: {
-    stream?: StreamDetails;
-    consumer?: ConsumerDetails;
-  };
+  kinesis: KinesisState;
 };
 
-type StreamDescription = DescribeStreamSummaryCommandOutput & {
-  StreamDescriptionSummary: StreamDescriptionSummary;
-};
+export type GraphState = KinesisStream;
 
 export const KinesisStreamEntity: TranslatedEntity<
   KinesisStream,

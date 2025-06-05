@@ -17,12 +17,15 @@ export interface AliasTarget {
   evaluateTargetHealth?: boolean;
 }
 
+export interface Route53State {
+  alias?: AliasTarget;
+  ttl?: number;
+}
+
 export type Route53Record = BaseState<ListResourceRecordSetsCommandInput> & {
-  route53: {
-    alias?: AliasTarget;
-    ttl?: number;
-  };
+  route53: Route53State;
 };
+export type GraphState = Route53Record;
 
 export const Route53RecordEntity: TranslatedEntity<
   Route53Record,

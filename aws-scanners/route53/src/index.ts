@@ -19,4 +19,5 @@ const Route53Scanner: ServiceModule<Route53Client, "aws"> = {
   entities: [Route53RecordEntity],
 };
 
+export type { GraphState, Route53State } from "./graph";
 export default Route53Scanner;

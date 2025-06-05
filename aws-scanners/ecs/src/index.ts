@@ -32,4 +32,10 @@ const ECSScanner: ServiceModule<ECSClient, "aws"> = {
   entities,
 };
 
+export type {
+  ClusterGraphState,
+  ServiceGraphState,
+  TaskGraphState,
+} from "./graph";
+export type { ECS } from "./types";
 export default ECSScanner;

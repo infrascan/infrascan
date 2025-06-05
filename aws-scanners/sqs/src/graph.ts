@@ -11,7 +11,7 @@ import {
   type WithCallContext,
 } from "@infrascan/shared-types";
 
-type QueueAttributes = Partial<
+export type QueueAttributes = Partial<
   Record<Exclude<QueueAttributeName, "All">, string>
 >;
 
@@ -29,6 +29,8 @@ export interface SQS {
 export type SQSSchema = BaseState<GetQueueAttributesCommandInput> & {
   sqs: SQS;
 };
+
+export type GraphState = SQSSchema;
 
 export const SQSEntity: TranslatedEntity<
   SQSSchema,

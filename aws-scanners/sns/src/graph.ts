@@ -10,7 +10,7 @@ import {
   type WithCallContext,
 } from "@infrascan/shared-types";
 
-interface TopicAttributes {
+export interface TopicAttributes {
   DeliveryPolicy?: string;
   DisplayName?: string;
   EffectiveDeliveryPolicy?: string;
@@ -48,6 +48,7 @@ export interface SNS {
 export type SNSEntity = BaseState<GetTopicAttributesCommandInput> & {
   sns: SNS;
 };
+export type GraphState = SNSEntity;
 
 export const SNSTopicEntity: TranslatedEntity<
   SNSEntity,

@@ -11,12 +11,12 @@ import {
 } from "@aws-sdk/client-apigatewayv2";
 import { evaluateSelector } from "@infrascan/core";
 
-interface Selections {
+export interface Selections {
   route?: string;
   apiKey?: string;
 }
 
-interface Cors {
+export interface Cors {
   AllowCredentials?: boolean;
   AllowHeaders?: string[];
   AllowMethods?: string[];
@@ -25,19 +25,22 @@ interface Cors {
   MaxAge?: number;
 }
 
+export interface ApiGatewayState {
+  protocol?: string;
+  selections?: Selections;
+  managed?: boolean;
+  cors?: Cors;
+  disableExecuteApiEndpoint?: boolean;
+  disableSchemaValidation?: boolean;
+  importInfo?: string[];
+  version?: string;
+  warnings?: string[];
+}
+
 export type ApiGateway = BaseState<GetApisCommandInput> & {
-  apiGateway: {
-    protocol?: string;
-    selections?: Selections;
-    managed?: boolean;
-    cors?: Cors;
-    disableExecuteApiEndpoint?: boolean;
-    disableSchemaValidation?: boolean;
-    importInfo?: string[];
-    version?: string;
-    warnings?: string[];
-  };
+  apiGateway: ApiGatewayState;
 };
+export type GraphState = ApiGateway;
 
 export const ApiGatewayEntity: TranslatedEntity<
   ApiGateway,

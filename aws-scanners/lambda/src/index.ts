@@ -15,4 +15,12 @@ const LambdaScanner: ServiceModule<LambdaClient, "aws"> = {
   entities: [LambdaFunctionEntity],
 };
 
+export type {
+  GraphState,
+  LambdaState,
+  CodeDetails,
+  FunctionDetails,
+  ConcurrencyDetails,
+  Layer,
+} from "./graph";
 export default LambdaScanner;

@@ -32,12 +32,15 @@ function getNodeType(val?: LoadBalancerTypeEnum) {
   return "elastic-load-balancer";
 }
 
+export interface ElasticLoadBalancerState {
+  type?: LoadBalancerTypeEnum;
+}
+
 export type ElasticLoadBalancer =
   BaseState<DescribeLoadBalancersCommandInput> & {
-    loadBalancer: {
-      type?: LoadBalancerTypeEnum;
-    };
+    loadBalancer: ElasticLoadBalancerState;
   };
+export type GraphState = ElasticLoadBalancer;
 
 export const ElasticLoadBalancerEntity: TranslatedEntity<
   ElasticLoadBalancer,
