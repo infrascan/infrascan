@@ -1,5 +1,11 @@
 # @infrascan/aws-lambda-scanner
 
+## 0.4.2
+
+### Patch Changes
+
+- [#107](https://github.com/infrascan/infrascan/pull/107) [`4530ad2554c3b44c4fec85dfe3b2da10440593f6`](https://github.com/infrascan/infrascan/commit/4530ad2554c3b44c4fec85dfe3b2da10440593f6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Expose types of state produced from graph scans
+
 ## 0.4.1
 
 ### Patch Changes

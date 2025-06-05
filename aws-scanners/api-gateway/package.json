@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-api-gateway-scanner",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Infrascan scanner definition for AWS Api Gateway",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
