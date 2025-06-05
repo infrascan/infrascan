@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-s3-scanner",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Infrascan scanner definition for AWS S3",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

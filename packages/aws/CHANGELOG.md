@@ -1,5 +1,29 @@
 # @infrascan/aws
 
+## 0.5.2
+
+### Patch Changes
+
+- [#107](https://github.com/infrascan/infrascan/pull/107) [`4530ad2554c3b44c4fec85dfe3b2da10440593f6`](https://github.com/infrascan/infrascan/commit/4530ad2554c3b44c4fec85dfe3b2da10440593f6) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Expose types of state produced from graph scans
+
+- Updated dependencies [[`4530ad2554c3b44c4fec85dfe3b2da10440593f6`](https://github.com/infrascan/infrascan/commit/4530ad2554c3b44c4fec85dfe3b2da10440593f6)]:
+  - @infrascan/aws-elastic-load-balancing-scanner@0.4.2
+  - @infrascan/aws-cloudwatch-logs-scanner@0.4.2
+  - @infrascan/aws-step-function-scanner@0.3.3
+  - @infrascan/aws-api-gateway-scanner@0.4.2
+  - @infrascan/aws-autoscaling-scanner@0.3.1
+  - @infrascan/aws-cloudfront-scanner@0.4.2
+  - @infrascan/aws-dynamodb-scanner@0.4.2
+  - @infrascan/aws-kinesis-scanner@0.3.3
+  - @infrascan/aws-route53-scanner@0.4.2
+  - @infrascan/aws-lambda-scanner@0.4.2
+  - @infrascan/aws-ec2-scanner@0.4.1
+  - @infrascan/aws-ecs-scanner@0.5.1
+  - @infrascan/aws-rds-scanner@0.4.2
+  - @infrascan/aws-sns-scanner@0.4.2
+  - @infrascan/aws-sqs-scanner@0.4.3
+  - @infrascan/aws-s3-scanner@0.4.2
+
 ## 0.5.1
 
 ### Patch Changes
