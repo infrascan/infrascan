@@ -32,7 +32,7 @@ export const Time = {
   Days: "d" as TimeUnit,
 } as const;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 export async function evaluateSelector<T = unknown>(
   account: string,
   region: string,

@@ -21,7 +21,7 @@
   "devDependencies": {
     "@infrascan/shared-types": "^0.6.0",
     "@types/node": "^20.12.10",
-    "tap": "^18.7.0",
+    "tap": "^21",
     "tsconfig": "*"
   },
   "tsup": {

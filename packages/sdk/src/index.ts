@@ -6,11 +6,10 @@ import type {
   GraphPlugin,
   GraphSerializer,
   SelectedEdge,
-  BaseState,
 } from "@infrascan/shared-types";
 import { Graph, generateNodesFromEntity } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
-import { IAMStorage, StoredRole, hydrateRoleStorage } from "aws/helpers/iam";
+import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
 import {
   whoami,
   getAllRegions,

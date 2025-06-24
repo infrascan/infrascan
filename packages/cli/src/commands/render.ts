@@ -92,7 +92,15 @@ export default class RenderCmd extends CommandLineAction {
     try {
       return readFileSync(this.#graphPath.value as string, "utf8");
     } catch (err: unknown) {
-      console.error(`Failed to read graph data from: ${this.#graphPath.value}`);
+      const errMessage =
+        err instanceof Error && "message" in err
+          ? err.message
+          : "unknown error occurred";
+      console.error(
+        `Failed to read graph data from: ${
+          this.#graphPath.value
+        }. ${errMessage}`,
+      );
       return null;
     }
   }

@@ -40,7 +40,7 @@
     "eslint-config-custom": "*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
-    "typescript": "^5.1.3"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "jmespath": "^0.16.0"
