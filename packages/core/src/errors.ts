@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 export class NodeConflictError extends Error {
   constructor(nodeId: string) {
     super(`Node ${nodeId} already exists in graph.`);

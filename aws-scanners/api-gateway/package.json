@@ -50,7 +50,8 @@
     "@types/debug": "^4",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-custom": "^1.0.0",
-    "tap": "^18.7.0"
+    "tap": "^21",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@aws-sdk/client-apigatewayv2": "3.624.0",

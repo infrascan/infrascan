@@ -68,7 +68,12 @@ async function readStateFromFile(filePath: string): Promise<any[]> {
     if (readError?.code === "ENOENT") {
       return [];
     }
-    throw err as Error;
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error(
+      `Unexpected error occurred reading state from file: ${String(err)}`,
+    );
   }
 }
 

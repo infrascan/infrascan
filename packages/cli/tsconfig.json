@@ -1,8 +1,8 @@
 {
   "extends": "@infrascan/tsconfig/base.json",
   "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
+    "target": "esnext",
+    "module": "es2022",
     "moduleResolution": "Node",
     "outDir": "./dist",
     "rootDir": "./src",

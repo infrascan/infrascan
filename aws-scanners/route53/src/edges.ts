@@ -113,7 +113,6 @@ export async function resolveS3Edges(
         ({ _parameters }) => `${_parameters?.Bucket}.` === Name,
       );
       if (s3Bucket && Name && s3Bucket._parameters?.Bucket) {
-        /* eslint-disable no-underscore-dangle */
         const formattedS3Arn = formatS3NodeId(s3Bucket._parameters.Bucket);
         return formatEdge(Name, { name: Name, target: formattedS3Arn });
       }

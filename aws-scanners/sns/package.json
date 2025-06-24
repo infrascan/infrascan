@@ -48,8 +48,9 @@
     "@infrascan/tsconfig": "*",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-codegen": "^1.0.0",
-    "tap": "^18.7.0",
-    "@types/debug": "^4"
+    "tap": "^21",
+    "@types/debug": "^4",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "3.624.0",

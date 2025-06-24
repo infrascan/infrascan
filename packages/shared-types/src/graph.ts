@@ -24,9 +24,9 @@ export interface SelectedEdge {
 }
 
 // Create Read/Write types inspired by kysely
-export type ElementType<ReadType, WriteType> = {
-  readonly _read: ReadType;
-  readonly _write: WriteType;
+export type ElementType<RType, WType> = {
+  readonly _read: RType;
+  readonly _write: WType;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
