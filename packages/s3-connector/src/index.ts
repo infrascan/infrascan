@@ -5,6 +5,7 @@ import {
   GetObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import type { Connector } from "@infrascan/shared-types";
 import Cache from "./cache";
 
 export interface ConstructorArgs {
@@ -17,7 +18,7 @@ export interface ConstructorArgs {
 const isNotNull = <T>(value: T | null | undefined | void): value is T =>
   value != null;
 
-export default class S3Connector {
+export default class S3Connector implements Connector {
   S3: S3Client;
 
   prefix: string;
@@ -77,20 +78,20 @@ export default class S3Connector {
     return `${this.prefix}/${service}-${functionName}/${account}/${region}.json`;
   }
 
-  onServiceScanCompleteCallback(
+  async onServiceScanCompleteCallback(
     account: string,
     region: string,
     service: string,
     functionName: string,
     functionState: any,
-  ): Promise<PutObjectCommandOutput> {
+  ): Promise<void> {
     const filePath = this.buildFilePathForServiceCall(
       account,
       region,
       service,
       functionName,
     );
-    return this.recordServiceCall(filePath, functionState);
+    await this.recordServiceCall(filePath, functionState);
   }
 
   resolveStateForServiceFunction(
