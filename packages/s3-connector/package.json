@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/s3-connector",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Connector for the Infrascan SDK to read and write state to an S3 bucket",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -32,7 +32,7 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@aws-sdk/util-stream-node": "^3.374.0",
-    "@infrascan/shared-types": "^0.6.0",
+    "@infrascan/shared-types": "^0.6.2",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-custom": "*",
     "tap": "^21",
