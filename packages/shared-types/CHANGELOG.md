@@ -1,5 +1,11 @@
 # @infrascan/shared-types
 
+## 0.6.2
+
+### Patch Changes
+
+- [#110](https://github.com/infrascan/infrascan/pull/110) [`6238e6eb0cd1299607dd788ab385215a1aee3c39`](https://github.com/infrascan/infrascan/commit/6238e6eb0cd1299607dd788ab385215a1aee3c39) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Improve typescript interfaces — correct api for s3 connector to better adhere to interface, tidy up type imports for shared types lib
+
 ## 0.6.1
 
 ### Patch Changes
