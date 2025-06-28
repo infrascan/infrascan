@@ -1,4 +1,4 @@
-import { AwsContext, Connector } from "./api";
+import type { AwsContext, Connector } from "./api";
 
 export interface CommandCallMetadata {
   account: string;

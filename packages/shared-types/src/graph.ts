@@ -1,4 +1,4 @@
-import { BaseState } from "./scan";
+import type { BaseState } from "./scan";
 
 /**
  * A node returned from a state selector before its been formatted for a graphing library

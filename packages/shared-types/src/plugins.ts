@@ -1,5 +1,5 @@
-import { Graph } from "./graph";
-import { AwsContext } from "./api";
+import type { Graph } from "./graph";
+import type { AwsContext } from "./api";
 
 // All supported events to trigger a plugin
 export type GraphPluginEvents =
