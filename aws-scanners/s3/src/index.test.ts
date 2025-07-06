@@ -115,6 +115,7 @@ t.test(
       for await (const node of nodeProducer) {
         ok(node.$graph.id);
         ok(node.$graph.label);
+        equal(node.$graph.parent, testContext.account);
         ok(node.$metadata.version);
         equal(node.tenant.tenantId, testContext.account);
         equal(node.tenant.provider, "aws");
