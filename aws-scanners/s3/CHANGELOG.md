@@ -1,5 +1,11 @@
 # @infrascan/aws-s3-scanner
 
+## 0.4.3
+
+### Patch Changes
+
+- [#114](https://github.com/infrascan/infrascan/pull/114) [`4648f2607a679cd3aca85658c060e4831b07afe3`](https://github.com/infrascan/infrascan/commit/4648f2607a679cd3aca85658c060e4831b07afe3) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Move S3 from region scope into global account scope in graph output.
+
 ## 0.4.2
 
 ### Patch Changes
