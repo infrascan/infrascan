@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.5.1
+
+### Patch Changes
+
+- [#112](https://github.com/infrascan/infrascan/pull/112) [`12987a0f63ed0388ecacee124e0292852fc1662f`](https://github.com/infrascan/infrascan/commit/12987a0f63ed0388ecacee124e0292852fc1662f) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Support configuring a custom retry strategy. Remove concurrent iam api calls.
+
 ## 0.5.0
 
 ### Minor Changes
