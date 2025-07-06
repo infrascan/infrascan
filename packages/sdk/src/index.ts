@@ -9,7 +9,16 @@ import type {
 } from "@infrascan/shared-types";
 import { Graph, generateNodesFromEntity } from "@infrascan/core";
 import { IAM } from "@aws-sdk/client-iam";
+import type { RetryStrategy } from "@aws-sdk/types";
+import { AdaptiveRetryStrategy } from "@smithy/util-retry";
 import { IAMStorage, StoredRole, hydrateRoleStorage } from "./aws/helpers/iam";
+import {
+  addEdgeToGraphUnchecked,
+  addNodeToGraphUnchecked,
+  buildAccountNode,
+  buildRegionNode,
+  generateEdgesForRole,
+} from "./graph";
 import {
   whoami,
   getAllRegions,
@@ -19,14 +28,6 @@ import {
   ScanCredentialProvider,
   resolveCredentialsFromProvider,
 } from "./scan";
-
-import {
-  addEdgeToGraphUnchecked,
-  addNodeToGraphUnchecked,
-  buildAccountNode,
-  buildRegionNode,
-  generateEdgesForRole,
-} from "./graph";
 
 const AWS_DEFAULT_REGION = "us-east-1";
 
@@ -119,7 +120,11 @@ export default class Infrascan {
   async performScan(
     credentialProvider: ScanCredentialProvider,
     connector: Connector,
-    opts?: { regions?: string[]; defaultRegion?: string | undefined },
+    opts?: {
+      regions?: string[];
+      defaultRegion?: string | undefined;
+      retryStrategy?: RetryStrategy;
+    },
   ): Promise<ScanMetadata> {
     const defaultRegion = opts?.defaultRegion ?? AWS_DEFAULT_REGION;
     const credentials = await resolveCredentialsFromProvider(
@@ -143,6 +148,9 @@ export default class Infrascan {
     const iamClient = new IAM({
       credentials,
       region: defaultRegion,
+      retryStrategy:
+        opts?.retryStrategy ??
+        new AdaptiveRetryStrategy(() => Promise.resolve(5)),
     });
 
     const iamStorage = new IAMStorage();
@@ -163,6 +171,7 @@ export default class Infrascan {
         iamStorage,
         iamClient,
         scanContext,
+        opts?.retryStrategy,
       );
     }
 

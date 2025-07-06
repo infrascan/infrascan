@@ -3,7 +3,10 @@ import { GetCallerIdentityCommandOutput, STS } from "@aws-sdk/client-sts";
 import { IAM } from "@aws-sdk/client-iam";
 import { AdaptiveRetryStrategy } from "@smithy/util-retry";
 
-import type { AwsCredentialIdentityProvider } from "@aws-sdk/types";
+import type {
+  AwsCredentialIdentityProvider,
+  RetryStrategy,
+} from "@aws-sdk/types";
 import type {
   AwsContext,
   Connector,
@@ -93,26 +96,25 @@ export async function scanService(
   iamStorage: IAMStorage,
   iamClient: IAM,
   context: AwsContext,
+  retryStrategy?: RetryStrategy,
 ): Promise<void> {
   const serviceClient = serviceScanner.getClient(
     credentials,
     context,
-    new AdaptiveRetryStrategy(async () => 5),
+    retryStrategy ?? new AdaptiveRetryStrategy(async () => 5),
   );
   for (const scannerFn of serviceScanner.getters) {
     await scannerFn(serviceClient, connector, context);
   }
   if (serviceScanner.getIamRoles != null) {
     const iamRoles = await serviceScanner.getIamRoles(connector);
-    await Promise.all(
-      iamRoles.map(({ roleArn }) =>
-        scanIamRole(iamStorage, iamClient, roleArn).catch((err) => {
-          console.error("An error occurred while scanning role:", roleArn);
-          if (err instanceof Error) {
-            console.error(err.message);
-          }
-        }),
-      ),
-    );
+    for (const { roleArn } of iamRoles) {
+      scanIamRole(iamStorage, iamClient, roleArn).catch((err) => {
+        console.error("An error occurred while scanning role:", roleArn);
+        if (err instanceof Error) {
+          console.error(err.message);
+        }
+      });
+    }
   }
 }
