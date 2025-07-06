@@ -56,7 +56,7 @@ export const S3Entity: TranslatedEntity<
         id: `arn:aws:s3:::${val.Name!}`,
         label: val.Name!,
         nodeType: S3Entity.nodeType,
-        parent: `${val.$metadata.account}-${val.$metadata.region}`,
+        parent: val.$metadata.account,
       };
     },
 
