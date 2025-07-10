@@ -2,13 +2,35 @@
 
 The Infrascan CLI is a thin wrapper around the Infrascan SDK which outputs its state to the local file system.
 
-The Infrascan CLI exposes two commands: scan and graph. A scan will read in all of the information that it can from your AWS account, and write it to your local file system. You can then run the graph command to take that scan output and convert it into an infrastructure diagram. 
+The Infrascan CLI exposes two commands: scan and graph. A scan will read in all of the information that it can from your AWS account, and write it to your local file system. You can then run the graph command to take that scan output and convert it into an infrastructure diagram.
 
 ## Prerequisite
 
 Infrascan requires read access to your AWS account to generate its graphs. Read access can be given by specifying a profile in your [AWS credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html), or by using the [default credential provider chain](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/setting-credentials-node.html) and providing a role to assume.
 
 ## Quickstart
+
+### Fastest Possible
+
+Run a scan:
+
+```sh
+infrascan scan --region us-east-1
+```
+
+Generate a graph
+
+```sh
+infrascan graph
+```
+
+View it in browser:
+
+```sh
+infrascan render --browser
+```
+
+Or paste it into [render.infrascan.io](https://render.infrascan.io)
 
 ### Scan
 
