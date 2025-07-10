@@ -15,6 +15,78 @@ Infrascan is a set of open-source tools to help you make sense of your cloud inf
 
 This repo contains the Infrascan SDK, Config, and CLI, as well as private packages used during development.
 
+## CLI Quickstart
+
+### Install
+
+```sh
+npm i -g @infrascan/cli
+```
+
+To get started perform a scan:
+
+```sh
+# The CLI will use the default AWS credential providers chain, and will respect any standard AWS environment variables used to configure it.
+AWS_PROFILE=readonly infrascan scan --region us-east-1 --region eu-west-1 -o scan-output
+```
+
+Then generate a graph:
+
+```sh
+infrascan graph -i scan-output
+```
+
+This will output a JSON file containing the graph details. To view the graph locally, run:
+
+```sh
+infrascan render --browser -i scan-output/graph.json
+```
+
+Or you can copy your graph and paste it into [render.infrascan.io](https://render.infrascan.io)
+
+## SDK Quickstart
+
+```ts
+import Infrascan from "@infrascan/sdk";
+import buildFsConnector from "@infrascan/fs-connector";
+import { registerAwsScanners } from "@infrascan/aws";
+import { serializeGraph } from "@infrascan/cytoscape-serializer";
+import { reducerPluginFactory } from "@infrascan/node-reducer-plugin";
+import { fromIni } from "@aws-sdk/credential-providers";
+
+const credentials = fromIni({ profile: "dev" });
+const regions = ["us-east-1", "us-west-1"];
+
+const connector = buildFsConnector("state");
+// Initialize the Infrascan client with all available services
+const infrascan = registerAwsScanners(new Infrascan());
+
+// Optionally register a plugin to mutate the graph
+infrascan.registerPlugin(
+  reducerPluginFactory([
+    {
+      // Collapse serverless deployment buckets into a single node
+      id: "serverless-bucket-reducer",
+      regex: /^(.+)(serverlessdeploymentbuck)(.*)$/,
+      service: "s3",
+    },
+  ]),
+);
+
+infrascan
+  .performScan(credentials, connector, { regions })
+  .then(function (scanMetadata) {
+    console.log("Scan Complete!", scanMetadata);
+    return infrascan.generateGraph(scanMetadata, connector, serializeGraph);
+  })
+  .then(function (graphData) {
+    console.log("Graph generated!");
+  })
+  .catch(function (err) {
+    console.error("Failed to scan", err);
+  });
+```
+
 ## Coverage
 
 This project aims to be able to generate arbitrary infrastructure diagrams in most AWS deployments. This will always be a work in progress. Current covered AWS Services are listed below.
