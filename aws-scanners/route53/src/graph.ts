@@ -19,6 +19,7 @@ export interface AliasTarget {
 
 export interface Route53State {
   alias?: AliasTarget;
+  resourceRecords?: string[];
   ttl?: number;
 }
 
@@ -55,7 +56,12 @@ export const Route53RecordEntity: TranslatedEntity<
 
   translate(val) {
     return (val._result.ResourceRecordSets ?? [])
-      .filter((record) => record.Type === "A")
+      .filter(
+        (record) =>
+          record.Type === "A" ||
+          record.Type === "AAAA" ||
+          record.Type === "CNAME",
+      )
       .map((record) =>
         Object.assign(record, {
           $metadata: val._metadata,
@@ -115,15 +121,30 @@ export const Route53RecordEntity: TranslatedEntity<
       };
     },
 
-    route53(val) {
-      return {
-        ttl: val.TTL,
-        alias: {
+    route53(val): Route53State {
+      const route53Context: Route53State = { ttl: val.TTL };
+      if (
+        val.AliasTarget?.HostedZoneId != null ||
+        val.AliasTarget?.DNSName != null ||
+        val.AliasTarget?.EvaluateTargetHealth != null
+      ) {
+        route53Context.alias = {
           hostedZoneId: val.AliasTarget?.HostedZoneId,
           dnsName: val.AliasTarget?.DNSName,
           evaluateTargetHealth: val.AliasTarget?.EvaluateTargetHealth,
-        },
-      };
+        };
+      }
+
+      if (
+        val.ResourceRecords?.length != null &&
+        val.ResourceRecords.length > 0
+      ) {
+        route53Context.resourceRecords = val.ResourceRecords.map(
+          (record) => record.Value,
+        ).filter((record) => record != null);
+      }
+
+      return route53Context;
     },
   },
 };
