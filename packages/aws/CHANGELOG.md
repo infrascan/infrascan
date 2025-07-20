@@ -1,5 +1,13 @@
 # @infrascan/aws
 
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [[`431121af5eb8a01099f778914dbf6aadd37958b1`](https://github.com/infrascan/infrascan/commit/431121af5eb8a01099f778914dbf6aadd37958b1), [`431121af5eb8a01099f778914dbf6aadd37958b1`](https://github.com/infrascan/infrascan/commit/431121af5eb8a01099f778914dbf6aadd37958b1)]:
+  - @infrascan/aws-ecs-scanner@0.5.2
+  - @infrascan/aws-route53-scanner@0.5.0
+
 ## 0.5.2
 
 ### Patch Changes
