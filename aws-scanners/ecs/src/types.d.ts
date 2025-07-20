@@ -2,6 +2,7 @@ import type {
   PlacementConstraint,
   PlacementStrategy,
   SchedulingStrategy,
+  LoadBalancer,
 } from "@aws-sdk/client-ecs";
 import type { KVPair } from "@infrascan/shared-types";
 
@@ -109,6 +110,7 @@ export interface Service {
     constraints?: PlacementConstraint[];
   };
   schedulingStrategy?: Lowercase<SchedulingStrategy>;
+  loadBalancers?: LoadBalancer[];
 }
 
 // Network related interfaces

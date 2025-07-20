@@ -3,7 +3,6 @@ import {
   formatEdge,
   formatS3NodeId,
 } from "@infrascan/core";
-import { minimatch } from "minimatch";
 import type {
   DistributionSummary,
   ListDistributionsCommandOutput,
@@ -30,7 +29,7 @@ import type {
 } from "@aws-sdk/client-s3";
 import type { Connector, State, SelectedEdge } from "@infrascan/shared-types";
 
-type AliasRecordsByService = {
+type RecordsByService = {
   cloudfront: ResourceRecordSet[];
   s3: ResourceRecordSet[];
   apiGateway: ResourceRecordSet[];
@@ -39,31 +38,65 @@ type AliasRecordsByService = {
 
 export async function aggregateRoute53RecordsByConnectedService(
   route53Records: ResourceRecordSet[],
-): Promise<AliasRecordsByService> {
+): Promise<RecordsByService> {
   const aliasRecords = route53Records.filter(
     ({ Type, AliasTarget }) => Type === "A" && Boolean(AliasTarget),
   );
 
-  const aliasRecordsByService: AliasRecordsByService = {
+  const recordsByService: RecordsByService = {
     cloudfront: [],
     s3: [],
     apiGateway: [],
     elb: [],
   };
 
-  return aliasRecords.reduce((aliasRecordsMap, currentRecord) => {
+  aliasRecords.reduce((aliasRecordsMap, currentRecord) => {
     const domain = currentRecord.AliasTarget?.DNSName;
-    if (domain?.includes(".cloudfront.net.")) {
+    if (domain == null) {
+      return aliasRecordsMap;
+    }
+
+    if (domain.includes(".cloudfront.net.")) {
       aliasRecordsMap.cloudfront.push(currentRecord);
-    } else if (domain?.includes(".elb.amazonaws.com.")) {
+    } else if (domain.includes(".elb.amazonaws.com.")) {
       aliasRecordsMap.elb.push(currentRecord);
-    } else if (domain && minimatch(domain, ".execute-api.*.amazonaws.com.")) {
+    } else if (/\.execute-api\.\w+\.amazonaws.com\.$/.test(domain)) {
       aliasRecordsMap.apiGateway.push(currentRecord);
-    } else if (domain && minimatch(domain, "s3-website-*.amazonaws.com.")) {
+    } else if (/s3-website-\w+\.amazonaws.com\.$/.test(domain)) {
       aliasRecordsMap.s3.push(currentRecord);
     }
     return aliasRecordsMap;
-  }, aliasRecordsByService);
+  }, recordsByService);
+
+  const standardDnsRecords = route53Records.filter(
+    ({ Type, AliasTarget }) => Type === "CNAME" && AliasTarget == null,
+  );
+
+  for (const standardDnsRecord of standardDnsRecords) {
+    const resourceRecords = standardDnsRecord.ResourceRecords;
+    if (resourceRecords != null && resourceRecords.length > 0) {
+      resourceRecords.forEach((resourceRecord) => {
+        if (resourceRecord.Value == null) {
+          return;
+        }
+        if (resourceRecord.Value.includes(".cloudfront.net.")) {
+          recordsByService.cloudfront.push(standardDnsRecord);
+        } else if (resourceRecord.Value.includes(".elb.amazonaws.com.")) {
+          recordsByService.elb.push(standardDnsRecord);
+        } else if (
+          /\.execute-api\.\w+\.amazonaws.com\.$/.test(resourceRecord.Value)
+        ) {
+          recordsByService.apiGateway.push(standardDnsRecord);
+        } else if (
+          /s3-website-\w+\.amazonaws.com\.$/.test(resourceRecord.Value)
+        ) {
+          recordsByService.s3.push(standardDnsRecord);
+        }
+      });
+    }
+  }
+
+  return recordsByService;
 }
 
 export async function resolveCloudfrontEdges(
