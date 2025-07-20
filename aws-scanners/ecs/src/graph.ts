@@ -240,6 +240,7 @@ export const ServiceEntity: TranslatedEntity<
           },
           controller: val.deploymentController,
         },
+        loadBalancers: val.loadBalancers,
       };
     },
     network(val) {
@@ -270,9 +271,6 @@ export const ServiceEntity: TranslatedEntity<
             ? [{ label: "service-role", arn: val.roleArn }]
             : [],
       };
-    },
-    loadBalancers(val) {
-      return val.loadBalancers;
     },
     tags(val) {
       return val.tags;
