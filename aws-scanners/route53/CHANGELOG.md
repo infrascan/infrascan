@@ -1,5 +1,11 @@
 # @infrascan/aws-route53-scanner
 
+## 0.5.1
+
+### Patch Changes
+
+- [#119](https://github.com/infrascan/infrascan/pull/119) [`1cfec050c183cd3027819013096387fe7ccc0ca5`](https://github.com/infrascan/infrascan/commit/1cfec050c183cd3027819013096387fe7ccc0ca5) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Correct CNAME check for domains - remove trailing '.' on known AWS targets
+
 ## 0.5.0
 
 ### Minor Changes
