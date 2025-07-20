@@ -79,16 +79,16 @@ export async function aggregateRoute53RecordsByConnectedService(
         if (resourceRecord.Value == null) {
           return;
         }
-        if (resourceRecord.Value.includes(".cloudfront.net.")) {
+        if (resourceRecord.Value.includes(".cloudfront.net")) {
           recordsByService.cloudfront.push(standardDnsRecord);
-        } else if (resourceRecord.Value.includes(".elb.amazonaws.com.")) {
+        } else if (resourceRecord.Value.includes(".elb.amazonaws.com")) {
           recordsByService.elb.push(standardDnsRecord);
         } else if (
-          /\.execute-api\.\w+\.amazonaws.com\.$/.test(resourceRecord.Value)
+          /\.execute-api\.\w+\.amazonaws.com$/.test(resourceRecord.Value)
         ) {
           recordsByService.apiGateway.push(standardDnsRecord);
         } else if (
-          /s3-website-\w+\.amazonaws.com\.$/.test(resourceRecord.Value)
+          /s3-website-\w+\.amazonaws.com$/.test(resourceRecord.Value)
         ) {
           recordsByService.s3.push(standardDnsRecord);
         }
