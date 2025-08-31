@@ -1,20 +1,39 @@
-import type { Graph } from "@infrascan/shared-types";
+import type { Graph, Node, Readable } from "@infrascan/shared-types";
+
+interface CytoscapeNodeData
+  extends Omit<
+    Readable<Node>,
+    "parent" | "incomingEdges" | "outgoingEdges" | "children"
+  > {
+  id: string;
+  /**
+   * Parent node (account, region etc)
+   */
+  parent?: string;
+  name?: string;
+  service?: string;
+}
 
 /**
  * A node on the graph in Cytoscape format
  */
-export type CytoscapeNode = {
+export interface CytoscapeNode {
   group: "nodes";
-  data: {
-    id: string;
-    /**
-     * Parent node (account, region etc)
-     */
-    parent?: string;
-    name?: string;
-    service?: string;
-  };
-};
+  data: CytoscapeNodeData;
+}
+
+interface CytoscapeEdgeData {
+  id: string;
+  name: string;
+  /**
+   * Source Node
+   */
+  source: string;
+  /**
+   * Target Node
+   */
+  target: string;
+}
 
 /**
  * An edge connecting two nodes within a graph
@@ -24,18 +43,7 @@ export type CytoscapeEdge = {
   /**
    * Unique ID for the edge
    */
-  data: {
-    id: string;
-    name: string;
-    /**
-     * Source Node
-     */
-    source: string;
-    /**
-     * Target Node
-     */
-    target: string;
-  };
+  data: CytoscapeEdgeData;
 };
 
 /**

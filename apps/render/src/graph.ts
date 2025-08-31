@@ -9,7 +9,27 @@ type GraphElement = Node | Edge;
 function buildNode(id: string): Node {
   return {
     group: "nodes",
-    data: { id },
+    data: {
+      id,
+      $metadata: {
+        version: "0.0.0",
+        timestamp: Date.now(),
+      },
+      $graph: {
+        id,
+        label: id,
+        nodeType: "generic",
+      },
+      tenant: {
+        provider: "aws",
+        tenantId: "123456789012",
+      },
+      resource: {
+        category: "generic",
+        id,
+        name: id,
+      },
+    },
   };
 }
 
