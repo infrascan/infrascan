@@ -1,5 +1,11 @@
 # @infrascan/cytoscape-serializer
 
+## 0.3.3
+
+### Patch Changes
+
+- [#121](https://github.com/infrascan/infrascan/pull/121) [`746a5920c5db6f58a9f40def54c8c75797018ac4`](https://github.com/infrascan/infrascan/commit/746a5920c5db6f58a9f40def54c8c75797018ac4) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update cytoscape serializer interface to expose more of the structured node data
+
 ## 0.3.2
 
 ### Patch Changes
