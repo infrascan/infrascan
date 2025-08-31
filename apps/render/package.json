@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@infrascan/cytoscape-serializer": "^0.3.2",
+    "@infrascan/cytoscape-serializer": "^0.3.3",
     "@infrascan/shared-types": "^0.6.2",
     "@types/cytoscape": "^3.19.16",
     "typescript": "^5.4.5",
