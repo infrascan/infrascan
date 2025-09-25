@@ -6,7 +6,7 @@ import {
   DescribeSubnets,
   DescribeSecurityGroups,
 } from "./generated/getters";
-import { SecurityGroupEntity, SubnetEntity } from "./graph";
+import { SecurityGroupEntity, SubnetEntity, VpcEntity } from "./graph";
 
 const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   provider: "aws",
@@ -15,9 +15,15 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [DescribeVpcs, DescribeSubnets, DescribeSecurityGroups],
-  entities: [SubnetEntity, SecurityGroupEntity],
+  entities: [VpcEntity, SubnetEntity, SecurityGroupEntity],
 };
 
-export type { SubnetState, SubnetOnLaunch, Subnet } from "./graph";
+export type {
+  SubnetState,
+  SubnetOnLaunch,
+  Subnet,
+  VpcState,
+  VpcConfig,
+} from "./graph";
 
 export default EC2Scanner;
