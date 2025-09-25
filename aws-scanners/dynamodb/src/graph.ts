@@ -187,7 +187,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
     DescribeTableCommandInput
   >
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "dynamodb",
   provider: "aws",
   command: "DescribeTable",
@@ -255,6 +255,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
       return {
         id: val.TableArn!,
         label: val.TableName!,
+        nodeClass: "visual",
         nodeType: DynamoDbTableEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

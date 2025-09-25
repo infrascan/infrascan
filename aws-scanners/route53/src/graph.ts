@@ -36,7 +36,7 @@ export const Route53RecordEntity: TranslatedEntity<
   >,
   WithCallContext<ResourceRecordSet, ListResourceRecordSetsCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "route53-record",
   provider: "aws",
   command: "ListResourceRecordSets",
@@ -82,6 +82,7 @@ export const Route53RecordEntity: TranslatedEntity<
       return {
         id: val.Name!,
         label: val.Name!,
+        nodeClass: "visual",
         nodeType: Route53RecordEntity.nodeType,
         parent: val.$metadata.account,
       };

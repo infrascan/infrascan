@@ -1,7 +1,10 @@
 import * as Lambda from "@aws-sdk/client-lambda";
 import type { ScannerDefinition } from "@infrascan/shared-types";
 
-export type LambdaFunctions = "ListFunctions" | "GetFunction";
+export type LambdaFunctions =
+  | "ListFunctions"
+  | "GetFunction"
+  | "ListEventSourceMappings";
 
 const LambdaScanner: ScannerDefinition<
   "Lambda",
@@ -29,6 +32,19 @@ const LambdaScanner: ScannerDefinition<
           Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
         },
       ],
+    },
+    {
+      fn: "ListEventSourceMappings",
+      parameters: [
+        {
+          Key: "FunctionName",
+          Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
+        },
+      ],
+      paginationToken: {
+        request: "Marker",
+        response: "NextMarker",
+      },
     },
   ],
   iamRoles: [

@@ -36,21 +36,35 @@ export interface Coordinates {
 }
 
 /**
+ * Indicates how the node should be consumed.
+ *
+ * - Informational nodes are not likely to be useful when rendered, but may include useful insights for infrastructure comprehension. Informational nodes are unlikely to have edges.
+ * - Visual nodes should be considered a superset of informational nodes - they convey information and can be rendered in an obvious way.
+ */
+export type NodeClass = "informational" | "visual";
+
+/**
  * Details about the nodes position in the graph and how it relates to other components
  */
 export interface GraphInfo {
   /**
    * The unique ID of the node in the graph
+   * @deprecated Use Resource.id instead
    */
   id: string;
   /**
    * The human readable name of the node in the graph
+   * @deprecated Use Resource.name instead
    */
   label: string;
   /**
    * The type of the node, used for assigning an icon in the graph
    */
   nodeType: string;
+  /**
+   * Indicates if the node is intended to be rendered or used for infrastructure comprehension.
+   */
+  nodeClass: NodeClass;
   /**
    * The ID of the parent node, optional.
    */
@@ -155,6 +169,57 @@ export interface DNS {
 
 export type PublicIpStatus = "enabled" | "disabled";
 
+export type AddressFamily = "ipv4" | "ipv6";
+
+export interface ReservedAddresses {
+  family: AddressFamily;
+  cidrBlock: string;
+  cidrBlockAssociationSets?: [
+    {
+      associationId: string;
+      cidrBlock: string;
+      state: string;
+      stateMessage: string;
+    },
+  ];
+  firstAddress?: string;
+  lastAddress?: string;
+}
+
+export interface IpRange {
+  family?: AddressFamily;
+  cidrBlock?: string;
+  description?: string;
+}
+
+export interface ReferencedAwsSecurityGroup {
+  description?: string;
+  securityGroupId?: string;
+  securityGroupName?: string;
+  referencedAccountId?: string;
+  referencedVpcId?: string;
+  vpcPeeringStatus?: string;
+  vpcPeeringConnectionId?: string;
+}
+
+export interface PrefixLists {
+  description?: string;
+  prefixListId?: string;
+}
+
+export interface AwsNetworkingRules {
+  referencedSecurityGroups?: ReferencedAwsSecurityGroup[];
+  prefixLists?: PrefixLists[];
+}
+
+export interface NetworkRule {
+  fromPort?: number;
+  toPort?: number;
+  protocol?: string;
+  permittedIpRanges?: IpRange[];
+  awsConfig?: AwsNetworkingRules;
+}
+
 /**
  * The network information for a scanned resource which aims to cover both resources being assigned an address
  * and the networking resource itself (VPC, subnet)
@@ -185,26 +250,12 @@ export interface Network {
   /**
    * The IP ranges reserved for a networking resource (VPC, subnet)
    */
-  reservedAddresses?: [
-    {
-      family: "ipv4" | "ipv6";
-      cidrBlock: string;
-      cidrBlockAssociationSets?: [
-        {
-          associationId: string;
-          cidrBlock: string;
-          state: string;
-          stateMessage: string;
-        },
-      ];
-      firstAddress: string;
-      lastAddress: string;
-    },
-  ];
+  reservedAddresses?: ReservedAddresses[];
   /**
    * The information relating to a specific subnet
    */
   subnet?: {
+    state?: string;
     ipv6Only?: boolean;
     availableAddressCount?: number;
   };
@@ -223,6 +274,7 @@ export interface Network {
     interfaceId?: string;
     macAddress?: string;
   };
+  rules?: NetworkRule[];
 }
 
 /**

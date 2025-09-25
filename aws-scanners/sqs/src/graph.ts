@@ -37,7 +37,7 @@ export const SQSEntity: TranslatedEntity<
   State<GetQueueAttributesCommandOutput, GetQueueAttributesCommandInput>,
   WithCallContext<QueueAttributes, GetQueueAttributesCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "sqs-queue",
   provider: "aws",
   command: "GetQueueAttributes",
@@ -78,6 +78,7 @@ export const SQSEntity: TranslatedEntity<
       return {
         id: val.QueueArn!,
         label: queueName,
+        nodeClass: "visual",
         nodeType: SQSEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

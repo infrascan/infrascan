@@ -47,7 +47,7 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
   State<DescribeLoadBalancersCommandOutput, DescribeLoadBalancersCommandInput>,
   WithCallContext<LoadBalancer, DescribeLoadBalancersCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "elastic-load-balancing",
   provider: "aws",
   command: "DescribeLoadBalancers",
@@ -87,6 +87,7 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
         id: val.LoadBalancerArn!,
         label: val.LoadBalancerName!,
         nodeType: getNodeType(val.Type),
+        nodeClass: "visual",
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },

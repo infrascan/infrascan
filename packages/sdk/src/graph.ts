@@ -42,6 +42,7 @@ export function buildAccountNode(account: string): BaseState {
     $graph: {
       id: account,
       label: humanReadableAccountName,
+      nodeClass: "visual",
       nodeType: AWS_ACCOUNT_SERVICE_KEY,
     },
     $metadata: {
@@ -68,6 +69,7 @@ export function buildRegionNode(account: string, region: string): BaseState {
       id: `${account}-${region}`,
       label: humanReadableRegionName,
       nodeType: AWS_REGION_SERVICE_KEY,
+      nodeClass: "visual",
       parent: account,
     },
     $metadata: {

@@ -42,7 +42,7 @@ export const KinesisStreamEntity: TranslatedEntity<
   State<DescribeStreamSummaryCommandOutput, DescribeStreamSummaryCommandInput>,
   WithCallContext<StreamDescriptionSummary, DescribeStreamSummaryCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "kinesis",
   provider: "aws",
   command: "DescribeStreamSummary",
@@ -86,6 +86,7 @@ export const KinesisStreamEntity: TranslatedEntity<
       return {
         id: val.StreamARN!,
         label: val.StreamName!,
+        nodeClass: "visual",
         nodeType: KinesisStreamEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
@@ -161,7 +162,7 @@ export const KinesisConsumerEntity: TranslatedEntity<
   State<ListStreamConsumersCommandOutput, ListStreamConsumersInput>,
   WithCallContext<Consumer, ListStreamConsumersInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "kinesis",
   provider: "aws",
   command: "ListStreamConsumers",
@@ -200,6 +201,7 @@ export const KinesisConsumerEntity: TranslatedEntity<
       return {
         id: val.ConsumerARN!,
         label: val.ConsumerName!,
+        nodeClass: "informational",
         nodeType: KinesisConsumerEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

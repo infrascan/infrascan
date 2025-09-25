@@ -18,6 +18,7 @@ function buildNode(id: string): Node {
       $graph: {
         id,
         label: id,
+        nodeClass: "visual",
         nodeType: "generic",
       },
       tenant: {

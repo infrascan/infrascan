@@ -56,18 +56,6 @@ export interface Node extends BaseState<unknown> {
   outgoingEdges: ElementRecord<string, Edge, string>;
 }
 
-export interface NodeOld {
-  id: string;
-  name: string;
-  metadata: Record<string, unknown>;
-  service?: string;
-  type?: string;
-  parent?: ElementType<Node, string>;
-  children?: ElementRecord<string, Node, string>;
-  incomingEdges: ElementRecord<string, Edge, string>;
-  outgoingEdges: ElementRecord<string, Edge, string>;
-}
-
 export interface Edge {
   id: string;
   name?: string;

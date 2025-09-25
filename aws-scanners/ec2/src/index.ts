@@ -1,7 +1,12 @@
 import { EC2Client } from "@aws-sdk/client-ec2";
 import type { ServiceModule } from "@infrascan/shared-types";
 import { getClient } from "./generated/client";
-import { DescribeVpcs, DescribeSubnets } from "./generated/getters";
+import {
+  DescribeVpcs,
+  DescribeSubnets,
+  DescribeSecurityGroups,
+} from "./generated/getters";
+import { SecurityGroupEntity, SubnetEntity } from "./graph";
 
 const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   provider: "aws",
@@ -9,8 +14,10 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   key: "EC2-Networking",
   getClient,
   callPerRegion: true,
-  getters: [DescribeVpcs, DescribeSubnets],
-  entities: [],
+  getters: [DescribeVpcs, DescribeSubnets, DescribeSecurityGroups],
+  entities: [SubnetEntity, SecurityGroupEntity],
 };
+
+export type { SubnetState, SubnetOnLaunch, Subnet } from "./graph";
 
 export default EC2Scanner;

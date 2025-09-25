@@ -1,0 +1,42 @@
+{
+  "name": "@infrascan/informational-serializer",
+  "version": "0.1.0",
+  "description": "A trivial graph serializer intended for non-visual consumption, retaining all nodes and no edges.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
+    "test": "echo \"Error: no test specified\"",
+    "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
+    "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
+    "clean": "rm -rf dist node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
+  "keywords": [
+    "cytoscape",
+    "infrascan"
+  ],
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/infrascan/infrascan#readme",
+  "bugs": {
+    "url": "https://github.com/infrascan/infrascan/issues"
+  },
+  "devDependencies": {
+    "@infrascan/shared-types": "^0.6.0"
+  }
+}

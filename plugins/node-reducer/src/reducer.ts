@@ -98,6 +98,7 @@ export function collapseNodes(
       id: `${parent}-${rule.id}`,
       label: `${parent}-${rule.id}`,
       parent,
+      nodeClass: nodes[0]?.$graph.nodeClass ?? "visual",
       nodeType: nodes[0]?.$graph.nodeType,
     },
     tenant: nodes[0].tenant,

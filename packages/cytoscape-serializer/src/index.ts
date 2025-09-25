@@ -57,37 +57,39 @@ export type EdgeTarget = {
 };
 
 export function serializeGraph(graph: Graph): CytoscapeGraph[] {
-  const nodes: CytoscapeNode[] = graph.nodes.map((node) => {
-    const {
-      parent,
-      incomingEdges,
-      outgoingEdges,
-      children,
-      ...structuredNode
-    } = node;
+  const nodes: CytoscapeNode[] = graph.nodes
+    .filter((node) => node.$graph.nodeClass === "visual")
+    .map((node) => {
+      const {
+        parent,
+        incomingEdges,
+        outgoingEdges,
+        children,
+        ...structuredNode
+      } = node;
 
-    const defaultParent =
-      node.location?.code && node.tenant.tenantId
-        ? `${node.tenant.tenantId}-${node.location?.code}`
-        : node.tenant.tenantId;
-    return {
-      group: "nodes",
-      data: Object.assign(structuredNode, {
-        id: node.$graph.id,
-        parent: node.$graph.parent ?? defaultParent,
-        name: node.$graph.label,
-        type: node.$graph.nodeType,
-      }),
-    };
-  });
+      const defaultParent =
+        node.location?.code && node.tenant.tenantId
+          ? `${node.tenant.tenantId}-${node.location?.code}`
+          : node.tenant.tenantId;
+      return {
+        group: "nodes",
+        data: Object.assign(structuredNode, {
+          id: node.resource.id,
+          parent: node.$graph.parent ?? defaultParent,
+          name: node.resource.name,
+          type: node.$graph.nodeType,
+        }),
+      };
+    });
 
   const edges: CytoscapeEdge[] = graph.edges.map((edge) => ({
     group: "edges",
     data: {
       id: edge.id,
       name: edge.name as string,
-      source: edge.source.$graph.id,
-      target: edge.target.$graph.id,
+      source: edge.source.resource.id,
+      target: edge.target.resource.id,
       metadata: edge.metadata,
     },
   }));

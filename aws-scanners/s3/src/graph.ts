@@ -17,7 +17,7 @@ export const S3Entity: TranslatedEntity<
   State<ListBucketsCommandOutput, ListBucketsCommandInput>,
   WithCallContext<Bucket, ListBucketsCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "s3-bucket",
   provider: "aws",
   command: "ListBuckets",
@@ -55,6 +55,7 @@ export const S3Entity: TranslatedEntity<
       return {
         id: `arn:aws:s3:::${val.Name!}`,
         label: val.Name!,
+        nodeClass: "visual",
         nodeType: S3Entity.nodeType,
         parent: val.$metadata.account,
       };

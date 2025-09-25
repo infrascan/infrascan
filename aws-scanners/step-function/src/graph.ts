@@ -37,7 +37,7 @@ export const StepFunctionEntity: TranslatedEntity<
     DescribeStateMachineCommandInput
   >
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "step-function",
   provider: "aws",
   command: "DescribeStateMachine",
@@ -77,6 +77,7 @@ export const StepFunctionEntity: TranslatedEntity<
       return {
         id: val.stateMachineArn!,
         label: val.name!,
+        nodeClass: "visual",
         nodeType: StepFunctionEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

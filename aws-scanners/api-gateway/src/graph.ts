@@ -47,7 +47,7 @@ export const ApiGatewayEntity: TranslatedEntity<
   State<GetApisCommandOutput, GetApisCommandInput>,
   WithCallContext<Api, GetApisCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "api-gateway",
   provider: "aws",
   command: "GetApis",
@@ -86,6 +86,7 @@ export const ApiGatewayEntity: TranslatedEntity<
       return {
         id: val.ApiEndpoint!,
         label: val.ApiEndpoint!,
+        nodeClass: "visual",
         nodeType: ApiGatewayEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

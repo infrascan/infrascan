@@ -8,7 +8,7 @@ import {
   ListTagsForResource,
 } from "./generated/getters";
 import { getEdges } from "./generated/graph";
-import { SNSTopicEntity } from "./graph";
+import { SNSSubscriptionEntity, SNSTopicEntity } from "./graph";
 
 const SNSScanner: ServiceModule<SNSClient, "aws"> = {
   provider: "aws",
@@ -23,7 +23,7 @@ const SNSScanner: ServiceModule<SNSClient, "aws"> = {
     ListTagsForResource,
   ],
   getEdges,
-  entities: [SNSTopicEntity],
+  entities: [SNSTopicEntity, SNSSubscriptionEntity],
 };
 
 export type { GraphState, SNS, TopicAttributes } from "./graph";
