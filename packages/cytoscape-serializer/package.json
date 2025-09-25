@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/cytoscape-serializer",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A graph serializer which produces nodes and edges compatible with Cytoscape.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -38,6 +38,6 @@
     "url": "https://github.com/infrascan/infrascan/issues"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.6.0"
+    "@infrascan/shared-types": "^0.7.0"
   }
 }

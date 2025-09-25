@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/node-reducer-plugin",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "An Infrascan plugin to collapse similar nodes in your Graph down into a single node.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,7 +19,7 @@
     "build": "rm -rf dist ; tsup"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.6.0",
+    "@infrascan/shared-types": "^0.7.0",
     "@types/node": "^20.12.10",
     "tap": "^21",
     "tsconfig": "*"

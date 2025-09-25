@@ -1,5 +1,19 @@
 # @infrascan/cli
 
+## 0.7.0
+
+### Minor Changes
+
+- [#123](https://github.com/infrascan/infrascan/pull/123) [`d05dc6ffe36f6b219964407b63b002520cf89795`](https://github.com/infrascan/infrascan/commit/d05dc6ffe36f6b219964407b63b002520cf89795) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Introduce informational node support
+
+### Patch Changes
+
+- Updated dependencies [[`d05dc6ffe36f6b219964407b63b002520cf89795`](https://github.com/infrascan/infrascan/commit/d05dc6ffe36f6b219964407b63b002520cf89795)]:
+  - @infrascan/informational-serializer@0.2.0
+  - @infrascan/sdk@0.6.0
+  - @infrascan/cytoscape-serializer@0.3.4
+  - @infrascan/aws@0.5.4
+
 ## 0.6.0
 
 ### Minor Changes
