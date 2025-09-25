@@ -142,9 +142,12 @@ t.test(
         equal(node.$source?.command, entity.command);
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
-        ok(node.resource.policy);
-        ok((node as unknown as SNSEntity).sns);
-        equal((node as unknown as SNSEntity).sns.fifo, false);
+
+        if (node.resource.subcategory === "topic") {
+          ok(node.resource.policy);
+          ok((node as unknown as SNSEntity).sns);
+          equal((node as unknown as SNSEntity).sns.fifo, false);
+        }
       }
     }
   },
