@@ -6,7 +6,6 @@ import type {
 } from "@aws-sdk/types";
 import type { AwsContext } from "@infrascan/shared-types";
 import debug from "debug";
-
 const clientDebug = debug("lambda:client");
 
 export function getClient(

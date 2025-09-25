@@ -32,7 +32,7 @@ export const CloudfrontDistributionEntity: TranslatedEntity<
   State<ListDistributionsCommandOutput, ListDistributionsCommandInput>,
   WithCallContext<DistributionSummary, ListDistributionsCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "cloudfront",
   provider: "aws",
   command: "ListDistributions",
@@ -71,6 +71,7 @@ export const CloudfrontDistributionEntity: TranslatedEntity<
       return {
         id: val.ARN!,
         label: val.DomainName!,
+        nodeClass: "visual",
         nodeType: CloudfrontDistributionEntity.nodeType,
         parent: val.$metadata.account,
       };

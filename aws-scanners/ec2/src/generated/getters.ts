@@ -1,13 +1,19 @@
 import { resolveFunctionCallParameters } from "@infrascan/core";
+import { EC2Client, EC2ServiceException } from "@aws-sdk/client-ec2";
 import {
-  EC2Client,
-  EC2ServiceException,
   DescribeVpcsCommand,
   DescribeVpcsCommandInput,
   DescribeVpcsCommandOutput,
+} from "@aws-sdk/client-ec2";
+import {
   DescribeSubnetsCommand,
   DescribeSubnetsCommandInput,
   DescribeSubnetsCommandOutput,
+} from "@aws-sdk/client-ec2";
+import {
+  DescribeSecurityGroupsCommand,
+  DescribeSecurityGroupsCommandInput,
+  DescribeSecurityGroupsCommandOutput,
 } from "@aws-sdk/client-ec2";
 import type {
   Connector,
@@ -67,7 +73,7 @@ export async function DescribeSubnets(
   const state: GenericState[] = [];
   getterDebug("Fetching state");
   const resolvers = [
-    { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId" },
+    { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result.Vpcs[].VpcId" },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,
@@ -79,7 +85,7 @@ export async function DescribeSubnets(
     let pagingToken: string | undefined;
     do {
       const preparedParams: DescribeSubnetsCommandInput = parameters;
-      preparedParams.NextToken = pagingToken;
+      preparedParams["NextToken"] = pagingToken;
       try {
         const cmd = new DescribeSubnetsCommand(preparedParams);
         const result: DescribeSubnetsCommandOutput = await client.send(cmd);
@@ -92,7 +98,7 @@ export async function DescribeSubnets(
           _parameters: preparedParams,
           _result: result,
         });
-        pagingToken = result.NextToken;
+        pagingToken = result["NextToken"];
         if (pagingToken != null) {
           getterDebug("Found pagination token in response");
         } else {
@@ -118,6 +124,61 @@ export async function DescribeSubnets(
     context.region,
     "EC2",
     "DescribeSubnets",
+    state,
+  );
+}
+
+export async function DescribeSecurityGroups(
+  client: EC2Client,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("ec2:DescribeSecurityGroups");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  let pagingToken: string | undefined;
+  do {
+    const preparedParams: DescribeSecurityGroupsCommandInput = {};
+    preparedParams["NextToken"] = pagingToken;
+    try {
+      const cmd = new DescribeSecurityGroupsCommand(preparedParams);
+      const result: DescribeSecurityGroupsCommandOutput = await client.send(
+        cmd,
+      );
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+      pagingToken = result["NextToken"];
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
+      } else {
+        getterDebug("No pagination token found in response");
+      }
+    } catch (err: unknown) {
+      if (err instanceof EC2ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+      pagingToken = undefined;
+    }
+  } while (pagingToken != null);
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "EC2",
+    "DescribeSecurityGroups",
     state,
   );
 }

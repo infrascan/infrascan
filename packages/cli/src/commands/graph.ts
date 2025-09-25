@@ -3,14 +3,13 @@ import { join, resolve } from "path";
 import type { ScanMetadata } from "@infrascan/sdk";
 import {
   CommandLineAction,
+  CommandLineChoiceParameter,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
-import {
-  serializeGraph,
-  CytoscapeGraph,
-} from "@infrascan/cytoscape-serializer";
+import { serializeGraph as serializeVisualGraph } from "@infrascan/cytoscape-serializer";
+import { serializeGraph as serializeInformationalGraph } from "@infrascan/informational-serializer";
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
   const scanMetadata = readFileSync(
@@ -20,7 +19,7 @@ function readScanMetadata(outputPath: string): ScanMetadata[] {
   return JSON.parse(scanMetadata);
 }
 
-function writeGraphOutput(outputPath: string, graphState: CytoscapeGraph[]) {
+function writeGraphOutput<T>(outputPath: string, graphState: T) {
   writeFileSync(
     join(resolve(outputPath), "graph.json"),
     JSON.stringify(graphState),
@@ -29,6 +28,8 @@ function writeGraphOutput(outputPath: string, graphState: CytoscapeGraph[]) {
 
 export default class GraphCmd extends CommandLineAction {
   private _outputDirectory: CommandLineStringParameter;
+
+  private _serializer: CommandLineChoiceParameter;
 
   private infrascanClient: Infrascan;
 
@@ -51,6 +52,13 @@ export default class GraphCmd extends CommandLineAction {
         "Location to read scan state from. This should be the same as the directory given to the scan command.",
       defaultValue: "./state",
     });
+    this._serializer = this.defineChoiceParameter({
+      required: false,
+      parameterLongName: "--serializer",
+      description:
+        "Choice of graph serializer. Visual will output a cytoscape compatible graph intended for visual consumption. Informational will preserve the maximum amount of structured data to explore in other formats.",
+      alternatives: ["visual", "informational"],
+    });
   }
 
   protected async onExecute(): Promise<void> {
@@ -68,8 +76,13 @@ export default class GraphCmd extends CommandLineAction {
       },
     });
 
+    const serializeGraph =
+      this._serializer.value === "informational"
+        ? serializeInformationalGraph
+        : serializeVisualGraph;
+
     const graphData = await this.infrascanClient.generateGraph<
-      CytoscapeGraph[]
+      ReturnType<typeof serializeGraph>
     >(scanMetadata, connector, serializeGraph);
     console.log(
       `Graph Complete. Found resources in ${nServicesScanned} services.`,

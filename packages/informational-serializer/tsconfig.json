@@ -1,0 +1,12 @@
+{
+  "extends": "@infrascan/tsconfig/base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "Node16",
+    "baseUrl": "src",
+    "rootDir": "src",
+    "declarationMap": false,
+    "outDir": "./dist"
+  }
+}

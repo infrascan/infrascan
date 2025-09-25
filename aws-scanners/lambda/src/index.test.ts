@@ -8,6 +8,7 @@ import { fromProcess } from "@aws-sdk/credential-providers";
 import {
   ListFunctionsCommand,
   GetFunctionCommand,
+  ListEventSourceMappingsCommand,
 } from "@aws-sdk/client-lambda";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
@@ -55,6 +56,10 @@ t.test(
       Code: {
         ImageUri: "hub.docker.com",
       },
+    });
+
+    mockedLambdaClient.on(ListEventSourceMappingsCommand).resolves({
+      EventSourceMappings: [],
     });
 
     for (const scannerFn of LambdaScanner.getters) {

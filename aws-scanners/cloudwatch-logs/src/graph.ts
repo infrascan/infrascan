@@ -32,7 +32,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
   State<DescribeLogGroupsCommandOutput, DescribeLogGroupsCommandInput>,
   WithCallContext<LogGroup, DescribeLogGroupsCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "cloudwatch-logs",
   provider: "aws",
   command: "DescribeLogGroups",
@@ -71,6 +71,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
       return {
         id: (val.logGroupArn ?? val.arn)!,
         label: val.logGroupName!,
+        nodeClass: "visual",
         nodeType: CloudwatchLogGroupEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };

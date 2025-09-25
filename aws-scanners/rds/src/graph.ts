@@ -44,7 +44,7 @@ export const RDSInstanceEntity: TranslatedEntity<
   State<DescribeDBInstancesCommandOutput, DescribeDBInstancesCommandInput>,
   WithCallContext<DBInstance, DescribeDBInstancesCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "rds",
   provider: "aws",
   command: "DescribeDBInstances",
@@ -84,6 +84,7 @@ export const RDSInstanceEntity: TranslatedEntity<
         id: val.DBInstanceIdentifier!,
         label: val.DBName!,
         nodeType: RDSInstanceEntity.nodeType,
+        nodeClass: "visual",
         parent:
           val.DBClusterIdentifier ??
           `${val.$metadata.account}-${val.$metadata.region}`,

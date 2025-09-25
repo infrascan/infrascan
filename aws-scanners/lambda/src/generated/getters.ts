@@ -2,15 +2,21 @@ import {
   evaluateSelectorGlobally,
   resolveFunctionCallParameters,
 } from "@infrascan/core";
+import { LambdaClient, LambdaServiceException } from "@aws-sdk/client-lambda";
 import {
-  LambdaClient,
-  LambdaServiceException,
   ListFunctionsCommand,
   ListFunctionsCommandInput,
   ListFunctionsCommandOutput,
+} from "@aws-sdk/client-lambda";
+import {
   GetFunctionCommand,
   GetFunctionCommandInput,
   GetFunctionCommandOutput,
+} from "@aws-sdk/client-lambda";
+import {
+  ListEventSourceMappingsCommand,
+  ListEventSourceMappingsCommandInput,
+  ListEventSourceMappingsCommandOutput,
 } from "@aws-sdk/client-lambda";
 import type {
   Connector,
@@ -31,7 +37,7 @@ export async function ListFunctions(
   let pagingToken: string | undefined;
   do {
     const preparedParams: ListFunctionsCommandInput = {};
-    preparedParams.Marker = pagingToken;
+    preparedParams["Marker"] = pagingToken;
     try {
       const cmd = new ListFunctionsCommand(preparedParams);
       const result: ListFunctionsCommandOutput = await client.send(cmd);
@@ -44,7 +50,7 @@ export async function ListFunctions(
         _parameters: preparedParams,
         _result: result,
       });
-      pagingToken = result.NextMarker;
+      pagingToken = result["NextMarker"];
       if (pagingToken != null) {
         getterDebug("Found pagination token in response");
       } else {
@@ -124,6 +130,75 @@ export async function GetFunction(
     context.region,
     "Lambda",
     "GetFunction",
+    state,
+  );
+}
+
+export async function ListEventSourceMappings(
+  client: LambdaClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("lambda:ListEventSourceMappings");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [
+    {
+      Key: "FunctionName",
+      Selector: "Lambda|ListFunctions|[]._result.Functions[].FunctionArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as ListEventSourceMappingsCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined;
+    do {
+      const preparedParams: ListEventSourceMappingsCommandInput = parameters;
+      preparedParams["Marker"] = pagingToken;
+      try {
+        const cmd = new ListEventSourceMappingsCommand(preparedParams);
+        const result: ListEventSourceMappingsCommandOutput = await client.send(
+          cmd,
+        );
+        state.push({
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: Date.now(),
+          },
+          _parameters: preparedParams,
+          _result: result,
+        });
+        pagingToken = result["NextMarker"];
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
+      } catch (err: unknown) {
+        if (err instanceof LambdaServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
+      }
+    } while (pagingToken != null);
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "Lambda",
+    "ListEventSourceMappings",
     state,
   );
 }

@@ -4,7 +4,8 @@ import type { ScannerDefinition } from "@infrascan/shared-types";
 export type EC2Functions =
   | "DescribeVpcs"
   | "DescribeAvailabilityZones"
-  | "DescribeSubnets";
+  | "DescribeSubnets"
+  | "DescribeSecurityGroups";
 const CloudWatchLogsScanner: ScannerDefinition<
   "EC2",
   typeof EC2,
@@ -24,9 +25,16 @@ const CloudWatchLogsScanner: ScannerDefinition<
       parameters: [
         {
           Key: "Filters",
-          Selector: "EC2|DescribeVpcs|[]._result[].Vpcs[].VpcId",
+          Selector: "EC2|DescribeVpcs|[]._result.Vpcs[].VpcId",
         },
       ],
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken",
+      },
+    },
+    {
+      fn: "DescribeSecurityGroups",
       paginationToken: {
         request: "NextToken",
         response: "NextToken",

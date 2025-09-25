@@ -39,7 +39,7 @@ export const ClusterEntity: TranslatedEntity<
   State<DescribeClustersCommandOutput, DescribeClustersCommandInput>,
   WithCallContext<AwsCluster, DescribeClustersCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "ecs-clusters",
   provider: "aws",
   command: "DescribeClusters",
@@ -75,6 +75,7 @@ export const ClusterEntity: TranslatedEntity<
       return {
         id: val.clusterArn!,
         label: val.clusterName!,
+        nodeClass: "visual",
         nodeType: ClusterEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
@@ -139,7 +140,7 @@ export const ServiceEntity: TranslatedEntity<
   State<DescribeServicesCommandOutput, DescribeServicesCommandInput>,
   WithCallContext<AwsService, DescribeServicesCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "ecs-services",
   provider: "aws",
   command: "DescribeServices",
@@ -172,6 +173,7 @@ export const ServiceEntity: TranslatedEntity<
         id: val.serviceArn!,
         label: val.serviceName!,
         parent: val.clusterArn!,
+        nodeClass: "visual",
         nodeType: ServiceEntity.nodeType,
       };
     },
@@ -243,6 +245,11 @@ export const ServiceEntity: TranslatedEntity<
         loadBalancers: val.loadBalancers,
       };
     },
+
+    loadBalancers(val) {
+      return val.loadBalancers;
+    },
+
     network(val) {
       const publicIpStatus =
         val.networkConfiguration?.awsvpcConfiguration?.assignPublicIp ===
@@ -303,7 +310,7 @@ export const TaskEntity: TranslatedEntity<
   State<DescribeTasksCommandOutput, DescribeTasksCommandInput>,
   WithCallContext<Task, DescribeTasksCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "ecs-tasks",
   provider: "aws",
   command: "DescribeTasks",
@@ -355,6 +362,7 @@ export const TaskEntity: TranslatedEntity<
       return {
         id: val.taskDefinitionArn ?? val.taskArn!,
         label: label!,
+        nodeClass: "visual",
         parent,
         nodeType: TaskEntity.nodeType,
       };

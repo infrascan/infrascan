@@ -1,6 +1,9 @@
 import type {
   GetTopicAttributesCommandInput,
   GetTopicAttributesCommandOutput,
+  ListSubscriptionsByTopicCommandInput,
+  ListSubscriptionsByTopicCommandOutput,
+  Subscription,
 } from "@aws-sdk/client-sns";
 import { evaluateSelector } from "@infrascan/core";
 import {
@@ -43,6 +46,10 @@ export interface SNS {
     policy?: string;
     beginningTime?: string;
   };
+  endpoint?: {
+    protocol?: string;
+    target?: string;
+  };
 }
 
 export type SNSEntity = BaseState<GetTopicAttributesCommandInput> & {
@@ -55,7 +62,7 @@ export const SNSTopicEntity: TranslatedEntity<
   State<GetTopicAttributesCommandOutput, GetTopicAttributesCommandInput>,
   WithCallContext<TopicAttributes, GetTopicAttributesCommandInput>
 > = {
-  version: "0.1.0",
+  version: "0.1.1",
   debugLabel: "sns-topic",
   provider: "aws",
   command: "GetTopicAttributes",
@@ -95,6 +102,7 @@ export const SNSTopicEntity: TranslatedEntity<
       return {
         id: val.TopicArn!,
         label: val.TopicArn!.split(":").pop()!,
+        nodeClass: "visual",
         nodeType: SNSTopicEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
@@ -164,6 +172,103 @@ export const SNSTopicEntity: TranslatedEntity<
         archive: {
           policy: val.ArchivePolicy,
           beginningTime: val.BeginningArchiveTime,
+        },
+      };
+    },
+  },
+};
+
+export const SNSSubscriptionEntity: TranslatedEntity<
+  SNSEntity,
+  State<
+    ListSubscriptionsByTopicCommandOutput,
+    ListSubscriptionsByTopicCommandInput
+  >,
+  WithCallContext<Subscription, ListSubscriptionsByTopicCommandInput>
+> = {
+  version: "0.1.0",
+  debugLabel: "sns-subscription",
+  provider: "aws",
+  command: "ListSubscriptionsByTopic",
+  category: "sns",
+  subcategory: "subscription",
+  nodeType: "sns-subscription",
+  selector: "SNS|ListSubscriptionsByTopic|[]",
+
+  getState(state, context) {
+    return evaluateSelector(
+      context.account,
+      context.region,
+      SNSSubscriptionEntity.selector,
+      state,
+    );
+  },
+
+  translate(val) {
+    return (
+      val._result.Subscriptions?.map((subscription) => ({
+        ...subscription,
+        $metadata: val._metadata,
+        $parameters: val._parameters,
+      })).filter((enrichedSub) => enrichedSub != null) ?? []
+    );
+  },
+
+  components: {
+    $metadata(val) {
+      return {
+        version: SNSSubscriptionEntity.version,
+        timestamp: val.$metadata.timestamp,
+      };
+    },
+
+    $graph(val) {
+      return {
+        id: val.SubscriptionArn!,
+        label: val.SubscriptionArn!.split(":").pop()!,
+        nodeClass: "informational",
+        nodeType: SNSSubscriptionEntity.nodeType,
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
+      };
+    },
+
+    $source(val) {
+      return {
+        command: SNSSubscriptionEntity.command,
+        parameters: val.$parameters,
+      };
+    },
+
+    tenant(val) {
+      return {
+        tenantId: val.$metadata.account,
+        provider: SNSSubscriptionEntity.provider,
+        partition: val.$metadata.partition,
+      };
+    },
+
+    location(val) {
+      return {
+        code: val.$metadata.region,
+      };
+    },
+
+    resource(val) {
+      const topicName = val.TopicArn!.split(":").pop()!;
+      return {
+        id: val.SubscriptionArn!,
+        name: topicName,
+        category: SNSSubscriptionEntity.category,
+        subcategory: SNSSubscriptionEntity.subcategory,
+      };
+    },
+
+    sns(val) {
+      return {
+        displayName: val.SubscriptionArn,
+        endpoint: {
+          protocol: val.Protocol,
+          target: val.Endpoint,
         },
       };
     },
