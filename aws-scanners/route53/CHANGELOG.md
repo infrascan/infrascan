@@ -1,5 +1,11 @@
 # @infrascan/aws-route53-scanner
 
+## 0.6.1
+
+### Patch Changes
+
+- [#125](https://github.com/infrascan/infrascan/pull/125) [`fd7c58d1e968ea031cdcf03064d237de2f2067cd`](https://github.com/infrascan/infrascan/commit/fd7c58d1e968ea031cdcf03064d237de2f2067cd) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Bug fix in IAM role and Route53 edge calculations
+
 ## 0.6.0
 
 ### Minor Changes
