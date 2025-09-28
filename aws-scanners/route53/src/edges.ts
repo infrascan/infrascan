@@ -116,9 +116,12 @@ export async function resolveCloudfrontEdges(
     ) as DistributionSummary[];
 
   return cloudfrontConnectedDomains
-    .map(({ Name, AliasTarget }) => {
+    .map(({ Name, AliasTarget, ResourceRecords }) => {
       const target = cloudfrontRecords.find(
-        ({ DomainName }) => `${DomainName}.` === AliasTarget?.DNSName,
+        ({ DomainName }) =>
+          DomainName != null &&
+          (`${DomainName}.` === AliasTarget?.DNSName ||
+            ResourceRecords?.find(({ Value }) => Value === DomainName)),
       );
       if (target?.ARN && Name) {
         return formatEdge(Name, { name: Name, target: target.ARN });

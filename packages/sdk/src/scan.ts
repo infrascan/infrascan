@@ -109,7 +109,7 @@ export async function scanService(
   if (serviceScanner.getIamRoles != null) {
     const iamRoles = await serviceScanner.getIamRoles(connector);
     for (const { roleArn } of iamRoles) {
-      scanIamRole(iamStorage, iamClient, roleArn).catch((err) => {
+      await scanIamRole(iamStorage, iamClient, roleArn).catch((err) => {
         console.error("An error occurred while scanning role:", roleArn);
         if (err instanceof Error) {
           console.error(err.message);
