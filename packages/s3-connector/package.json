@@ -31,7 +31,7 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@aws-sdk/util-stream-node": "^3.374.0",
+    "@smithy/util-stream": "^3.3.4",
     "@infrascan/shared-types": "^0.7.0",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint-config-custom": "*",
