@@ -19,7 +19,7 @@
     "build": "rm -rf dist ; tsup"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.7.0",
+    "@infrascan/shared-types": "^0.8.0",
     "@types/node": "^20.12.10",
     "tap": "^21",
     "tsconfig": "*"

@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "A convenience package to register all AWS Scanners with an instance of the Infrascan SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/sdk": "^0.6.0",
+    "@infrascan/sdk": "^0.6.2",
     "@infrascan/tsconfig": "*"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "@infrascan/aws-cloudfront-scanner": "^0.5.0",
     "@infrascan/aws-cloudwatch-logs-scanner": "^0.5.0",
     "@infrascan/aws-dynamodb-scanner": "^0.5.0",
-    "@infrascan/aws-ec2-scanner": "^0.5.0",
+    "@infrascan/aws-ec2-scanner": "^0.6.0",
     "@infrascan/aws-ecs-scanner": "^0.6.0",
     "@infrascan/aws-elastic-load-balancing-scanner": "^0.5.0",
     "@infrascan/aws-kinesis-scanner": "^0.4.0",

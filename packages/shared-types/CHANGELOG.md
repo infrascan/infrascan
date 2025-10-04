@@ -1,5 +1,11 @@
 # @infrascan/shared-types
 
+## 0.8.0
+
+### Minor Changes
+
+- [#127](https://github.com/infrascan/infrascan/pull/127) [`dd08208963705f2211ea1db16983bb4034ee5446`](https://github.com/infrascan/infrascan/commit/dd08208963705f2211ea1db16983bb4034ee5446) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Introduce launch templates into EC2 scans, extend audit component to include version numbers
+
 ## 0.7.0
 
 ### Minor Changes

@@ -37,6 +37,6 @@
     "url": "https://github.com/infrascan/infrascan/issues"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.7.0"
+    "@infrascan/shared-types": "^0.8.0"
   }
 }

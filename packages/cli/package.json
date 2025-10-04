@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/cli",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Thin command line wrapper around the infrascan sdk",
   "main": "dist/index.mjs",
   "scripts": {
@@ -26,11 +26,11 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@aws-sdk/credential-providers": "3.624.0",
-    "@infrascan/aws": "^0.5.4",
+    "@infrascan/aws": "^0.5.5",
     "@infrascan/cytoscape-serializer": "^0.3.4",
     "@infrascan/fs-connector": "^0.3.0",
     "@infrascan/informational-serializer": "^0.2.0",
-    "@infrascan/sdk": "^0.6.0",
+    "@infrascan/sdk": "^0.6.2",
     "@rushstack/ts-command-line": "^4.15.2",
     "@smithy/shared-ini-file-loader": "^3.1.12",
     "ejs": "^3.1.9",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@aws-sdk/types": "3.609.0",
-    "@infrascan/shared-types": "^0.7.0",
+    "@infrascan/shared-types": "^0.8.0",
     "@smithy/types": "^3.3.0",
     "@types/ejs": "^3.1.5",
     "ts-node": "^10.9.1",
