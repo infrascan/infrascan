@@ -7,7 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import t from "tap";
-import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
+import { sdkStreamMixin } from "@smithy/util-stream";
 import { resolve as resolvePath } from "path";
 import S3Connector from ".";
 

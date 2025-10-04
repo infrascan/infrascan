@@ -31,26 +31,28 @@ const baseDirectory =
 const tmpDir = mkdtempSync(baseDirectory);
 const connector = buildFsConnector(tmpDir);
 
-t.test("When no VPCs are returned, subnets aren't scanned", async ({ equal }) => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
-  const mockedEc2Client = mockClient(ec2Client);
+t.test(
+  "When no VPCs are returned, subnets aren't scanned",
+  async ({ equal }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
+    const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
-  mockedEc2Client.on(DescribeVpcsCommand).resolves({
-    Vpcs: [],
-  });
+    mockedEc2Client.on(DescribeVpcsCommand).resolves({
+      Vpcs: [],
+    });
 
-  for (const scannerFn of EC2Scanner.getters) {
-    await scannerFn(ec2Client, connector, testContext);
-  }
+    for (const scannerFn of EC2Scanner.getters) {
+      await scannerFn(ec2Client, connector, testContext);
+    }
 
-  equal(mockedEc2Client.commandCalls(DescribeVpcsCommand).length, 1);
-  equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 0);
-});
+    equal(mockedEc2Client.commandCalls(DescribeVpcsCommand).length, 1);
+    equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 0);
+  },
+);
 
 // Test: Security groups are always scanned independently
 t.test("Security groups are scanned independently", async ({ equal }) => {
@@ -61,7 +63,6 @@ t.test("Security groups are scanned independently", async ({ equal }) => {
   const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
   const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeSecurityGroupsCommand).resolves({
     SecurityGroups: [],
   });
@@ -83,7 +84,6 @@ t.test("Launch templates are scanned independently", async ({ equal }) => {
   const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
   const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
     LaunchTemplates: [],
   });
@@ -108,12 +108,10 @@ t.test("Subnets are filtered by VPC IDs", async ({ equal }) => {
   const vpcId1 = "vpc-12345";
   const vpcId2 = "vpc-67890";
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeVpcsCommand).resolves({
     Vpcs: [{ VpcId: vpcId1 }, { VpcId: vpcId2 }],
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeSubnetsCommand).resolves({
     Subnets: [],
   });
@@ -131,63 +129,76 @@ t.test("Subnets are filtered by VPC IDs", async ({ equal }) => {
 });
 
 // Test: Launch template versions depend on template IDs
-t.test("Launch template versions use template IDs from previous scan", async ({ equal, same }) => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
-  const mockedEc2Client = mockClient(ec2Client);
+t.test(
+  "Launch template versions use template IDs from previous scan",
+  async ({ equal, same }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
+    const mockedEc2Client = mockClient(ec2Client);
 
-  const templateId1 = "lt-12345";
-  const templateId2 = "lt-67890";
+    const templateId1 = "lt-12345";
+    const templateId2 = "lt-67890";
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
-  mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
-    LaunchTemplates: [
-      { LaunchTemplateId: templateId1 },
-      { LaunchTemplateId: templateId2 },
-    ],
-  });
+    mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
+      LaunchTemplates: [
+        { LaunchTemplateId: templateId1 },
+        { LaunchTemplateId: templateId2 },
+      ],
+    });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
-  mockedEc2Client.on(DescribeLaunchTemplateVersionsCommand).resolves({
-    LaunchTemplateVersions: [],
-  });
+    mockedEc2Client.on(DescribeLaunchTemplateVersionsCommand).resolves({
+      LaunchTemplateVersions: [],
+    });
 
-  // Execute templates first to populate state
-  await DescribeLaunchTemplates(ec2Client, connector, testContext);
-  // Then execute versions which depends on template state
-  await DescribeLaunchTemplateVersions(ec2Client, connector, testContext);
+    // Execute templates first to populate state
+    await DescribeLaunchTemplates(ec2Client, connector, testContext);
+    // Then execute versions which depends on template state
+    await DescribeLaunchTemplateVersions(ec2Client, connector, testContext);
 
-  // Verify versions called with template IDs and hardcoded versions
-  equal(mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand).length, 2);
-  const versionCalls = mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand);
-  equal(versionCalls[0].args[0].input.LaunchTemplateId, templateId1);
-  same(versionCalls[0].args[0].input.Versions, ["$Latest", "$Default"]);
-  equal(versionCalls[1].args[0].input.LaunchTemplateId, templateId2);
-  same(versionCalls[1].args[0].input.Versions, ["$Latest", "$Default"]);
-});
+    // Verify versions called with template IDs and hardcoded versions
+    equal(
+      mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand)
+        .length,
+      2,
+    );
+    const versionCalls = mockedEc2Client.commandCalls(
+      DescribeLaunchTemplateVersionsCommand,
+    );
+    equal(versionCalls[0].args[0].input.LaunchTemplateId, templateId1);
+    same(versionCalls[0].args[0].input.Versions, ["$Latest", "$Default"]);
+    equal(versionCalls[1].args[0].input.LaunchTemplateId, templateId2);
+    same(versionCalls[1].args[0].input.Versions, ["$Latest", "$Default"]);
+  },
+);
 
 // Test: No template versions scanned when no templates exist
-t.test("Launch template versions not scanned when no templates", async ({ equal }) => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
-  const mockedEc2Client = mockClient(ec2Client);
+t.test(
+  "Launch template versions not scanned when no templates",
+  async ({ equal }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
+    const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
-  mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
-    LaunchTemplates: [],
-  });
+    mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
+      LaunchTemplates: [],
+    });
 
-  await DescribeLaunchTemplates(ec2Client, connector, testContext);
-  await DescribeLaunchTemplateVersions(ec2Client, connector, testContext);
+    await DescribeLaunchTemplates(ec2Client, connector, testContext);
+    await DescribeLaunchTemplateVersions(ec2Client, connector, testContext);
 
-  equal(mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand).length, 0);
-});
+    equal(
+      mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand)
+        .length,
+      0,
+    );
+  },
+);
 
 // Test: Security groups pagination handling
 t.test("Security groups pagination works correctly", async ({ equal }) => {
@@ -198,11 +209,9 @@ t.test("Security groups pagination works correctly", async ({ equal }) => {
   const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
   const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client
     .on(DescribeSecurityGroupsCommand, { NextToken: undefined })
     .resolvesOnce({ SecurityGroups: [], NextToken: "token123" })
-    // @ts-ignore - Type issues with aws-sdk-client-mock
     .on(DescribeSecurityGroupsCommand, { NextToken: "token123" })
     .resolvesOnce({ SecurityGroups: [] }); // No NextToken = end
 
@@ -224,11 +233,9 @@ t.test("Launch templates pagination works correctly", async ({ equal }) => {
   const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
   const mockedEc2Client = mockClient(ec2Client);
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client
     .on(DescribeLaunchTemplatesCommand, { NextToken: undefined })
     .resolvesOnce({ LaunchTemplates: [], NextToken: "token456" })
-    // @ts-ignore - Type issues with aws-sdk-client-mock
     .on(DescribeLaunchTemplatesCommand, { NextToken: "token456" })
     .resolvesOnce({ LaunchTemplates: [] }); // No NextToken = end
 
@@ -258,7 +265,6 @@ t.test("Handles retryable EC2 errors correctly", async ({ equal, pass }) => {
     message: "Rate exceeded",
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeSecurityGroupsCommand).rejects(retryableError);
 
   // Should not throw, should log and continue
@@ -273,33 +279,40 @@ t.test("Handles retryable EC2 errors correctly", async ({ equal, pass }) => {
 });
 
 // Test: Non-retryable error handling
-t.test("Handles non-retryable EC2 errors correctly", async ({ equal, pass }) => {
-  const testContext = {
-    region: "us-east-1",
-    account: "0".repeat(8),
-  };
-  const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
-  const mockedEc2Client = mockClient(ec2Client);
+t.test(
+  "Handles non-retryable EC2 errors correctly",
+  async ({ equal, pass }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "0".repeat(8),
+    };
+    const ec2Client = EC2Scanner.getClient(fromProcess(), testContext);
+    const mockedEc2Client = mockClient(ec2Client);
 
-  const nonRetryableError = new EC2ServiceException({
-    name: "AccessDenied",
-    $fault: "client",
-    $metadata: {},
-    message: "Access denied",
-  });
+    const nonRetryableError = new EC2ServiceException({
+      name: "AccessDenied",
+      $fault: "client",
+      $metadata: {},
+      message: "Access denied",
+    });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
-  mockedEc2Client.on(DescribeSecurityGroupsCommand).rejects(nonRetryableError);
+    mockedEc2Client
+      .on(DescribeSecurityGroupsCommand)
+      .rejects(nonRetryableError);
 
-  try {
-    await DescribeSecurityGroups(ec2Client, connector, testContext);
-    pass("Function completed without throwing");
-  } catch (err) {
-    throw new Error("Function should not throw on non-retryable errors");
-  }
+    try {
+      await DescribeSecurityGroups(ec2Client, connector, testContext);
+      pass("Function completed without throwing");
+    } catch (err) {
+      throw new Error("Function should not throw on non-retryable errors");
+    }
 
-  equal(mockedEc2Client.commandCalls(DescribeSecurityGroupsCommand).length, 1);
-});
+    equal(
+      mockedEc2Client.commandCalls(DescribeSecurityGroupsCommand).length,
+      1,
+    );
+  },
+);
 
 // Test: Complete EC2 scanner execution flow
 t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
@@ -311,22 +324,18 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
   const mockedEc2Client = mockClient(ec2Client);
 
   // Mock all commands with realistic responses
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeVpcsCommand).resolves({
     Vpcs: [{ VpcId: "vpc-1" }, { VpcId: "vpc-2" }],
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeSubnetsCommand).resolves({
     Subnets: [],
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeSecurityGroupsCommand).resolves({
     SecurityGroups: [{ GroupId: "sg-123" }],
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeLaunchTemplatesCommand).resolves({
     LaunchTemplates: [
       { LaunchTemplateId: "lt-1" },
@@ -335,7 +344,6 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
     ],
   });
 
-  // @ts-ignore - Type issues with aws-sdk-client-mock
   mockedEc2Client.on(DescribeLaunchTemplateVersionsCommand).resolves({
     LaunchTemplateVersions: [],
   });
@@ -350,5 +358,8 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
   equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 2); // 2 VPCs
   equal(mockedEc2Client.commandCalls(DescribeSecurityGroupsCommand).length, 1);
   equal(mockedEc2Client.commandCalls(DescribeLaunchTemplatesCommand).length, 1);
-  equal(mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand).length, 3); // 3 templates
+  equal(
+    mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand).length,
+    3,
+  ); // 3 templates
 });
