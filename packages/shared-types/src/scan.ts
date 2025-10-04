@@ -155,6 +155,7 @@ export interface IAM {
 export interface Audit {
   createdAt?: string | Date;
   createdBy?: string;
+  versionNumber?: string;
 }
 
 /**

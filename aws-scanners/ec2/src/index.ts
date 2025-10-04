@@ -5,8 +5,15 @@ import {
   DescribeVpcs,
   DescribeSubnets,
   DescribeSecurityGroups,
+  DescribeLaunchTemplates,
+  DescribeLaunchTemplateVersions,
 } from "./generated/getters";
-import { SecurityGroupEntity, SubnetEntity, VpcEntity } from "./graph";
+import {
+  LaunchTemplateEntity,
+  SecurityGroupEntity,
+  SubnetEntity,
+  VpcEntity,
+} from "./graph";
 
 const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   provider: "aws",
@@ -14,8 +21,19 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
   key: "EC2-Networking",
   getClient,
   callPerRegion: true,
-  getters: [DescribeVpcs, DescribeSubnets, DescribeSecurityGroups],
-  entities: [VpcEntity, SubnetEntity, SecurityGroupEntity],
+  getters: [
+    DescribeVpcs,
+    DescribeSubnets,
+    DescribeSecurityGroups,
+    DescribeLaunchTemplates,
+    DescribeLaunchTemplateVersions,
+  ],
+  entities: [
+    VpcEntity,
+    SubnetEntity,
+    SecurityGroupEntity,
+    LaunchTemplateEntity,
+  ],
 };
 
 export type {

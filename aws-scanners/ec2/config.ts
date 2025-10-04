@@ -5,7 +5,9 @@ export type EC2Functions =
   | "DescribeVpcs"
   | "DescribeAvailabilityZones"
   | "DescribeSubnets"
-  | "DescribeSecurityGroups";
+  | "DescribeSecurityGroups"
+  | "DescribeLaunchTemplates"
+  | "DescribeLaunchTemplateVersions";
 const CloudWatchLogsScanner: ScannerDefinition<
   "EC2",
   typeof EC2,
@@ -35,6 +37,31 @@ const CloudWatchLogsScanner: ScannerDefinition<
     },
     {
       fn: "DescribeSecurityGroups",
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken",
+      },
+    },
+    {
+      fn: "DescribeLaunchTemplates",
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken",
+      },
+    },
+    {
+      fn: "DescribeLaunchTemplateVersions",
+      parameters: [
+        {
+          Key: "LaunchTemplateId",
+          Selector:
+            "EC2|DescribeLaunchTemplates|[]._result.LaunchTemplates[].LaunchTemplateId",
+        },
+        {
+          Key: "Versions",
+          Value: ["$Latest", "$Default"],
+        },
+      ],
       paginationToken: {
         request: "NextToken",
         response: "NextToken",
