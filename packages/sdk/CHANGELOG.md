@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.6.2
+
+### Patch Changes
+
+- [#129](https://github.com/infrascan/infrascan/pull/129) [`ad016a18f6ce5c9a2aac88ae46072300a22e1c1b`](https://github.com/infrascan/infrascan/commit/ad016a18f6ce5c9a2aac88ae46072300a22e1c1b) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Update aws utility dependencies
+
 ## 0.6.1
 
 ### Patch Changes

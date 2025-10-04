@@ -45,7 +45,7 @@
     "@aws-sdk/types": "3.609.0",
     "@infrascan/aws-codegen": "^0.1.0",
     "@infrascan/fs-connector": "^0.3.0",
-    "@infrascan/shared-types": "^0.7.0",
+    "@infrascan/shared-types": "^0.8.0",
     "@infrascan/tsconfig": "*",
     "@types/debug": "^4",
     "aws-sdk-client-mock": "^3.0.0",
