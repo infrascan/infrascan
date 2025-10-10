@@ -7,9 +7,13 @@ import {
   DescribeSecurityGroups,
   DescribeLaunchTemplates,
   DescribeLaunchTemplateVersions,
+  DescribeNetworkInterfaces,
+  DescribeNatGateways,
 } from "./generated/getters";
 import {
   LaunchTemplateEntity,
+  NatGatewayEntity,
+  NetworkInterfaceEntity,
   SecurityGroupEntity,
   SubnetEntity,
   VpcEntity,
@@ -27,12 +31,16 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
     DescribeSecurityGroups,
     DescribeLaunchTemplates,
     DescribeLaunchTemplateVersions,
+    DescribeNetworkInterfaces,
+    DescribeNatGateways,
   ],
   entities: [
     VpcEntity,
     SubnetEntity,
     SecurityGroupEntity,
     LaunchTemplateEntity,
+    NetworkInterfaceEntity,
+    NatGatewayEntity,
   ],
 };
 
