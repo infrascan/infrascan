@@ -7,6 +7,8 @@ export {
   type LaunchTemplateStorage,
   type LaunchTemplateState,
 } from "./launch-template";
+export { NatGatewayEntity } from "./nat-gateway";
+export { NetworkInterfaceEntity } from "./network-interface";
 export { SecurityGroupEntity } from "./security-group";
 export {
   SubnetEntity,

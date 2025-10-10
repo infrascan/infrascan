@@ -7,7 +7,9 @@ export type EC2Functions =
   | "DescribeSubnets"
   | "DescribeSecurityGroups"
   | "DescribeLaunchTemplates"
-  | "DescribeLaunchTemplateVersions";
+  | "DescribeLaunchTemplateVersions"
+  | "DescribeNetworkInterfaces"
+  | "DescribeNatGateways";
 const CloudWatchLogsScanner: ScannerDefinition<
   "EC2",
   typeof EC2,
@@ -60,6 +62,32 @@ const CloudWatchLogsScanner: ScannerDefinition<
         {
           Key: "Versions",
           Value: ["$Latest", "$Default"],
+        },
+      ],
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken",
+      },
+    },
+    {
+      fn: "DescribeNetworkInterfaces",
+      parameters: [
+        {
+          Key: "MaxResults",
+          Value: 10,
+        },
+      ],
+      paginationToken: {
+        request: "NextToken",
+        response: "NextToken",
+      },
+    },
+    {
+      fn: "DescribeNatGateways",
+      parameters: [
+        {
+          Key: "MaxResults",
+          Value: 10,
         },
       ],
       paginationToken: {

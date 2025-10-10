@@ -25,6 +25,16 @@ import {
   DescribeLaunchTemplateVersionsCommandInput,
   DescribeLaunchTemplateVersionsCommandOutput,
 } from "@aws-sdk/client-ec2";
+import {
+  DescribeNetworkInterfacesCommand,
+  DescribeNetworkInterfacesCommandInput,
+  DescribeNetworkInterfacesCommandOutput,
+} from "@aws-sdk/client-ec2";
+import {
+  DescribeNatGatewaysCommand,
+  DescribeNatGatewaysCommandInput,
+  DescribeNatGatewaysCommandOutput,
+} from "@aws-sdk/client-ec2";
 import type {
   Connector,
   GenericState,
@@ -315,6 +325,131 @@ export async function DescribeLaunchTemplateVersions(
     context.region,
     "EC2",
     "DescribeLaunchTemplateVersions",
+    state,
+  );
+}
+
+export async function DescribeNetworkInterfaces(
+  client: EC2Client,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("ec2:DescribeNetworkInterfaces");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [{ Key: "MaxResults", Value: 10 }];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as DescribeNetworkInterfacesCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined;
+    do {
+      const preparedParams: DescribeNetworkInterfacesCommandInput = parameters;
+      preparedParams["NextToken"] = pagingToken;
+      try {
+        const cmd = new DescribeNetworkInterfacesCommand(preparedParams);
+        const result: DescribeNetworkInterfacesCommandOutput =
+          await client.send(cmd);
+        state.push({
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: Date.now(),
+          },
+          _parameters: preparedParams,
+          _result: result,
+        });
+        pagingToken = result["NextToken"];
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
+      } catch (err: unknown) {
+        if (err instanceof EC2ServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
+      }
+    } while (pagingToken != null);
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "EC2",
+    "DescribeNetworkInterfaces",
+    state,
+  );
+}
+
+export async function DescribeNatGateways(
+  client: EC2Client,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("ec2:DescribeNatGateways");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [{ Key: "MaxResults", Value: 10 }];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as DescribeNatGatewaysCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined;
+    do {
+      const preparedParams: DescribeNatGatewaysCommandInput = parameters;
+      preparedParams["NextToken"] = pagingToken;
+      try {
+        const cmd = new DescribeNatGatewaysCommand(preparedParams);
+        const result: DescribeNatGatewaysCommandOutput = await client.send(cmd);
+        state.push({
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: Date.now(),
+          },
+          _parameters: preparedParams,
+          _result: result,
+        });
+        pagingToken = result["NextToken"];
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
+      } catch (err: unknown) {
+        if (err instanceof EC2ServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
+      }
+    } while (pagingToken != null);
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "EC2",
+    "DescribeNatGateways",
     state,
   );
 }

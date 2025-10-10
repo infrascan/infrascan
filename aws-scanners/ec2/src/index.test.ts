@@ -12,6 +12,8 @@ import {
   DescribeLaunchTemplatesCommand,
   DescribeLaunchTemplateVersionsCommand,
   EC2ServiceException,
+  DescribeNetworkInterfacesCommand,
+  DescribeNatGatewaysCommand,
 } from "@aws-sdk/client-ec2";
 import buildFsConnector from "@infrascan/fs-connector";
 import EC2Scanner from ".";
@@ -348,6 +350,14 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
     LaunchTemplateVersions: [],
   });
 
+  mockedEc2Client.on(DescribeNetworkInterfacesCommand).resolves({
+    NetworkInterfaces: [],
+  });
+
+  mockedEc2Client.on(DescribeNatGatewaysCommand).resolves({
+    NatGateways: [],
+  });
+
   // Execute all getters in sequence (as done in production)
   for (const scannerFn of EC2Scanner.getters) {
     await scannerFn(ec2Client, connector, testContext);
@@ -362,4 +372,9 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
     mockedEc2Client.commandCalls(DescribeLaunchTemplateVersionsCommand).length,
     3,
   ); // 3 templates
+  equal(
+    mockedEc2Client.commandCalls(DescribeNetworkInterfacesCommand).length,
+    1,
+  );
+  equal(mockedEc2Client.commandCalls(DescribeNatGatewaysCommand).length, 1);
 });
