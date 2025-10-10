@@ -1,5 +1,11 @@
 # @infrascan/aws-ec2-scanner
 
+## 0.7.0
+
+### Minor Changes
+
+- [#130](https://github.com/infrascan/infrascan/pull/130) [`ae9bfbc219dad11f38c4449f0e2478f3e8585878`](https://github.com/infrascan/infrascan/commit/ae9bfbc219dad11f38c4449f0e2478f3e8585878) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add support for scanning network interfaces and nat gateways
+
 ## 0.6.0
 
 ### Minor Changes
