@@ -32,6 +32,7 @@
     "lint:all": "eslint .",
     "test": "turbo run test",
     "clean": "turbo run clean ; rm -rf node_modules",
-    "release": "turbo run test ; npx changeset publish"
+    "change:plan": "npx changeset",
+    "change:publish": "turbo run test ; npx changeset publish"
   }
 }

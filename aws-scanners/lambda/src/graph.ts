@@ -362,8 +362,8 @@ export const LambdaEventSourceEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.EventSourceArn!,
-        label: val.UUID!,
+        id: val.UUID!,
+        label: val.EventSourceArn!,
         nodeClass: "informational",
         nodeType: LambdaEventSourceEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
@@ -393,8 +393,8 @@ export const LambdaEventSourceEntity: TranslatedEntity<
 
     resource(val) {
       return {
-        id: val.EventSourceArn!,
-        name: val.UUID!,
+        id: val.UUID!,
+        name: val.EventSourceArn!,
         category: LambdaEventSourceEntity.category,
         subcategory: LambdaEventSourceEntity.subcategory,
       };
