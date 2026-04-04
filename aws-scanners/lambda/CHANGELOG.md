@@ -1,5 +1,11 @@
 # @infrascan/aws-lambda-scanner
 
+## 0.6.0
+
+### Minor Changes
+
+- [#132](https://github.com/infrascan/infrascan/pull/132) [`11172ebb203f5be8a4b370f45b68a6d84de32b52`](https://github.com/infrascan/infrascan/commit/11172ebb203f5be8a4b370f45b68a6d84de32b52) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Change order of UUID and EventSourceArn for Lambda Event Source Mapping informational nodes. This should prevent conflict from the event sources themselves during graphing.
+
 ## 0.5.0
 
 ### Minor Changes
