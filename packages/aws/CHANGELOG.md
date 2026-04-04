@@ -1,5 +1,12 @@
 # @infrascan/aws
 
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [[`11172ebb203f5be8a4b370f45b68a6d84de32b52`](https://github.com/infrascan/infrascan/commit/11172ebb203f5be8a4b370f45b68a6d84de32b52)]:
+  - @infrascan/aws-lambda-scanner@0.6.0
+
 ## 0.5.6
 
 ### Patch Changes
