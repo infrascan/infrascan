@@ -39,25 +39,25 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/sdk": "^0.6.2",
-    "@infrascan/tsconfig": "*"
+    "@infrascan/sdk": "workspace:^0.6.2",
+    "@infrascan/tsconfig": "workspace:*"
   },
   "dependencies": {
-    "@infrascan/aws-api-gateway-scanner": "^0.5.0",
-    "@infrascan/aws-autoscaling-scanner": "^0.3.1",
-    "@infrascan/aws-cloudfront-scanner": "^0.5.0",
-    "@infrascan/aws-cloudwatch-logs-scanner": "^0.5.0",
-    "@infrascan/aws-dynamodb-scanner": "^0.5.0",
-    "@infrascan/aws-ec2-scanner": "^0.7.0",
-    "@infrascan/aws-ecs-scanner": "^0.6.0",
-    "@infrascan/aws-elastic-load-balancing-scanner": "^0.5.0",
-    "@infrascan/aws-kinesis-scanner": "^0.4.0",
-    "@infrascan/aws-lambda-scanner": "^0.5.0",
-    "@infrascan/aws-rds-scanner": "^0.5.0",
-    "@infrascan/aws-route53-scanner": "^0.6.0",
-    "@infrascan/aws-s3-scanner": "^0.5.0",
-    "@infrascan/aws-sns-scanner": "^0.5.0",
-    "@infrascan/aws-sqs-scanner": "^0.5.0",
-    "@infrascan/aws-step-function-scanner": "^0.4.0"
+    "@infrascan/aws-api-gateway-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-autoscaling-scanner": "workspace:^0.3.1",
+    "@infrascan/aws-cloudfront-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-cloudwatch-logs-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-dynamodb-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-ec2-scanner": "workspace:^0.7.0",
+    "@infrascan/aws-ecs-scanner": "workspace:^0.6.0",
+    "@infrascan/aws-elastic-load-balancing-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-kinesis-scanner": "workspace:^0.4.0",
+    "@infrascan/aws-lambda-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-rds-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-route53-scanner": "workspace:^0.6.0",
+    "@infrascan/aws-s3-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-sns-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-sqs-scanner": "workspace:^0.5.0",
+    "@infrascan/aws-step-function-scanner": "workspace:^0.4.0"
   }
 }

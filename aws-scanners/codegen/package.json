@@ -16,10 +16,10 @@
     "ejs": "^3.1.9"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
-    "@infrascan/tsconfig": "*",
+    "@infrascan/shared-types": "workspace:^0.8.0",
+    "@infrascan/tsconfig": "workspace:*",
     "@types/ejs": "^3.1.5",
     "@types/node": "^20.3.1",
-    "eslint-config-custom": "*"
+    "eslint-config-custom": "workspace:*"
   }
 }

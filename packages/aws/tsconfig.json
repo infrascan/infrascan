@@ -2,8 +2,9 @@
   "extends": "@infrascan/tsconfig/base.json",
   "include": ["src"],
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "Node16",
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
     "baseUrl": "src",
     "rootDir": "src",
     "declarationMap": false,

@@ -31,8 +31,8 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
-    "eslint-config-custom": "*",
+    "@infrascan/shared-types": "workspace:^0.8.0",
+    "eslint-config-custom": "workspace:*",
     "tsconfig": "*",
     "typescript": "^5.4.5"
   },

@@ -1,0 +1,16 @@
+packages:
+  - 'apps/*'
+  - 'aws-scanners/*'
+  - 'internal/*'
+  - 'packages/*'
+  - 'plugins/*'
+
+onlyBuiltDependencies:
+  - esbuild
+
+packageRules:
+  minimumReleaseAge: 10080
+  minimumReleaseAgeExclude:
+    - '@infrascan/*'
+  trustPolicy: no-downgrade
+  blockExoticSubdeps: true

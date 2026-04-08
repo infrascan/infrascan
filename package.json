@@ -1,38 +1,28 @@
 {
-  "packageManager": "npm@10.7.0",
-  "workspaces": [
-    "apps/*",
-    "aws-scanners/*",
-    "internal/*",
-    "packages/*",
-    "plugins/*"
-  ],
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.27.10",
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.2.0",
-    "@turbo/gen": "^1.10.13",
     "eslint": "^9.29.0",
     "eslint-config-airbnb-extended": "^2",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-config-turbo": "^2.5.4",
     "tap": "^21",
     "tsup": "^8.0.0",
-    "turbo": "^2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.35.0"
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "codegen": "turbo run codegen",
-    "fmt": "turbo run fmt",
-    "lint": "turbo run lint",
+    "dev": "pnpm -r run codegen && pnpm -r run dev",
+    "build": "pnpm -r run build",
+    "codegen": "pnpm -r run codegen",
+    "fmt": "pnpm -r run fmt",
+    "lint": "pnpm -r run lint",
     "lint:all": "eslint .",
-    "test": "turbo run test",
-    "clean": "turbo run clean ; rm -rf node_modules",
-    "change:plan": "npx changeset",
-    "change:publish": "turbo run test ; npx changeset publish"
+    "test": "pnpm -r run build && pnpm -r run test",
+    "clean": "pnpm -r run clean && rm -rf node_modules",
+    "change:plan": "pnpm changeset",
+    "change:publish": "pnpm test && pnpm changeset publish"
   }
 }

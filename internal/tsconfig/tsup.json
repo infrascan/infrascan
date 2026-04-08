@@ -6,5 +6,5 @@
   "sourcemap": false,
   "entry": ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.ejs"],
   "format": ["cjs", "esm"],
-  "target": "node18"
+  "target": "node20"
 }

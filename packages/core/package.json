@@ -36,8 +36,8 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
-    "eslint-config-custom": "*",
+    "@infrascan/shared-types": "workspace:^0.8.0",
+    "eslint-config-custom": "workspace:*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
     "typescript": "^5.4.5"

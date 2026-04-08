@@ -19,7 +19,7 @@
     "build": "rm -rf dist ; tsup"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
+    "@infrascan/shared-types": "workspace:^0.8.0",
     "@types/node": "^20.12.10",
     "tap": "^21",
     "tsconfig": "*"
@@ -36,7 +36,7 @@
       "esm",
       "cjs"
     ],
-    "target": "node18"
+    "target": "node20"
   },
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "dependencies": {
-    "@infrascan/core": "*",
+    "@infrascan/core": "workspace:*",
     "minimatch": "^9.0.4"
   }
 }

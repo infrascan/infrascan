@@ -4,11 +4,16 @@
   "description": "Infrascan scanner definition for AWS Api Gateway",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
   "files": [
@@ -43,19 +48,19 @@
   "devDependencies": {
     "@aws-sdk/credential-providers": "3.624.0",
     "@aws-sdk/types": "3.609.0",
-    "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/fs-connector": "^0.3.0",
-    "@infrascan/shared-types": "^0.8.0",
-    "@infrascan/tsconfig": "*",
+    "@infrascan/aws-codegen": "workspace:^0.1.0",
+    "@infrascan/fs-connector": "workspace:^0.3.0",
+    "@infrascan/shared-types": "workspace:^0.8.0",
+    "@infrascan/tsconfig": "workspace:*",
     "@types/debug": "^4",
     "aws-sdk-client-mock": "^3.0.0",
-    "eslint-config-custom": "^1.0.0",
+    "eslint-config-custom": "workspace:^1.0.0",
     "tap": "^21",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@aws-sdk/client-apigatewayv2": "3.624.0",
-    "@infrascan/core": "0.5.0",
+    "@infrascan/core": "workspace:0.5.0",
     "debug": "^4"
   }
 }

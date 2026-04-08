@@ -7,6 +7,6 @@
     "eslint": "latest"
   },
   "devDependencies": {
-    "eslint-config-custom": "^1.0.0"
+    "eslint-config-custom": "workspace:^1.0.0"
   }
 }

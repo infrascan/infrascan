@@ -32,9 +32,9 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@smithy/util-stream": "^3.3.4",
-    "@infrascan/shared-types": "^0.8.0",
+    "@infrascan/shared-types": "workspace:^0.8.0",
     "aws-sdk-client-mock": "^3.0.0",
-    "eslint-config-custom": "*",
+    "eslint-config-custom": "workspace:*",
     "tap": "^21",
     "tsconfig": "*",
     "typescript": "^5.4.5"
