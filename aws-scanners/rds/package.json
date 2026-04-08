@@ -55,7 +55,8 @@
     "eslint-config-codegen": "workspace:^1.0.0",
     "tap": "^21",
     "@types/debug": "^4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@aws-sdk/types": "3.609.0"
   },
   "dependencies": {
     "@aws-sdk/client-rds": "3.624.0",

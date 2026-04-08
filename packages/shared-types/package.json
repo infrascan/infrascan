@@ -15,6 +15,7 @@
     "@aws-sdk/types": "3.609.0",
     "eslint-config-custom": "workspace:*",
     "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@infrascan/tsconfig": "workspace:*"
   }
 }

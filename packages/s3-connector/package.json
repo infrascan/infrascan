@@ -37,7 +37,8 @@
     "eslint-config-custom": "workspace:*",
     "tap": "^21",
     "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@infrascan/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.624.0",

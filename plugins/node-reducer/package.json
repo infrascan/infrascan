@@ -22,7 +22,8 @@
     "@infrascan/shared-types": "workspace:^0.8.0",
     "@types/node": "^20.12.10",
     "tap": "^21",
-    "tsconfig": "*"
+    "tsconfig": "*",
+    "@infrascan/tsconfig": "workspace:*"
   },
   "tsup": {
     "clean": true,

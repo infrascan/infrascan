@@ -40,7 +40,9 @@
     "eslint-config-custom": "workspace:*",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@infrascan/tsconfig": "workspace:*",
+    "@types/jmespath": "^0.15.0"
   },
   "dependencies": {
     "jmespath": "^0.16.0"

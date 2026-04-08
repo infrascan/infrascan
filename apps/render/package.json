@@ -13,6 +13,10 @@
     "@infrascan/shared-types": "workspace:^0.8.0",
     "@types/cytoscape": "^3.19.16",
     "typescript": "^5.4.5",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "@infrascan/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "cytoscape": "^3.33.2"
   }
 }

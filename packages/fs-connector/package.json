@@ -34,7 +34,8 @@
     "@infrascan/shared-types": "workspace:^0.8.0",
     "eslint-config-custom": "workspace:*",
     "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@infrascan/tsconfig": "workspace:*"
   },
   "dependencies": {
     "minimatch": "^9.0.3"

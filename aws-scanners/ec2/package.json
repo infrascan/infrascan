@@ -54,7 +54,8 @@
     "aws-sdk-client-mock": "^3.0.1",
     "eslint-config-codegen": "workspace:^1.0.0",
     "tap": "^21",
-    "@types/debug": "^4"
+    "@types/debug": "^4",
+    "@aws-sdk/types": "3.609.0"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "3.624.0",

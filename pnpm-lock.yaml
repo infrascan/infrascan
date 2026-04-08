@@ -43,6 +43,10 @@ importers:
         version: 8.58.1(eslint@9.39.4)(typescript@5.9.3)
 
   apps/render:
+    dependencies:
+      cytoscape:
+        specifier: ^3.33.2
+        version: 3.33.2
     devDependencies:
       '@infrascan/cytoscape-serializer':
         specifier: workspace:^0.3.4
@@ -50,6 +54,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       '@types/cytoscape':
         specifier: ^3.19.16
         version: 3.31.0
@@ -121,6 +128,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -170,6 +180,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -213,6 +226,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -247,6 +263,9 @@ importers:
         specifier: ^3.1.9
         version: 3.1.10
     devDependencies:
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../../packages/shared-types
@@ -278,6 +297,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -321,6 +343,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -361,6 +386,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -407,6 +435,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -450,6 +481,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -493,6 +527,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -536,6 +573,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -594,6 +634,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -637,6 +680,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -649,6 +695,9 @@ importers:
       '@infrascan/tsconfig':
         specifier: workspace:*
         version: link:../../internal/tsconfig
+      '@smithy/types':
+        specifier: ^3.7.2
+        version: 3.7.2
       '@types/debug':
         specifier: ^4
         version: 4.1.13
@@ -677,6 +726,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -720,6 +772,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -763,6 +818,9 @@ importers:
       '@aws-sdk/credential-providers':
         specifier: 3.624.0
         version: 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))
+      '@aws-sdk/types':
+        specifier: 3.609.0
+        version: 3.609.0
       '@infrascan/aws-codegen':
         specifier: workspace:^0.1.0
         version: link:../codegen
@@ -922,6 +980,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       '@smithy/types':
         specifier: ^3.3.0
         version: 3.7.2
@@ -944,6 +1005,12 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/jmespath':
+        specifier: ^0.15.0
+        version: 0.15.2
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../internal/eslint-config-custom
@@ -962,6 +1029,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/fs-connector:
     dependencies:
@@ -972,6 +1042,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../internal/eslint-config-custom
@@ -987,6 +1060,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
 
   packages/s3-connector:
     dependencies:
@@ -1000,6 +1076,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       '@smithy/util-stream':
         specifier: ^3.3.4
         version: 3.3.4
@@ -1052,6 +1131,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       '@types/debug':
         specifier: ^4
         version: 4.1.13
@@ -1063,10 +1145,10 @@ importers:
         version: 5.1.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.35.0
-        version: 8.58.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)(typescript@5.9.3)
+        version: 8.58.1(@typescript-eslint/parser@8.58.1(eslint@10.2.0)(typescript@5.9.3))(eslint@10.2.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: ^8.35.0
-        version: 8.58.1(eslint@9.39.4)(typescript@5.9.3)
+        version: 8.58.1(eslint@10.2.0)(typescript@5.9.3)
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../internal/eslint-config-custom
@@ -1082,6 +1164,9 @@ importers:
       '@aws-sdk/types':
         specifier: 3.609.0
         version: 3.609.0
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../internal/eslint-config-custom
@@ -1104,6 +1189,9 @@ importers:
       '@infrascan/shared-types':
         specifier: workspace:^0.8.0
         version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
       '@types/node':
         specifier: ^20.12.10
         version: 20.19.39

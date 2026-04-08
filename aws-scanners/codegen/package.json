@@ -20,6 +20,7 @@
     "@infrascan/tsconfig": "workspace:*",
     "@types/ejs": "^3.1.5",
     "@types/node": "^20.3.1",
-    "eslint-config-custom": "workspace:*"
+    "eslint-config-custom": "workspace:*",
+    "@aws-sdk/types": "3.609.0"
   }
 }
