@@ -162,9 +162,8 @@ export async function DescribeSecurityGroups(
     preparedParams["NextToken"] = pagingToken;
     try {
       const cmd = new DescribeSecurityGroupsCommand(preparedParams);
-      const result: DescribeSecurityGroupsCommandOutput = await client.send(
-        cmd,
-      );
+      const result: DescribeSecurityGroupsCommandOutput =
+        await client.send(cmd);
       state.push({
         _metadata: {
           account: context.account,
@@ -217,9 +216,8 @@ export async function DescribeLaunchTemplates(
     preparedParams["NextToken"] = pagingToken;
     try {
       const cmd = new DescribeLaunchTemplatesCommand(preparedParams);
-      const result: DescribeLaunchTemplatesCommandOutput = await client.send(
-        cmd,
-      );
+      const result: DescribeLaunchTemplatesCommandOutput =
+        await client.send(cmd);
       state.push({
         _metadata: {
           account: context.account,

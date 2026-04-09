@@ -50,14 +50,5 @@ export default defineConfig([
         },
       ],
     },
-    languageOptions: {
-      parserOptions: {
-        project: [
-          "./aws-scanners/*/tsconfig.json",
-          "./packages/*/tsconfig.json",
-        ],
-        tsconfigRootDir: process.cwd(),
-      },
-    },
   },
 ]);

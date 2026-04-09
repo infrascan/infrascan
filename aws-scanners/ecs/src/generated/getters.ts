@@ -384,9 +384,8 @@ export async function DescribeTaskDefinition(
     const preparedParams: DescribeTaskDefinitionCommandInput = parameters;
     try {
       const cmd = new DescribeTaskDefinitionCommand(preparedParams);
-      const result: DescribeTaskDefinitionCommandOutput = await client.send(
-        cmd,
-      );
+      const result: DescribeTaskDefinitionCommandOutput =
+        await client.send(cmd);
       state.push({
         _metadata: {
           account: context.account,

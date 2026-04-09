@@ -26,6 +26,9 @@ importers:
       eslint-config-airbnb-extended:
         specifier: ^2
         version: 2.3.3(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4))(eslint@9.39.4)(typescript-eslint@8.58.1(eslint@9.39.4)(typescript@5.9.3))
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.39.4)
       eslint-plugin-import:
         specifier: ^2.32.0
         version: 2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4)(typescript@5.9.3))(eslint@9.39.4)
@@ -8295,6 +8298,10 @@ snapshots:
   eslint-config-prettier@10.1.8(eslint@10.2.0):
     dependencies:
       eslint: 10.2.0
+
+  eslint-config-prettier@10.1.8(eslint@9.39.4):
+    dependencies:
+      eslint: 9.39.4
 
   eslint-import-resolver-node@0.3.10:
     dependencies:

@@ -161,9 +161,8 @@ export async function ListEventSourceMappings(
       preparedParams["Marker"] = pagingToken;
       try {
         const cmd = new ListEventSourceMappingsCommand(preparedParams);
-        const result: ListEventSourceMappingsCommandOutput = await client.send(
-          cmd,
-        );
+        const result: ListEventSourceMappingsCommandOutput =
+          await client.send(cmd);
         state.push({
           _metadata: {
             account: context.account,
