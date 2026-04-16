@@ -1,5 +1,6 @@
 import type Infrascan from "@infrascan/sdk";
 import ApiGatewayScanner from "@infrascan/aws-api-gateway-scanner";
+import IamScanner from "@infrascan/aws-iam-scanner";
 import AutoscalingScanner from "@infrascan/aws-autoscaling-scanner";
 import CloudfrontScanner from "@infrascan/aws-cloudfront-scanner";
 import CloudwatchLogsScanner from "@infrascan/aws-cloudwatch-logs-scanner";
@@ -33,6 +34,7 @@ export type * as StepFunction from "@infrascan/aws-step-function-scanner";
 
 export function registerAwsScanners(infrascanClient: Infrascan): Infrascan {
   infrascanClient.registerScanner(ApiGatewayScanner);
+  infrascanClient.registerScanner(IamScanner);
   infrascanClient.registerScanner(AutoscalingScanner);
   infrascanClient.registerScanner(CloudfrontScanner);
   infrascanClient.registerScanner(CloudwatchLogsScanner);
