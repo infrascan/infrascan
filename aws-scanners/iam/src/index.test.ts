@@ -10,10 +10,12 @@ import {
   ListRolePoliciesCommand,
   GetRolePolicyCommand,
   ListAttachedRolePoliciesCommand,
+  GetPolicyCommand,
 } from "@aws-sdk/client-iam";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import IamScanner from ".";
+import { IamRoleEntity, IamPolicyEntity } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -60,6 +62,7 @@ const roleTwoArn = `arn:aws:iam::${testContext.account}:role/${roleTwoName}`;
 const inlinePolicyName = "inline-policy-1";
 const attachedPolicyArn = "arn:aws:iam::aws:policy/ReadOnlyAccess";
 const attachedPolicyName = "ReadOnlyAccess";
+const attachedPolicyId = "ANPAIOSFODNN7EXAMPLE1";
 
 t.test(
   "State is pulled correctly from IAM, and formatted as expected",
@@ -128,6 +131,24 @@ t.test(
       .on(ListAttachedRolePoliciesCommand, { RoleName: roleTwoName })
       .resolves({ AttachedPolicies: [], IsTruncated: false });
 
+    // GetPolicy — called for the one attached policy ARN
+    mockedIamClient
+      .on(GetPolicyCommand, { PolicyArn: attachedPolicyArn })
+      .resolves({
+        Policy: {
+          PolicyName: attachedPolicyName,
+          PolicyId: attachedPolicyId,
+          Arn: attachedPolicyArn,
+          Path: "/",
+          DefaultVersionId: "v1",
+          AttachmentCount: 1,
+          PermissionsBoundaryUsageCount: 0,
+          IsAttachable: true,
+          CreateDate: new Date("2023-01-01"),
+          UpdateDate: new Date("2023-01-01"),
+        },
+      });
+
     for (const scannerFn of IamScanner.getters) {
       await scannerFn(iamClient, connector, testContext);
     }
@@ -141,10 +162,7 @@ t.test(
     );
 
     // ListRolePolicies called once per role
-    equal(
-      mockedIamClient.commandCalls(ListRolePoliciesCommand).length,
-      2,
-    );
+    equal(mockedIamClient.commandCalls(ListRolePoliciesCommand).length, 2);
 
     // GetRolePolicy only called for role-1's single inline policy
     equal(mockedIamClient.commandCalls(GetRolePolicyCommand).length, 1);
@@ -165,53 +183,96 @@ t.test(
       2,
     );
 
-    // Entity produces correct nodes
-    for (const entity of IamScanner.entities ?? []) {
-      const nodeProducer = generateNodesFromEntity(
-        connector,
-        testContext,
-        entity,
-      );
-      const nodes = [];
-      for await (const node of nodeProducer) {
-        nodes.push(node);
-        ok(node.$graph.id, "node has a graph id");
-        ok(node.$graph.label, "node has a graph label");
-        equal(node.$graph.nodeClass, "informational");
-        equal(node.$graph.nodeType, "iam-role");
-        equal(node.$graph.parent, testContext.account);
-        ok(node.$metadata.version, "node has metadata version");
-        equal(node.tenant.tenantId, testContext.account);
-        equal(node.tenant.provider, "aws");
-        ok(node.location?.code, "node has a location code");
-        equal(node.$source?.command, entity.command);
-        equal(node.resource.category, entity.category);
-        equal(node.resource.subcategory, entity.subcategory);
-        ok(node.audit?.createdAt, "node has an audit createdAt");
-      }
+    // GetPolicy called once for the one unique attached policy ARN
+    equal(mockedIamClient.commandCalls(GetPolicyCommand).length, 1);
+    equal(
+      mockedIamClient.commandCalls(GetPolicyCommand).at(0)?.args[0].input
+        .PolicyArn,
+      attachedPolicyArn,
+    );
 
-      equal(nodes.length, 2, "one node per role");
-
-      // Validate role-1 has its policies populated
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const roleOneNode = nodes.find((n: any) => n.$graph.id === roleOneId) as any;
-      ok(roleOneNode, "role-1 node exists");
-      equal(roleOneNode.iam_role.path, "/");
-      equal(roleOneNode.iam_role.maxSessionDuration, 3600);
-      match(roleOneNode.iam_role.assumeRolePolicy, assumeRolePolicyDoc);
-      equal(roleOneNode.iam_role.inlinePolicies.length, 1);
-      equal(roleOneNode.iam_role.inlinePolicies[0].name, inlinePolicyName);
-      match(roleOneNode.iam_role.inlinePolicies[0].document, inlinePolicyDoc);
-      equal(roleOneNode.iam_role.attachedPolicies.length, 1);
-      equal(roleOneNode.iam_role.attachedPolicies[0].PolicyArn, attachedPolicyArn);
-
-      // Validate role-2 has empty policy arrays
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const roleTwoNode = nodes.find((n: any) => n.$graph.id === roleTwoId) as any;
-      ok(roleTwoNode, "role-2 node exists");
-      equal(roleTwoNode.iam_role.inlinePolicies.length, 0);
-      equal(roleTwoNode.iam_role.attachedPolicies.length, 0);
+    // --- IamRoleEntity nodes ---
+    const roleNodeProducer = generateNodesFromEntity(
+      connector,
+      testContext,
+      IamRoleEntity,
+    );
+    const roleNodes = [];
+    for await (const node of roleNodeProducer) {
+      roleNodes.push(node);
+      ok(node.$graph.id, "role node has a graph id");
+      ok(node.$graph.label, "role node has a graph label");
+      equal(node.$graph.nodeClass, "informational");
+      equal(node.$graph.nodeType, "iam-role");
+      equal(node.$graph.parent, testContext.account);
+      ok(node.$metadata.version, "role node has metadata version");
+      equal(node.tenant.tenantId, testContext.account);
+      equal(node.tenant.provider, "aws");
+      ok(node.location?.code, "role node has a location code");
+      equal(node.$source?.command, IamRoleEntity.command);
+      equal(node.resource.category, IamRoleEntity.category);
+      equal(node.resource.subcategory, IamRoleEntity.subcategory);
+      ok(node.audit?.createdAt, "role node has an audit createdAt");
     }
+
+    equal(roleNodes.length, 2, "one node per role");
+
+    // Validate role-1 has its policies populated
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const roleOneNode = roleNodes.find((n: any) => n.$graph.id === roleOneId) as any;
+    ok(roleOneNode, "role-1 node exists");
+    equal(roleOneNode.iamRole.path, "/");
+    equal(roleOneNode.iamRole.maxSessionDuration, 3600);
+    match(roleOneNode.iamRole.assumeRolePolicy, assumeRolePolicyDoc);
+    equal(roleOneNode.iamRole.inlinePolicies.length, 1);
+    equal(roleOneNode.iamRole.inlinePolicies[0].name, inlinePolicyName);
+    match(roleOneNode.iamRole.inlinePolicies[0].document, inlinePolicyDoc);
+    equal(roleOneNode.iamRole.attachedPolicies.length, 1);
+    equal(roleOneNode.iamRole.attachedPolicies[0].PolicyArn, attachedPolicyArn);
+
+    // Validate role-2 has empty policy arrays
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const roleTwoNode = roleNodes.find((n: any) => n.$graph.id === roleTwoId) as any;
+    ok(roleTwoNode, "role-2 node exists");
+    equal(roleTwoNode.iamRole.inlinePolicies.length, 0);
+    equal(roleTwoNode.iamRole.attachedPolicies.length, 0);
+
+    // --- IamPolicyEntity nodes ---
+    const policyNodeProducer = generateNodesFromEntity(
+      connector,
+      testContext,
+      IamPolicyEntity,
+    );
+    const policyNodes = [];
+    for await (const node of policyNodeProducer) {
+      policyNodes.push(node);
+      ok(node.$graph.id, "policy node has a graph id");
+      ok(node.$graph.label, "policy node has a graph label");
+      equal(node.$graph.nodeClass, "informational");
+      equal(node.$graph.nodeType, "iam-policy");
+      equal(node.$graph.parent, testContext.account);
+      ok(node.$metadata.version, "policy node has metadata version");
+      equal(node.tenant.tenantId, testContext.account);
+      equal(node.tenant.provider, "aws");
+      ok(node.location?.code, "policy node has a location code");
+      equal(node.$source?.command, IamPolicyEntity.command);
+      equal(node.resource.category, IamPolicyEntity.category);
+      equal(node.resource.subcategory, IamPolicyEntity.subcategory);
+      ok(node.audit?.createdAt, "policy node has an audit createdAt");
+    }
+
+    equal(policyNodes.length, 1, "one node per attached policy");
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const policyNode = policyNodes[0] as any;
+    ok(policyNode, "policy node exists");
+    equal(policyNode.$graph.id, attachedPolicyArn);
+    equal(policyNode.$graph.label, attachedPolicyName);
+    equal(policyNode.iamPolicy.id, attachedPolicyId);
+    equal(policyNode.iamPolicy.path, "/");
+    equal(policyNode.iamPolicy.defaultVersionId, "v1");
+    equal(policyNode.iamPolicy.attachmentCount, 1);
+    equal(policyNode.iamPolicy.permissionsBoundaryUsageCount, 0);
   },
 );
 
@@ -233,4 +294,53 @@ t.test("No roles returned from ListRolesCommand", async ({ equal }) => {
   equal(mockedIamClient.commandCalls(ListRolePoliciesCommand).length, 0);
   equal(mockedIamClient.commandCalls(GetRolePolicyCommand).length, 0);
   equal(mockedIamClient.commandCalls(ListAttachedRolePoliciesCommand).length, 0);
+  equal(mockedIamClient.commandCalls(GetPolicyCommand).length, 0);
 });
+
+t.test(
+  "IamPolicyEntity produces no nodes when no attached policies exist",
+  async ({ equal }) => {
+    const iamClient = IamScanner.getClient(fromProcess(), testContext);
+    const mockedIamClient = mockClient(iamClient);
+
+    mockedIamClient.on(ListRolesCommand).resolves({
+      Roles: [
+        {
+          RoleName: roleOneName,
+          RoleId: roleOneId,
+          Arn: roleOneArn,
+          Path: "/",
+          CreateDate: new Date("2024-01-01"),
+          AssumeRolePolicyDocument: encodePolicy(assumeRolePolicyDoc),
+        },
+      ],
+      IsTruncated: false,
+    });
+
+    mockedIamClient
+      .on(ListRolePoliciesCommand)
+      .resolves({ PolicyNames: [], IsTruncated: false });
+
+    mockedIamClient
+      .on(ListAttachedRolePoliciesCommand)
+      .resolves({ AttachedPolicies: [], IsTruncated: false });
+
+    for (const scannerFn of IamScanner.getters) {
+      await scannerFn(iamClient, connector, testContext);
+    }
+
+    // No attached policies means GetPolicy is never called
+    equal(mockedIamClient.commandCalls(GetPolicyCommand).length, 0);
+
+    const policyNodeProducer = generateNodesFromEntity(
+      connector,
+      testContext,
+      IamPolicyEntity,
+    );
+    const policyNodes = [];
+    for await (const node of policyNodeProducer) {
+      policyNodes.push(node);
+    }
+    equal(policyNodes.length, 0, "no policy nodes when no attached policies");
+  },
+);

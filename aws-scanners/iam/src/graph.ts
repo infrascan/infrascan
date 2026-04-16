@@ -7,6 +7,9 @@ import type {
   ListAttachedRolePoliciesCommandOutput,
   Role,
   AttachedPolicy,
+  GetPolicyCommandOutput,
+  GetPolicyCommandInput,
+  Policy,
 } from "@aws-sdk/client-iam";
 import { evaluateSelector } from "@infrascan/core";
 import type {
@@ -26,21 +29,29 @@ export interface InlinePolicy {
 export interface IamRoleState {
   path: string;
   maxSessionDuration?: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assumeRolePolicy?: any;
+  assumeRolePolicy?: unknown;
   inlinePolicies: InlinePolicy[];
   attachedPolicies: AttachedPolicy[];
 }
 
 export type IamRole = BaseState<ListRolesCommandInput> & {
-  iam_role: IamRoleState;
+  iamRole: IamRoleState;
 };
 
 // Enriched raw state — one entry per ListRoles page, augmented with the
 // policy state so translate() can join per-role without extra async work.
-type EnrichedRolesState = State<ListRolesCommandOutput, ListRolesCommandInput> & {
-  _inlinePolicies: State<GetRolePolicyCommandOutput, GetRolePolicyCommandInput>[];
-  _attachedPolicies: State<ListAttachedRolePoliciesCommandOutput, ListAttachedRolePoliciesCommandInput>[];
+type EnrichedRolesState = State<
+  ListRolesCommandOutput,
+  ListRolesCommandInput
+> & {
+  _inlinePolicies: State<
+    GetRolePolicyCommandOutput,
+    GetRolePolicyCommandInput
+  >[];
+  _attachedPolicies: State<
+    ListAttachedRolePoliciesCommandOutput,
+    ListAttachedRolePoliciesCommandInput
+  >[];
 };
 
 type EnrichedRole = WithCallContext<Role, ListRolesCommandInput> & {
@@ -80,7 +91,10 @@ export const IamRoleEntity: TranslatedEntity<
     >(context.account, context.region, "IAM|GetRolePolicy|[]", connector);
 
     const attachedPolicies = await evaluateSelector<
-      State<ListAttachedRolePoliciesCommandOutput, ListAttachedRolePoliciesCommandInput>
+      State<
+        ListAttachedRolePoliciesCommandOutput,
+        ListAttachedRolePoliciesCommandInput
+      >
     >(context.account, context.region, "IAM|ListAttachedRolePolicies|[]", connector);
 
     return rolesEntries.map((entry) => ({
@@ -183,7 +197,7 @@ export const IamRoleEntity: TranslatedEntity<
       };
     },
 
-    iam_role(val): IamRoleState {
+    iamRole(val): IamRoleState {
       return {
         path: val.Path!,
         maxSessionDuration: val.MaxSessionDuration,
@@ -197,4 +211,134 @@ export const IamRoleEntity: TranslatedEntity<
   },
 };
 
-export type GraphState = IamRole;
+export interface IamPolicyState {
+  path: string;
+  defaultVersionId?: string;
+  attachmentCount?: number;
+  id: string;
+  permissionsBoundaryUsageCount?: number;
+}
+
+export type IamPolicy = BaseState<GetPolicyCommandInput> & {
+  iamPolicy: IamPolicyState;
+};
+
+type RestrictedGetPolicyCommandOutput = GetPolicyCommandOutput & {
+  Policy: Policy;
+};
+
+export const IamPolicyEntity: TranslatedEntity<
+  IamPolicy,
+  State<RestrictedGetPolicyCommandOutput, GetPolicyCommandInput>,
+  WithCallContext<Policy, GetPolicyCommandInput>
+> = {
+  version: "0.1.0",
+  debugLabel: "iam-policy",
+  provider: "aws",
+  command: "GetPolicy",
+  category: "iam",
+  subcategory: "policy",
+  nodeType: "iam-policy",
+  selector: "IAM|GetPolicy|[]",
+
+  async getState(connector, context) {
+    const state = await evaluateSelector<
+      State<GetPolicyCommandOutput, GetPolicyCommandInput>
+    >(context.account, context.region, "IAM|GetPolicy|[]", connector);
+
+    return state.filter(
+      (
+        entry,
+      ): entry is State<
+        RestrictedGetPolicyCommandOutput,
+        GetPolicyCommandInput
+      > => entry._result.Policy != null,
+    );
+  },
+
+  translate(val) {
+    const enrichedPolicy = Object.assign(val._result.Policy, {
+      $metadata: val._metadata,
+      $parameters: val._parameters,
+    });
+    return [enrichedPolicy];
+  },
+
+  components: {
+    $metadata(val) {
+      return {
+        version: IamRoleEntity.version,
+        timestamp: val.$metadata.timestamp,
+      };
+    },
+
+    $graph(val) {
+      return {
+        id: val.Arn!,
+        label: val.PolicyName!,
+        nodeClass: "informational",
+        nodeType: IamPolicyEntity.nodeType,
+        parent: val.$metadata.account,
+      };
+    },
+
+    tenant(val) {
+      return {
+        provider: IamPolicyEntity.provider,
+        partition: val.$metadata.partition,
+        tenantId: val.$metadata.account,
+      };
+    },
+
+    resource(val) {
+      return {
+        id: val.Arn!,
+        name: val.PolicyName!,
+        category: IamPolicyEntity.category,
+        subcategory: IamPolicyEntity.subcategory,
+        description: val.Description,
+      };
+    },
+
+    tags(val) {
+      return (
+        val.Tags?.map((tag) => ({
+          key: tag.Key!,
+          value: tag.Value!,
+        })) ?? []
+      );
+    },
+
+    $source(val) {
+      return {
+        command: IamPolicyEntity.command,
+        parameters: val.$parameters,
+      };
+    },
+
+    location(val) {
+      return {
+        code: val.$metadata.region,
+      };
+    },
+
+    audit(val) {
+      return {
+        createdAt: val.CreateDate,
+      };
+    },
+
+    iamPolicy(val): IamPolicyState {
+      return {
+        id: val.PolicyId!,
+        path: val.Path!,
+        permissionsBoundaryUsageCount: val.PermissionsBoundaryUsageCount,
+        defaultVersionId: val.DefaultVersionId,
+        attachmentCount: val.AttachmentCount,
+      };
+    },
+  },
+};
+
+export type IamRoleGraphState = IamRole;
+export type IamPolicyGraphState = IamPolicy;

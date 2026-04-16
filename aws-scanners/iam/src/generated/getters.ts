@@ -1,4 +1,4 @@
-import { evaluateSelector, resolveFunctionCallParameters } from "@infrascan/core";
+import { resolveFunctionCallParameters } from "@infrascan/core";
 import { IAMClient, IAMServiceException } from "@aws-sdk/client-iam";
 import {
   ListRolesCommand,
@@ -20,11 +20,15 @@ import {
   ListAttachedRolePoliciesCommandInput,
   ListAttachedRolePoliciesCommandOutput,
 } from "@aws-sdk/client-iam";
+import {
+  GetPolicyCommand,
+  GetPolicyCommandInput,
+  GetPolicyCommandOutput,
+} from "@aws-sdk/client-iam";
 import type {
   Connector,
   GenericState,
   AwsContext,
-  State,
 } from "@infrascan/shared-types";
 import debug from "debug";
 
@@ -90,10 +94,7 @@ export async function ListRolePolicies(
   const state: GenericState[] = [];
   getterDebug("Fetching state");
   const resolvers = [
-    {
-      Key: "RoleName",
-      Selector: "IAM|ListRoles|[]._result.Roles[].RoleName",
-    },
+    { Key: "RoleName", Selector: "IAM|ListRoles|[]._result.Roles[].RoleName" },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,
@@ -104,10 +105,8 @@ export async function ListRolePolicies(
   for (const parameters of parameterQueue) {
     let pagingToken: string | undefined;
     do {
-      const preparedParams: ListRolePoliciesCommandInput = {
-        ...parameters,
-        Marker: pagingToken,
-      };
+      const preparedParams: ListRolePoliciesCommandInput = parameters;
+      preparedParams["Marker"] = pagingToken;
       try {
         const cmd = new ListRolePoliciesCommand(preparedParams);
         const result: ListRolePoliciesCommandOutput = await client.send(cmd);
@@ -149,13 +148,6 @@ export async function ListRolePolicies(
     state,
   );
 }
-
-/**
- * Custom getter — GetRolePolicy requires correlated (RoleName, PolicyName) pairs
- * from each ListRolePolicies result, which can't be expressed as an index-paired
- * cross-product via resolveFunctionCallParameters. We read the stored
- * ListRolePolicies state directly and iterate role → policies.
- */
 export async function GetRolePolicy(
   client: IAMClient,
   stateConnector: Connector,
@@ -164,47 +156,48 @@ export async function GetRolePolicy(
   const getterDebug = debug("iam:GetRolePolicy");
   const state: GenericState[] = [];
   getterDebug("Fetching state");
-
-  const listRolePoliciesState = await evaluateSelector<
-    State<ListRolePoliciesCommandOutput, ListRolePoliciesCommandInput>
-  >(context.account, context.region, "IAM|ListRolePolicies|[]", stateConnector);
-
-  for (const entry of listRolePoliciesState) {
-    const roleName = entry._parameters?.RoleName;
-    if (roleName == null) {
-      continue;
-    }
-    for (const policyName of entry._result.PolicyNames ?? []) {
-      const preparedParams: GetRolePolicyCommandInput = {
-        RoleName: roleName,
-        PolicyName: policyName,
-      };
-      try {
-        const cmd = new GetRolePolicyCommand(preparedParams);
-        const result: GetRolePolicyCommandOutput = await client.send(cmd);
-        state.push({
-          _metadata: {
-            account: context.account,
-            region: context.region,
-            timestamp: Date.now(),
-          },
-          _parameters: preparedParams,
-          _result: result,
-        });
-      } catch (err: unknown) {
-        if (err instanceof IAMServiceException) {
-          if (err?.$retryable) {
-            console.log("Encountered retryable error", err);
-          } else {
-            console.log("Encountered unretryable error", err);
-          }
+  const resolvers = [
+    {
+      Key: "RoleName",
+      Selector: "IAM|ListRolePolicies|[]._parameters.RoleName",
+    },
+    {
+      Key: "PolicyName",
+      Selector: "IAM|ListRolePolicies|[]._result.PolicyNames[]",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetRolePolicyCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetRolePolicyCommandInput = parameters;
+    try {
+      const cmd = new GetRolePolicyCommand(preparedParams);
+      const result: GetRolePolicyCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+    } catch (err: unknown) {
+      if (err instanceof IAMServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
         } else {
-          console.log("Encountered unexpected error", err);
+          console.log("Encountered unretryable error", err);
         }
+      } else {
+        console.log("Encountered unexpected error", err);
       }
     }
   }
-
   getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
@@ -224,10 +217,7 @@ export async function ListAttachedRolePolicies(
   const state: GenericState[] = [];
   getterDebug("Fetching state");
   const resolvers = [
-    {
-      Key: "RoleName",
-      Selector: "IAM|ListRoles|[]._result.Roles[].RoleName",
-    },
+    { Key: "RoleName", Selector: "IAM|ListRoles|[]._result.Roles[].RoleName" },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,
@@ -238,14 +228,13 @@ export async function ListAttachedRolePolicies(
   for (const parameters of parameterQueue) {
     let pagingToken: string | undefined;
     do {
-      const preparedParams: ListAttachedRolePoliciesCommandInput = {
-        ...parameters,
-        Marker: pagingToken,
-      };
+      const preparedParams: ListAttachedRolePoliciesCommandInput = parameters;
+      preparedParams["Marker"] = pagingToken;
       try {
         const cmd = new ListAttachedRolePoliciesCommand(preparedParams);
-        const result: ListAttachedRolePoliciesCommandOutput =
-          await client.send(cmd);
+        const result: ListAttachedRolePoliciesCommandOutput = await client.send(
+          cmd,
+        );
         state.push({
           _metadata: {
             account: context.account,
@@ -281,6 +270,62 @@ export async function ListAttachedRolePolicies(
     context.region,
     "IAM",
     "ListAttachedRolePolicies",
+    state,
+  );
+}
+export async function GetPolicy(
+  client: IAMClient,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("iam:GetPolicy");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [
+    {
+      Key: "PolicyArn",
+      Selector:
+        "IAM|ListAttachedRolePolicies|[]._result.AttachedPolicies[].PolicyArn",
+    },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetPolicyCommandInput[];
+  for (const parameters of parameterQueue) {
+    const preparedParams: GetPolicyCommandInput = parameters;
+    try {
+      const cmd = new GetPolicyCommand(preparedParams);
+      const result: GetPolicyCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+    } catch (err: unknown) {
+      if (err instanceof IAMServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+    }
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "IAM",
+    "GetPolicy",
     state,
   );
 }

@@ -5,7 +5,8 @@ export type IamFunctions =
   | "ListRoles"
   | "ListRolePolicies"
   | "GetRolePolicy"
-  | "ListAttachedRolePolicies";
+  | "ListAttachedRolePolicies"
+  | "GetPolicy";
 
 const IamScanner: ScannerDefinition<"IAM", typeof IAM, IamFunctions> = {
   provider: "aws",
@@ -59,6 +60,16 @@ const IamScanner: ScannerDefinition<"IAM", typeof IAM, IamFunctions> = {
         request: "Marker",
         response: "Marker",
       },
+    },
+    {
+      fn: "GetPolicy",
+      parameters: [
+        {
+          Key: "PolicyArn",
+          Selector:
+            "IAM|ListAttachedRolePolicies|[]._result.AttachedPolicies[].PolicyArn",
+        },
+      ],
     },
   ],
 };
