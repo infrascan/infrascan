@@ -18,7 +18,7 @@
     "dev": "node ./dist/index.js",
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
-    "test": "echo \"Error: no test specified\"",
+    "test": "tap src/**/*.test.ts --allow-incomplete-coverage -- --typescript",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
     "clean": "rm -rf dist node_modules"
@@ -59,6 +59,7 @@
     "@typescript-eslint/parser": "^8.35.0",
     "eslint-config-custom": "*",
     "tsconfig": "*",
+    "tap": "^21",
     "typescript": "^5.4.5"
   }
 }
