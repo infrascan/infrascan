@@ -1,38 +1,31 @@
 {
-  "packageManager": "npm@10.7.0",
-  "workspaces": [
-    "apps/*",
-    "aws-scanners/*",
-    "internal/*",
-    "packages/*",
-    "plugins/*"
-  ],
+  "packageManager": "pnpm@11.8.0",
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.27.10",
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.2.0",
-    "@turbo/gen": "^1.10.13",
-    "eslint": "^9.29.0",
-    "eslint-config-airbnb-extended": "^2",
+    "eslint": "9.29.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-extended": "2.1.0",
+    "eslint-config-prettier": "9.0.0",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-config-turbo": "^2.5.4",
+    "prettier": "2.8.8",
     "tap": "^21",
-    "tsup": "^8.0.0",
-    "turbo": "^2",
-    "typescript": "^5.4.5",
-    "typescript-eslint": "^8.35.0"
+    "tsup": "8.4.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.35.0"
   },
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "codegen": "turbo run codegen",
-    "fmt": "turbo run fmt",
-    "lint": "turbo run lint",
+    "dev": "pnpm --parallel --recursive run dev",
+    "build": "pnpm --recursive run build",
+    "codegen": "pnpm --recursive run codegen",
+    "fmt": "pnpm --recursive run fmt",
+    "lint": "pnpm --recursive run lint",
     "lint:all": "eslint .",
-    "test": "turbo run test",
-    "clean": "turbo run clean ; rm -rf node_modules",
-    "change:plan": "npx changeset",
-    "change:publish": "turbo run test ; npx changeset publish"
+    "test": "pnpm --recursive run test",
+    "clean": "pnpm --recursive run clean ; rm -rf node_modules",
+    "change:plan": "pnpm changeset",
+    "change:publish": "pnpm --recursive run build && pnpm --recursive run test && pnpm changeset publish"
   }
 }

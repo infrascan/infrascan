@@ -36,12 +36,13 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
-    "eslint-config-custom": "*",
+    "@infrascan/shared-types": "workspace:^",
+    "@infrascan/tsconfig": "workspace:*",
+    "@types/jmespath": "^0.15.2",
+    "eslint-config-custom": "workspace:*",
     "tap": "^21",
     "ts-node": "^10.9.1",
-    "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "jmespath": "^0.16.0"

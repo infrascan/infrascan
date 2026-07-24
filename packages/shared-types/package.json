@@ -13,8 +13,8 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@aws-sdk/types": "3.609.0",
-    "eslint-config-custom": "*",
-    "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "eslint-config-custom": "workspace:*",
+    "@infrascan/tsconfig": "workspace:*",
+    "typescript": "5.8.3"
   }
 }

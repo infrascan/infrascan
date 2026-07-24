@@ -5,8 +5,7 @@
   "private": true,
   "dependencies": {
     "eslint": "latest",
-    "eslint-config-prettier": "latest",
-    "eslint-config-turbo": "latest"
+    "eslint-config-prettier": "latest"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.35.0",

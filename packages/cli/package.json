@@ -26,11 +26,11 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@aws-sdk/credential-providers": "3.624.0",
-    "@infrascan/aws": "^0.5.5",
-    "@infrascan/cytoscape-serializer": "^0.3.4",
-    "@infrascan/fs-connector": "^0.3.0",
-    "@infrascan/informational-serializer": "^0.2.0",
-    "@infrascan/sdk": "^0.6.2",
+    "@infrascan/aws": "workspace:^",
+    "@infrascan/cytoscape-serializer": "workspace:^",
+    "@infrascan/fs-connector": "workspace:^",
+    "@infrascan/informational-serializer": "workspace:^",
+    "@infrascan/sdk": "workspace:^",
     "@rushstack/ts-command-line": "^4.15.2",
     "@smithy/shared-ini-file-loader": "^3.1.12",
     "ejs": "^3.1.9",
@@ -39,10 +39,11 @@
   },
   "devDependencies": {
     "@aws-sdk/types": "3.609.0",
-    "@infrascan/shared-types": "^0.8.0",
+    "@infrascan/shared-types": "workspace:^",
+    "@infrascan/tsconfig": "workspace:*",
     "@smithy/types": "^3.3.0",
     "@types/ejs": "^3.1.5",
     "ts-node": "^10.9.1",
-    "typescript": "^5.4.5"
+    "typescript": "5.8.3"
   }
 }

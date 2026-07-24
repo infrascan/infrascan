@@ -19,10 +19,10 @@
     "build": "rm -rf dist ; tsup"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
+    "@infrascan/shared-types": "workspace:^",
     "@types/node": "^20.12.10",
     "tap": "^21",
-    "tsconfig": "*"
+    "@infrascan/tsconfig": "workspace:*"
   },
   "tsup": {
     "clean": true,
@@ -55,7 +55,7 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "dependencies": {
-    "@infrascan/core": "*",
+    "@infrascan/core": "workspace:*",
     "minimatch": "^9.0.4"
   }
 }

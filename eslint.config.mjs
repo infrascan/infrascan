@@ -4,7 +4,6 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import { configs } from "eslint-config-airbnb-extended/legacy";
 import prettier from "eslint-config-prettier";
-import turbo from "eslint-config-turbo/flat";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -26,7 +25,6 @@ export default defineConfig([
     "**/generated/*.ts",
   ]),
   js.configs.recommended,
-  ...turbo,
   ...compat.extends("eslint-config-airbnb-base"),
   ...configs.base.typescript,
   ...tseslint.configs.recommended,
