@@ -15,6 +15,7 @@ import type {
 
 export * from "./graph";
 export * from "./errors";
+export * from "./date";
 
 export const Size = {
   Bytes: "B" as SizeUnit,

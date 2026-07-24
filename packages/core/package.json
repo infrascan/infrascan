@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
-    "test": "echo \"Error: no test specified\"",
+    "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
     "clean": "rm -rf dist node_modules"
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@infrascan/shared-types": "^0.8.0",
     "eslint-config-custom": "*",
+    "tap": "^21",
     "ts-node": "^10.9.1",
     "tsconfig": "*",
     "typescript": "^5.4.5"
