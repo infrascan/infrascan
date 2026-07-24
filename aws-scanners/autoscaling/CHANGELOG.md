@@ -1,5 +1,12 @@
 # @infrascan/aws-autoscaling-scanner
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [[`87e6cc3b6f3342902aeab7b3c6e1349865bd8be1`](https://github.com/infrascan/infrascan/commit/87e6cc3b6f3342902aeab7b3c6e1349865bd8be1)]:
+  - @infrascan/core@0.6.0
+
 ## 0.3.1
 
 ### Patch Changes
