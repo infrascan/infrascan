@@ -1,4 +1,5 @@
 import type { AwsContext, Connector } from "./api";
+import type { Serialized } from "./serialized";
 
 export interface CommandCallMetadata {
   account: string;
@@ -372,8 +373,14 @@ export interface CommonEntity<Schema, RawState, TranslatedState = RawState> {
   subcategory: string;
   nodeType: string;
 
-  getState: (state: Connector, context: AwsContext) => Promise<RawState[]>;
-  components: ComponentFactory<TranslatedState, Schema>;
+  // State returned from the connector has been through a JSON persistence
+  // round-trip, so `Date` fields are actually ISO strings at runtime. The
+  // `Serialized` wrappers make the declared types reflect that reality.
+  getState: (
+    state: Connector,
+    context: AwsContext,
+  ) => Promise<Serialized<RawState>[]>;
+  components: ComponentFactory<Serialized<TranslatedState>, Schema>;
 }
 
 /**
@@ -389,7 +396,7 @@ export interface SimpleEntity<Schema, RawState>
  */
 export interface TranslatedEntity<Schema, RawState, TranslatedState>
   extends CommonEntity<Schema, RawState, TranslatedState> {
-  translate: Translate<RawState, TranslatedState[]>;
+  translate: Translate<Serialized<RawState>, TranslatedState[]>;
 }
 
 /**
