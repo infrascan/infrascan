@@ -6,23 +6,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          # Full history so pnpm can diff the branch against origin/main
-          # and select only the affected packages.
-          fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: actions/checkout@v3
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: "18"
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Build
-        run: pnpm --filter "...[origin/main]..." run build
+        run: npm run build
       - name: Lint
-        run: pnpm --filter "...[origin/main]" run lint
+        run: npm run lint
       - name: Test
-        run: pnpm --filter "...[origin/main]" run test
+        run: npm run test
