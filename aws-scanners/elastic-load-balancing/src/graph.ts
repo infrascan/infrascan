@@ -4,15 +4,16 @@ import type {
   LoadBalancer,
   LoadBalancerTypeEnum,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateString } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
   type State,
   type WithCallContext,
+  type Serialized,
 } from "@infrascan/shared-types";
 
-function getPublicIpStatus(val: LoadBalancer) {
+function getPublicIpStatus(val: Serialized<LoadBalancer>) {
   if (val.Scheme === "internet-facing") {
     return "enabled";
   }
@@ -125,8 +126,7 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt:
-          val.CreatedTime != null ? new Date(val.CreatedTime) : undefined,
+        createdAt: tryNormalizeDateString(val.CreatedTime),
       };
     },
 

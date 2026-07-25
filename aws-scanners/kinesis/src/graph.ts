@@ -9,7 +9,11 @@ import type {
   StreamMode,
   StreamStatus,
 } from "@aws-sdk/client-kinesis";
-import { evaluateSelector, toLowerCase } from "@infrascan/core";
+import {
+  evaluateSelector,
+  toLowerCase,
+  tryNormalizeDateString,
+} from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -124,7 +128,7 @@ export const KinesisStreamEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: val.StreamCreationTimestamp,
+        createdAt: tryNormalizeDateString(val.StreamCreationTimestamp),
       };
     },
 
@@ -239,7 +243,7 @@ export const KinesisConsumerEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: val.ConsumerCreationTimestamp,
+        createdAt: tryNormalizeDateString(val.ConsumerCreationTimestamp),
       };
     },
 

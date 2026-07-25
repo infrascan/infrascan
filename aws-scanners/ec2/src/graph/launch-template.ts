@@ -5,7 +5,7 @@ import {
   ShutdownBehavior,
   _InstanceType,
 } from "@aws-sdk/client-ec2";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateString } from "@infrascan/core";
 import type {
   AwsContext,
   BaseState,
@@ -185,7 +185,7 @@ export const LaunchTemplateEntity: TranslatedEntity<
     audit(val) {
       return {
         createdBy: val.CreatedBy,
-        createdAt: val.CreateTime?.toISOString(),
+        createdAt: tryNormalizeDateString(val.CreateTime),
         versionNumber: val.VersionNumber?.toString(10),
       };
     },

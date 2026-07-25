@@ -154,7 +154,7 @@ export interface IAM {
  * The audit details of any existing resource where available - tracks who created the resource and when.
  */
 export interface Audit {
-  createdAt?: string | Date;
+  createdAt?: string | null;
   createdBy?: string;
   versionNumber?: string;
 }
@@ -396,7 +396,9 @@ export interface SimpleEntity<Schema, RawState>
  */
 export interface TranslatedEntity<Schema, RawState, TranslatedState>
   extends CommonEntity<Schema, RawState, TranslatedState> {
-  translate: Translate<Serialized<RawState>, TranslatedState[]>;
+  // `translate` builds the translated state from already-rehydrated raw state,
+  // so its output carries the same serialized shape the components consume.
+  translate: Translate<Serialized<RawState>, Serialized<TranslatedState>[]>;
 }
 
 /**

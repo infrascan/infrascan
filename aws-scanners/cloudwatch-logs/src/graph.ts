@@ -3,7 +3,13 @@ import type {
   DescribeLogGroupsCommandOutput,
   LogGroup,
 } from "@aws-sdk/client-cloudwatch-logs";
-import { evaluateSelector, toLowerCase, Time, Size } from "@infrascan/core";
+import {
+  evaluateSelector,
+  toLowerCase,
+  Time,
+  Size,
+  tryNormalizeDateString,
+} from "@infrascan/core";
 import type {
   TranslatedEntity,
   BaseState,
@@ -109,8 +115,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt:
-          val.creationTime != null ? new Date(val.creationTime) : undefined,
+        createdAt: tryNormalizeDateString(val.creationTime),
       };
     },
 

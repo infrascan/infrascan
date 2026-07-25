@@ -15,7 +15,13 @@ import type {
   SelfManagedKafkaEventSourceConfig,
   SourceAccessConfiguration,
 } from "@aws-sdk/client-lambda";
-import { evaluateSelector, toLowerCase, Size, Time } from "@infrascan/core";
+import {
+  evaluateSelector,
+  toLowerCase,
+  Size,
+  Time,
+  tryNormalizeDateString,
+} from "@infrascan/core";
 import type {
   TranslatedEntity,
   BaseState,
@@ -284,7 +290,7 @@ export interface ReaderConfig {
   tumblingWindow?: QualifiedMeasure<TimeUnit>;
   maximumRecordAge?: QualifiedMeasure<TimeUnit>;
   startingPosition?: EventSourcePosition;
-  startingPositionTimestamp?: string;
+  startingPositionTimestamp?: string | null;
 }
 
 export interface EventSourceStatus {
@@ -447,8 +453,9 @@ export const LambdaEventSourceEntity: TranslatedEntity<
               }
             : undefined,
           startingPosition: val.StartingPosition,
-          startingPositionTimestamp:
-            val.StartingPositionTimestamp?.toISOString(),
+          startingPositionTimestamp: tryNormalizeDateString(
+            val.StartingPositionTimestamp,
+          ),
         },
         sourceAccessConfigurations: val.SourceAccessConfigurations,
       };

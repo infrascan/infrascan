@@ -3,7 +3,7 @@ import type {
   ListBucketsCommandOutput,
   Bucket,
 } from "@aws-sdk/client-s3";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateString } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -36,7 +36,7 @@ export const S3Entity: TranslatedEntity<
   },
 
   translate(val) {
-    return (val._result.Buckets ?? []).map((bucket: Bucket) => ({
+    return (val._result.Buckets ?? []).map((bucket) => ({
       ...bucket,
       $metadata: val._metadata,
       $parameters: val._parameters,
@@ -82,7 +82,7 @@ export const S3Entity: TranslatedEntity<
       };
     },
 
-    resource(val: WithCallContext<Bucket, ListBucketsCommandInput>) {
+    resource(val) {
       return {
         id: `arn:aws:s3:::${val.Name!}`,
         name: val.Name!,
@@ -93,7 +93,7 @@ export const S3Entity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: val.CreationDate,
+        createdAt: tryNormalizeDateString(val.CreationDate),
       };
     },
   },
