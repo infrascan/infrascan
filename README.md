@@ -129,7 +129,7 @@ The packages involved in Infrascan development are split across three top-level 
 
 - `codegen` — a small [ejs](https://github.com/mde/ejs) project which converts the per service configs from `@infrascan/config` into typescript modules based on a set of templates.
 - `shared-types` — a set of type definitions shared across multiple packages
-- `tsconfig` — the base tsconfig definition for the typescript projects in this repo, as recommended by [turbo build](https://turbo.build/repo/docs/handbook/linting/typescript#sharing-tsconfigjson).
+- `tsconfig` — the base tsconfig definition shared across the typescript projects in this repo via pnpm workspace packages.
 - `eslint-config-custom` — the eslint config for the projects in this repo. Enforces airbnb style guide with some pre-project overrides where relevant.
 
 ### packages

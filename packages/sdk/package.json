@@ -43,7 +43,7 @@
     "@aws-sdk/client-ec2": "3.624.0",
     "@aws-sdk/client-iam": "3.624.0",
     "@aws-sdk/client-sts": "3.624.0",
-    "@infrascan/core": "^0.6.0",
+    "@infrascan/core": "workspace:^",
     "@smithy/util-retry": "^3.0.1",
     "debug": "^4",
     "jmespath": "^0.16.0",
@@ -51,14 +51,14 @@
   },
   "devDependencies": {
     "@aws-sdk/types": "3.609.0",
-    "@infrascan/shared-types": "*",
+    "@infrascan/shared-types": "workspace:*",
     "@types/debug": "^4",
     "@types/jmespath": "^0.15.0",
     "@types/minimatch": "^5.1.2",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
-    "eslint-config-custom": "*",
-    "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "eslint-config-custom": "workspace:*",
+    "@infrascan/tsconfig": "workspace:*",
+    "typescript": "5.8.3"
   }
 }

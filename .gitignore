@@ -6,7 +6,6 @@ meilisearch
 data.ms
 dumps
 .DS_Store
-.turbo
 dist
 .vscode
 docs

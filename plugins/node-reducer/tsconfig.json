@@ -1,5 +1,5 @@
 {
-  "extends": "tsconfig/base.json",
+  "extends": "@infrascan/tsconfig/base.json",
   "include": ["src"],
   "compilerOptions": {
     "target": "ES2015",

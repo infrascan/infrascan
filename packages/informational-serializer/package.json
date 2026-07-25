@@ -37,6 +37,7 @@
     "url": "https://github.com/infrascan/infrascan/issues"
   },
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0"
+    "@infrascan/shared-types": "workspace:^",
+    "@infrascan/tsconfig": "workspace:*"
   }
 }

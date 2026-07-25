@@ -1,0 +1,24 @@
+packages:
+  - "apps/*"
+  - "aws-scanners/*"
+  - "internal/*"
+  - "packages/*"
+  - "plugins/*"
+
+# Only link workspace packages when they are referenced with the explicit
+# `workspace:` protocol. Every intra-repo dependency in this monorepo uses it,
+# so a plain semver range will resolve from the registry instead of silently
+# linking a local package.
+linkWorkspacePackages: false
+
+# Supply-chain discipline: refuse to resolve dependency versions that were
+# published less than 7 days ago (value is in minutes). Freshly published
+# versions are the main vector for compromised releases; the lockfile is still
+# honoured verbatim, so this only affects resolving *new* or updated deps.
+minimumReleaseAge: 10080
+
+# Install scripts are denied by default. Trust is opt-in and enumerated here:
+# esbuild (pulled in via tsup) needs its script to place the platform binary.
+# Anything not listed as `true` stays blocked.
+allowBuilds:
+  esbuild: true

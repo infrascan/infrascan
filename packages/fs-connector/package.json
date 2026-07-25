@@ -31,10 +31,10 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@infrascan/shared-types": "^0.8.0",
-    "eslint-config-custom": "*",
-    "tsconfig": "*",
-    "typescript": "^5.4.5"
+    "@infrascan/shared-types": "workspace:^",
+    "eslint-config-custom": "workspace:*",
+    "@infrascan/tsconfig": "workspace:*",
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "minimatch": "^9.0.3"

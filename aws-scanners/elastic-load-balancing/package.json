@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "codegen": "npx ts-node ./codegen.ts ; npm run lint:fix ; npm run fmt",
+    "codegen": "pnpm dlx ts-node ./codegen.ts ; pnpm run lint:fix ; pnpm run fmt",
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
@@ -43,19 +43,20 @@
   "devDependencies": {
     "@aws-sdk/client-ecs": "3.624.0",
     "@aws-sdk/credential-providers": "3.624.0",
-    "@infrascan/aws-codegen": "^0.1.0",
-    "@infrascan/fs-connector": "^0.3.0",
-    "@infrascan/shared-types": "^0.8.0",
-    "@infrascan/tsconfig": "*",
-    "aws-sdk-client-mock": "^3.0.0",
-    "eslint-config-codegen": "^1.0.0",
-    "tap": "^21",
+    "@aws-sdk/types": "3.609.0",
+    "@infrascan/aws-codegen": "workspace:^",
+    "@infrascan/fs-connector": "workspace:^",
+    "@infrascan/shared-types": "workspace:^",
+    "@infrascan/tsconfig": "workspace:*",
     "@types/debug": "^4",
-    "typescript": "^5.4.5"
+    "aws-sdk-client-mock": "^3.0.0",
+    "eslint-config-codegen": "workspace:^",
+    "tap": "^21",
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "@aws-sdk/client-elastic-load-balancing-v2": "3.624.0",
-    "@infrascan/core": "0.6.0",
+    "@infrascan/core": "workspace:*",
     "debug": "^4"
   }
 }
