@@ -11,7 +11,12 @@ import type {
   ScalarAttributeType,
   TableDescription,
 } from "@aws-sdk/client-dynamodb";
-import { evaluateSelector, toLowerCase, Size } from "@infrascan/core";
+import {
+  evaluateSelector,
+  toLowerCase,
+  Size,
+  tryNormalizeDateEpoch,
+} from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -19,6 +24,7 @@ import {
   type WithCallContext,
   type QualifiedMeasure,
   type SizeUnit,
+  type Serialized,
 } from "@infrascan/shared-types";
 
 export interface KeySchema {
@@ -37,8 +43,8 @@ export interface Projection {
 }
 
 export interface ProvisionedThroughput {
-  lastDecreaseDateTime?: Date;
-  lastIncreaseDateTime?: Date;
+  lastDecreaseDateTime?: number | null;
+  lastIncreaseDateTime?: number | null;
   numberOfDecreasesToday?: number;
   readCapacityUnits?: number;
   writeCapacityUnits?: number;
@@ -78,7 +84,7 @@ export interface Attribute {
 
 export interface Archive {
   arn?: string;
-  dateTime?: Date;
+  dateTime?: number | null;
   reason?: string;
 }
 
@@ -106,9 +112,9 @@ export type DynamoTable = BaseState<DescribeTableCommandInput> & {
 export type GraphState = DynamoTable;
 
 function mapBaseIndex(
-  receivedIndex:
-    | LocalSecondaryIndexDescription
-    | GlobalSecondaryIndexDescription,
+  receivedIndex: Serialized<
+    LocalSecondaryIndexDescription | GlobalSecondaryIndexDescription
+  >,
 ): Index {
   return {
     arn: receivedIndex.IndexArn!,
@@ -136,7 +142,7 @@ function mapBaseIndex(
 }
 
 function mapGlobalSecondaryIndex(
-  receivedIndex: GlobalSecondaryIndexDescription,
+  receivedIndex: Serialized<GlobalSecondaryIndexDescription>,
 ): DynamoGSI {
   return {
     ...mapBaseIndex(receivedIndex),
@@ -151,10 +157,12 @@ function mapGlobalSecondaryIndex(
         receivedIndex.OnDemandThroughput?.MaxWriteRequestUnits,
     },
     provisionedThroughput: {
-      lastDecreaseDateTime:
+      lastDecreaseDateTime: tryNormalizeDateEpoch(
         receivedIndex.ProvisionedThroughput?.LastDecreaseDateTime,
-      lastIncreaseDateTime:
+      ),
+      lastIncreaseDateTime: tryNormalizeDateEpoch(
         receivedIndex.ProvisionedThroughput?.LastIncreaseDateTime,
+      ),
       numberOfDecreasesToday:
         receivedIndex.ProvisionedThroughput?.NumberOfDecreasesToday,
       readCapacityUnits: receivedIndex.ProvisionedThroughput?.ReadCapacityUnits,
@@ -167,7 +175,9 @@ function mapGlobalSecondaryIndex(
 /**
  * Alias the keys of a replica to allow it to be handled as though its a primary table.
  */
-function mapReplicaDescription(replica: ReplicaDescription): TableDescription {
+function mapReplicaDescription(
+  replica: Serialized<ReplicaDescription>,
+): Serialized<TableDescription> {
   return {
     GlobalSecondaryIndexes: replica.GlobalSecondaryIndexes,
     SSEDescription: {
@@ -293,8 +303,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt:
-          val.CreationDateTime != null ? val.CreationDateTime : undefined,
+        createdAt: tryNormalizeDateEpoch(val.CreationDateTime),
       };
     },
 
@@ -319,7 +328,9 @@ export const DynamoDbTableEntity: TranslatedEntity<
         indexes,
         archive: {
           arn: val.ArchivalSummary?.ArchivalBackupArn,
-          dateTime: val.ArchivalSummary?.ArchivalDateTime,
+          dateTime: tryNormalizeDateEpoch(
+            val.ArchivalSummary?.ArchivalDateTime,
+          ),
           reason: val.ArchivalSummary?.ArchivalReason,
         },
         attributes: val.AttributeDefinitions?.map((attribute) => ({

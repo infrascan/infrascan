@@ -91,7 +91,7 @@ t.test(
         equal(node.$source?.command, entity.command);
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
-        equal(node.audit?.createdAt, `${createdTs * 1e3}`);
+        equal(node.audit?.createdAt, createdTs * 1e3);
         ok((node as unknown as SQSSchema).sqs);
       }
     }

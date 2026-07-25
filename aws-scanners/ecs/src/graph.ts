@@ -1,4 +1,9 @@
-import { evaluateSelector, toLowerCase, Time } from "@infrascan/core";
+import {
+  evaluateSelector,
+  toLowerCase,
+  Time,
+  tryNormalizeDateEpoch,
+} from "@infrascan/core";
 import type {
   Cluster as AwsCluster,
   Service as AwsService,
@@ -267,7 +272,7 @@ export const ServiceEntity: TranslatedEntity<
     },
     audit(val) {
       return {
-        createdAt: val.createdAt,
+        createdAt: tryNormalizeDateEpoch(val.createdAt),
         createdBy: val.createdBy,
       };
     },
@@ -443,7 +448,7 @@ export const TaskEntity: TranslatedEntity<
     },
     audit(val) {
       return {
-        createdAt: val.createdAt,
+        createdAt: tryNormalizeDateEpoch(val.createdAt),
       };
     },
     tags(val) {

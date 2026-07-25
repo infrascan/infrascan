@@ -3,3 +3,4 @@ export * from "./config";
 export * from "./graph";
 export * from "./plugins";
 export * from "./scan";
+export * from "./serialized";

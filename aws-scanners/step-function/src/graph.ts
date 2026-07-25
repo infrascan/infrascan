@@ -2,7 +2,7 @@ import type {
   DescribeStateMachineCommandInput,
   DescribeStateMachineCommandOutput,
 } from "@aws-sdk/client-sfn";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -116,7 +116,7 @@ export const StepFunctionEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: val.creationDate,
+        createdAt: tryNormalizeDateEpoch(val.creationDate),
       };
     },
 

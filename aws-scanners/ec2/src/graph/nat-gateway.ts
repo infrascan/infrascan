@@ -3,7 +3,7 @@ import {
   DescribeNatGatewaysCommandOutput,
   NatGateway,
 } from "@aws-sdk/client-ec2";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import type {
   BaseState,
   State,
@@ -124,7 +124,7 @@ export const NatGatewayEntity: TranslatedEntity<
     },
     audit(val) {
       return {
-        createdAt: val.CreateTime,
+        createdAt: tryNormalizeDateEpoch(val.CreateTime),
       };
     },
   },
