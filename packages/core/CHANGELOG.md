@@ -1,5 +1,11 @@
 # @infrascan/core
 
+## 0.6.0
+
+### Minor Changes
+
+- [#136](https://github.com/infrascan/infrascan/pull/136) [`87e6cc3b6f3342902aeab7b3c6e1349865bd8be1`](https://github.com/infrascan/infrascan/commit/87e6cc3b6f3342902aeab7b3c6e1349865bd8be1) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add `tryNormalizeDateString` and `tryNormalizeDateEpoch`, utilities for normalizing an unknown value into an ISO 8601 date string or a numeric millisecond epoch respectively. Both accept `Date` instances, numbers, and strings, and return `null` for any value that cannot be parsed into a valid date.
+
 ## 0.5.0
 
 ### Minor Changes

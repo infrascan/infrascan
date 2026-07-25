@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/aws-autoscaling-scanner",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Infrascan scanner definition for AWS Autoscaling",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
