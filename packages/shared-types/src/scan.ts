@@ -154,7 +154,7 @@ export interface IAM {
  * The audit details of any existing resource where available - tracks who created the resource and when.
  */
 export interface Audit {
-  createdAt?: string | null;
+  createdAt?: number | null;
   createdBy?: string;
   versionNumber?: string;
 }

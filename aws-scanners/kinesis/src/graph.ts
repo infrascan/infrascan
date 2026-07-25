@@ -12,7 +12,7 @@ import type {
 import {
   evaluateSelector,
   toLowerCase,
-  tryNormalizeDateString,
+  tryNormalizeDateEpoch,
 } from "@infrascan/core";
 import {
   type TranslatedEntity,
@@ -128,7 +128,7 @@ export const KinesisStreamEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.StreamCreationTimestamp),
+        createdAt: tryNormalizeDateEpoch(val.StreamCreationTimestamp),
       };
     },
 
@@ -243,7 +243,7 @@ export const KinesisConsumerEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.ConsumerCreationTimestamp),
+        createdAt: tryNormalizeDateEpoch(val.ConsumerCreationTimestamp),
       };
     },
 

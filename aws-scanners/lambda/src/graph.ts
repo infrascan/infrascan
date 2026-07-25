@@ -20,7 +20,7 @@ import {
   toLowerCase,
   Size,
   Time,
-  tryNormalizeDateString,
+  tryNormalizeDateEpoch,
 } from "@infrascan/core";
 import type {
   TranslatedEntity,
@@ -290,7 +290,7 @@ export interface ReaderConfig {
   tumblingWindow?: QualifiedMeasure<TimeUnit>;
   maximumRecordAge?: QualifiedMeasure<TimeUnit>;
   startingPosition?: EventSourcePosition;
-  startingPositionTimestamp?: string | null;
+  startingPositionTimestamp?: number | null;
 }
 
 export interface EventSourceStatus {
@@ -453,7 +453,7 @@ export const LambdaEventSourceEntity: TranslatedEntity<
               }
             : undefined,
           startingPosition: val.StartingPosition,
-          startingPositionTimestamp: tryNormalizeDateString(
+          startingPositionTimestamp: tryNormalizeDateEpoch(
             val.StartingPositionTimestamp,
           ),
         },

@@ -2,7 +2,7 @@ import {
   evaluateSelector,
   toLowerCase,
   Time,
-  tryNormalizeDateString,
+  tryNormalizeDateEpoch,
 } from "@infrascan/core";
 import type {
   Cluster as AwsCluster,
@@ -272,7 +272,7 @@ export const ServiceEntity: TranslatedEntity<
     },
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.createdAt),
+        createdAt: tryNormalizeDateEpoch(val.createdAt),
         createdBy: val.createdBy,
       };
     },
@@ -448,7 +448,7 @@ export const TaskEntity: TranslatedEntity<
     },
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.createdAt),
+        createdAt: tryNormalizeDateEpoch(val.createdAt),
       };
     },
     tags(val) {

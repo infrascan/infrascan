@@ -3,7 +3,7 @@ import type {
   ListBucketsCommandOutput,
   Bucket,
 } from "@aws-sdk/client-s3";
-import { evaluateSelector, tryNormalizeDateString } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -93,7 +93,7 @@ export const S3Entity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.CreationDate),
+        createdAt: tryNormalizeDateEpoch(val.CreationDate),
       };
     },
   },

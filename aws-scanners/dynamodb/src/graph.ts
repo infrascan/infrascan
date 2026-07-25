@@ -15,7 +15,7 @@ import {
   evaluateSelector,
   toLowerCase,
   Size,
-  tryNormalizeDateString,
+  tryNormalizeDateEpoch,
 } from "@infrascan/core";
 import {
   type TranslatedEntity,
@@ -43,8 +43,8 @@ export interface Projection {
 }
 
 export interface ProvisionedThroughput {
-  lastDecreaseDateTime?: string | null;
-  lastIncreaseDateTime?: string | null;
+  lastDecreaseDateTime?: number | null;
+  lastIncreaseDateTime?: number | null;
   numberOfDecreasesToday?: number;
   readCapacityUnits?: number;
   writeCapacityUnits?: number;
@@ -84,7 +84,7 @@ export interface Attribute {
 
 export interface Archive {
   arn?: string;
-  dateTime?: string | null;
+  dateTime?: number | null;
   reason?: string;
 }
 
@@ -157,10 +157,10 @@ function mapGlobalSecondaryIndex(
         receivedIndex.OnDemandThroughput?.MaxWriteRequestUnits,
     },
     provisionedThroughput: {
-      lastDecreaseDateTime: tryNormalizeDateString(
+      lastDecreaseDateTime: tryNormalizeDateEpoch(
         receivedIndex.ProvisionedThroughput?.LastDecreaseDateTime,
       ),
-      lastIncreaseDateTime: tryNormalizeDateString(
+      lastIncreaseDateTime: tryNormalizeDateEpoch(
         receivedIndex.ProvisionedThroughput?.LastIncreaseDateTime,
       ),
       numberOfDecreasesToday:
@@ -303,7 +303,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.CreationDateTime),
+        createdAt: tryNormalizeDateEpoch(val.CreationDateTime),
       };
     },
 
@@ -328,7 +328,7 @@ export const DynamoDbTableEntity: TranslatedEntity<
         indexes,
         archive: {
           arn: val.ArchivalSummary?.ArchivalBackupArn,
-          dateTime: tryNormalizeDateString(
+          dateTime: tryNormalizeDateEpoch(
             val.ArchivalSummary?.ArchivalDateTime,
           ),
           reason: val.ArchivalSummary?.ArchivalReason,

@@ -98,13 +98,14 @@ export const SQSEntity: TranslatedEntity<
       const numericTs = parseInt(val.CreatedTimestamp, 10);
       const orderOfMagnitude = Math.floor(Math.log10(numericTs));
       if (orderOfMagnitude === 9) {
+        // Seconds precision - convert to milliseconds to match the epoch output.
         return {
-          createdAt: `${numericTs * 1e3}`,
+          createdAt: numericTs * 1e3,
         };
       }
 
       return {
-        createdAt: `${numericTs}`,
+        createdAt: numericTs,
       };
     },
 

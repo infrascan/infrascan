@@ -8,7 +8,7 @@ import {
   toLowerCase,
   Time,
   Size,
-  tryNormalizeDateString,
+  tryNormalizeDateEpoch,
 } from "@infrascan/core";
 import type {
   TranslatedEntity,
@@ -115,7 +115,7 @@ export const CloudwatchLogGroupEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.creationTime),
+        createdAt: tryNormalizeDateEpoch(val.creationTime),
       };
     },
 

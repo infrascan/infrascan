@@ -4,7 +4,7 @@ import type {
   LoadBalancer,
   LoadBalancerTypeEnum,
 } from "@aws-sdk/client-elastic-load-balancing-v2";
-import { evaluateSelector, tryNormalizeDateString } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -126,7 +126,7 @@ export const ElasticLoadBalancerEntity: TranslatedEntity<
 
     audit(val) {
       return {
-        createdAt: tryNormalizeDateString(val.CreatedTime),
+        createdAt: tryNormalizeDateEpoch(val.CreatedTime),
       };
     },
 
