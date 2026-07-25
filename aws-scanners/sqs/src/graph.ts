@@ -3,7 +3,7 @@ import type {
   GetQueueAttributesCommandOutput,
   QueueAttributeName,
 } from "@aws-sdk/client-sqs";
-import { evaluateSelector } from "@infrascan/core";
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import {
   type TranslatedEntity,
   type BaseState,
@@ -92,20 +92,10 @@ export const SQSEntity: TranslatedEntity<
     },
 
     audit(val) {
-      if (val.CreatedTimestamp == null) {
-        return { createdAt: undefined };
-      }
-      const numericTs = parseInt(val.CreatedTimestamp, 10);
-      const orderOfMagnitude = Math.floor(Math.log10(numericTs));
-      if (orderOfMagnitude === 9) {
-        // Seconds precision - convert to milliseconds to match the epoch output.
-        return {
-          createdAt: numericTs * 1e3,
-        };
-      }
-
+      // CreatedTimestamp is a seconds-precision epoch string; tryNormalizeDateEpoch
+      // parses it and scales it to milliseconds.
       return {
-        createdAt: numericTs,
+        createdAt: tryNormalizeDateEpoch(val.CreatedTimestamp),
       };
     },
 

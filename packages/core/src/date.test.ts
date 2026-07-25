@@ -106,3 +106,57 @@ t.test(
     tap.end();
   },
 );
+
+// Seconds-vs-milliseconds epoch handling.
+const SECONDS = 1700000000; // 2023-11-14T22:13:20Z
+const MILLIS = SECONDS * 1000;
+
+t.test(
+  "tryNormalizeDateEpoch: scales a seconds-precision numeric epoch to milliseconds",
+  (tap) => {
+    tap.equal(tryNormalizeDateEpoch(SECONDS), MILLIS);
+    tap.end();
+  },
+);
+
+t.test(
+  "tryNormalizeDateEpoch: keeps a millisecond-precision numeric epoch as-is",
+  (tap) => {
+    tap.equal(tryNormalizeDateEpoch(MILLIS), MILLIS);
+    tap.end();
+  },
+);
+
+t.test(
+  "tryNormalizeDateEpoch: parses a seconds-precision numeric string as an epoch",
+  (tap) => {
+    tap.equal(tryNormalizeDateEpoch(`${SECONDS}`), MILLIS);
+    tap.end();
+  },
+);
+
+t.test(
+  "tryNormalizeDateEpoch: parses a millisecond-precision numeric string as an epoch",
+  (tap) => {
+    tap.equal(tryNormalizeDateEpoch(`${MILLIS}`), MILLIS);
+    tap.end();
+  },
+);
+
+t.test(
+  "tryNormalizeDateString: scales a seconds-precision numeric epoch to milliseconds",
+  (tap) => {
+    tap.equal(tryNormalizeDateString(SECONDS), new Date(MILLIS).toISOString());
+    tap.end();
+  },
+);
+
+t.test(
+  "tryNormalizeDateString: treats a bare year string as a calendar year, not an epoch",
+  (tap) => {
+    // "2024" must parse as the year 2024, not epoch seconds (which would land
+    // in 1970). This guards the numeric-string epoch fallback.
+    tap.equal(tryNormalizeDateString("2024"), new Date("2024").toISOString());
+    tap.end();
+  },
+);
