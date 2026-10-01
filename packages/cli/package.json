@@ -25,7 +25,7 @@
   "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
   "license": "MPL-2.0",
   "dependencies": {
-    "@aws-sdk/credential-providers": "3.624.0",
+    "@aws-sdk/credential-providers": "catalog:",
     "@infrascan/aws": "workspace:^",
     "@infrascan/cytoscape-serializer": "workspace:^",
     "@infrascan/fs-connector": "workspace:^",
@@ -38,10 +38,10 @@
     "open": "^10.1.0"
   },
   "devDependencies": {
-    "@aws-sdk/types": "3.609.0",
+    "@aws-sdk/types": "catalog:",
     "@infrascan/shared-types": "workspace:^",
     "@infrascan/tsconfig": "workspace:*",
-    "@smithy/types": "^3.3.0",
+    "@smithy/types": "catalog:",
     "@types/ejs": "^3.1.5",
     "ts-node": "^10.9.1",
     "typescript": "5.8.3"

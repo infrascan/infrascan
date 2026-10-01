@@ -22,3 +22,27 @@ minimumReleaseAge: 10080
 # Anything not listed as `true` stays blocked.
 allowBuilds:
   esbuild: true
+
+catalog:
+  "@aws-sdk/types": 3.974.6
+  "@aws-sdk/client-auto-scaling": 3.1138.0
+  "@aws-sdk/client-apigatewayv2": 3.1138.0
+  "@aws-sdk/client-cloudfront": 3.1138.0
+  "@aws-sdk/client-cloudwatch-logs": 3.1138.0
+  "@aws-sdk/client-dynamodb": 3.1138.0
+  "@aws-sdk/client-ec2": 3.1138.0
+  "@aws-sdk/client-ecs": 3.1138.0
+  "@aws-sdk/client-elastic-load-balancing-v2": 3.1138.0
+  "@aws-sdk/client-iam": 3.1138.0
+  "@aws-sdk/client-kinesis": 3.1138.0
+  "@aws-sdk/client-lambda": 3.1138.0
+  "@aws-sdk/client-s3": 3.1138.0
+  "@aws-sdk/client-sns": 3.1138.0
+  "@aws-sdk/client-sqs": 3.1138.0
+  "@aws-sdk/client-sfn": 3.1138.0
+  "@aws-sdk/client-sts": 3.1138.0
+  "@aws-sdk/client-rds": 3.1138.0
+  "@aws-sdk/client-route-53": 3.1138.0
+  "@aws-sdk/credential-providers": 3.1138.0
+  "@smithy/types": 4.19.0
+  "@types/node": "^24"

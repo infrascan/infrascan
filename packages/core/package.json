@@ -39,6 +39,7 @@
     "@infrascan/shared-types": "workspace:^",
     "@infrascan/tsconfig": "workspace:*",
     "@types/jmespath": "^0.15.2",
+    "@types/node": "catalog:",
     "eslint-config-custom": "workspace:*",
     "tap": "^21",
     "ts-node": "^10.9.1",
