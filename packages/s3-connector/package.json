@@ -16,7 +16,6 @@
   ],
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
-    "prepublish": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules",
     "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript"
