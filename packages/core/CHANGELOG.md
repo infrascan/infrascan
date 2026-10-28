@@ -1,5 +1,13 @@
 # @infrascan/core
 
+## 0.7.0
+
+### Minor Changes
+
+- [#138](https://github.com/infrascan/infrascan/pull/138) [`a0aa145035349b9a9a4e82013daedea3f7f45925`](https://github.com/infrascan/infrascan/commit/a0aa145035349b9a9a4e82013daedea3f7f45925) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Make `tryNormalizeDateEpoch`/`tryNormalizeDateString` robust to seconds-precision epochs. `new Date(number)` always assumes milliseconds, so a seconds value like `1700000000` would resolve to 1970; such values are now detected by magnitude and scaled to milliseconds. Purely numeric strings (e.g. `"1700000000"`), which `new Date` cannot parse, are now also accepted as epochs, while formatted date strings — including bare years like `"2024"` — continue to parse as calendar dates. The returned epoch is therefore always valid relative to the Unix epoch in milliseconds.
+
+- [#140](https://github.com/infrascan/infrascan/pull/140) [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Upgrade @aws-sdk dependencies and standardize versions in pnpm catalog.
+
 ## 0.6.0
 
 ### Minor Changes

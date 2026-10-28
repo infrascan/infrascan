@@ -1,5 +1,16 @@
 # @infrascan/aws-api-gateway-scanner
 
+## 0.6.0
+
+### Minor Changes
+
+- [#140](https://github.com/infrascan/infrascan/pull/140) [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Upgrade @aws-sdk dependencies and standardize versions in pnpm catalog.
+
+### Patch Changes
+
+- Updated dependencies [[`a0aa145035349b9a9a4e82013daedea3f7f45925`](https://github.com/infrascan/infrascan/commit/a0aa145035349b9a9a4e82013daedea3f7f45925), [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a)]:
+  - @infrascan/core@0.7.0
+
 ## 0.5.1
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @infrascan/aws-lambda-scanner
 
+## 0.7.0
+
+### Minor Changes
+
+- [#140](https://github.com/infrascan/infrascan/pull/140) [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Upgrade @aws-sdk dependencies and standardize versions in pnpm catalog.
+
+### Patch Changes
+
+- [#138](https://github.com/infrascan/infrascan/pull/138) [`a0aa145035349b9a9a4e82013daedea3f7f45925`](https://github.com/infrascan/infrascan/commit/a0aa145035349b9a9a4e82013daedea3f7f45925) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Normalize timestamp fields in entity ETLs to a numeric millisecond epoch with `tryNormalizeDateEpoch`. With the `Serialized` lifecycle type now typing rehydrated state honestly (persisted `Date` fields are ISO strings at ETL time), these sites are updated to normalize at runtime rather than assume a live `Date` — a belt-and-suspenders pairing with the compile-time type, since TypeScript does not enforce types at runtime. This also fixes the graphing crash where `Date`-typed fields (e.g. ec2 launch template `CreateTime`, lambda `StartingPositionTimestamp`) had `toISOString()` called on what was actually a string. Timestamp node properties (`audit.createdAt`, dynamodb throughput/archive dates, lambda `startingPositionTimestamp`) are now numeric epochs; the sqs scanner already computed an epoch and now emits it as a number rather than a string.
+
+- Updated dependencies [[`a0aa145035349b9a9a4e82013daedea3f7f45925`](https://github.com/infrascan/infrascan/commit/a0aa145035349b9a9a4e82013daedea3f7f45925), [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a)]:
+  - @infrascan/core@0.7.0
+
 ## 0.6.1
 
 ### Patch Changes
