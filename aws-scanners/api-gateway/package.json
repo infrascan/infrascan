@@ -48,7 +48,7 @@
     "@infrascan/shared-types": "workspace:^",
     "@infrascan/tsconfig": "workspace:*",
     "@types/debug": "^4",
-    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock": "catalog:",
     "eslint-config-custom": "workspace:^",
     "tap": "^21",
     "typescript": "5.8.3"

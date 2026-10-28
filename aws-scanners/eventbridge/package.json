@@ -41,20 +41,20 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@aws-sdk/credential-providers": "3.624.0",
-    "@aws-sdk/types": "3.609.0",
+    "@aws-sdk/credential-providers": "catalog:",
+    "@aws-sdk/types": "catalog:",
     "@infrascan/aws-codegen": "workspace:^",
     "@infrascan/fs-connector": "workspace:^",
     "@infrascan/shared-types": "workspace:^",
     "@infrascan/tsconfig": "workspace:*",
     "@types/debug": "^4",
-    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock": "catalog:",
     "eslint-config-codegen": "workspace:^",
     "tap": "^21",
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "@aws-sdk/client-eventbridge": "3.624.0",
+    "@aws-sdk/client-eventbridge": "catalog:",
     "@infrascan/core": "workspace:*",
     "debug": "^4"
   }
