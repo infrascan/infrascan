@@ -41,8 +41,8 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@aws-sdk/credential-providers": "3.624.0",
-    "@aws-sdk/types": "3.609.0",
+    "@aws-sdk/credential-providers": "catalog:",
+    "@aws-sdk/types": "catalog:",
     "@infrascan/aws-codegen": "workspace:^",
     "@infrascan/fs-connector": "workspace:^",
     "@infrascan/shared-types": "workspace:^",
@@ -53,7 +53,7 @@
     "tap": "^21"
   },
   "dependencies": {
-    "@aws-sdk/client-ec2": "3.624.0",
+    "@aws-sdk/client-ec2": "catalog:",
     "@infrascan/core": "workspace:*",
     "debug": "^4"
   }

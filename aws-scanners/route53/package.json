@@ -41,12 +41,12 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
-    "@aws-sdk/client-cloudfront": "3.624.0",
-    "@aws-sdk/client-elastic-load-balancing-v2": "3.624.0",
-    "@aws-sdk/client-s3": "3.624.0",
-    "@aws-sdk/client-sns": "3.624.0",
-    "@aws-sdk/credential-providers": "3.624.0",
-    "@aws-sdk/types": "3.609.0",
+    "@aws-sdk/client-cloudfront": "catalog:",
+    "@aws-sdk/client-elastic-load-balancing-v2": "catalog:",
+    "@aws-sdk/client-s3": "catalog:",
+    "@aws-sdk/client-sns": "catalog:",
+    "@aws-sdk/credential-providers": "catalog:",
+    "@aws-sdk/types": "catalog:",
     "@infrascan/aws-codegen": "workspace:^",
     "@infrascan/fs-connector": "workspace:^",
     "@infrascan/shared-types": "workspace:^",
@@ -58,7 +58,7 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "@aws-sdk/client-route-53": "3.624.0",
+    "@aws-sdk/client-route-53": "catalog:",
     "@infrascan/core": "workspace:*",
     "minimatch": "^9.0.3",
     "debug": "^4"
