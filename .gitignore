@@ -11,3 +11,4 @@ dist
 docs
 .tap
 infrascan-test-state-*
+.docs

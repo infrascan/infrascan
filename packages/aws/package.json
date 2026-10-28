@@ -50,6 +50,7 @@
     "@infrascan/aws-dynamodb-scanner": "workspace:^",
     "@infrascan/aws-ec2-scanner": "workspace:^",
     "@infrascan/aws-ecs-scanner": "workspace:^",
+    "@infrascan/aws-eventbridge-scanner": "workspace:^",
     "@infrascan/aws-elastic-load-balancing-scanner": "workspace:^",
     "@infrascan/aws-kinesis-scanner": "workspace:^",
     "@infrascan/aws-lambda-scanner": "workspace:^",
