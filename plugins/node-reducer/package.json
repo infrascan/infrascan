@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/node-reducer-plugin",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "An Infrascan plugin to collapse similar nodes in your Graph down into a single node.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

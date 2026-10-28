@@ -1,5 +1,12 @@
 # @infrascan/node-reducer-plugin
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`a0aa145035349b9a9a4e82013daedea3f7f45925`](https://github.com/infrascan/infrascan/commit/a0aa145035349b9a9a4e82013daedea3f7f45925), [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a)]:
+  - @infrascan/core@0.7.0
+
 ## 0.4.0
 
 ### Minor Changes

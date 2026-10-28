@@ -1,5 +1,18 @@
 # @infrascan/cli
 
+## 0.8.0
+
+### Minor Changes
+
+- [#140](https://github.com/infrascan/infrascan/pull/140) [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Upgrade @aws-sdk dependencies and standardize versions in pnpm catalog.
+
+### Patch Changes
+
+- Updated dependencies [[`57b4130ed9b1679dc209e1c1c0c10f2d4f3b06fb`](https://github.com/infrascan/infrascan/commit/57b4130ed9b1679dc209e1c1c0c10f2d4f3b06fb), [`165992be8b0f166577002c66d4079308b0bb236a`](https://github.com/infrascan/infrascan/commit/165992be8b0f166577002c66d4079308b0bb236a)]:
+  - @infrascan/aws@0.6.0
+  - @infrascan/fs-connector@0.4.0
+  - @infrascan/sdk@0.7.0
+
 ## 0.7.1
 
 ### Patch Changes
