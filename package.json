@@ -18,14 +18,13 @@
   },
   "scripts": {
     "dev": "pnpm --parallel --recursive run dev",
-    "build": "pnpm --recursive run build",
-    "codegen": "pnpm --recursive run codegen",
-    "fmt": "pnpm --recursive run fmt",
-    "lint": "pnpm --recursive run lint",
-    "lint:all": "eslint .",
-    "test": "pnpm --recursive run test",
+    "build:all": "pnpm --recursive run build",
+    "codegen:all": "pnpm --recursive run codegen",
+    "fmt:all": "pnpm --recursive run fmt",
+    "lint:all": "pnpm --recursive run lint",
+    "test:all": "pnpm --recursive run test",
     "clean": "pnpm --recursive run clean ; rm -rf node_modules",
     "change:plan": "pnpm changeset",
-    "change:publish": "pnpm --recursive run build && pnpm --recursive run test && pnpm changeset publish"
+    "change:publish": "pnpm run build:all && pnpm run test:all && pnpm changeset publish"
   }
 }
