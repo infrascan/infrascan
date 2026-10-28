@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.7.1
+
+### Patch Changes
+
+- [#143](https://github.com/infrascan/infrascan/pull/143) [`976aa7ede1edd3ecde1a2a6c2cdec63b95bd563d`](https://github.com/infrascan/infrascan/commit/976aa7ede1edd3ecde1a2a6c2cdec63b95bd563d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Log duplicate node and edge insertions during graphing at debug level (`DEBUG=sdk:graph`) instead of as warnings. Other graph insertion errors are still logged as warnings.
+
 ## 0.7.0
 
 ### Minor Changes
