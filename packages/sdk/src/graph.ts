@@ -1,5 +1,7 @@
+import debug from "debug";
 import jmespath from "jmespath";
 import minimatch from "minimatch";
+import { EdgeConflictError, NodeConflictError } from "@infrascan/core";
 import type {
   GetGlobalStateForServiceFunction,
   ResolveStateForServiceFunction,
@@ -12,6 +14,8 @@ import { IAMStorage } from "./aws/helpers/iam";
 import type { ScanMetadata } from "./scan";
 import type { StoredRole } from "./aws/helpers/iam";
 import type { ServiceNodesMap } from "./index";
+
+const graphDebug = debug("sdk:graph");
 
 /**
  * Parameters required to convert a scan output into an infrastructure graph.
@@ -104,7 +108,9 @@ export function addNodeToGraphUnchecked<T extends BaseState>(
   try {
     graph.addNode(node);
   } catch (err: unknown) {
-    if (err instanceof Error) {
+    if (err instanceof NodeConflictError) {
+      graphDebug(err.message);
+    } else if (err instanceof Error) {
       console.warn(
         `An error occurred while inserting node ${node.$graph.id} into graph. ${err.message}`,
       );
@@ -129,7 +135,9 @@ export function addEdgeToGraphUnchecked(graph: Graph, edge: SelectedEdge) {
       metadata: Object.assign(edge.metadata ?? {}, edge.metadata),
     });
   } catch (err: unknown) {
-    if (err instanceof Error) {
+    if (err instanceof EdgeConflictError) {
+      graphDebug(err.message);
+    } else if (err instanceof Error) {
       console.warn(
         `An error occurred while inserting edge ${edge.source}-${edge.target} into graph. ${err.message}`,
       );
