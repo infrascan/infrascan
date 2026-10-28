@@ -33,7 +33,7 @@
   "devDependencies": {
     "@smithy/util-stream": "^3.3.4",
     "@infrascan/shared-types": "workspace:^",
-    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock": "catalog:",
     "eslint-config-custom": "workspace:*",
     "tap": "^21",
     "@infrascan/tsconfig": "workspace:*",

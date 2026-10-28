@@ -33,6 +33,7 @@ catalog:
   "@aws-sdk/client-ec2": 3.1138.0
   "@aws-sdk/client-ecs": 3.1138.0
   "@aws-sdk/client-elastic-load-balancing-v2": 3.1138.0
+  "@aws-sdk/client-eventbridge": 3.1138.0
   "@aws-sdk/client-iam": 3.1138.0
   "@aws-sdk/client-kinesis": 3.1138.0
   "@aws-sdk/client-lambda": 3.1138.0
@@ -46,3 +47,4 @@ catalog:
   "@aws-sdk/credential-providers": 3.1138.0
   "@smithy/types": 4.19.0
   "@types/node": "^24"
+  "aws-sdk-client-mock": ^3.1.0

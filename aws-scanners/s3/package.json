@@ -49,7 +49,7 @@
     "@infrascan/tsconfig": "workspace:*",
     "@smithy/types": "catalog:",
     "@types/debug": "^4",
-    "aws-sdk-client-mock": "^3.0.0",
+    "aws-sdk-client-mock": "catalog:",
     "eslint-config-codegen": "workspace:^",
     "tap": "^21"
   },

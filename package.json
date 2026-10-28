@@ -25,6 +25,7 @@
     "test:all": "pnpm --recursive run test",
     "clean": "pnpm --recursive run clean ; rm -rf node_modules",
     "change:plan": "pnpm changeset",
-    "change:publish": "pnpm run build:all && pnpm run test:all && pnpm changeset publish"
+    "change:publish": "pnpm run build:all && pnpm run test:all && pnpm changeset publish",
+    "change:version": "pnpm changeset version && pnpm install --lockfile-only"
   }
 }
