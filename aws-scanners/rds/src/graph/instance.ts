@@ -11,10 +11,15 @@ import type {
   WithCallContext,
   PublicIpStatus,
 } from "@infrascan/shared-types";
+import { buildClusterArn } from "../arn";
 
 export interface EngineDetails {
   version?: string;
   type?: string;
+  /**
+   * Cluster engine mode e.g. provisioned, serverless (v1), parallelquery, global, multimaster
+   */
+  mode?: string;
 }
 
 export interface AssociatedRole {
@@ -44,7 +49,7 @@ export const RDSInstanceEntity: TranslatedEntity<
   State<DescribeDBInstancesCommandOutput, DescribeDBInstancesCommandInput>,
   WithCallContext<DBInstance, DescribeDBInstancesCommandInput>
 > = {
-  version: "0.1.1",
+  version: "0.1.2",
   debugLabel: "rds",
   provider: "aws",
   command: "DescribeDBInstances",
@@ -80,14 +85,22 @@ export const RDSInstanceEntity: TranslatedEntity<
     },
 
     $graph(val) {
+      // Instances which belong to a DB cluster (Aurora, Multi-AZ DB clusters) are nested under the cluster node,
+      // whose ID is the cluster ARN. Standalone instances sit directly under the account-region node.
+      const parent =
+        val.DBClusterIdentifier != null
+          ? buildClusterArn(
+              val.DBClusterIdentifier,
+              val.$metadata,
+              val.DBInstanceArn,
+            )
+          : `${val.$metadata.account}-${val.$metadata.region}`;
       return {
         id: val.DBInstanceIdentifier!,
-        label: val.DBName!,
+        label: val.DBName ?? val.DBInstanceIdentifier!,
         nodeType: RDSInstanceEntity.nodeType,
         nodeClass: "visual",
-        parent:
-          val.DBClusterIdentifier ??
-          `${val.$metadata.account}-${val.$metadata.region}`,
+        parent,
       };
     },
 
@@ -123,7 +136,7 @@ export const RDSInstanceEntity: TranslatedEntity<
     resource(val) {
       return {
         id: val.DBInstanceIdentifier!,
-        name: val.DBName!,
+        name: val.DBName ?? val.DBInstanceIdentifier!,
         category: RDSInstanceEntity.category,
         subcategory: RDSInstanceEntity.subcategory,
         description: val.DBInstanceClass,
