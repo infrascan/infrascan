@@ -6,6 +6,7 @@ import {
   DescribeStateMachine,
   getIamRoles,
 } from "./generated/getters";
+import { getEdges } from "./edges";
 import { StepFunctionEntity } from "./graph";
 
 const SFNScanner: ServiceModule<SFNClient, "aws"> = {
@@ -15,6 +16,7 @@ const SFNScanner: ServiceModule<SFNClient, "aws"> = {
   getClient,
   callPerRegion: true,
   getters: [ListStateMachines, DescribeStateMachine],
+  getEdges,
   getIamRoles,
   entities: [StepFunctionEntity],
 };
