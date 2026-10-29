@@ -20,6 +20,10 @@
     "clean": "rm -rf dist node_modules",
     "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
   "keywords": [
     "AWS",
     "Infrastructure Diagram",

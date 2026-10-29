@@ -20,6 +20,10 @@
     "lint": "tsc --noEmit ; eslint .",
     "clean": "rm -rf dist node_modules"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
   "keywords": [
     "AWS",
     "Infrastructure Diagram",

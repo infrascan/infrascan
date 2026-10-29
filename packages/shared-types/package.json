@@ -6,6 +6,10 @@
   "scripts": {
     "lint": "tsc --noEmit ; eslint ."
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
   "keywords": [
     "Infrascan Typings"
   ],
