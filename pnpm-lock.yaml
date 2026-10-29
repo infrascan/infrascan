@@ -360,6 +360,12 @@ importers:
         specifier: ^4
         version: 4.4.3(supports-color@8.1.1)
     devDependencies:
+      '@aws-sdk/client-ec2':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/client-elastic-load-balancing-v2':
+        specifier: 'catalog:'
+        version: 3.1138.0
       '@aws-sdk/credential-providers':
         specifier: 'catalog:'
         version: 3.1138.0
