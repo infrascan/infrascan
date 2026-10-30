@@ -24,6 +24,8 @@ import {
   DescribeLaunchTemplates,
   DescribeLaunchTemplateVersions,
 } from "./generated/getters";
+import { SubnetEntity } from "./graph/subnet";
+import { SecurityGroupEntity } from "./graph/security-group";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -377,4 +379,28 @@ t.test("Complete EC2 scanner execution flow", async ({ equal }) => {
     1,
   );
   equal(mockedEc2Client.commandCalls(DescribeNatGatewaysCommand).length, 1);
+});
+
+t.test("Subnets and security groups record their VPC", async ({ equal }) => {
+  const metadata = {
+    account: "123456789012",
+    region: "eu-west-1",
+    partition: "aws",
+    timestamp: 1,
+  };
+  const subnetNetwork = SubnetEntity.components.network!({
+    $metadata: metadata,
+    $parameters: {},
+    SubnetId: "subnet-0aaa",
+    VpcId: "vpc-0a1b",
+  } as never);
+  equal(subnetNetwork?.vpc?.id, "vpc-0a1b");
+
+  const groupNetwork = SecurityGroupEntity.components.network!({
+    $metadata: metadata,
+    $parameters: {},
+    GroupId: "sg-0app",
+    VpcId: "vpc-0a1b",
+  } as never);
+  equal(groupNetwork?.vpc?.id, "vpc-0a1b");
 });

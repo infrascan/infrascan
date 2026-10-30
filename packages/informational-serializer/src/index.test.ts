@@ -86,6 +86,7 @@ function buildGraph(): GraphType {
       },
       network: {
         reservedAddresses: [{ family: "ipv4", cidrBlock: "10.0.0.0/24" }],
+        vpc: { id: VPC_ID },
         subnet: { availableAddressCount: 250 },
       },
     }),
@@ -102,6 +103,7 @@ function buildGraph(): GraphType {
       subnet: { onLaunch: { publicIp: false } },
       network: {
         reservedAddresses: [{ family: "ipv4", cidrBlock: "10.0.1.0/24" }],
+        vpc: { id: VPC_ID },
         subnet: { availableAddressCount: 200 },
       },
     }),
@@ -115,6 +117,7 @@ function buildGraph(): GraphType {
         category: "ec2",
       },
       network: {
+        vpc: { id: VPC_ID },
         rules: [
           {
             fromPort: 443,
@@ -133,6 +136,7 @@ function buildGraph(): GraphType {
     baseNode(SG_DB, "ec2-security-group", REGION_NODE, {
       resource: { id: SG_DB, name: "db", category: "ec2" },
       network: {
+        vpc: { id: VPC_ID },
         rules: [
           {
             fromPort: 5432,
@@ -330,6 +334,59 @@ t.test("infers the VPC for nodes which only reference subnets", (tap) => {
   tap.end();
 });
 
+t.test("does not infer a subnet's VPC from nodes which reference it", (tap) => {
+  const graph = Graph();
+  graph.addNode(baseNode(VPC_ID, "ec2-vpc", undefined));
+  graph.addNode(
+    baseNode(SUBNET_A_ARN, "ec2-subnet", undefined, {
+      resource: { id: SUBNET_A_ARN, name: SUBNET_A, category: "ec2" },
+    }),
+  );
+  graph.addNode(
+    baseNode(LAMBDA_ARN, "lambda-function", undefined, {
+      network: { vpc: { id: VPC_ID }, targetSubnets: [SUBNET_A] },
+    }),
+  );
+  graph.addNode(
+    baseNode(ECS_SERVICE_ARN, "ecs-service", undefined, {
+      network: { targetSubnets: [SUBNET_A] },
+    }),
+  );
+  const { nodes } = serializeGraph(graph);
+  const subnet = findNode(nodes, LAMBDA_ARN).networkContext!
+    .subnets[0] as ResolvedSubnet;
+  tap.equal(subnet.resolved, true);
+  tap.equal(subnet.vpcId, undefined);
+  tap.equal(findNode(nodes, ECS_SERVICE_ARN).networkContext!.vpc, undefined);
+  tap.end();
+});
+
+t.test("omits the derived VPC when subnets record different VPCs", (tap) => {
+  const graph = Graph();
+  graph.addNode(baseNode(VPC_ID, "ec2-vpc", undefined));
+  graph.addNode(baseNode("vpc-0other", "ec2-vpc", undefined));
+  graph.addNode(
+    baseNode(SUBNET_A_ARN, "ec2-subnet", undefined, {
+      resource: { id: SUBNET_A_ARN, name: SUBNET_A, category: "ec2" },
+      network: { vpc: { id: VPC_ID } },
+    }),
+  );
+  graph.addNode(
+    baseNode(SUBNET_B_ARN, "ec2-subnet", undefined, {
+      resource: { id: SUBNET_B_ARN, name: SUBNET_B, category: "ec2" },
+      network: { vpc: { id: "vpc-0other" } },
+    }),
+  );
+  graph.addNode(
+    baseNode(ECS_SERVICE_ARN, "ecs-service", undefined, {
+      network: { targetSubnets: [SUBNET_A, SUBNET_B] },
+    }),
+  );
+  const { nodes } = serializeGraph(graph);
+  tap.equal(findNode(nodes, ECS_SERVICE_ARN).networkContext!.vpc, undefined);
+  tap.end();
+});
+
 t.test("preserves parent and ancestry as ids", (tap) => {
   const { nodes } = serializeGraph(buildGraph());
   const service = findNode(nodes, ECS_SERVICE_ARN);
@@ -346,10 +403,14 @@ t.test("preserves parent and ancestry as ids", (tap) => {
 t.test("adds a reverse view to network nodes", (tap) => {
   const { nodes } = serializeGraph(buildGraph());
   tap.strictSame(findNode(nodes, VPC_ID).networkMembers, [
+    SUBNET_A_ARN,
+    SUBNET_B_ARN,
     ECS_SERVICE_ARN,
     LAMBDA_ARN,
     ENI_ID,
     NAT_ID,
+    SG_APP,
+    SG_DB,
   ]);
   tap.strictSame(findNode(nodes, SUBNET_A_ARN).networkMembers, [
     LAMBDA_ARN,

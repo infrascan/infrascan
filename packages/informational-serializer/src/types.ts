@@ -80,9 +80,7 @@ export interface ResolvedSubnet extends ResolvedReference {
   cidrBlocks: CidrBlock[];
   availabilityZone?: string;
   /**
-   * The subnet scanner does not record its VPC, so this is inferred from other nodes in the graph which
-   * reference both this subnet and a VPC (network interfaces, NAT gateways, Lambdas, load balancers...).
-   * Omitted when no such node exists or the inferences disagree.
+   * The VPC recorded on the subnet node's `network.vpc.id`.
    */
   vpcId?: string;
   mapPublicIpOnLaunch?: boolean;
@@ -126,7 +124,7 @@ export interface SecurityGroupRuleSummary {
 export interface ResolvedSecurityGroup extends ResolvedReference {
   description?: string;
   /**
-   * Inferred in the same way as `ResolvedSubnet.vpcId`, as the security group scanner does not record its VPC.
+   * The VPC recorded on the security group node's `network.vpc.id`.
    */
   vpcId?: string;
   /**
@@ -137,7 +135,8 @@ export interface ResolvedSecurityGroup extends ResolvedReference {
 
 export type VpcReference = (ResolvedVpc | UnresolvedNetworkReference) & {
   /**
-   * Set when the node does not reference a VPC directly, and the VPC was inferred from its subnets or security groups.
+   * Set when the node does not reference a VPC directly, and the VPC was taken from its subnets or security groups.
+   * Omitted when they record different VPCs.
    */
   inferred?: true;
 };

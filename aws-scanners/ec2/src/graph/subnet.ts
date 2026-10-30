@@ -159,6 +159,7 @@ export const SubnetEntity: TranslatedEntity<
 
       return {
         reservedAddresses: addresses,
+        vpc: val.VpcId != null ? { id: val.VpcId } : undefined,
         subnet: {
           ipv6Only: val.Ipv6Native,
           availableAddressCount: val.AvailableIpAddressCount,

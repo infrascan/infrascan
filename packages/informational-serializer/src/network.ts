@@ -108,6 +108,13 @@ function subnetIdOf(node: GraphNodeView): string {
   return arnSuffix ?? node.$graph.id;
 }
 
+/**
+ * The VPC recorded by a subnet or security group node, if it is in the graph.
+ */
+function vpcOf(node: GraphNodeView | undefined): string | undefined {
+  return node != null ? asString(node.network?.vpc?.id) : undefined;
+}
+
 interface NetworkReferences {
   vpcId?: string;
   subnets: string[];
@@ -156,19 +163,8 @@ function hasReferences(refs: NetworkReferences): boolean {
   );
 }
 
-function singleValue(values: Set<string> | undefined): string | undefined {
-  return values != null && values.size === 1
-    ? values.values().next().value
-    : undefined;
-}
-
-function addToSetMap(map: Map<string, Set<string>>, key: string, val: string) {
-  const existing = map.get(key);
-  if (existing != null) {
-    existing.add(val);
-  } else {
-    map.set(key, new Set([val]));
-  }
+function singleValue(values: Set<string>): string | undefined {
+  return values.size === 1 ? values.values().next().value : undefined;
 }
 
 function formatPorts(rule: NetworkRule): string {
@@ -256,10 +252,6 @@ export class NetworkResolver {
 
   private readonly natGatewaysBySubnet = new Map<string, GraphNodeView[]>();
 
-  private readonly subnetVpcs = new Map<string, Set<string>>();
-
-  private readonly securityGroupVpcs = new Map<string, Set<string>>();
-
   private readonly references = new Map<string, NetworkReferences>();
 
   constructor(nodes: GraphNodeView[]) {
@@ -283,14 +275,6 @@ export class NetworkResolver {
           nats.push(node);
           this.natGatewaysBySubnet.set(subnetId, nats);
         });
-      }
-      // Subnets and security groups don't record their VPC, infer it from nodes which reference both.
-      if (refs.vpcId != null) {
-        const { vpcId } = refs;
-        refs.subnets.forEach((id) => addToSetMap(this.subnetVpcs, id, vpcId));
-        refs.securityGroups.forEach((id) =>
-          addToSetMap(this.securityGroupVpcs, id, vpcId),
-        );
       }
     }
   }
@@ -331,7 +315,7 @@ export class NetworkResolver {
       name: nameOf(node, tags),
       cidrBlocks: cidrBlocksOf(node),
       availabilityZone: node.location?.zone?.[0],
-      vpcId: singleValue(this.subnetVpcs.get(id)),
+      vpcId: vpcOf(node),
       mapPublicIpOnLaunch: asBoolean(onLaunch.publicIp),
       defaultForAz: asBoolean(subnetComponent.isDefault),
       availableIpAddressCount: asNumber(
@@ -357,23 +341,26 @@ export class NetworkResolver {
       // Security groups are referred to by group name rather than Name tag.
       name: node.resource?.name ?? node.$graph.label,
       description: node.resource?.description,
-      vpcId: singleValue(this.securityGroupVpcs.get(id)),
+      vpcId: vpcOf(node),
       inboundRules: (node.network?.rules ?? []).map(summariseRule),
       tags: tagsOf(node),
     });
   }
 
   /**
-   * Infer a VPC for nodes which only reference subnets/security groups (e.g. ECS services, Auto Scaling groups).
+   * Derive a VPC for nodes which only reference subnets/security groups (e.g. ECS services, Auto Scaling groups),
+   * from the VPC recorded on those subnets and security groups.
    */
   private inferVpc(refs: NetworkReferences): string | undefined {
     const candidates = new Set<string>();
-    refs.subnets.forEach((id) =>
-      this.subnetVpcs.get(id)?.forEach((vpc) => candidates.add(vpc)),
-    );
-    refs.securityGroups.forEach((id) =>
-      this.securityGroupVpcs.get(id)?.forEach((vpc) => candidates.add(vpc)),
-    );
+    refs.subnets.forEach((id) => {
+      const vpcId = vpcOf(this.subnets.get(id));
+      if (vpcId != null) candidates.add(vpcId);
+    });
+    refs.securityGroups.forEach((id) => {
+      const vpcId = vpcOf(this.securityGroups.get(id));
+      if (vpcId != null) candidates.add(vpcId);
+    });
     return singleValue(candidates);
   }
 
