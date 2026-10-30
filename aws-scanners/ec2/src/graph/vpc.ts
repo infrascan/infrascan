@@ -8,10 +8,19 @@ import { evaluateSelector } from "@infrascan/core";
 import type {
   BaseState,
   ReservedAddresses,
+  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
+import {
+  buildVpcNetworkContext,
+  type VpcNetworkContext,
+} from "./network-context";
+import {
+  loadNetworkInventory,
+  type NetworkInventory,
+} from "./network-inventory";
 
 export interface VpcConfig {
   isDefault?: boolean;
@@ -24,12 +33,30 @@ export interface VpcConfig {
 
 export interface VpcState extends BaseState<DescribeVpcsCommandInput> {
   vpc: VpcConfig;
+  /**
+   * Routing, gateway, endpoint, peering, transit gateway, DNS/DHCP and flow log context for the VPC
+   */
+  networkContext?: VpcNetworkContext;
 }
+
+/**
+ * Raw DescribeVpcs state, enriched with the network inventory scanned for the same account and region
+ */
+export type VpcRawState = State<
+  DescribeVpcsCommandOutput,
+  DescribeVpcsCommandInput
+> & {
+  $network?: NetworkInventory;
+};
+
+type VpcWithContext = Ec2Vpc & {
+  $networkContext?: VpcNetworkContext;
+};
 
 export const VpcEntity: TranslatedEntity<
   VpcState,
-  State<DescribeVpcsCommandOutput, DescribeVpcsCommandInput>,
-  WithCallContext<Ec2Vpc, DescribeVpcsCommandInput>
+  VpcRawState,
+  WithCallContext<VpcWithContext, DescribeVpcsCommandInput>
 > = {
   version: "0.1.0",
   debugLabel: "ec2-vpc",
@@ -40,13 +67,20 @@ export const VpcEntity: TranslatedEntity<
   nodeType: "ec2-vpc",
   selector: "EC2|DescribeVpcs|[]",
 
-  getState(stateConnector, context) {
-    return evaluateSelector(
-      context.account,
-      context.region,
-      VpcEntity.selector,
-      stateConnector,
-    );
+  async getState(stateConnector, context) {
+    const [vpcsState, inventory] = await Promise.all([
+      evaluateSelector<Serialized<VpcRawState>>(
+        context.account,
+        context.region,
+        VpcEntity.selector,
+        stateConnector,
+      ),
+      loadNetworkInventory(stateConnector, context),
+    ]);
+    return (vpcsState ?? []).map((vpcState) => ({
+      ...vpcState,
+      $network: inventory,
+    }));
   },
 
   translate(val) {
@@ -55,6 +89,10 @@ export const VpcEntity: TranslatedEntity<
         $parameters: val._parameters,
         $metadata: val._metadata,
         ...vpc,
+        $networkContext:
+          val.$network != null && vpc.VpcId != null
+            ? buildVpcNetworkContext(val.$network, vpc)
+            : undefined,
       })) ?? []
     );
   },
@@ -114,7 +152,13 @@ export const VpcEntity: TranslatedEntity<
         isDefault: val.IsDefault,
         instanceTenancy: val.InstanceTenancy,
         dhcpOptionsId: val.DhcpOptionsId,
+        enableDnsSupport: val.$networkContext?.dns.enableDnsSupport,
+        enableDnsHostnames: val.$networkContext?.dns.enableDnsHostnames,
       };
+    },
+
+    networkContext(val) {
+      return val.$networkContext;
     },
 
     network(val) {

@@ -11,8 +11,37 @@ import type {
   WithCallContext,
 } from "@infrascan/shared-types";
 
+export interface NatGatewayDetails {
+  /**
+   * `public` NAT gateways route to an internet gateway, `private` ones only to other networks (TGW, VGW)
+   */
+  connectivityType?: string;
+  state?: string;
+  availabilityMode?: string;
+  /**
+   * The subnet the NAT gateway lives in (a `subnet-…` id, subnet nodes are keyed by ARN)
+   */
+  subnetId?: string;
+  addresses: {
+    allocationId?: string;
+    associationId?: string;
+    networkInterfaceId?: string;
+    privateIp?: string;
+    publicIp?: string;
+    isPrimary?: boolean;
+    status?: string;
+  }[];
+  failureCode?: string;
+  failureMessage?: string;
+}
+
+export interface NatGatewayState
+  extends BaseState<DescribeNatGatewaysCommandInput> {
+  natGateway?: NatGatewayDetails;
+}
+
 export const NatGatewayEntity: TranslatedEntity<
-  BaseState<unknown>,
+  NatGatewayState,
   State<DescribeNatGatewaysCommandOutput, DescribeNatGatewaysCommandInput>,
   WithCallContext<NatGateway, DescribeNatGatewaysCommandInput>
 > = {
@@ -125,6 +154,27 @@ export const NatGatewayEntity: TranslatedEntity<
     audit(val) {
       return {
         createdAt: tryNormalizeDateEpoch(val.CreateTime),
+      };
+    },
+
+    natGateway(val) {
+      return {
+        connectivityType: val.ConnectivityType,
+        state: val.State,
+        availabilityMode: val.AvailabilityMode,
+        subnetId: val.SubnetId,
+        addresses:
+          val.NatGatewayAddresses?.map((addr) => ({
+            allocationId: addr.AllocationId,
+            associationId: addr.AssociationId,
+            networkInterfaceId: addr.NetworkInterfaceId,
+            privateIp: addr.PrivateIp,
+            publicIp: addr.PublicIp,
+            isPrimary: addr.IsPrimary,
+            status: addr.Status,
+          })) ?? [],
+        failureCode: val.FailureCode,
+        failureMessage: val.FailureMessage,
       };
     },
   },

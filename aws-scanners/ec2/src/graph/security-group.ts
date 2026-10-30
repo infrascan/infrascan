@@ -1,6 +1,7 @@
 import {
   DescribeSecurityGroupsCommandInput,
   DescribeSecurityGroupsCommandOutput,
+  IpPermission,
   SecurityGroup,
 } from "@aws-sdk/client-ec2";
 import { evaluateSelector } from "@infrascan/core";
@@ -9,14 +10,68 @@ import type {
   BaseState,
   Connector,
   IpRange,
+  Network,
   NetworkRule,
+  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
 
+export interface SecurityGroupNetwork extends Network {
+  /**
+   * Outbound rules, in the same shape as the inbound `rules`
+   */
+  egressRules?: NetworkRule[];
+}
+
+export interface SecurityGroupState
+  extends BaseState<DescribeSecurityGroupsCommandInput> {
+  network?: SecurityGroupNetwork;
+}
+
+function toNetworkRule(rules: Serialized<IpPermission>): NetworkRule {
+  const ipv4Ranges: IpRange[] =
+    rules.IpRanges?.map((range) => ({
+      family: "ipv4",
+      cidrBlock: range.CidrIp,
+      description: range.Description,
+    })) ?? [];
+
+  const ipv6Ranges: IpRange[] =
+    rules.Ipv6Ranges?.map((range) => ({
+      family: "ipv6",
+      cidrBlock: range.CidrIpv6,
+      description: range.Description,
+    })) ?? [];
+
+  const referencedSecGroups = rules.UserIdGroupPairs?.map((referencedAcc) => ({
+    description: referencedAcc.Description,
+    securityGroupId: referencedAcc.GroupId,
+    securityGroupName: referencedAcc.GroupName,
+    referencedAccountId: referencedAcc.UserId,
+    referencedVpcId: referencedAcc.VpcId,
+    vpcPeeringStatus: referencedAcc.PeeringStatus,
+    vpcPeeringConnectionId: referencedAcc.VpcPeeringConnectionId,
+  }));
+
+  return {
+    fromPort: rules.FromPort,
+    toPort: rules.ToPort,
+    protocol: rules.IpProtocol === "-1" ? "ALL" : rules.IpProtocol,
+    permittedIpRanges: ipv4Ranges.concat(ipv6Ranges),
+    awsConfig: {
+      referencedSecurityGroups: referencedSecGroups,
+      prefixLists: rules.PrefixListIds?.map((prefix) => ({
+        prefixListId: prefix.PrefixListId,
+        description: prefix.Description,
+      })),
+    },
+  };
+}
+
 export const SecurityGroupEntity: TranslatedEntity<
-  BaseState<unknown>,
+  SecurityGroupState,
   State<
     DescribeSecurityGroupsCommandOutput,
     DescribeSecurityGroupsCommandInput
@@ -107,52 +162,10 @@ export const SecurityGroupEntity: TranslatedEntity<
       };
     },
     network(val) {
-      const networkRules: NetworkRule[] =
-        val.IpPermissions?.map((rules) => {
-          const ipv4Ranges: IpRange[] =
-            rules.IpRanges?.map((range) => ({
-              family: "ipv4",
-              cidrBlock: range.CidrIp,
-              description: range.Description,
-            })) ?? [];
-
-          const ipv6Ranges: IpRange[] =
-            rules.Ipv6Ranges?.map((range) => ({
-              family: "ipv6",
-              cidrBlock: range.CidrIpv6,
-              description: range.Description,
-            })) ?? [];
-
-          const referencedSecGroups = rules.UserIdGroupPairs?.map(
-            (referencedAcc) => ({
-              description: referencedAcc.Description,
-              securityGroupId: referencedAcc.GroupId,
-              securityGroupName: referencedAcc.GroupName,
-              referencedAccountId: referencedAcc.UserId,
-              referencedVpcId: referencedAcc.VpcId,
-              vpcPeeringStatus: referencedAcc.PeeringStatus,
-              vpcPeeringConnectionId: referencedAcc.VpcPeeringConnectionId,
-            }),
-          );
-
-          return {
-            fromPort: rules.FromPort,
-            toPort: rules.ToPort,
-            protocol: rules.IpProtocol === "-1" ? "ALL" : rules.IpProtocol,
-            permittedIpRanges: ipv4Ranges.concat(ipv6Ranges),
-            awsConfig: {
-              referencedSecurityGroups: referencedSecGroups,
-              prefixLists: rules.PrefixListIds?.map((prefix) => ({
-                prefixListId: prefix.PrefixListId,
-                description: prefix.Description,
-              })),
-            },
-          };
-        }) ?? [];
-
       return {
         vpc: val.VpcId != null ? { id: val.VpcId } : undefined,
-        rules: networkRules,
+        rules: val.IpPermissions?.map(toNetworkRule) ?? [],
+        egressRules: val.IpPermissionsEgress?.map(toNetworkRule) ?? [],
       };
     },
   },

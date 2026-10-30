@@ -7,9 +7,33 @@ export {
   type LaunchTemplateStorage,
   type LaunchTemplateState,
 } from "./launch-template";
-export { NatGatewayEntity } from "./nat-gateway";
-export { NetworkInterfaceEntity } from "./network-interface";
-export { SecurityGroupEntity } from "./security-group";
+export {
+  NatGatewayEntity,
+  type NatGatewayState,
+  type NatGatewayDetails,
+} from "./nat-gateway";
+export {
+  NetworkInterfaceEntity,
+  type NetworkInterfaceState,
+  type NetworkInterfaceDetails,
+} from "./network-interface";
+export {
+  SecurityGroupEntity,
+  type SecurityGroupState,
+  type SecurityGroupNetwork,
+} from "./security-group";
+export { type EniOwner, type EniOwnerKind } from "./eni-owner";
+export type {
+  SubnetNetworkContext,
+  VpcNetworkContext,
+  ResolvedRoute,
+  RouteTargetType,
+  SubnetTier,
+  SubnetIpv6Tier,
+  EgressPath,
+  EgressHop,
+  EgressStatus,
+} from "./network-context";
 export {
   SubnetEntity,
   type SubnetOnLaunch,

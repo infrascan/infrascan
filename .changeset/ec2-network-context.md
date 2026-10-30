@@ -1,0 +1,5 @@
+---
+"@infrascan/aws-ec2-scanner": minor
+---
+
+Describe the network context of VPCs and subnets without adding graph nodes. The scanner now also calls `DescribeVpcAttribute`, `DescribeRouteTables`, `DescribeInternetGateways`, `DescribeEgressOnlyInternetGateways`, `DescribeVpcEndpoints`, `DescribeNetworkAcls`, `DescribeVpcPeeringConnections`, `DescribeTransitGateways`, `DescribeTransitGatewayAttachments`, `DescribeVpnGateways`, `DescribeManagedPrefixLists`, `GetManagedPrefixListEntries`, `DescribeDhcpOptions`, `DescribeFlowLogs` and `DescribeAddresses` (see the README for the IAM permissions), and paginates `DescribeVpcs`. VPC and subnet nodes gain a `networkContext` component: route tables with typed, resolved route targets, gateways, endpoints, peering, transit gateway attachments, DNS/DHCP, NACLs and flow logs, plus each subnet's derived tier, hop-by-hop default egress path and private service access. Security groups gain `network.egressRules`, network interfaces a `networkInterface` component describing what owns them, and NAT gateways a `natGateway` component with their connectivity type. Existing node ids and fields are unchanged.
