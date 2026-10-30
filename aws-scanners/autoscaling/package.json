@@ -40,6 +40,8 @@
   },
   "homepage": "https://github.com/infrascan/infrascan#readme",
   "devDependencies": {
+    "@aws-sdk/client-ec2": "catalog:",
+    "@aws-sdk/client-elastic-load-balancing-v2": "catalog:",
     "@aws-sdk/credential-providers": "catalog:",
     "@aws-sdk/types": "catalog:",
     "@infrascan/aws-codegen": "workspace:^",

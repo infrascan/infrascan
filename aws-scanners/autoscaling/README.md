@@ -2,7 +2,19 @@
 
 A scanner module for AWS Autoscaling, designed to be used with the [@infrascan/sdk](../../packages/sdk).
 
-This module pulls information about the Autoscaling Groups in an AWS account by calling: `DescribeAutoScalingGroups`.
+This module pulls information about the Autoscaling Groups in an AWS account by calling: `DescribeAutoScalingGroups`, `DescribePolicies` and `DescribeLifecycleHooks` (once per group).
+
+The scanning role therefore requires the `autoscaling:DescribeAutoScalingGroups`, `autoscaling:DescribePolicies` and `autoscaling:DescribeLifecycleHooks` permissions.
+
+## Graph output
+
+Each Auto Scaling group is emitted as an `auto-scaling-group` node, keyed by its ARN, with its capacity, health check, launch template/configuration, mixed instances policy, target groups, termination policies, scaling policies and lifecycle hooks. The group's subnets (from `VPCZoneIdentifier`) are recorded in `network.targetSubnets`, as with other compute resources.
+
+The following edges are produced:
+
+- Auto Scaling group → EC2 launch template (by launch template ID; templates referenced by name are resolved against the scanned EC2 launch templates)
+- Load balancer → Auto Scaling group, for each load balancer attached to one of the group's target groups
+- Auto Scaling group → SNS topic / SQS queue targeted by a lifecycle hook notification
 
 ## Quickstart
 
