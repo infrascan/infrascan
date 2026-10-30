@@ -17,7 +17,7 @@
   "scripts": {
     "codegen": "pnpm dlx ts-node ./codegen.ts ; pnpm run lint:fix ; pnpm run fmt",
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
-    "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
+    "lint": "tsc --noEmit && prettier \"src/**/*.ts\" -c && eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
     "clean": "rm -rf dist node_modules",

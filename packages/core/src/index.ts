@@ -33,7 +33,6 @@ export const Time = {
   Days: "d" as TimeUnit,
 } as const;
 
- 
 export async function evaluateSelector<T = unknown>(
   account: string,
   region: string,

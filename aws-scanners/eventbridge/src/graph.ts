@@ -261,9 +261,9 @@ export const EventRuleEntity: TranslatedEntity<
     return rulesState.map((rulePage) => {
       const targets: Record<string, Target[]> = {};
       for (const rule of rulePage._result.Rules ?? []) {
-        const busName =
-          rule.EventBusName ?? rulePage._parameters?.EventBusName;
-        targets[rule.Name!] = targetsByRule.get(`${busName}|${rule.Name}`) ?? [];
+        const busName = rule.EventBusName ?? rulePage._parameters?.EventBusName;
+        targets[rule.Name!] =
+          targetsByRule.get(`${busName}|${rule.Name}`) ?? [];
       }
       return { ...rulePage, _targets: targets };
     });
@@ -401,9 +401,7 @@ export const ApiDestinationEntity: TranslatedEntity<
         State<ListApiDestinationsCommandOutput, ListApiDestinationsCommandInput>
       >
     >(context.account, context.region, ApiDestinationEntity.selector, state);
-    const connections = await evaluateSelector<
-      Serialized<Connection>
-    >(
+    const connections = await evaluateSelector<Serialized<Connection>>(
       context.account,
       context.region,
       "EventBridge|ListConnections|[]._result.Connections[]",
