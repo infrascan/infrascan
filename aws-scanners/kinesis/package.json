@@ -18,7 +18,7 @@
     "codegen": "pnpm dlx ts-node ./codegen.ts ; pnpm run lint:fix ; pnpm run fmt",
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
-    "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
+    "lint": "tsc --noEmit && prettier \"src/**/*.ts\" -c && eslint .",
     "lint:fix": "eslint . --fix",
     "fmt": "prettier src/**/*.ts -w",
     "clean": "rm -rf dist node_modules"
