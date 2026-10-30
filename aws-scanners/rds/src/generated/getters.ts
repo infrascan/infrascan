@@ -44,31 +44,42 @@ export async function DescribeDBInstances(
 ): Promise<void> {
   const getterDebug = debug("rds:DescribeDBInstances");
   const state: GenericState[] = [];
-  getterDebug("DescribeDBInstances");
-  const preparedParams: DescribeDBInstancesCommandInput = {};
-  try {
-    const cmd = new DescribeDBInstancesCommand(preparedParams);
-    const result: DescribeDBInstancesCommandOutput = await client.send(cmd);
-    state.push({
-      _metadata: {
-        account: context.account,
-        region: context.region,
-        timestamp: Date.now(),
-      },
-      _parameters: preparedParams,
-      _result: result,
-    });
-  } catch (err: unknown) {
-    if (err instanceof RDSServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+  getterDebug("Fetching state");
+  let pagingToken: string | undefined;
+  do {
+    const preparedParams: DescribeDBInstancesCommandInput = {};
+    preparedParams["Marker"] = pagingToken;
+    try {
+      const cmd = new DescribeDBInstancesCommand(preparedParams);
+      const result: DescribeDBInstancesCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+      pagingToken = result["Marker"];
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
       } else {
-        console.log("Encountered unretryable error", err);
+        getterDebug("No pagination token found in response");
       }
-    } else {
-      console.log("Encountered unexpected error", err);
+    } catch (err: unknown) {
+      if (err instanceof RDSServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+      pagingToken = undefined;
     }
-  }
+  } while (pagingToken != null);
   getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,

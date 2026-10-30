@@ -10,7 +10,7 @@ const CloudFrontScanner: ServiceModule<CloudFrontClient, "aws"> = {
   service: "cloudfront",
   key: "CloudFront",
   getClient,
-  callPerRegion: true,
+  callPerRegion: false,
   getters: [ListDistributions],
   getEdges,
   entities: [CloudfrontDistributionEntity],

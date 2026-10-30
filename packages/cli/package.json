@@ -5,7 +5,7 @@
   "main": "dist/index.mjs",
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/app.tsup.json ; cp -r ./src/templates ./dist/templates",
-    "lint": "tsc --noEmit ; eslint .",
+    "lint": "tsc --noEmit && eslint .",
     "clean": "rm -rf dist node_modules"
   },
   "bin": {

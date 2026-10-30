@@ -2,7 +2,7 @@
   "extends": "@infrascan/tsconfig/base.json",
   "exclude": ["codegen.ts", "config.ts", "**/*.test.ts"],
   "compilerOptions": {
-    "target": "ES2015",
+    "target": "ES2022",
     "module": "Node16",
     "outDir": "./dist"
   }

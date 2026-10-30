@@ -18,7 +18,7 @@
     "dev": "node ./dist/index.js",
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
     "test": "echo \"Error: no test specified\"",
-    "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
+    "lint": "tsc --noEmit && prettier \"src/**/*.ts\" -c && eslint .",
     "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
     "clean": "rm -rf dist node_modules"
   },

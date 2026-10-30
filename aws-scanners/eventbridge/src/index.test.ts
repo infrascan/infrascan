@@ -259,7 +259,10 @@ t.test(
     const scheduleRule = nodes.find(
       (node) => node.$graph.id === scheduleRuleArn,
     )!;
-    equal(scheduleRule.eventbridge.rule?.scheduleExpression, "cron(0 2 * * ? *)");
+    equal(
+      scheduleRule.eventbridge.rule?.scheduleExpression,
+      "cron(0 2 * * ? *)",
+    );
     equal(scheduleRule.eventbridge.rule?.eventPatternSources, undefined);
 
     const apiDestination = nodes.find(
@@ -299,10 +302,13 @@ t.test("No event buses returned from ListEventBuses", async ({ equal }) => {
   equal(edges.length, 0);
 });
 
-t.test("Lambda target ARNs are normalized to the function", async ({ equal }) => {
-  const fn = "arn:aws:lambda:us-east-1:000000000000:function:my-fn";
-  equal(normalizeTargetArn(`${fn}:prod`), fn);
-  equal(normalizeTargetArn(fn), fn);
-  const queue = "arn:aws:sqs:us-east-1:000000000000:my-queue";
-  equal(normalizeTargetArn(queue), queue);
-});
+t.test(
+  "Lambda target ARNs are normalized to the function",
+  async ({ equal }) => {
+    const fn = "arn:aws:lambda:us-east-1:000000000000:function:my-fn";
+    equal(normalizeTargetArn(`${fn}:prod`), fn);
+    equal(normalizeTargetArn(fn), fn);
+    const queue = "arn:aws:sqs:us-east-1:000000000000:my-queue";
+    equal(normalizeTargetArn(queue), queue);
+  },
+);

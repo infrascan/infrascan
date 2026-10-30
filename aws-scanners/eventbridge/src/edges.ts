@@ -7,11 +7,7 @@ import type {
   ListTargetsByRuleCommandOutput,
 } from "@aws-sdk/client-eventbridge";
 import { evaluateSelectorGlobally, formatEdge } from "@infrascan/core";
-import type {
-  Connector,
-  SelectedEdge,
-  State,
-} from "@infrascan/shared-types";
+import type { Connector, SelectedEdge, State } from "@infrascan/shared-types";
 import debug from "debug";
 
 const edgesDebug = debug("eventbridge:edges");
@@ -73,9 +69,7 @@ export async function getEdges(
           ? busName
           : busArns.get(busKey(account, region, busName));
         if (busArn != null) {
-          edges.push(
-            formatEdge(busArn, { target: rule.Arn, name: rule.Name }),
-          );
+          edges.push(formatEdge(busArn, { target: rule.Arn, name: rule.Name }));
         }
       }
     }
