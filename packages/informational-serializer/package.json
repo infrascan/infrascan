@@ -1,7 +1,7 @@
 {
   "name": "@infrascan/informational-serializer",
   "version": "0.2.0",
-  "description": "A trivial graph serializer intended for non-visual consumption, retaining all nodes and no edges.",
+  "description": "A graph serializer intended for non-visual consumption (LLMs, scripts), retaining all nodes and edges as plain data with resolved network context and hierarchy.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/tsup.json",
-    "test": "echo \"Error: no test specified\"",
+    "test": "tap src/*.test.ts --allow-incomplete-coverage -- --typescript",
     "lint": "tsc --noEmit ; prettier src/**/*.ts -c ; eslint .",
     "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
     "clean": "rm -rf dist node_modules"
@@ -36,7 +36,10 @@
     "url": "https://github.com/infrascan/infrascan/issues"
   },
   "devDependencies": {
+    "@infrascan/core": "workspace:^",
     "@infrascan/shared-types": "workspace:^",
-    "@infrascan/tsconfig": "workspace:*"
+    "@infrascan/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "tap": "^21"
   }
 }

@@ -1347,12 +1347,21 @@ importers:
 
   packages/informational-serializer:
     devDependencies:
+      '@infrascan/core':
+        specifier: workspace:^
+        version: link:../core
       '@infrascan/shared-types':
         specifier: workspace:^
         version: link:../shared-types
       '@infrascan/tsconfig':
         specifier: workspace:*
         version: link:../../internal/tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
 
   packages/s3-connector:
     dependencies:
