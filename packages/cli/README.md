@@ -68,3 +68,11 @@ infrascan graph --input ./state
 The graph output will be saved to a `graph.json` file in the state directory. The graph file contains an array of JSON objects representing the Nodes and Edges of the graph. This is formatted to be used with [cytoscape](https://js.cytoscape.org/), however it can be translated into any graphing library (Note: the graphs usually require on being able to create parent-child relationships)
 
 You can view your graph by pasting the contents of your `graph.json` file into: [render.infrascan.io](https://render.infrascan.io).
+
+To use the graph as data instead of rendering it (for example, giving it to an LLM or a script), pass `--serializer informational`:
+
+```sh
+infrascan graph --input ./state --serializer informational
+```
+
+The output keeps every scanned attribute of each node as plain JSON, including its parent id in `$graph.parent`. Edges reference their source and target nodes by id.

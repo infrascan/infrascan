@@ -14,7 +14,7 @@ type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 type MaleableNode = WithOptional<
   Readable<GraphNode>,
-  "incomingEdges" | "outgoingEdges"
+  "incomingEdges" | "outgoingEdges" | "children" | "parent"
 >;
 
 export interface Edge extends Omit<Readable<GraphEdge>, "source" | "target"> {
@@ -29,13 +29,13 @@ export interface InformationalGraph {
 
 export function serializeGraph(graph: Graph): InformationalGraph {
   const nodes = graph.nodes.map((node): Node => {
-    const copy: MaleableNode = structuredClone(node);
-    // remove object references
+    // remove object references before cloning, as cloning them would deep copy every node reachable from this one
+    const copy: MaleableNode = { ...node };
     delete copy.incomingEdges;
     delete copy.outgoingEdges;
     delete copy.children;
     delete copy.parent;
-    return copy;
+    return structuredClone(copy);
   });
 
   const edges = graph.edges.map(

@@ -151,6 +151,7 @@ export const SecurityGroupEntity: TranslatedEntity<
         }) ?? [];
 
       return {
+        vpc: val.VpcId != null ? { id: val.VpcId } : undefined,
         rules: networkRules,
       };
     },
