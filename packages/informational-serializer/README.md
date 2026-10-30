@@ -1,6 +1,6 @@
 # @infrascan/informational-serializer
 
-A graph serializer for non-visual consumption: LLMs, scripts and other tools that read infrastructure as data. Unlike `@infrascan/cytoscape-serializer`, it keeps every node's scanned components as plain JSON, and adds each node's place in the hierarchy and its resolved network placement.
+A graph serializer for non-visual consumption: LLMs, scripts and other tools that read infrastructure as data. Unlike `@infrascan/cytoscape-serializer`, it keeps every node's scanned components as plain JSON, and adds each node's resolved network placement. A node's parent is available as `$graph.parent`.
 
 ## Usage
 
@@ -23,14 +23,12 @@ From the CLI: `infrascan graph --input ./state --serializer informational`.
 | Option           | Adds                                                                               |
 | ---------------- | ---------------------------------------------------------------------------------- |
 | `networkContext` | `networkContext` on nodes whose `network` component references a VPC, subnet or SG |
-| `hierarchy`      | `parent` and `ancestry` on every node                                              |
 | `networkMembers` | `networkMembers` on VPC, subnet and security group nodes                           |
 
 ```ts
 // The output from before version 0.3.0: scanned components only
 serializeGraph(graph, {
   networkContext: false,
-  hierarchy: false,
   networkMembers: false,
 });
 ```
@@ -48,8 +46,6 @@ interface InformationalGraph {
 
 Each node is a copy of its scanned state (`$graph`, `resource`, `tenant`, `location`, `network`, `tags`, and any service specific components) without the graph's object references (`incomingEdges`, `outgoingEdges`, `children`). The serializer adds:
 
-- `parent`: the id of the node's parent in the graph.
-- `ancestry`: the ids of the node's ancestors, root first, excluding the node itself. For example `["123456789012", "123456789012-eu-west-1"]` for a Lambda, or `[account, region, "vpc-0a1b"]` for a NAT gateway or network interface. VPC placement for other resources lives in `networkContext`, not here, because the graph doesn't parent those resources under their VPC.
 - `networkContext`: the node's raw `network` ids resolved against the VPC, subnet, security group and NAT gateway nodes in the graph. The `network` component itself is left unchanged.
   - `vpc`: id, `name` (the `Name` tag, falling back to the resource name), `cidrBlocks`, `isDefault`, `state` and `tags`. When the node references no VPC directly (for example ECS services or Auto Scaling groups), the VPC is taken from the VPC recorded on its subnets and security groups and marked `inferred: true`. It is omitted if they record different VPCs.
   - `subnets`: id (`subnet-...`), `nodeId` (the subnet's ARN, its graph id), `name`, `cidrBlocks`, `availabilityZone`, `vpcId` (as recorded by the subnet), `mapPublicIpOnLaunch`, `defaultForAz`, `availableIpAddressCount`, `state`, `tags`, and the `natGateways` deployed in the subnet.
@@ -71,8 +67,6 @@ Example (abridged):
     "targetSubnets": ["subnet-0aaa", "subnet-0gone"],
     "securityGroups": ["sg-0app"]
   },
-  "parent": "123456789012-eu-west-1",
-  "ancestry": ["123456789012", "123456789012-eu-west-1"],
   "networkContext": {
     "vpc": {
       "id": "vpc-0a1b",

@@ -50,25 +50,9 @@ function cloneNodeData(node: Readable<GraphNode>): Node {
 }
 
 /**
- * Walk the parent chain of a node, returning the ancestor ids root first.
- */
-function ancestryOf(node: Readable<GraphNode>): string[] {
-  const ancestry: string[] = [];
-  const visited = new Set<string>([node.$graph.id]);
-  let current = node.parent;
-  while (current != null && !visited.has(current.$graph.id)) {
-    visited.add(current.$graph.id);
-    ancestry.push(current.$graph.id);
-    current = current.parent;
-  }
-  return ancestry.reverse();
-}
-
-/**
  * Serialize the graph into plain nodes and edges for non-visual consumption (LLMs, scripts, other tools).
  *
  * Alongside each node's scanned components, the serializer adds (each controllable via `options`, all enabled by default):
- * - `parent` and `ancestry`: the node's containment hierarchy as ids
  * - `networkContext`: the VPC, subnets and security groups referenced by the node's `network` component, resolved against the graph
  * - `networkMembers`: on VPC, subnet and security group nodes, the ids of nodes placed in them
  *
@@ -80,7 +64,6 @@ export function serializeGraph(
 ): InformationalGraph {
   const {
     networkContext: includeNetworkContext = true,
-    hierarchy: includeHierarchy = true,
     networkMembers: includeNetworkMembers = true,
   } = options;
 
@@ -105,11 +88,6 @@ export function serializeGraph(
 
   const nodes = graphNodes.map((node): Node => {
     const copy = cloneNodeData(node);
-    if (includeHierarchy) {
-      const parentId = node.parent?.$graph.id ?? node.$graph.parent;
-      if (parentId != null) copy.parent = parentId;
-      copy.ancestry = ancestryOf(node);
-    }
     const context = contexts.get(node.$graph.id);
     if (includeNetworkContext && context != null) {
       copy.networkContext = context;

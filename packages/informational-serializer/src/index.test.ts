@@ -387,19 +387,6 @@ t.test("omits the derived VPC when subnets record different VPCs", (tap) => {
   tap.end();
 });
 
-t.test("preserves parent and ancestry as ids", (tap) => {
-  const { nodes } = serializeGraph(buildGraph());
-  const service = findNode(nodes, ECS_SERVICE_ARN);
-  tap.equal(service.parent, ECS_CLUSTER_ARN);
-  tap.strictSame(service.ancestry, [ACCOUNT, REGION_NODE, ECS_CLUSTER_ARN]);
-  const nat = findNode(nodes, NAT_ID);
-  tap.strictSame(nat.ancestry, [ACCOUNT, REGION_NODE, VPC_ID]);
-  const account = findNode(nodes, ACCOUNT);
-  tap.equal(account.parent, undefined);
-  tap.strictSame(account.ancestry, []);
-  tap.end();
-});
-
 t.test("adds a reverse view to network nodes", (tap) => {
   const { nodes } = serializeGraph(buildGraph());
   tap.strictSame(findNode(nodes, VPC_ID).networkMembers, [
@@ -425,10 +412,7 @@ t.test("leaves nodes without a network component unchanged", (tap) => {
   const graph = buildGraph();
   const { nodes, edges } = serializeGraph(graph);
   const bucket = findNode(nodes, BUCKET_ARN);
-  const { parent, ancestry, ...rest } = bucket;
-  tap.equal(parent, ACCOUNT);
-  tap.strictSame(ancestry, [ACCOUNT]);
-  tap.strictSame(rest, baseNode(BUCKET_ARN, "s3-bucket", ACCOUNT));
+  tap.strictSame(bucket, baseNode(BUCKET_ARN, "s3-bucket", ACCOUNT));
   tap.equal(bucket.networkContext, undefined);
   tap.strictSame(edges, [
     {
@@ -459,7 +443,6 @@ t.test("does not mutate the input graph", (tap) => {
   tap.strictSame(after, before);
   graph.nodes.forEach((node) => {
     tap.notOk("networkContext" in node);
-    tap.notOk("ancestry" in node);
   });
   tap.equal(graph.getNode(LAMBDA_ARN)?.parent?.$graph.id, REGION_NODE);
   tap.end();
@@ -480,14 +463,11 @@ t.test("enrichment can be disabled via options", (tap) => {
   const graph = buildGraph();
   const { nodes } = serializeGraph(graph, {
     networkContext: false,
-    hierarchy: false,
     networkMembers: false,
   });
   nodes.forEach((node) => {
     tap.notOk("networkContext" in node);
     tap.notOk("networkMembers" in node);
-    tap.notOk("parent" in node);
-    tap.notOk("ancestry" in node);
   });
 
   const membersOnly = serializeGraph(graph, { networkContext: false });

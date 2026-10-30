@@ -75,4 +75,4 @@ To use the graph as data instead of rendering it (for example, giving it to an L
 infrascan graph --input ./state --serializer informational
 ```
 
-The output keeps every scanned attribute of each node and adds the node's parent and ancestry. It also resolves the node's network placement: the VPC, subnets (CIDR, AZ, NAT gateways) and security groups (inbound rules) it is deployed into. See [`@infrascan/informational-serializer`](../informational-serializer/README.md) for the format.
+The output keeps every scanned attribute of each node, including its parent id in `$graph.parent`, and resolves the node's network placement: the VPC, subnets (CIDR, AZ, NAT gateways) and security groups (inbound rules) it is deployed into. See [`@infrascan/informational-serializer`](../informational-serializer/README.md) for the format.

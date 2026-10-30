@@ -16,10 +16,6 @@ export interface SerializeGraphOptions {
    */
   networkContext?: boolean;
   /**
-   * Attach the node's `parent` id and its `ancestry` (root first, e.g. account → region → VPC).
-   */
-  hierarchy?: boolean;
-  /**
    * Attach `networkMembers` to VPC, subnet and security group nodes: the sorted ids of the nodes
    * whose `networkContext` resolves to them.
    */
@@ -154,14 +150,6 @@ export type Node = Omit<
   Readable<GraphNode>,
   "incomingEdges" | "outgoingEdges" | "children" | "parent"
 > & {
-  /**
-   * The id of the node's parent in the graph.
-   */
-  parent?: string;
-  /**
-   * The ids of the node's ancestors, root first (e.g. `[account, account-region, vpc]`). Excludes the node itself.
-   */
-  ancestry?: string[];
   networkContext?: NetworkContext;
   /**
    * For VPC, subnet and security group nodes: the sorted ids of nodes whose `networkContext` resolves to this node.
