@@ -1,4 +1,6 @@
 import {
+  DescribeVpcAttributeCommandInput,
+  DescribeVpcAttributeResult,
   DescribeVpcsCommandInput,
   DescribeVpcsCommandOutput,
   Vpc as Ec2Vpc,
@@ -13,14 +15,6 @@ import type {
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
-import {
-  buildVpcNetworkContext,
-  type VpcNetworkContext,
-} from "./network-context";
-import {
-  loadNetworkInventory,
-  type NetworkInventory,
-} from "./network-inventory";
 
 export interface VpcConfig {
   isDefault?: boolean;
@@ -33,30 +27,29 @@ export interface VpcConfig {
 
 export interface VpcState extends BaseState<DescribeVpcsCommandInput> {
   vpc: VpcConfig;
-  /**
-   * Routing, gateway, endpoint, peering, transit gateway, DNS/DHCP and flow log context for the VPC
-   */
-  networkContext?: VpcNetworkContext;
 }
 
 /**
- * Raw DescribeVpcs state, enriched with the network inventory scanned for the same account and region
+ * DescribeVpcs state joined with the DescribeVpcAttribute results for the same account and region
  */
 export type VpcRawState = State<
   DescribeVpcsCommandOutput,
   DescribeVpcsCommandInput
 > & {
-  $network?: NetworkInventory;
+  $attributes?: Serialized<
+    State<DescribeVpcAttributeResult, DescribeVpcAttributeCommandInput>
+  >[];
 };
 
-type VpcWithContext = Ec2Vpc & {
-  $networkContext?: VpcNetworkContext;
+type VpcWithAttributes = Ec2Vpc & {
+  $enableDnsSupport?: boolean;
+  $enableDnsHostnames?: boolean;
 };
 
 export const VpcEntity: TranslatedEntity<
   VpcState,
   VpcRawState,
-  WithCallContext<VpcWithContext, DescribeVpcsCommandInput>
+  WithCallContext<VpcWithAttributes, DescribeVpcsCommandInput>
 > = {
   version: "0.1.0",
   debugLabel: "ec2-vpc",
@@ -68,32 +61,48 @@ export const VpcEntity: TranslatedEntity<
   selector: "EC2|DescribeVpcs|[]",
 
   async getState(stateConnector, context) {
-    const [vpcsState, inventory] = await Promise.all([
+    const [vpcsState, attributesState] = await Promise.all([
       evaluateSelector<Serialized<VpcRawState>>(
         context.account,
         context.region,
         VpcEntity.selector,
         stateConnector,
       ),
-      loadNetworkInventory(stateConnector, context),
+      evaluateSelector<
+        Serialized<
+          State<DescribeVpcAttributeResult, DescribeVpcAttributeCommandInput>
+        >
+      >(
+        context.account,
+        context.region,
+        "EC2|DescribeVpcAttribute|[]",
+        stateConnector,
+      ),
     ]);
     return (vpcsState ?? []).map((vpcState) => ({
       ...vpcState,
-      $network: inventory,
+      $attributes: attributesState ?? [],
     }));
   },
 
   translate(val) {
     return (
-      val._result.Vpcs?.map((vpc) => ({
-        $parameters: val._parameters,
-        $metadata: val._metadata,
-        ...vpc,
-        $networkContext:
-          val.$network != null && vpc.VpcId != null
-            ? buildVpcNetworkContext(val.$network, vpc)
-            : undefined,
-      })) ?? []
+      val._result.Vpcs?.map((vpc) => {
+        const attributes = (val.$attributes ?? [])
+          .map((attributeState) => attributeState._result)
+          .filter((result) => result?.VpcId === vpc.VpcId);
+        return {
+          $parameters: val._parameters,
+          $metadata: val._metadata,
+          ...vpc,
+          $enableDnsSupport: attributes.find(
+            (result) => result?.EnableDnsSupport != null,
+          )?.EnableDnsSupport?.Value,
+          $enableDnsHostnames: attributes.find(
+            (result) => result?.EnableDnsHostnames != null,
+          )?.EnableDnsHostnames?.Value,
+        };
+      }) ?? []
     );
   },
 
@@ -152,13 +161,9 @@ export const VpcEntity: TranslatedEntity<
         isDefault: val.IsDefault,
         instanceTenancy: val.InstanceTenancy,
         dhcpOptionsId: val.DhcpOptionsId,
-        enableDnsSupport: val.$networkContext?.dns.enableDnsSupport,
-        enableDnsHostnames: val.$networkContext?.dns.enableDnsHostnames,
+        enableDnsSupport: val.$enableDnsSupport,
+        enableDnsHostnames: val.$enableDnsHostnames,
       };
-    },
-
-    networkContext(val) {
-      return val.$networkContext;
     },
 
     network(val) {

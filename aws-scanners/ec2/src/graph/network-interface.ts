@@ -10,7 +10,6 @@ import type {
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
-import { classifyEniOwner, type EniOwner } from "./eni-owner";
 
 export interface NetworkInterfaceDetails {
   interfaceType?: string;
@@ -28,10 +27,6 @@ export interface NetworkInterfaceDetails {
    * The AWS service (or account) that created the interface
    */
   requesterId?: string;
-  /**
-   * What the interface belongs to, derived from its type, description and attachment
-   */
-  owner: EniOwner;
   attachment?: {
     attachmentId?: string;
     instanceId?: string;
@@ -188,7 +183,6 @@ export const NetworkInterfaceEntity: TranslatedEntity<
         ownerId: val.OwnerId,
         requesterManaged: val.RequesterManaged,
         requesterId: val.RequesterId,
-        owner: classifyEniOwner(val),
         attachment:
           val.Attachment != null
             ? {

@@ -9,19 +9,10 @@ import { evaluateSelector } from "@infrascan/core";
 import type {
   BaseState,
   ReservedAddresses,
-  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
-import {
-  buildSubnetNetworkContext,
-  type SubnetNetworkContext,
-} from "./network-context";
-import {
-  loadNetworkInventory,
-  type NetworkInventory,
-} from "./network-inventory";
 
 export interface SubnetOnLaunch {
   publicIp?: boolean;
@@ -41,30 +32,12 @@ export interface Subnet {
 
 export interface SubnetState extends BaseState<DescribeSubnetsCommandInput> {
   subnet: Subnet;
-  /**
-   * Routing, NACL, endpoint and flow log context for the subnet, with derived tier and default egress path
-   */
-  networkContext?: SubnetNetworkContext;
 }
-
-/**
- * Raw DescribeSubnets state, enriched with the network inventory scanned for the same account and region
- */
-export type SubnetRawState = State<
-  DescribeSubnetsCommandOutput,
-  DescribeSubnetsCommandInput
-> & {
-  $network?: NetworkInventory;
-};
-
-type SubnetWithContext = Ec2Subnet & {
-  $networkContext?: SubnetNetworkContext;
-};
 
 export const SubnetEntity: TranslatedEntity<
   SubnetState,
-  SubnetRawState,
-  WithCallContext<SubnetWithContext, DescribeSubnetsCommandInput>
+  State<DescribeSubnetsCommandOutput, DescribeSubnetsCommandInput>,
+  WithCallContext<Ec2Subnet, DescribeSubnetsCommandInput>
 > = {
   version: "0.1.0",
   debugLabel: "ec2-subnet",
@@ -75,20 +48,13 @@ export const SubnetEntity: TranslatedEntity<
   nodeType: "ec2-subnet",
   selector: "EC2|DescribeSubnets|[]",
 
-  async getState(stateConnector, context) {
-    const [subnetsState, inventory] = await Promise.all([
-      evaluateSelector<Serialized<SubnetRawState>>(
-        context.account,
-        context.region,
-        SubnetEntity.selector,
-        stateConnector,
-      ),
-      loadNetworkInventory(stateConnector, context),
-    ]);
-    return (subnetsState ?? []).map((subnetState) => ({
-      ...subnetState,
-      $network: inventory,
-    }));
+  getState(stateConnector, context) {
+    return evaluateSelector(
+      context.account,
+      context.region,
+      SubnetEntity.selector,
+      stateConnector,
+    );
   },
 
   translate(val) {
@@ -97,10 +63,6 @@ export const SubnetEntity: TranslatedEntity<
         $parameters: val._parameters,
         $metadata: val._metadata,
         ...subnet,
-        $networkContext:
-          val.$network != null && subnet.SubnetId != null
-            ? buildSubnetNetworkContext(val.$network, subnet)
-            : undefined,
       })) ?? []
     );
   },
@@ -203,10 +165,6 @@ export const SubnetEntity: TranslatedEntity<
           availableAddressCount: val.AvailableIpAddressCount,
         },
       };
-    },
-
-    networkContext(val) {
-      return val.$networkContext;
     },
   },
 };
