@@ -32,7 +32,12 @@ export async function ListTargetsByRule(
   getterDebug("Fetching state");
   const listRulesState = await evaluateSelector<
     State<ListRulesCommandOutput, ListRulesCommandInput>
-  >(context.account, context.region, "EventBridge|ListRules|[]", stateConnector);
+  >(
+    context.account,
+    context.region,
+    "EventBridge|ListRules|[]",
+    stateConnector,
+  );
 
   const parameterQueue: ListTargetsByRuleCommandInput[] =
     listRulesState.flatMap(
