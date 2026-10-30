@@ -17,6 +17,10 @@ const RDSScanner: ScannerDefinition<"RDS", typeof RDS, RDSFunctions> = {
   getters: [
     {
       fn: "DescribeDBInstances",
+      paginationToken: {
+        request: "Marker",
+        response: "Marker",
+      },
     },
     {
       fn: "DescribeDBClusters",

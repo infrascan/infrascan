@@ -113,29 +113,37 @@ t.test(
     const connector = buildFsConnector(mkdtempSync(baseDirectory));
     const { client, mockedClient } = mockScanner();
 
-    mockedClient.on(DescribeDBInstancesCommand).resolves({
-      DBInstances: [
-        instance("aurora-prod-1", "aurora-prod"),
-        instance("aurora-prod-2", "aurora-prod"),
-        instance("aurora-sls-1", "aurora-sls", {
-          DBInstanceClass: "db.serverless",
-        }),
-        instance("maz-pg-1", "maz-pg"),
-        instance("maz-pg-2", "maz-pg"),
-        instance("maz-pg-3", "maz-pg"),
-        {
-          Engine: "mysql",
-          DBInstanceIdentifier: "standalone-mysql",
-          DBInstanceArn: `${arnPrefix}:db:standalone-mysql`,
-          DBName: "appdb",
-          DBSubnetGroup: {
-            VpcId: "vpc-1",
-            Subnets: [{ SubnetIdentifier: "subnet-a" }],
+    // Paginated: first page holds the Aurora instances, second page the rest
+    mockedClient
+      .on(DescribeDBInstancesCommand)
+      .resolvesOnce({
+        Marker: "instances-page-2",
+        DBInstances: [
+          instance("aurora-prod-1", "aurora-prod"),
+          instance("aurora-prod-2", "aurora-prod"),
+          instance("aurora-sls-1", "aurora-sls", {
+            DBInstanceClass: "db.serverless",
+          }),
+        ],
+      })
+      .resolvesOnce({
+        DBInstances: [
+          instance("maz-pg-1", "maz-pg"),
+          instance("maz-pg-2", "maz-pg"),
+          instance("maz-pg-3", "maz-pg"),
+          {
+            Engine: "mysql",
+            DBInstanceIdentifier: "standalone-mysql",
+            DBInstanceArn: `${arnPrefix}:db:standalone-mysql`,
+            DBName: "appdb",
+            DBSubnetGroup: {
+              VpcId: "vpc-1",
+              Subnets: [{ SubnetIdentifier: "subnet-a" }],
+            },
+            VpcSecurityGroups: [{ VpcSecurityGroupId: "sg-mysql" }],
           },
-          VpcSecurityGroups: [{ VpcSecurityGroupId: "sg-mysql" }],
-        },
-      ],
-    });
+        ],
+      });
 
     // Paginated: first page holds the Aurora clusters, second page the rest
     mockedClient
@@ -351,7 +359,12 @@ t.test(
 
     await scan(client, connector);
 
-    equal(mockedClient.commandCalls(DescribeDBInstancesCommand).length, 1);
+    equal(mockedClient.commandCalls(DescribeDBInstancesCommand).length, 2);
+    equal(
+      mockedClient.commandCalls(DescribeDBInstancesCommand)[1].args[0].input
+        .Marker,
+      "instances-page-2",
+    );
     equal(mockedClient.commandCalls(DescribeDBClustersCommand).length, 2);
     equal(
       mockedClient.commandCalls(DescribeDBClustersCommand)[1].args[0].input
