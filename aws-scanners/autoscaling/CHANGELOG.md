@@ -1,5 +1,11 @@
 # @infrascan/aws-autoscaling-scanner
 
+## 0.5.0
+
+### Minor Changes
+
+- [#148](https://github.com/infrascan/infrascan/pull/148) [`b7f13a2fcba7a8030314db014497917adbc53616`](https://github.com/infrascan/infrascan/commit/b7f13a2fcba7a8030314db014497917adbc53616) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Add an Auto Scaling group entity and edges so Auto Scaling groups appear in the graph. Groups are now scanned with pagination, along with their scaling policies (`DescribePolicies`) and lifecycle hooks (`DescribeLifecycleHooks`). Edges are drawn from each group to its launch templates, from load balancers to the groups registered in their target groups, and from each group to the SNS topics or SQS queues targeted by its lifecycle hooks.
+
 ## 0.4.0
 
 ### Minor Changes
