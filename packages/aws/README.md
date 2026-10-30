@@ -25,7 +25,7 @@ This package wraps and registers the following AWS service scanners:
 - **@infrascan/aws-elastic-load-balancing-scanner** - Scans Application and Network Load Balancers
 - **@infrascan/aws-kinesis-scanner** - Scans Kinesis streams and analytics
 - **@infrascan/aws-lambda-scanner** - Scans Lambda functions and configurations
-- **@infrascan/aws-rds-scanner** - Scans RDS instances and clusters
+- **@infrascan/aws-rds-scanner** - Scans RDS instances, DB clusters (Aurora and Multi-AZ), RDS Proxies, and Aurora global clusters
 - **@infrascan/aws-route53-scanner** - Scans Route 53 hosted zones and records
 - **@infrascan/aws-s3-scanner** - Scans S3 buckets and configurations
 - **@infrascan/aws-sns-scanner** - Scans SNS topics and subscriptions
