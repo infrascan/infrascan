@@ -1,5 +1,14 @@
 # @infrascan/aws
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [[`b7f13a2fcba7a8030314db014497917adbc53616`](https://github.com/infrascan/infrascan/commit/b7f13a2fcba7a8030314db014497917adbc53616), [`ff49a3c37c63ef2eb13ff14a6f084dc48d50adf8`](https://github.com/infrascan/infrascan/commit/ff49a3c37c63ef2eb13ff14a6f084dc48d50adf8), [`ba77f16ffff6b1d773ec0eb0f95921d65e61e018`](https://github.com/infrascan/infrascan/commit/ba77f16ffff6b1d773ec0eb0f95921d65e61e018)]:
+  - @infrascan/aws-autoscaling-scanner@0.5.0
+  - @infrascan/aws-rds-scanner@0.7.0
+  - @infrascan/aws-step-function-scanner@0.6.0
+
 ## 0.6.0
 
 ### Minor Changes

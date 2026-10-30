@@ -1,5 +1,11 @@
 # @infrascan/aws-rds-scanner
 
+## 0.7.0
+
+### Minor Changes
+
+- [#147](https://github.com/infrascan/infrascan/pull/147) [`ff49a3c37c63ef2eb13ff14a6f084dc48d50adf8`](https://github.com/infrascan/infrascan/commit/ff49a3c37c63ef2eb13ff14a6f084dc48d50adf8) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Scan RDS DB clusters, DB subnet groups, RDS Proxies (and their targets), and Aurora global clusters. Adds DB cluster, proxy and global cluster nodes, plus cluster → member instance, proxy → target cluster/instance, and global cluster → regional cluster edges. Instances that belong to a cluster are now nested under the cluster node (previously their parent referenced the cluster identifier, which didn't match any node), and instances without a `DBName` are labelled with their identifier.
+
 ## 0.6.0
 
 ### Minor Changes
