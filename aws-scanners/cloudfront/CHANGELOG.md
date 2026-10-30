@@ -1,5 +1,11 @@
 # @infrascan/aws-cloudfront-scanner
 
+## 0.6.1
+
+### Patch Changes
+
+- [#150](https://github.com/infrascan/infrascan/pull/150) [`903011adc4e3537d903e7b46ad1e84cb20912a9d`](https://github.com/infrascan/infrascan/commit/903011adc4e3537d903e7b46ad1e84cb20912a9d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Scan CloudFront as a global service (`callPerRegion: false`), matching its codegen config. `ListDistributions` now runs once per account in the scan's default region instead of once per scanned region, which previously recorded the same distributions repeatedly.
+
 ## 0.6.0
 
 ### Minor Changes

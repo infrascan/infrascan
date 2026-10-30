@@ -1,5 +1,11 @@
 # @infrascan/aws-ec2-scanner
 
+## 0.8.1
+
+### Patch Changes
+
+- [#149](https://github.com/infrascan/infrascan/pull/149) [`d00b4eb21607aff73ab6fb3916a650d4f27adb81`](https://github.com/infrascan/infrascan/commit/d00b4eb21607aff73ab6fb3916a650d4f27adb81) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Record the VPC of subnets and security groups in `network.vpc.id`.
+
 ## 0.8.0
 
 ### Minor Changes

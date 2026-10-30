@@ -1,5 +1,11 @@
 # @infrascan/aws-rds-scanner
 
+## 0.7.1
+
+### Patch Changes
+
+- [#150](https://github.com/infrascan/infrascan/pull/150) [`903011adc4e3537d903e7b46ad1e84cb20912a9d`](https://github.com/infrascan/infrascan/commit/903011adc4e3537d903e7b46ad1e84cb20912a9d) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Paginate `DescribeDBInstances` using `Marker` so accounts with more than one page of DB instances are fully scanned.
+
 ## 0.7.0
 
 ### Minor Changes

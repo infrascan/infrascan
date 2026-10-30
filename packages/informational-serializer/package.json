@@ -1,6 +1,6 @@
 {
   "name": "@infrascan/informational-serializer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A trivial graph serializer intended for non-visual consumption, retaining all nodes and no edges.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
