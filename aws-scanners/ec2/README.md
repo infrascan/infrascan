@@ -2,7 +2,71 @@
 
 A scanner module for AWS EC2, designed to be used with the [@infrascan/sdk](../../packages/sdk).
 
-This module pulls information about the EC2 resources in an AWS account by calling: `DescribeVpcs`, `DescribeAvailabilityZones` and `DescribeSubnets`.
+This module pulls information about the EC2 networking resources in an AWS account (VPCs, subnets, security groups, launch templates, network interfaces and NAT gateways), along with route tables, network ACLs, gateways, VPC endpoints, peering connections, transit gateways, managed prefix lists, DHCP options, flow logs and Elastic IPs.
+
+## IAM permissions
+
+The scanner only calls read-only APIs. It needs:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "ec2:DescribeVpcs",
+    "ec2:DescribeVpcAttribute",
+    "ec2:DescribeSubnets",
+    "ec2:DescribeSecurityGroups",
+    "ec2:DescribeLaunchTemplates",
+    "ec2:DescribeLaunchTemplateVersions",
+    "ec2:DescribeNetworkInterfaces",
+    "ec2:DescribeNatGateways",
+    "ec2:DescribeRouteTables",
+    "ec2:DescribeInternetGateways",
+    "ec2:DescribeEgressOnlyInternetGateways",
+    "ec2:DescribeVpcEndpoints",
+    "ec2:DescribeNetworkAcls",
+    "ec2:DescribeVpcPeeringConnections",
+    "ec2:DescribeTransitGateways",
+    "ec2:DescribeTransitGatewayAttachments",
+    "ec2:DescribeVpnGateways",
+    "ec2:DescribeManagedPrefixLists",
+    "ec2:GetManagedPrefixListEntries",
+    "ec2:DescribeDhcpOptions",
+    "ec2:DescribeFlowLogs",
+    "ec2:DescribeAddresses"
+  ],
+  "Resource": "*"
+}
+```
+
+If a permission from `DescribeVpcAttribute` onwards is missing the scan still completes, the corresponding nodes (or VPC DNS attributes / prefix list entries) are simply absent. `GetManagedPrefixListEntries` is only called for customer managed prefix lists (bounded by their `MaxEntries`); AWS managed lists are identified by name.
+
+## Graph nodes
+
+Each resource is its own `informational` node, with the AWS response mapped into a component named after the resource. Values are copied as reported by AWS: nothing is derived (e.g. no subnet tiers or reachability), so references between resources are by id.
+
+| Node type | Id | Parent | Component |
+| --- | --- | --- | --- |
+| `ec2-vpc` | `vpc-…` | region | `vpc` (now including `enableDnsSupport` / `enableDnsHostnames` from `DescribeVpcAttribute`) |
+| `ec2-subnet` | subnet ARN (labelled `subnet-…`) | region | `subnet` |
+| `ec2-security-group` | `sg-…` | region | `network.rules` (inbound) and `network.egressRules` (outbound) |
+| `ec2-network-interface` | `eni-…` | VPC | `networkInterface`: type, status, requester, attachment, source/dest check, Elastic IP |
+| `ec2-nat-gateway` | `nat-…` | VPC | `natGateway`: connectivity type, state, subnet, addresses |
+| `ec2-route-table` | `rtb-…` | VPC | `routeTable`: main flag, subnet/gateway associations, propagating VGWs, routes with their AWS target fields |
+| `ec2-network-acl` | `acl-…` | VPC | `networkAcl`: default flag, subnet associations, entries |
+| `ec2-vpc-endpoint` | `vpce-…` | VPC | `vpcEndpoint`: type, service, route tables, subnets, interfaces, DNS; policy in `resource.policy` |
+| `ec2-internet-gateway` | `igw-…` | region | `internetGateway`: attachments |
+| `ec2-egress-only-internet-gateway` | `eigw-…` | region | `egressOnlyInternetGateway`: attachments |
+| `ec2-vpn-gateway` | `vgw-…` | region | `vpnGateway`: type, ASN, attachments |
+| `ec2-vpc-peering-connection` | `pcx-…` | region | `vpcPeeringConnection`: status, requester and accepter VPCs |
+| `ec2-transit-gateway` | `tgw-…` | region | `transitGateway`: options, default route tables, CIDRs |
+| `ec2-transit-gateway-attachment` | `tgw-attach-…` | region | `transitGatewayAttachment`: resource, associated TGW route table |
+| `ec2-managed-prefix-list` | `pl-…` | region | `prefixList`: name, owner, entries (customer managed lists only) |
+| `ec2-dhcp-options` | `dopt-…` | region | `dhcpOptions`: configurations |
+| `ec2-flow-log` | `fl-…` | region | `flowLog`: logged resource, traffic type, destination |
+| `ec2-elastic-ip` | `eipalloc-…` | region | `elasticIp`: association, interface, instance |
+
+Gateways, peering connections, transit gateway resources and Elastic IPs sit under the region rather than a VPC because they can be detached or span accounts; the VPC they are attached to is recorded in `network.vpc` where there is one. Subnet nodes are keyed by ARN, so a `subnet-…` id in a route table, NACL or endpoint matches the subnet node's label.
 
 ## Quickstart
 

@@ -1,0 +1,5 @@
+---
+"@infrascan/aws-ec2-scanner": minor
+---
+
+Add graph nodes for route tables, network ACLs, VPC endpoints, internet and egress-only internet gateways, VPN gateways, VPC peering connections, transit gateways and their attachments, managed prefix lists (with entries for customer managed lists), DHCP options, flow logs and Elastic IPs. The scanner now also calls `DescribeVpcAttribute`, `DescribeRouteTables`, `DescribeInternetGateways`, `DescribeEgressOnlyInternetGateways`, `DescribeVpcEndpoints`, `DescribeNetworkAcls`, `DescribeVpcPeeringConnections`, `DescribeTransitGateways`, `DescribeTransitGatewayAttachments`, `DescribeVpnGateways`, `DescribeManagedPrefixLists`, `GetManagedPrefixListEntries`, `DescribeDhcpOptions`, `DescribeFlowLogs` and `DescribeAddresses` (see the README for the IAM permissions), and paginates `DescribeVpcs`. VPC nodes gain `enableDnsSupport` / `enableDnsHostnames`, security groups gain `network.egressRules`, network interfaces a `networkInterface` component and NAT gateways a `natGateway` component. Existing node ids and fields are unchanged.

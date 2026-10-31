@@ -1,4 +1,6 @@
 import {
+  DescribeVpcAttributeCommandInput,
+  DescribeVpcAttributeResult,
   DescribeVpcsCommandInput,
   DescribeVpcsCommandOutput,
   Vpc as Ec2Vpc,
@@ -8,6 +10,7 @@ import { evaluateSelector } from "@infrascan/core";
 import type {
   BaseState,
   ReservedAddresses,
+  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
@@ -26,10 +29,27 @@ export interface VpcState extends BaseState<DescribeVpcsCommandInput> {
   vpc: VpcConfig;
 }
 
+/**
+ * DescribeVpcs state joined with the DescribeVpcAttribute results for the same account and region
+ */
+export type VpcRawState = State<
+  DescribeVpcsCommandOutput,
+  DescribeVpcsCommandInput
+> & {
+  $attributes?: Serialized<
+    State<DescribeVpcAttributeResult, DescribeVpcAttributeCommandInput>
+  >[];
+};
+
+type VpcWithAttributes = Ec2Vpc & {
+  $enableDnsSupport?: boolean;
+  $enableDnsHostnames?: boolean;
+};
+
 export const VpcEntity: TranslatedEntity<
   VpcState,
-  State<DescribeVpcsCommandOutput, DescribeVpcsCommandInput>,
-  WithCallContext<Ec2Vpc, DescribeVpcsCommandInput>
+  VpcRawState,
+  WithCallContext<VpcWithAttributes, DescribeVpcsCommandInput>
 > = {
   version: "0.1.0",
   debugLabel: "ec2-vpc",
@@ -40,22 +60,49 @@ export const VpcEntity: TranslatedEntity<
   nodeType: "ec2-vpc",
   selector: "EC2|DescribeVpcs|[]",
 
-  getState(stateConnector, context) {
-    return evaluateSelector(
-      context.account,
-      context.region,
-      VpcEntity.selector,
-      stateConnector,
-    );
+  async getState(stateConnector, context) {
+    const [vpcsState, attributesState] = await Promise.all([
+      evaluateSelector<Serialized<VpcRawState>>(
+        context.account,
+        context.region,
+        VpcEntity.selector,
+        stateConnector,
+      ),
+      evaluateSelector<
+        Serialized<
+          State<DescribeVpcAttributeResult, DescribeVpcAttributeCommandInput>
+        >
+      >(
+        context.account,
+        context.region,
+        "EC2|DescribeVpcAttribute|[]",
+        stateConnector,
+      ),
+    ]);
+    return (vpcsState ?? []).map((vpcState) => ({
+      ...vpcState,
+      $attributes: attributesState ?? [],
+    }));
   },
 
   translate(val) {
     return (
-      val._result.Vpcs?.map((vpc) => ({
-        $parameters: val._parameters,
-        $metadata: val._metadata,
-        ...vpc,
-      })) ?? []
+      val._result.Vpcs?.map((vpc) => {
+        const attributes = (val.$attributes ?? [])
+          .map((attributeState) => attributeState._result)
+          .filter((result) => result?.VpcId === vpc.VpcId);
+        return {
+          $parameters: val._parameters,
+          $metadata: val._metadata,
+          ...vpc,
+          $enableDnsSupport: attributes.find(
+            (result) => result?.EnableDnsSupport != null,
+          )?.EnableDnsSupport?.Value,
+          $enableDnsHostnames: attributes.find(
+            (result) => result?.EnableDnsHostnames != null,
+          )?.EnableDnsHostnames?.Value,
+        };
+      }) ?? []
     );
   },
 
@@ -114,6 +161,8 @@ export const VpcEntity: TranslatedEntity<
         isDefault: val.IsDefault,
         instanceTenancy: val.InstanceTenancy,
         dhcpOptionsId: val.DhcpOptionsId,
+        enableDnsSupport: val.$enableDnsSupport,
+        enableDnsHostnames: val.$enableDnsHostnames,
       };
     },
 
