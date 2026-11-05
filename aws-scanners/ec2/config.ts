@@ -46,9 +46,11 @@ const CloudWatchLogsScanner: ScannerDefinition<
     {
       fn: "DescribeSubnets",
       parameters: [
+        // One call per VPC, filtered to that VPC's subnets: `[{ Name: "vpc-id", Values: [<vpc id>] }]`
         {
           Key: "Filters",
-          Selector: "EC2|DescribeVpcs|[]._result.Vpcs[].VpcId",
+          Selector:
+            "EC2|DescribeVpcs|[]._result.Vpcs[].[{Name: 'vpc-id', Values: [VpcId]}]",
         },
       ],
       paginationToken: {
@@ -197,15 +199,19 @@ const CloudWatchLogsScanner: ScannerDefinition<
         response: "NextToken",
       },
     },
-    // Entries are only fetched for customer managed lists, which are bounded by their MaxEntries.
-    // AWS managed lists (e.g. com.amazonaws.<region>.s3) are identified by name alone.
+    // Entries are fetched for customer managed lists, which are bounded by their MaxEntries, and for the AWS managed
+    // gateway endpoint lists (com.amazonaws.<region>.s3, .s3express, .dynamodb): the lists a route table can route to
+    // through a gateway endpoint. That is at most three AWS managed lists per region, whatever else AWS publishes.
+    // A selector reads the state of a single function and parameters are zipped by index rather than concatenated, so
+    // "customer lists plus AWS lists referenced by routes or security group rules" cannot be expressed here. Selecting by
+    // name also keeps AWS managed list nodes identical in every account, as one node is shared across accounts.
     {
       fn: "GetManagedPrefixListEntries",
       parameters: [
         {
           Key: "PrefixListId",
           Selector:
-            "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[?OwnerId != 'AWS'].PrefixListId[]",
+            "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[?OwnerId != 'AWS' || (starts_with(PrefixListName || '', 'com.amazonaws.') && (ends_with(PrefixListName || '', '.s3') || ends_with(PrefixListName || '', '.s3express') || ends_with(PrefixListName || '', '.dynamodb')))].PrefixListId[]",
         },
       ],
       paginationToken: {

@@ -10,6 +10,8 @@ import {
   DescribeEgressOnlyInternetGatewaysCommand,
   DescribeFlowLogsCommand,
   DescribeInternetGatewaysCommand,
+  DescribeLaunchTemplatesCommand,
+  DescribeLaunchTemplateVersionsCommand,
   DescribeManagedPrefixListsCommand,
   DescribeNatGatewaysCommand,
   DescribeNetworkAclsCommand,
@@ -36,12 +38,14 @@ import {
   ElasticIpEntity,
   FlowLogEntity,
   InternetGatewayEntity,
+  LaunchTemplateEntity,
   ManagedPrefixListEntity,
   NatGatewayEntity,
   NetworkAclEntity,
   NetworkInterfaceEntity,
   RouteTableEntity,
   SecurityGroupEntity,
+  SubnetEntity,
   TransitGatewayAttachmentEntity,
   TransitGatewayEntity,
   VpcEndpointEntity,
@@ -57,15 +61,40 @@ const regionNodeId = `${account}-${region}`;
 const vpcId = "vpc-0main";
 const publicSubnet = "subnet-0public";
 const privateSubnet = "subnet-0private";
+const secondVpcId = "vpc-0second";
+const secondSubnet = "subnet-0second";
+const subnetArn = (subnetId: string) =>
+  `arn:aws:ec2:${region}:${account}:subnet/${subnetId}`;
 
 function mockScan() {
   const client = EC2Scanner.getClient(fromProcess(), context);
   const mocked = mockClient(client);
   mocked.onAnyCommand().resolves({});
 
+  // Two VPCs over two pages; the second VPC's attribute calls are refused
   mocked
-    .on(DescribeVpcsCommand)
-    .resolves({ Vpcs: [{ VpcId: vpcId, CidrBlock: "10.0.0.0/16" }] });
+    .on(DescribeVpcsCommand, { NextToken: undefined })
+    .resolves({
+      Vpcs: [{ VpcId: vpcId, CidrBlock: "10.0.0.0/16" }],
+      NextToken: "vpc-page-2",
+    })
+    .on(DescribeVpcsCommand, { NextToken: "vpc-page-2" })
+    .resolves({
+      Vpcs: [
+        {
+          VpcId: secondVpcId,
+          CidrBlock: "10.9.0.0/16",
+          // AWS repeats the primary CIDR block in the association set
+          CidrBlockAssociationSet: [
+            { CidrBlock: "10.9.0.0/16", AssociationId: "vpc-cidr-assoc-1" },
+            { CidrBlock: "10.10.0.0/16", AssociationId: "vpc-cidr-assoc-2" },
+          ],
+        },
+      ],
+    });
+  mocked
+    .on(DescribeVpcAttributeCommand, { VpcId: secondVpcId })
+    .rejects(new Error("UnauthorizedOperation"));
   mocked
     .on(DescribeVpcAttributeCommand, {
       VpcId: vpcId,
@@ -77,12 +106,65 @@ function mockScan() {
       Attribute: "enableDnsHostnames",
     })
     .resolves({ VpcId: vpcId, EnableDnsHostnames: { Value: false } });
-  mocked.on(DescribeSubnetsCommand).resolves({
-    Subnets: [publicSubnet, privateSubnet].map((subnetId) => ({
-      SubnetId: subnetId,
-      SubnetArn: `arn:aws:ec2:${region}:${account}:subnet/${subnetId}`,
-      VpcId: vpcId,
-    })),
+  // Subnets are only returned for the VPC named in the filter
+  mocked
+    .on(DescribeSubnetsCommand, {
+      Filters: [{ Name: "vpc-id", Values: [vpcId] }],
+    })
+    .resolves({
+      Subnets: [publicSubnet, privateSubnet].map((subnetId) => ({
+        SubnetId: subnetId,
+        SubnetArn: subnetArn(subnetId),
+        VpcId: vpcId,
+        AvailabilityZone: `${region}a`,
+        AvailabilityZoneId: "euw1-az1",
+        OwnerId: account,
+        CidrBlock: subnetId === publicSubnet ? "10.0.0.0/24" : "10.0.1.0/24",
+      })),
+    })
+    .on(DescribeSubnetsCommand, {
+      Filters: [{ Name: "vpc-id", Values: [secondVpcId] }],
+    })
+    .resolves({
+      Subnets: [
+        {
+          SubnetId: secondSubnet,
+          SubnetArn: subnetArn(secondSubnet),
+          VpcId: secondVpcId,
+          AvailabilityZoneId: "euw1-az2",
+          OwnerId: "444444444444",
+          CidrBlock: "10.9.0.0/24",
+          CustomerOwnedIpv4Pool: "ipv4pool-coip-0123",
+        },
+      ],
+    });
+  mocked.on(DescribeLaunchTemplatesCommand).resolves({
+    LaunchTemplates: [
+      {
+        LaunchTemplateId: "lt-0web",
+        LaunchTemplateName: "web",
+        Tags: [{ Key: "team", Value: "web" }],
+      },
+    ],
+  });
+  mocked.on(DescribeLaunchTemplateVersionsCommand).resolves({
+    LaunchTemplateVersions: [
+      {
+        LaunchTemplateId: "lt-0web",
+        LaunchTemplateName: "web",
+        VersionNumber: 3,
+        DefaultVersion: true,
+        LaunchTemplateData: {
+          InstanceType: "t3.micro",
+          TagSpecifications: [
+            {
+              ResourceType: "instance",
+              Tags: [{ Key: "Name", Value: "web-instance" }],
+            },
+          ],
+        },
+      },
+    ],
   });
   mocked.on(DescribeSecurityGroupsCommand).resolves({
     SecurityGroups: [
@@ -127,6 +209,61 @@ function mockScan() {
           AssociationId: "eipassoc-0nat",
           PublicIp: "54.0.0.1",
         },
+        TagSet: [{ Key: "Name", Value: "nat-eni" }],
+      },
+      {
+        NetworkInterfaceId: "eni-0vpce",
+        VpcId: vpcId,
+        SubnetId: privateSubnet,
+        InterfaceType: "vpc_endpoint",
+        Description: "VPC Endpoint Interface vpce-0sqs",
+        RequesterManaged: true,
+        PrivateIpAddress: "10.0.1.20",
+      },
+      {
+        NetworkInterfaceId: "eni-0instance",
+        VpcId: vpcId,
+        SubnetId: publicSubnet,
+        InterfaceType: "interface",
+        OwnerId: account,
+        RequesterManaged: false,
+        PrivateIpAddress: "10.0.0.30",
+        Attachment: {
+          AttachmentId: "eni-attach-0instance",
+          InstanceId: "i-0bastion",
+          InstanceOwnerId: account,
+          DeviceIndex: 0,
+          Status: "attached",
+        },
+        Association: {
+          PublicIp: "34.0.0.1",
+          IpOwnerId: "amazon",
+        },
+        PrivateIpAddresses: [
+          {
+            PrivateIpAddress: "10.0.0.30",
+            Primary: true,
+            PrivateDnsName: "ip-10-0-0-30.eu-west-1.compute.internal",
+            Association: { PublicIp: "34.0.0.1", IpOwnerId: "amazon" },
+          },
+          { PrivateIpAddress: "10.0.0.31", Primary: false },
+        ],
+        Ipv6Addresses: [
+          { Ipv6Address: "2001:db8::30", IsPrimaryIpv6: true },
+          { Ipv6Address: "2001:db8::31" },
+        ],
+        Operator: { Managed: false },
+      },
+      {
+        NetworkInterfaceId: "eni-0lambda",
+        VpcId: vpcId,
+        SubnetId: privateSubnet,
+        InterfaceType: "lambda",
+        Description: "AWS Lambda VPC ENI-worker-0123",
+        RequesterManaged: true,
+        RequesterId: "AROAEXAMPLE:worker",
+        Operator: { Managed: true, Principal: "lambda.amazonaws.com" },
+        Attachment: { InstanceOwnerId: "amazon-aws", Status: "attached" },
       },
     ],
   });
@@ -138,6 +275,7 @@ function mockScan() {
         SubnetId: publicSubnet,
         State: "available",
         ConnectivityType: "public",
+        Tags: [{ Key: "Name", Value: "nat" }],
         NatGatewayAddresses: [
           {
             AllocationId: "eipalloc-0nat",
@@ -264,6 +402,34 @@ function mockScan() {
           },
         ],
       },
+      {
+        VpcEndpointId: "vpce-0lattice",
+        VpcEndpointType: "ServiceNetwork",
+        VpcId: vpcId,
+        State: "available",
+        ServiceNetworkArn: `arn:aws:vpc-lattice:${region}:${account}:servicenetwork/sn-0123`,
+        SubnetIds: [privateSubnet],
+      },
+      {
+        VpcEndpointId: "vpce-0resource",
+        VpcEndpointType: "Resource",
+        VpcId: vpcId,
+        State: "failed",
+        ResourceConfigurationArn: `arn:aws:vpc-lattice:${region}:${account}:resourceconfiguration/rcfg-0123`,
+        LastError: { Code: "InsufficientCapacity", Message: "no capacity" },
+        FailureReason: "Insufficient capacity in subnet",
+        Ipv4Prefixes: [
+          { SubnetId: privateSubnet, IpPrefixes: ["10.0.1.64/28"] },
+        ],
+      },
+      {
+        VpcEndpointId: "vpce-0crossregion",
+        VpcEndpointType: "Interface",
+        VpcId: vpcId,
+        ServiceName: "com.amazonaws.vpce.us-east-1.vpce-svc-0123",
+        ServiceRegion: "us-east-1",
+        State: "available",
+      },
     ],
   });
   mocked.on(DescribeNetworkAclsCommand).resolves({
@@ -296,6 +462,19 @@ function mockScan() {
             CidrBlock: "0.0.0.0/0",
           },
         ],
+      },
+      {
+        NetworkAclId: "acl-0private",
+        VpcId: vpcId,
+        IsDefault: false,
+        Associations: [
+          {
+            NetworkAclAssociationId: "aclassoc-private",
+            NetworkAclId: "acl-0private",
+            SubnetId: privateSubnet,
+          },
+        ],
+        Entries: [],
       },
     ],
   });
@@ -379,6 +558,12 @@ function mockScan() {
           OwnerId: "AWS",
           AddressFamily: "IPv4",
         },
+        {
+          PrefixListId: "pl-cloudfront",
+          PrefixListName: "com.amazonaws.global.cloudfront.origin-facing",
+          OwnerId: "AWS",
+          AddressFamily: "IPv4",
+        },
       ],
       NextToken: "pl-page-2",
     })
@@ -394,8 +579,20 @@ function mockScan() {
           State: "create-complete",
           Version: 3,
         },
+        {
+          PrefixListId: "pl-partner",
+          PrefixListName: "partner",
+          OwnerId: account,
+          AddressFamily: "IPv4",
+          MaxEntries: 2,
+        },
       ],
     });
+  mocked
+    .on(GetManagedPrefixListEntriesCommand, { PrefixListId: "pl-s3" })
+    .resolves({ Entries: [{ Cidr: "52.218.0.0/17" }] })
+    .on(GetManagedPrefixListEntriesCommand, { PrefixListId: "pl-partner" })
+    .resolves({ Entries: [{ Cidr: "192.0.2.0/24", Description: "partner" }] });
   mocked
     .on(GetManagedPrefixListEntriesCommand, {
       PrefixListId: "pl-corp",
@@ -499,16 +696,18 @@ function node<T = Record<string, any>>(
 t.test("Network getters paginate and fan out", async ({ equal, same }) => {
   const { mocked } = await scan();
 
+  equal(mocked.commandCalls(DescribeVpcsCommand).length, 2);
   equal(mocked.commandCalls(DescribeRouteTablesCommand).length, 2);
   equal(mocked.commandCalls(DescribeManagedPrefixListsCommand).length, 2);
-  // Entries are only fetched for customer managed lists
+  // Entries are fetched for customer managed lists and the AWS managed gateway endpoint lists (s3), not for other AWS
+  // managed lists (cloudfront)
   same(
     mocked
       .commandCalls(GetManagedPrefixListEntriesCommand)
       .map((call) => call.args[0].input.PrefixListId),
-    ["pl-corp", "pl-corp"],
+    ["pl-s3", "pl-corp", "pl-corp", "pl-partner"],
   );
-  // One call per (VPC, attribute) pair
+  // One call per (VPC, attribute) pair, across both DescribeVpcs pages
   same(
     mocked
       .commandCalls(DescribeVpcAttributeCommand)
@@ -516,6 +715,18 @@ t.test("Network getters paginate and fan out", async ({ equal, same }) => {
     [
       { VpcId: vpcId, Attribute: "enableDnsSupport" },
       { VpcId: vpcId, Attribute: "enableDnsHostnames" },
+      { VpcId: secondVpcId, Attribute: "enableDnsSupport" },
+      { VpcId: secondVpcId, Attribute: "enableDnsHostnames" },
+    ],
+  );
+  // One filtered DescribeSubnets call per VPC
+  same(
+    mocked
+      .commandCalls(DescribeSubnetsCommand)
+      .map((call) => call.args[0].input.Filters),
+    [
+      [{ Name: "vpc-id", Values: [vpcId] }],
+      [{ Name: "vpc-id", Values: [secondVpcId] }],
     ],
   );
   for (const command of [
@@ -551,7 +762,7 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
     }
   }
 
-  const expectedParents: [string, string][] = [
+  const expectedParents: [string, string | undefined][] = [
     ["rtb-main", vpcId],
     ["rtb-private", vpcId],
     ["acl-0default", vpcId],
@@ -561,11 +772,17 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
     ["igw-0detached", regionNodeId],
     ["eigw-0main", regionNodeId],
     ["vgw-0onprem", regionNodeId],
+    // Requested by this account and region
     ["pcx-0peer", regionNodeId],
-    ["tgw-0core", regionNodeId],
+    // Owned by an account that was not scanned: a root node, owned by 999999999999
+    ["tgw-0core", undefined],
+    // The attached VPC belongs to this account
     ["tgw-attach-0main", regionNodeId],
-    ["pl-s3", regionNodeId],
+    // AWS managed lists belong to no scanned account: root nodes
+    ["pl-s3", undefined],
+    ["pl-cloudfront", undefined],
     ["pl-corp", regionNodeId],
+    ["pl-partner", regionNodeId],
     ["dopt-0main", regionNodeId],
     ["fl-0vpc", regionNodeId],
     ["eipalloc-0nat", regionNodeId],
@@ -576,6 +793,12 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
     equal(graph.getNode(id)?.parent?.$graph.id, parent, `${id} parent`);
   }
 
+  // Tenants come from the AWS owner field, not the scanned account
+  const expectedTenants: Record<string, string> = {
+    "tgw-0core": "999999999999",
+    "pl-s3": "AWS",
+    "pl-cloudfront": "AWS",
+  };
   for (const entity of [
     RouteTableEntity,
     NetworkAclEntity,
@@ -596,7 +819,11 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
       equal(entityNode.$graph.nodeClass, "informational");
       equal(entityNode.resource.id, entityNode.$graph.id);
       equal(entityNode.resource.subcategory, entity.subcategory);
-      equal(entityNode.tenant.tenantId, account);
+      equal(
+        entityNode.tenant.tenantId,
+        expectedTenants[entityNode.$graph.id] ?? account,
+        `${entityNode.$graph.id} tenant`,
+      );
       equal(entityNode.location?.code, region);
       equal(entityNode.$source?.command, entity.command);
     }
@@ -742,7 +969,20 @@ t.test(
     equal(corp.prefixList.maxEntries, 5);
     const s3 = node(nodes, ManagedPrefixListEntity.nodeType, "pl-s3");
     equal(s3.prefixList.ownerId, "AWS");
-    equal(s3.prefixList.entries, undefined);
+    same(s3.prefixList.entries, [
+      { cidr: "52.218.0.0/17", description: undefined },
+    ]);
+    const cloudfront = node(
+      nodes,
+      ManagedPrefixListEntity.nodeType,
+      "pl-cloudfront",
+    );
+    equal(cloudfront.prefixList.entries, undefined);
+    // Each list only receives its own entries
+    const partner = node(nodes, ManagedPrefixListEntity.nodeType, "pl-partner");
+    same(partner.prefixList.entries, [
+      { cidr: "192.0.2.0/24", description: "partner" },
+    ]);
 
     const dhcp = node(nodes, DhcpOptionsEntity.nodeType, "dopt-0main");
     same(dhcp.dhcpOptions.configurations, [
@@ -817,5 +1057,258 @@ t.test(
     );
     equal(nodes[RouteTableEntity.nodeType].length, 0);
     equal(nodes[ManagedPrefixListEntity.nodeType].length, 0);
+  },
+);
+
+t.test(
+  "Subnets record their ids, route table and network ACL",
+  async ({ equal, same }) => {
+    const { connector } = await scan();
+    const nodes = await buildNodes(connector);
+
+    // Filtered calls return each subnet once
+    same(
+      nodes[SubnetEntity.nodeType].map((subnet) => subnet.$graph.id).sort(),
+      [publicSubnet, privateSubnet, secondSubnet].map(subnetArn).sort(),
+    );
+
+    const pub = node(nodes, SubnetEntity.nodeType, subnetArn(publicSubnet));
+    equal(pub.subnet.subnetId, publicSubnet);
+    equal(pub.subnet.vpcId, vpcId);
+    equal(pub.subnet.availabilityZoneId, "euw1-az1");
+    equal(pub.subnet.ownerId, account);
+    // No explicit association: the VPC's main route table applies
+    same(pub.subnet.routeTable, { id: "rtb-main", main: true, implicit: true });
+    same(pub.subnet.networkAcl, {
+      id: "acl-0default",
+      associationId: "aclassoc-public",
+      isDefault: true,
+    });
+
+    const priv = node(nodes, SubnetEntity.nodeType, subnetArn(privateSubnet));
+    same(priv.subnet.routeTable, {
+      id: "rtb-private",
+      associationId: "rtbassoc-private",
+      main: false,
+      implicit: false,
+    });
+    same(priv.subnet.networkAcl, {
+      id: "acl-0private",
+      associationId: "aclassoc-private",
+      isDefault: false,
+    });
+
+    // No route tables or network ACLs were reported for the second VPC, so neither is guessed
+    const second = node(nodes, SubnetEntity.nodeType, subnetArn(secondSubnet));
+    equal(second.subnet.routeTable, undefined);
+    equal(second.subnet.networkAcl, undefined);
+    equal(second.subnet.ownerId, "444444444444");
+    // A customer-owned pool id is not a CIDR block
+    equal(second.subnet.customerOwnedIpv4Pool, "ipv4pool-coip-0123");
+    same(second.network?.reservedAddresses, [
+      { family: "ipv4", cidrBlock: "10.9.0.0/24" },
+    ]);
+  },
+);
+
+t.test(
+  "Subnet membership is omitted when route tables and ACLs could not be read",
+  async ({ equal }) => {
+    const connector = buildFsConnector(
+      mkdtempSync(join(tmpdir(), "infrascan-ec2-network-denied-")),
+    );
+    const client = EC2Scanner.getClient(fromProcess(), context);
+    const mocked = mockClient(client);
+    mocked.onAnyCommand().resolves({});
+    mocked.on(DescribeVpcsCommand).resolves({ Vpcs: [{ VpcId: vpcId }] });
+    mocked.on(DescribeSubnetsCommand).resolves({
+      Subnets: [
+        {
+          SubnetId: publicSubnet,
+          SubnetArn: subnetArn(publicSubnet),
+          VpcId: vpcId,
+        },
+      ],
+    });
+    mocked
+      .on(DescribeRouteTablesCommand)
+      .rejects(new Error("UnauthorizedOperation"));
+    mocked
+      .on(DescribeNetworkAclsCommand)
+      .rejects(new Error("UnauthorizedOperation"));
+    for (const getter of EC2Scanner.getters) {
+      await getter(client, connector, context);
+    }
+    const nodes = await buildNodes(connector);
+    const pub = node(nodes, SubnetEntity.nodeType, subnetArn(publicSubnet));
+    equal(pub.subnet.subnetId, publicSubnet);
+    equal(pub.subnet.routeTable, undefined);
+    equal(pub.subnet.networkAcl, undefined);
+  },
+);
+
+t.test(
+  "VPC reserved addresses list each CIDR block once",
+  async ({ same, equal }) => {
+    const { connector } = await scan();
+    const nodes = await buildNodes(connector);
+    const second = node(nodes, VpcEntity.nodeType, secondVpcId);
+    same(second.network?.reservedAddresses, [
+      { family: "ipv4", cidrBlock: "10.9.0.0/16" },
+      { family: "ipv4", cidrBlock: "10.10.0.0/16" },
+    ]);
+    // The refused DescribeVpcAttribute calls only blank this VPC's DNS attributes
+    equal(second.vpc.enableDnsSupport, undefined);
+    equal(second.vpc.enableDnsHostnames, undefined);
+    const main = node(nodes, VpcEntity.nodeType, vpcId);
+    equal(main.vpc.enableDnsSupport, true);
+    equal(main.vpc.enableDnsHostnames, false);
+  },
+);
+
+t.test(
+  "Network interfaces carry addresses, operator and exact owners",
+  async ({ equal, same }) => {
+    const { connector } = await scan();
+    const nodes = await buildNodes(connector);
+
+    const nat = node(nodes, NetworkInterfaceEntity.nodeType, "eni-0nat");
+    // Listed by the NAT gateway's own addresses
+    same(nat.networkInterface.owner, { type: "nat-gateway", id: "nat-0main" });
+    same(nat.tags, [{ key: "Name", value: "nat-eni" }]);
+
+    const vpce = node(nodes, NetworkInterfaceEntity.nodeType, "eni-0vpce");
+    same(vpce.networkInterface.owner, {
+      type: "vpc-endpoint",
+      id: "vpce-0sqs",
+    });
+
+    const instance = node(
+      nodes,
+      NetworkInterfaceEntity.nodeType,
+      "eni-0instance",
+    );
+    same(instance.networkInterface.owner, {
+      type: "instance",
+      id: "i-0bastion",
+    });
+    equal(instance.networkInterface.attachment.instanceOwnerId, account);
+    equal(instance.networkInterface.interfaceType, "interface");
+    equal(instance.networkInterface.ipOwnerId, "amazon");
+    same(instance.networkInterface.operator, {
+      managed: false,
+      principal: undefined,
+    });
+    same(instance.networkInterface.privateIpAddresses, [
+      {
+        address: "10.0.0.30",
+        primary: true,
+        privateDnsName: "ip-10-0-0-30.eu-west-1.compute.internal",
+        publicIp: "34.0.0.1",
+        ipOwnerId: "amazon",
+        allocationId: undefined,
+      },
+      {
+        address: "10.0.0.31",
+        primary: false,
+        privateDnsName: undefined,
+        publicIp: undefined,
+        ipOwnerId: undefined,
+        allocationId: undefined,
+      },
+    ]);
+    same(instance.networkInterface.ipv6Addresses, [
+      { address: "2001:db8::30", isPrimary: true },
+      { address: "2001:db8::31", isPrimary: undefined },
+    ]);
+    equal(
+      instance.network?.assignedAddresses?.ipv6,
+      "2001:db8::30, 2001:db8::31",
+    );
+    equal(instance.tags, undefined);
+
+    // No AWS field names the owning function, so no owner is set; the facts are kept as reported
+    const lambda = node(nodes, NetworkInterfaceEntity.nodeType, "eni-0lambda");
+    equal(lambda.networkInterface.owner, undefined);
+    same(lambda.networkInterface.operator, {
+      managed: true,
+      principal: "lambda.amazonaws.com",
+    });
+    equal(lambda.networkInterface.requesterId, "AROAEXAMPLE:worker");
+    equal(lambda.networkInterface.requesterManaged, true);
+    equal(lambda.networkInterface.interfaceType, "lambda");
+    same(lambda.networkInterface.ipv6Addresses, []);
+  },
+);
+
+t.test(
+  "Resource, service network and cross-region endpoints keep their target",
+  async ({ equal, same }) => {
+    const { connector } = await scan();
+    const nodes = await buildNodes(connector);
+
+    const lattice = node(nodes, VpcEndpointEntity.nodeType, "vpce-0lattice");
+    equal(lattice.vpcEndpoint.endpointType, "ServiceNetwork");
+    equal(
+      lattice.vpcEndpoint.serviceNetworkArn,
+      `arn:aws:vpc-lattice:${region}:${account}:servicenetwork/sn-0123`,
+    );
+
+    const resource = node(nodes, VpcEndpointEntity.nodeType, "vpce-0resource");
+    equal(resource.vpcEndpoint.endpointType, "Resource");
+    equal(
+      resource.vpcEndpoint.resourceConfigurationArn,
+      `arn:aws:vpc-lattice:${region}:${account}:resourceconfiguration/rcfg-0123`,
+    );
+    same(resource.vpcEndpoint.lastError, {
+      code: "InsufficientCapacity",
+      message: "no capacity",
+    });
+    equal(
+      resource.vpcEndpoint.failureReason,
+      "Insufficient capacity in subnet",
+    );
+    same(resource.vpcEndpoint.ipv4Prefixes, [
+      { subnetId: privateSubnet, prefixes: ["10.0.1.64/28"] },
+    ]);
+
+    const crossRegion = node(
+      nodes,
+      VpcEndpointEntity.nodeType,
+      "vpce-0crossregion",
+    );
+    equal(crossRegion.vpcEndpoint.serviceRegion, "us-east-1");
+    equal(crossRegion.vpcEndpoint.lastError, undefined);
+  },
+);
+
+t.test(
+  "Tags use the top-level { key, value } shape",
+  async ({ same, equal }) => {
+    const { connector } = await scan();
+    const nodes = await buildNodes(connector);
+
+    const nat = node(nodes, NatGatewayEntity.nodeType, "nat-0main");
+    same(nat.tags, [{ key: "Name", value: "nat" }]);
+
+    // The launch template's own tags; TagSpecifications (tags for launched resources) are not the template's tags
+    const template = node(nodes, LaunchTemplateEntity.nodeType, "lt-0web");
+    same(template.tags, [{ key: "team", value: "web" }]);
+    equal(JSON.stringify(template).includes("web-instance"), false);
+
+    // No node carries a tag array outside its top-level tags component
+    for (const nodesOfType of Object.values(nodes)) {
+      for (const entityNode of nodesOfType) {
+        for (const tag of entityNode.tags ?? []) {
+          same(Object.keys(tag).sort(), ["key", "value"]);
+        }
+        const { tags, ...components } = entityNode;
+        equal(
+          JSON.stringify(components).includes('"tags"'),
+          false,
+          `${entityNode.$graph.id} has no nested tags`,
+        );
+      }
+    }
   },
 );

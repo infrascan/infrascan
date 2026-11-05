@@ -109,12 +109,10 @@ export const NatGatewayEntity: TranslatedEntity<
     },
 
     tags(val) {
-      return (
-        val.Tags?.map((tag) => ({
-          key: tag.Key!,
-          val: tag.Value!,
-        })) ?? []
-      );
+      return val.Tags?.map((tag) => ({
+        key: tag.Key,
+        value: tag.Value,
+      }));
     },
 
     $source(val) {

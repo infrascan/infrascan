@@ -32,6 +32,22 @@ export interface VpcEndpointDetails {
   privateDnsEnabled?: boolean;
   ipAddressType?: string;
   dnsEntries: { dnsName?: string; hostedZoneId?: string }[];
+  /**
+   * The VPC Lattice service network a `ServiceNetwork` endpoint connects to
+   */
+  serviceNetworkArn?: string;
+  /**
+   * The VPC Lattice resource configuration a `Resource` endpoint connects to
+   */
+  resourceConfigurationArn?: string;
+  /**
+   * The region of the endpoint service, for cross-region PrivateLink
+   */
+  serviceRegion?: string;
+  lastError?: { code?: string; message?: string };
+  failureReason?: string;
+  ipv4Prefixes: { subnetId?: string; prefixes: string[] }[];
+  ipv6Prefixes: { subnetId?: string; prefixes: string[] }[];
 }
 
 export interface VpcEndpointState
@@ -160,6 +176,24 @@ export const VpcEndpointEntity: TranslatedEntity<
           val.DnsEntries?.map((entry) => ({
             dnsName: entry.DnsName,
             hostedZoneId: entry.HostedZoneId,
+          })) ?? [],
+        serviceNetworkArn: val.ServiceNetworkArn,
+        resourceConfigurationArn: val.ResourceConfigurationArn,
+        serviceRegion: val.ServiceRegion,
+        lastError:
+          val.LastError != null
+            ? { code: val.LastError.Code, message: val.LastError.Message }
+            : undefined,
+        failureReason: val.FailureReason,
+        ipv4Prefixes:
+          val.Ipv4Prefixes?.map((prefix) => ({
+            subnetId: prefix.SubnetId,
+            prefixes: prefix.IpPrefixes ?? [],
+          })) ?? [],
+        ipv6Prefixes:
+          val.Ipv6Prefixes?.map((prefix) => ({
+            subnetId: prefix.SubnetId,
+            prefixes: prefix.IpPrefixes ?? [],
           })) ?? [],
       };
     },

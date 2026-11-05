@@ -176,8 +176,16 @@ export const VpcEntity: TranslatedEntity<
         val.CidrBlockAssociationSet != null &&
         val.CidrBlockAssociationSet.length > 0
       ) {
+        // The association set also lists the primary CIDR block, which is already recorded above
         val.CidrBlockAssociationSet.forEach((ipv4Assoc) => {
-          if (ipv4Assoc.CidrBlock != null) {
+          if (
+            ipv4Assoc.CidrBlock != null &&
+            !vpcAddresses.some(
+              (address) =>
+                address.family === "ipv4" &&
+                address.cidrBlock === ipv4Assoc.CidrBlock,
+            )
+          ) {
             vpcAddresses.push({
               family: "ipv4",
               cidrBlock: ipv4Assoc.CidrBlock,

@@ -101,7 +101,7 @@ t.test("Launch templates are scanned independently", async ({ equal }) => {
 });
 
 // Test: Subnets use VPC IDs for filtering
-t.test("Subnets are filtered by VPC IDs", async ({ equal }) => {
+t.test("Subnets are filtered by VPC IDs", async ({ equal, same }) => {
   const testContext = {
     region: "us-east-1",
     account: "0".repeat(8),
@@ -128,8 +128,13 @@ t.test("Subnets are filtered by VPC IDs", async ({ equal }) => {
   // Verify subnets called with VPC ID filters
   equal(mockedEc2Client.commandCalls(DescribeSubnetsCommand).length, 2);
   const subnetCalls = mockedEc2Client.commandCalls(DescribeSubnetsCommand);
-  equal(subnetCalls[0].args[0].input.Filters, vpcId1);
-  equal(subnetCalls[1].args[0].input.Filters, vpcId2);
+  // A Filter list, not a bare VPC id (which the SDK would drop, returning every subnet on each call)
+  same(subnetCalls[0].args[0].input.Filters, [
+    { Name: "vpc-id", Values: [vpcId1] },
+  ]);
+  same(subnetCalls[1].args[0].input.Filters, [
+    { Name: "vpc-id", Values: [vpcId2] },
+  ]);
 });
 
 // Test: Launch template versions depend on template IDs

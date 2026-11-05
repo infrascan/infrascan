@@ -6,10 +6,18 @@ import {
 import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
 import type {
   BaseState,
+  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
+import {
+  isPlaced,
+  placedParent,
+  resolvePlacements,
+  type Placement,
+  type Placements,
+} from "./ownership";
 
 export interface TransitGatewayDetails {
   arn?: string;
@@ -32,13 +40,24 @@ export interface TransitGatewayState
   transitGateway?: TransitGatewayDetails;
 }
 
+/**
+ * DescribeTransitGateways state with the placement of each transit gateway. A transit gateway shared through RAM is
+ * reported by its owner and by every participant, but is one node: tenant and parent come from its `OwnerId`.
+ */
+export type TransitGatewayRawState = State<
+  DescribeTransitGatewaysCommandOutput,
+  DescribeTransitGatewaysCommandInput
+> & {
+  $placements?: Placements;
+};
+
 export const TransitGatewayEntity: TranslatedEntity<
   TransitGatewayState,
-  State<
-    DescribeTransitGatewaysCommandOutput,
+  TransitGatewayRawState,
+  WithCallContext<
+    TransitGateway & { $placement?: Placement },
     DescribeTransitGatewaysCommandInput
-  >,
-  WithCallContext<TransitGateway, DescribeTransitGatewaysCommandInput>
+  >
 > = {
   version: "0.1.0",
   debugLabel: "ec2-transit-gateway",
@@ -49,20 +68,36 @@ export const TransitGatewayEntity: TranslatedEntity<
   nodeType: "ec2-transit-gateway",
   selector: "EC2|DescribeTransitGateways|[]",
 
-  getState(state, context) {
-    return evaluateSelector(
-      context.account,
-      context.region,
-      TransitGatewayEntity.selector,
+  async getState(state, context) {
+    const pages =
+      (await evaluateSelector<Serialized<TransitGatewayRawState>>(
+        context.account,
+        context.region,
+        TransitGatewayEntity.selector,
+        state,
+      )) ?? [];
+    const $placements = await resolvePlacements(
       state,
+      context,
+      pages.flatMap((page) => page._result?.TransitGateways ?? []),
+      {
+        getId: (transitGateway) => transitGateway.TransitGatewayId,
+        getOwner: (transitGateway) => ({ account: transitGateway.OwnerId }),
+        ownerItemsSelector:
+          "EC2|DescribeTransitGateways|[]._result.TransitGateways[]",
+      },
     );
+    return pages.map((page) => ({ ...page, $placements }));
   },
 
   translate(val) {
     return (
-      val._result.TransitGateways?.map((transitGateway) => ({
+      val._result.TransitGateways?.filter((transitGateway) =>
+        isPlaced(val.$placements, transitGateway.TransitGatewayId),
+      ).map((transitGateway) => ({
         $metadata: val._metadata,
         $parameters: val._parameters,
+        $placement: val.$placements?.[transitGateway.TransitGatewayId!],
         ...transitGateway,
       })) ?? []
     );
@@ -82,7 +117,7 @@ export const TransitGatewayEntity: TranslatedEntity<
         label: val.TransitGatewayId!,
         nodeClass: "informational",
         nodeType: TransitGatewayEntity.nodeType,
-        parent: `${val.$metadata.account}-${val.$metadata.region}`,
+        parent: placedParent(val.$placement, val.$metadata),
       };
     },
 
@@ -90,7 +125,7 @@ export const TransitGatewayEntity: TranslatedEntity<
       return {
         provider: TransitGatewayEntity.provider,
         partition: val.$metadata.partition,
-        tenantId: val.$metadata.account,
+        tenantId: val.OwnerId ?? val.$metadata.account,
       };
     },
 

@@ -1,7 +1,10 @@
 import {
+  DescribeLaunchTemplatesCommandInput,
+  DescribeLaunchTemplatesCommandOutput,
   DescribeLaunchTemplateVersionsCommandInput,
   DescribeLaunchTemplateVersionsCommandOutput,
   LaunchTemplateVersion,
+  Tag,
   ShutdownBehavior,
   _InstanceType,
 } from "@aws-sdk/client-ec2";
@@ -11,6 +14,7 @@ import type {
   BaseState,
   Connector,
   ReservedAddresses,
+  Serialized,
   State,
   TranslatedEntity,
   WithCallContext,
@@ -98,14 +102,37 @@ export interface LaunchTemplateState
   storage: LaunchTemplateStorage;
 }
 
+type LaunchTemplatesState = Serialized<
+  State<
+    DescribeLaunchTemplatesCommandOutput,
+    DescribeLaunchTemplatesCommandInput
+  >
+>;
+
+/**
+ * DescribeLaunchTemplateVersions state joined with the DescribeLaunchTemplates results for the same account and region,
+ * which carry the launch template's own tags
+ */
+export type LaunchTemplateRawState = State<
+  DescribeLaunchTemplateVersionsCommandOutput,
+  DescribeLaunchTemplateVersionsCommandInput
+> & {
+  $launchTemplates?: LaunchTemplatesState[];
+};
+
+type LaunchTemplateVersionWithTags = LaunchTemplateVersion & {
+  /**
+   * Tags on the launch template itself (DescribeLaunchTemplates). `LaunchTemplateData.TagSpecifications` are tags the
+   * template applies to the resources it launches, not the template's tags.
+   */
+  $templateTags?: Tag[];
+};
+
 export const LaunchTemplateEntity: TranslatedEntity<
   LaunchTemplateState,
-  State<
-    DescribeLaunchTemplateVersionsCommandOutput,
-    DescribeLaunchTemplateVersionsCommandInput
-  >,
+  LaunchTemplateRawState,
   WithCallContext<
-    LaunchTemplateVersion,
+    LaunchTemplateVersionWithTags,
     DescribeLaunchTemplateVersionsCommandInput
   >
 > = {
@@ -124,17 +151,35 @@ export const LaunchTemplateEntity: TranslatedEntity<
         $metadata: val._metadata,
         $parameters: val._parameters,
         ...version,
+        $templateTags: (val.$launchTemplates ?? [])
+          .flatMap((page) => page._result?.LaunchTemplates ?? [])
+          .find(
+            (template) =>
+              template.LaunchTemplateId === version.LaunchTemplateId,
+          )?.Tags,
       })) ?? []
     );
   },
 
-  getState(state: Connector, context: AwsContext) {
-    return evaluateSelector(
-      context.account,
-      context.region,
-      LaunchTemplateEntity.selector,
-      state,
-    );
+  async getState(state: Connector, context: AwsContext) {
+    const [versionsState, launchTemplatesState] = await Promise.all([
+      evaluateSelector<Serialized<LaunchTemplateRawState>>(
+        context.account,
+        context.region,
+        LaunchTemplateEntity.selector,
+        state,
+      ),
+      evaluateSelector<LaunchTemplatesState>(
+        context.account,
+        context.region,
+        "EC2|DescribeLaunchTemplates|[]",
+        state,
+      ),
+    ]);
+    return (versionsState ?? []).map((versionState) => ({
+      ...versionState,
+      $launchTemplates: launchTemplatesState ?? [],
+    }));
   },
   components: {
     $metadata(val) {
@@ -190,15 +235,10 @@ export const LaunchTemplateEntity: TranslatedEntity<
       };
     },
     tags(val) {
-      return (
-        val.LaunchTemplateData?.TagSpecifications?.flatMap(
-          ({ Tags, ResourceType }) =>
-            Tags?.map(({ Key, Value }) => ({
-              key: ResourceType != null ? `${ResourceType}:${Key}` : Key,
-              val: Value,
-            })) ?? [],
-        ) ?? []
-      );
+      return val.$templateTags?.map((tag) => ({
+        key: tag.Key,
+        value: tag.Value,
+      }));
     },
 
     compute(val) {

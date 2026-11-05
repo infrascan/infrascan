@@ -179,7 +179,11 @@ export async function DescribeSubnets(
   const state: GenericState[] = [];
   getterDebug("Fetching state");
   const resolvers = [
-    { Key: "Filters", Selector: "EC2|DescribeVpcs|[]._result.Vpcs[].VpcId" },
+    {
+      Key: "Filters",
+      Selector:
+        "EC2|DescribeVpcs|[]._result.Vpcs[].[{Name: 'vpc-id', Values: [VpcId]}]",
+    },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
     context.account,
@@ -1139,7 +1143,7 @@ export async function GetManagedPrefixListEntries(
     {
       Key: "PrefixListId",
       Selector:
-        "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[?OwnerId != 'AWS'].PrefixListId[]",
+        "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[?OwnerId != 'AWS' || (starts_with(PrefixListName || '', 'com.amazonaws.') && (ends_with(PrefixListName || '', '.s3') || ends_with(PrefixListName || '', '.s3express') || ends_with(PrefixListName || '', '.dynamodb')))].PrefixListId[]",
     },
   ];
   const parameterQueue = (await resolveFunctionCallParameters(
