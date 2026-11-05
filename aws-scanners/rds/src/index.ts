@@ -34,6 +34,7 @@ export type {
   GraphState,
   RDSState,
   RDSInstance,
+  InstanceDetails,
   RDSClusterState,
   RDSProxyState,
   RDSGlobalClusterState,

@@ -15,7 +15,7 @@ It produces the following nodes:
 | `rds-proxy`          | `DBProxyArn`           | Region                                                     |
 | `rds-global-cluster` | `GlobalClusterArn`     | Account                                                    |
 
-Clusters cover Aurora (provisioned, Serverless v1 and v2) and non-Aurora Multi-AZ DB clusters. VPC, subnet and security group placement is recorded in each node's `network` component (cluster subnets are resolved through `DescribeDBSubnetGroups`). Secrets Manager secrets (cluster `MasterUserSecret`, proxy auth) and KMS keys are recorded on the node's state, but no edges are drawn to them.
+Instance nodes record their `DBInstanceArn` and endpoint (address, port, hosted zone) in `rds.instance`. Clusters cover Aurora (provisioned, Serverless v1 and v2) and non-Aurora Multi-AZ DB clusters. VPC, subnet and security group placement is recorded in each node's `network` component (cluster subnets are resolved through `DescribeDBSubnetGroups`). Secrets Manager secrets (cluster `MasterUserSecret`, proxy auth) and KMS keys are recorded on the node's state, but no edges are drawn to them.
 
 And the following edges:
 

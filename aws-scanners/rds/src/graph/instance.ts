@@ -38,8 +38,17 @@ export interface RDSState {
   activityStream?: ActivityStream;
 }
 
+export interface InstanceDetails {
+  arn?: string;
+  endpoint?: {
+    address?: string;
+    port?: number;
+    hostedZoneId?: string;
+  };
+}
+
 export type RDSInstance = BaseState<DescribeDBInstancesCommandInput> & {
-  rds: RDSState;
+  rds: RDSState & { instance?: InstanceDetails };
 };
 
 export type GraphState = RDSInstance;
@@ -212,6 +221,17 @@ export const RDSInstanceEntity: TranslatedEntity<
         activityStream: {
           streamName: val.ActivityStreamKinesisStreamName,
           kmsKeyId: val.ActivityStreamKmsKeyId,
+        },
+        instance: {
+          arn: val.DBInstanceArn,
+          endpoint:
+            val.Endpoint != null
+              ? {
+                  address: val.Endpoint.Address,
+                  port: val.Endpoint.Port,
+                  hostedZoneId: val.Endpoint.HostedZoneId,
+                }
+              : undefined,
         },
       };
     },

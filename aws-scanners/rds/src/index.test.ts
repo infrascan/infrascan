@@ -136,6 +136,11 @@ t.test(
             DBInstanceIdentifier: "standalone-mysql",
             DBInstanceArn: `${arnPrefix}:db:standalone-mysql`,
             DBName: "appdb",
+            Endpoint: {
+              Address: "standalone-mysql.x.us-east-1.rds.amazonaws.com",
+              Port: 3306,
+              HostedZoneId: "Z2R2ITUGPM61AM",
+            },
             DBSubnetGroup: {
               VpcId: "vpc-1",
               Subnets: [{ SubnetIdentifier: "subnet-a" }],
@@ -406,6 +411,17 @@ t.test(
     equal(standalone.network?.vpc?.id, "vpc-1");
     same(standalone.network?.securityGroups, ["sg-mysql"]);
     same(standalone.network?.targetSubnets, ["subnet-a"]);
+    same(standalone.rds.instance, {
+      arn: `${arnPrefix}:db:standalone-mysql`,
+      endpoint: {
+        address: "standalone-mysql.x.us-east-1.rds.amazonaws.com",
+        port: 3306,
+        hostedZoneId: "Z2R2ITUGPM61AM",
+      },
+    });
+    same(standalone.dns?.domains, [
+      "standalone-mysql.x.us-east-1.rds.amazonaws.com",
+    ]);
     const auroraWriter = instances.find(
       (node) => node.$graph.id === "aurora-prod-1",
     )!;

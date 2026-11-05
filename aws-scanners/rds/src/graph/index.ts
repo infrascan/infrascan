@@ -11,6 +11,7 @@ export {
   type EngineDetails,
   type AssociatedRole,
   type ActivityStream,
+  type InstanceDetails,
 } from "./instance";
 export {
   RDSClusterEntity,
