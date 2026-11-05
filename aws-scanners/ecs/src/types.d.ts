@@ -243,7 +243,6 @@ export interface ECSTask {
   stoppedAt?: string | Date;
   stoppedReason?: string;
   stoppingAt?: string | Date;
-  tags?: KVPair[];
   taskArn?: string;
   taskDefinitionArn?: string;
   ephemeralStorage?: EphemeralStorage;
