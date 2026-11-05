@@ -332,3 +332,34 @@ t.test("No Tasks found in the cluster", async ({ equal }) => {
   const iamRoles = await ECSScanner.getIamRoles!(connector);
   equal(iamRoles.length, 0);
 });
+
+t.test(
+  "Task definitions without a task role don't produce null IAM roles",
+  async ({ same }) => {
+    const roleConnector = buildFsConnector(
+      mkdtempSync(join(tmpdir(), "infrascan-test-state-")),
+    );
+    const taskDefinitionArn =
+      "arn:aws:ecs:us-east-1:000000000000:task-definition/app:1";
+    const executionRoleArn = "arn:aws:iam::000000000000:role/execution";
+    await roleConnector.onServiceScanCompleteCallback(
+      "000000000000",
+      "us-east-1",
+      "ECS",
+      "DescribeTaskDefinition",
+      [
+        {
+          _metadata: {
+            account: "000000000000",
+            region: "us-east-1",
+            timestamp: Date.now(),
+          },
+          _parameters: { taskDefinition: taskDefinitionArn },
+          _result: { taskDefinition: { taskDefinitionArn, executionRoleArn } },
+        },
+      ],
+    );
+    const roles = (await ECSScanner.getIamRoles?.(roleConnector)) ?? [];
+    same(roles, [{ roleArn: executionRoleArn, executor: taskDefinitionArn }]);
+  },
+);

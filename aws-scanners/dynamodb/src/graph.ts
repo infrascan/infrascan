@@ -175,10 +175,32 @@ function mapGlobalSecondaryIndex(
 /**
  * Alias the keys of a replica to allow it to be handled as though its a primary table.
  */
+/**
+ * Global table replicas share the table's name, and live at the same ARN in
+ * the replica's region.
+ */
+export function buildReplicaArn(
+  sourceTableArn: string | undefined,
+  replicaRegion: string | undefined,
+): string | undefined {
+  if (sourceTableArn == null || replicaRegion == null) {
+    return undefined;
+  }
+  const parts = sourceTableArn.split(":");
+  if (parts.length < 6 || parts[0] !== "arn") {
+    return undefined;
+  }
+  parts[3] = replicaRegion;
+  return parts.join(":");
+}
+
 function mapReplicaDescription(
   replica: Serialized<ReplicaDescription>,
+  sourceTable: Serialized<TableDescription>,
 ): Serialized<TableDescription> {
   return {
+    TableName: sourceTable.TableName,
+    TableArn: buildReplicaArn(sourceTable.TableArn, replica.RegionName),
     GlobalSecondaryIndexes: replica.GlobalSecondaryIndexes,
     SSEDescription: {
       KMSMasterKeyArn: replica.KMSMasterKeyId,
@@ -230,7 +252,11 @@ export const DynamoDbTableEntity: TranslatedEntity<
     // If the table has associated replicas - map their keys so they can be treated as actual tables, with a reference back to the primary
     if (table.Table?.Replicas != null) {
       table.Table.Replicas.forEach((replica) => {
-        const replicaAsTable = mapReplicaDescription(replica);
+        // The table itself is already graphed above
+        if (replica.RegionName === val._metadata.region) {
+          return;
+        }
+        const replicaAsTable = mapReplicaDescription(replica, table.Table!);
         tables.push(
           Object.assign(replicaAsTable, {
             tableType: {

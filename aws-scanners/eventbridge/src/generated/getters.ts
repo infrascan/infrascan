@@ -331,5 +331,6 @@ export async function getIamRoles(
     stateConnector,
   )) as EntityRoleData[];
   state.push(...ListRulesRoleState);
-  return state;
+  // Optional role fields (e.g. an ECS task definition without a task role) select as null
+  return state.filter(({ roleArn }) => roleArn != null);
 }

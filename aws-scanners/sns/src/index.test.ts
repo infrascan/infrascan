@@ -14,7 +14,7 @@ import {
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
 import SNSScanner from ".";
-import { SNSEntity } from "./graph";
+import { SNSEntity, SNSSubscriptionEntity } from "./graph";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
@@ -184,3 +184,52 @@ t.test("No sns topics returned from ListTopicsCommand", async ({ equal }) => {
     equal(edges.length, 0);
   }
 });
+
+t.test(
+  "Unconfirmed and deleted subscriptions are not graphed",
+  async ({ same }) => {
+    const topicArn = "arn:aws:sns:us-east-1:000000000000:topic";
+    const confirmedArn = `${topicArn}:6f2bd0a4-1b3f-4a7e-9f43-5d1e2b0c9a11`;
+    const nodes = SNSSubscriptionEntity.translate({
+      _metadata: {
+        account: "000000000000",
+        region: "us-east-1",
+        timestamp: Date.now(),
+      },
+      _parameters: { TopicArn: topicArn },
+      _result: {
+        $metadata: {},
+        Subscriptions: [
+          {
+            TopicArn: topicArn,
+            Protocol: "email",
+            Endpoint: "a@example.com",
+            SubscriptionArn: "PendingConfirmation",
+          },
+          {
+            TopicArn: topicArn,
+            Protocol: "email",
+            Endpoint: "b@example.com",
+            SubscriptionArn: "PendingConfirmation",
+          },
+          {
+            TopicArn: topicArn,
+            Protocol: "sqs",
+            Endpoint: "arn:aws:sqs:us-east-1:000000000000:q",
+            SubscriptionArn: "Deleted",
+          },
+          {
+            TopicArn: topicArn,
+            Protocol: "sqs",
+            Endpoint: "arn:aws:sqs:us-east-1:000000000000:q",
+            SubscriptionArn: confirmedArn,
+          },
+        ],
+      },
+    });
+    same(
+      nodes.map(({ SubscriptionArn }) => SubscriptionArn),
+      [confirmedArn],
+    );
+  },
+);

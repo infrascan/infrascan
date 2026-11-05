@@ -105,6 +105,13 @@ export function addNodeToGraphUnchecked<T extends BaseState>(
   graph: Graph,
   node: T,
 ) {
+  const id = node.$graph?.id as unknown;
+  if (typeof id !== "string" || id.length === 0) {
+    console.warn(
+      `Skipping ${node.$graph?.nodeType} node with no identifier, the resource is missing its id`,
+    );
+    return;
+  }
   try {
     graph.addNode(node);
   } catch (err: unknown) {
@@ -151,7 +158,7 @@ export function addEdgeToGraphUnchecked(graph: Graph, edge: SelectedEdge) {
 
 function getServiceFromArn(arn: string): string | undefined {
   const [, , service] = arn.split(":");
-  return service;
+  return service || undefined;
 }
 
 function formatRoleEdge(
@@ -205,6 +212,11 @@ export async function resolveResourceGlob(
   resourceArnFromPolicy: string,
   nodesMap: ServiceNodesMap,
 ): Promise<string[]> {
+  // Statements can omit `Resource` (e.g. `NotResource`, or trust policies), and
+  // policy documents are untyped JSON, so don't assume a string here.
+  if (typeof resourceArnFromPolicy !== "string") {
+    return [];
+  }
   if (resourceArnFromPolicy === "*") {
     // TODO: use actions to infer which resources are impacted by a wildcard
     // E.g. Actions: [s3:GetObject], Resources: [*]
@@ -218,19 +230,20 @@ export async function resolveResourceGlob(
     return [];
   }
 
-  if (nodesMap[resourceService] == null) {
+  const knownNodes = nodesMap[resourceService]?.filter(
+    (nodeId): nodeId is string => typeof nodeId === "string",
+  );
+  if (knownNodes == null) {
     console.warn("Unsupported service found in role policy", resourceService);
     return [];
   }
 
   if (resourceArnFromPolicy.includes("*")) {
-    return nodesMap[resourceService]
-      .filter(minimatch.filter(resourceArnFromPolicy, { partial: true }))
-      .filter((nodeId) => nodeId != null) as string[];
+    return knownNodes.filter(
+      minimatch.filter(resourceArnFromPolicy, { partial: true }),
+    );
   }
-  return nodesMap[resourceService].filter(
-    (knownArn) => knownArn === resourceArnFromPolicy,
-  );
+  return knownNodes.filter((knownArn) => knownArn === resourceArnFromPolicy);
 }
 
 export type EdgeResource = {
@@ -256,7 +269,16 @@ export async function generateEdgesForPolicyStatements(
       ? statements
       : [statements];
     for (const statement of mappedStatements) {
+      // Policies without a document yield null statements.
+      if (statement == null || typeof statement !== "object") {
+        continue; // eslint-disable-line no-continue
+      }
+      // Statements using `NotResource` (or trust policies, which use
+      // `Principal`) have no `Resource` to resolve.
       const { Resource } = statement;
+      if (Resource == null) {
+        continue; // eslint-disable-line no-continue
+      }
       if (Array.isArray(Resource)) {
         for (const resourceGlobs of Resource) {
           const resolvedResources = await resolveResourceGlob(

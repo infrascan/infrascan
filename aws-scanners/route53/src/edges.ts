@@ -36,6 +36,14 @@ type RecordsByService = {
   elb: ResourceRecordSet[];
 };
 
+function tryParseUrl(value: string): URL | undefined {
+  try {
+    return new URL(value);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function aggregateRoute53RecordsByConnectedService(
   route53Records: ResourceRecordSet[],
 ): Promise<RecordsByService> {
@@ -206,8 +214,8 @@ export async function resolveSnsEdges(
 
   return webhookSubscriptions
     .flatMap(({ Endpoint, TopicArn, SubscriptionArn }) => {
-      if (Endpoint && TopicArn) {
-        const parsedUrl = new URL(Endpoint);
+      const parsedUrl = Endpoint != null ? tryParseUrl(Endpoint) : undefined;
+      if (parsedUrl && TopicArn) {
         const hostname = `${parsedUrl.host}.`;
         const targetRecord = route53Records.find(
           ({ Name }) => Name === hostname,

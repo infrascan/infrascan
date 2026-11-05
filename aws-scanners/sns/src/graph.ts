@@ -206,11 +206,16 @@ export const SNSSubscriptionEntity: TranslatedEntity<
 
   translate(val) {
     return (
-      val._result.Subscriptions?.map((subscription) => ({
+      val._result.Subscriptions?.filter(
+        // Unconfirmed and deleted subscriptions report a placeholder
+        // ("PendingConfirmation" / "Deleted") instead of an ARN, so they have
+        // no identity to graph.
+        (subscription) => subscription?.SubscriptionArn?.startsWith("arn:"),
+      ).map((subscription) => ({
         ...subscription,
         $metadata: val._metadata,
         $parameters: val._parameters,
-      })).filter((enrichedSub) => enrichedSub != null) ?? []
+      })) ?? []
     );
   },
 

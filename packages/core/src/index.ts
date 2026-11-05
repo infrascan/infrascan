@@ -160,18 +160,43 @@ export function toLowerCase<T extends string>(val: T): Lowercase<T> {
   return val.toLowerCase() as Lowercase<T>;
 }
 
+function describeError(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 export async function* generateNodesFromEntity<
   E extends TranslatedEntity<BaseState, any, any>,
 >(connector: Connector, context: AwsContext, entity: E) {
-  const retrievedState = await entity.getState(connector, context);
-  const preparedState = retrievedState.flatMap((stateEntry) =>
-    entity.translate(stateEntry),
-  );
+  const retrievedState = (await entity.getState(connector, context)) ?? [];
+  // A single malformed resource must not abort graph generation for the whole
+  // account. Anything that can't be translated is logged and skipped.
+  const preparedState = retrievedState.flatMap((stateEntry) => {
+    try {
+      return entity.translate(stateEntry);
+    } catch (err: unknown) {
+      console.warn(
+        `Failed to translate state for ${entity.debugLabel}: ${describeError(
+          err,
+        )}`,
+      );
+      return [];
+    }
+  });
   const components = Object.entries(entity.components);
   for (const value of preparedState) {
-    const node = Object.fromEntries(
-      components.map(([label, factory]) => [label, factory(value)]),
-    ) as unknown as BaseState;
+    let node: BaseState;
+    try {
+      node = Object.fromEntries(
+        components.map(([label, factory]) => [label, factory(value)]),
+      ) as unknown as BaseState;
+    } catch (err: unknown) {
+      console.warn(
+        `Skipping ${
+          entity.debugLabel
+        } resource that could not be graphed: ${describeError(err)}`,
+      );
+      continue; // eslint-disable-line no-continue
+    }
     yield node;
   }
 }

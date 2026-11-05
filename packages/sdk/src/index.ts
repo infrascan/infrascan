@@ -275,7 +275,9 @@ export default class Infrascan {
           );
           for await (const node of nodeProducer) {
             addNodeToGraphUnchecked(graph, node);
-            serviceNodeIds.push(node.$graph.id);
+            if (typeof node.$graph?.id === "string") {
+              serviceNodeIds.push(node.$graph.id);
+            }
             serviceNodeMap[
               serviceScanner.arnLabel ?? serviceScanner.service.toLowerCase()
             ] = serviceNodeIds;
@@ -303,7 +305,9 @@ export default class Infrascan {
             );
             for await (const node of nodeProducer) {
               addNodeToGraphUnchecked(graph, node);
-              regionalServiceNodeIds.push(node.$graph.id);
+              if (typeof node.$graph?.id === "string") {
+                regionalServiceNodeIds.push(node.$graph.id);
+              }
             }
           }
 
@@ -339,8 +343,18 @@ export default class Infrascan {
     for (const scanner of allServices) {
       if (scanner.getEdges != null) {
         console.log(`Getting Edges: ${scanner.service}`);
-        const scannerEdges: SelectedEdge[] = await scanner.getEdges(connector);
-        scannerEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
+        try {
+          const scannerEdges: SelectedEdge[] = await scanner.getEdges(
+            connector,
+          );
+          scannerEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
+        } catch (err: unknown) {
+          console.warn(
+            `Failed to generate edges for ${scanner.service}: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+          );
+        }
       }
     }
 
@@ -350,13 +364,21 @@ export default class Infrascan {
         console.log(`Getting Role Edges: ${scanner.service}`);
         const resolvedRoles = await scanner.getIamRoles(connector);
         for (const { roleArn, executor } of resolvedRoles) {
-          const roleEdges: SelectedEdge[] = await generateEdgesForRole(
-            iamStorage,
-            roleArn,
-            executor,
-            serviceNodeMap,
-          );
-          roleEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
+          try {
+            const roleEdges: SelectedEdge[] = await generateEdgesForRole(
+              iamStorage,
+              roleArn,
+              executor,
+              serviceNodeMap,
+            );
+            roleEdges.forEach((edge) => addEdgeToGraphUnchecked(graph, edge));
+          } catch (err: unknown) {
+            console.warn(
+              `Failed to generate edges for role ${roleArn}: ${
+                err instanceof Error ? err.message : String(err)
+              }`,
+            );
+          }
         }
       }
     }

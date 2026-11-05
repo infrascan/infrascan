@@ -116,3 +116,54 @@ t.test("No Tables returned from ListTablesCommand", async ({ equal }) => {
     mockedDynamoClient.commandCalls(DescribeTableCommand).length;
   equal(describeTableCallCount, 0);
 });
+
+t.test(
+  "Global table replicas are graphed with their own ARN",
+  async ({ equal, same }) => {
+    const testContext = {
+      region: "us-east-1",
+      account: "1".repeat(12),
+    };
+    const dynamoClient = DynamoDBScanner.getClient(fromProcess(), testContext);
+    const mockedDynamoClient = mockClient(dynamoClient);
+
+    const testTable = "global-table";
+    const tableArn = `arn:aws:dynamodb:${testContext.region}:${testContext.account}:table/${testTable}`;
+    mockedDynamoClient.on(ListTablesCommand).resolves({
+      TableNames: [testTable],
+    });
+    mockedDynamoClient.on(DescribeTableCommand).resolves({
+      Table: {
+        TableName: testTable,
+        TableArn: tableArn,
+        // DescribeTable can list the region being queried alongside the others
+        Replicas: [{ RegionName: "us-east-1" }, { RegionName: "eu-west-1" }],
+      },
+    });
+
+    const replicaConnector = buildFsConnector(mkdtempSync(baseDirectory));
+    for (const scannerFn of DynamoDBScanner.getters) {
+      await scannerFn(dynamoClient, replicaConnector, testContext);
+    }
+
+    const nodes = [];
+    for (const entity of DynamoDBScanner.entities ?? []) {
+      for await (const node of generateNodesFromEntity(
+        replicaConnector,
+        testContext,
+        entity,
+      )) {
+        nodes.push(node as DynamoTable);
+      }
+    }
+
+    same(
+      nodes.map((node) => node.$graph.id),
+      [tableArn, tableArn.replace("us-east-1", "eu-west-1")],
+    );
+    const replica = nodes[1];
+    equal(replica.$graph.label, testTable);
+    equal(replica.$graph.parent, `${testContext.account}-eu-west-1`);
+    equal(replica.dynamo.tableType?.source, tableArn);
+  },
+);
