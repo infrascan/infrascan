@@ -1,0 +1,50 @@
+{
+  "name": "@infrascan/scanner-fuzzer",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Schema-driven fuzzer that drives the Infrascan SDK and AWS scanners with generated AWS responses to surface runtime failures",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "bin": {
+    "infrascan-fuzz": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "rm -rf dist ; tsup src/index.ts src/cli.ts --format cjs,esm --dts --sourcemap --target node18",
+    "fuzz": "node --enable-source-maps ./dist/cli.js",
+    "test": "tap src/**/*.test.ts --allow-incomplete-coverage -- --typescript",
+    "lint": "tsc --noEmit && prettier \"src/**/*.ts\" -c && eslint .",
+    "lint:fix": "prettier src/**/*.ts -w ; eslint . --fix",
+    "fmt": "prettier src/**/*.ts -w",
+    "clean": "rm -rf dist node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/infrascan/infrascan.git"
+  },
+  "author": "Liam Farrelly <liam@l3f7.dev> (https://whoisli.am/)",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "@infrascan/aws": "workspace:^",
+    "@infrascan/cytoscape-serializer": "workspace:^",
+    "@infrascan/informational-serializer": "workspace:^",
+    "@infrascan/sdk": "workspace:^",
+    "@smithy/core": "^3.36.1"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "catalog:",
+    "@aws-sdk/types": "catalog:",
+    "@infrascan/shared-types": "workspace:^",
+    "@infrascan/tsconfig": "workspace:*",
+    "@smithy/types": "catalog:",
+    "@types/node": "catalog:",
+    "tap": "^21",
+    "typescript": "5.8.3"
+  }
+}

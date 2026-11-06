@@ -1394,6 +1394,49 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  packages/scanner-fuzzer:
+    dependencies:
+      '@infrascan/aws':
+        specifier: workspace:^
+        version: link:../aws
+      '@infrascan/cytoscape-serializer':
+        specifier: workspace:^
+        version: link:../cytoscape-serializer
+      '@infrascan/informational-serializer':
+        specifier: workspace:^
+        version: link:../informational-serializer
+      '@infrascan/sdk':
+        specifier: workspace:^
+        version: link:../sdk
+      '@smithy/core':
+        specifier: ^3.36.1
+        version: 3.36.1
+    devDependencies:
+      '@aws-sdk/client-lambda':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@smithy/types':
+        specifier: 'catalog:'
+        version: 4.19.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   packages/sdk:
     dependencies:
       '@aws-sdk/client-ec2':
