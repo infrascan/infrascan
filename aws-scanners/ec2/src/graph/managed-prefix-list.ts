@@ -14,15 +14,14 @@ import type {
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
-import {
-  isPlaced,
-  placedParent,
-  resolvePlacements,
-  type Placement,
-  type Placements,
-} from "./ownership";
 
 export interface ManagedPrefixListDetails {
+  /**
+   * The `pl-…` id that route tables, security group rules and endpoints reference the list by. The node id is
+   * `<scanned account id>:<pl-…>`, since AWS managed lists have the same id in every account of a region and customer
+   * managed lists can be shared to other accounts through RAM.
+   */
+  prefixListId?: string;
   arn?: string;
   name?: string;
   /**
@@ -61,17 +60,21 @@ export type ManagedPrefixListRawState = State<
   DescribeManagedPrefixListsCommandInput
 > & {
   $entries?: PrefixListEntriesState[];
-  /**
-   * AWS managed lists have the same id in every account of a region and lists shared through RAM are reported by every
-   * participant, so each list is one node: owned by its `OwnerId`, and a root node for AWS managed lists.
-   */
-  $placements?: Placements;
 };
 
 type ManagedPrefixListWithEntries = ManagedPrefixList & {
   $entries?: PrefixListEntry[];
-  $placement?: Placement;
 };
+
+/**
+ * Prefix list node ids are scoped to the scanned account: `<account id>:<pl-…>`
+ */
+export function managedPrefixListNodeId(
+  account: string,
+  prefixListId: string,
+): string {
+  return `${account}:${prefixListId}`;
+}
 
 export const ManagedPrefixListEntity: TranslatedEntity<
   ManagedPrefixListState,
@@ -105,34 +108,15 @@ export const ManagedPrefixListEntity: TranslatedEntity<
         state,
       ),
     ]);
-    const $placements = await resolvePlacements(
-      state,
-      context,
-      (prefixListsState ?? []).flatMap(
-        (page) => page._result?.PrefixLists ?? [],
-      ),
-      {
-        getId: (prefixList) => prefixList.PrefixListId,
-        getOwner: (prefixList) => ({
-          account:
-            prefixList.OwnerId === "AWS" ? undefined : prefixList.OwnerId,
-        }),
-        ownerItemsSelector:
-          "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[]",
-      },
-    );
     return (prefixListsState ?? []).map((prefixListState) => ({
       ...prefixListState,
       $entries: entriesState ?? [],
-      $placements,
     }));
   },
 
   translate(val) {
     return (
-      val._result.PrefixLists?.filter((prefixList) =>
-        isPlaced(val.$placements, prefixList.PrefixListId),
-      ).map((prefixList) => {
+      val._result.PrefixLists?.map((prefixList) => {
         // Entries for one list can span several pages, each recorded as its own state item
         const pages = (val.$entries ?? []).filter(
           (page) => page._parameters?.PrefixListId === prefixList.PrefixListId,
@@ -140,7 +124,6 @@ export const ManagedPrefixListEntity: TranslatedEntity<
         return {
           $metadata: val._metadata,
           $parameters: val._parameters,
-          $placement: val.$placements?.[prefixList.PrefixListId!],
           ...prefixList,
           $entries:
             pages.length > 0
@@ -161,11 +144,11 @@ export const ManagedPrefixListEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.PrefixListId!,
+        id: managedPrefixListNodeId(val.$metadata.account, val.PrefixListId!),
         label: val.PrefixListName ?? val.PrefixListId!,
         nodeClass: "informational",
         nodeType: ManagedPrefixListEntity.nodeType,
-        parent: placedParent(val.$placement, val.$metadata),
+        parent: `${val.$metadata.account}-${val.$metadata.region}`,
       };
     },
 
@@ -173,13 +156,13 @@ export const ManagedPrefixListEntity: TranslatedEntity<
       return {
         provider: ManagedPrefixListEntity.provider,
         partition: val.$metadata.partition,
-        tenantId: val.OwnerId ?? val.$metadata.account,
+        tenantId: val.$metadata.account,
       };
     },
 
     resource(val) {
       return {
-        id: val.PrefixListId!,
+        id: managedPrefixListNodeId(val.$metadata.account, val.PrefixListId!),
         name: val.PrefixListName ?? val.PrefixListId!,
         category: ManagedPrefixListEntity.category,
         subcategory: ManagedPrefixListEntity.subcategory,
@@ -208,6 +191,7 @@ export const ManagedPrefixListEntity: TranslatedEntity<
 
     prefixList(val) {
       return {
+        prefixListId: val.PrefixListId,
         arn: val.PrefixListArn,
         name: val.PrefixListName,
         ownerId: val.OwnerId,

@@ -778,11 +778,11 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
     ["tgw-0core", undefined],
     // The attached VPC belongs to this account
     ["tgw-attach-0main", regionNodeId],
-    // AWS managed lists belong to no scanned account: root nodes
-    ["pl-s3", undefined],
-    ["pl-cloudfront", undefined],
-    ["pl-corp", regionNodeId],
-    ["pl-partner", regionNodeId],
+    // Prefix lists, AWS managed ones included, are scoped to the scanned account
+    [`${account}:pl-s3`, regionNodeId],
+    [`${account}:pl-cloudfront`, regionNodeId],
+    [`${account}:pl-corp`, regionNodeId],
+    [`${account}:pl-partner`, regionNodeId],
     ["dopt-0main", regionNodeId],
     ["fl-0vpc", regionNodeId],
     ["eipalloc-0nat", regionNodeId],
@@ -796,8 +796,6 @@ t.test("Every network node is added to the graph", async ({ equal, ok }) => {
   // Tenants come from the AWS owner field, not the scanned account
   const expectedTenants: Record<string, string> = {
     "tgw-0core": "999999999999",
-    "pl-s3": "AWS",
-    "pl-cloudfront": "AWS",
   };
   for (const entity of [
     RouteTableEntity,
@@ -959,27 +957,43 @@ t.test(
     const { connector } = await scan();
     const nodes = await buildNodes(connector);
 
-    const corp = node(nodes, ManagedPrefixListEntity.nodeType, "pl-corp");
+    const corp = node(
+      nodes,
+      ManagedPrefixListEntity.nodeType,
+      `${account}:pl-corp`,
+    );
     equal(corp.$graph.label, "corp");
+    // The raw id joins with route table, security group and endpoint references
+    equal(corp.prefixList.prefixListId, "pl-corp");
     // Entry pages are merged onto the list they were fetched for
     same(corp.prefixList.entries, [
       { cidr: "203.0.113.0/24", description: "office" },
       { cidr: "198.51.100.0/24", description: "dc" },
     ]);
     equal(corp.prefixList.maxEntries, 5);
-    const s3 = node(nodes, ManagedPrefixListEntity.nodeType, "pl-s3");
+    const s3 = node(
+      nodes,
+      ManagedPrefixListEntity.nodeType,
+      `${account}:pl-s3`,
+    );
+    equal(s3.prefixList.prefixListId, "pl-s3");
     equal(s3.prefixList.ownerId, "AWS");
+    equal(s3.tenant.tenantId, account);
     same(s3.prefixList.entries, [
       { cidr: "52.218.0.0/17", description: undefined },
     ]);
     const cloudfront = node(
       nodes,
       ManagedPrefixListEntity.nodeType,
-      "pl-cloudfront",
+      `${account}:pl-cloudfront`,
     );
     equal(cloudfront.prefixList.entries, undefined);
     // Each list only receives its own entries
-    const partner = node(nodes, ManagedPrefixListEntity.nodeType, "pl-partner");
+    const partner = node(
+      nodes,
+      ManagedPrefixListEntity.nodeType,
+      `${account}:pl-partner`,
+    );
     same(partner.prefixList.entries, [
       { cidr: "192.0.2.0/24", description: "partner" },
     ]);

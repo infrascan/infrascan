@@ -61,7 +61,7 @@ Each resource is its own `informational` node, with the AWS response mapped into
 | `ec2-vpc-peering-connection` | `pcx-…` | requester's region | `vpcPeeringConnection`: status, requester and accepter VPCs |
 | `ec2-transit-gateway` | `tgw-…` | owner's region | `transitGateway`: options, default route tables, CIDRs |
 | `ec2-transit-gateway-attachment` | `tgw-attach-…` (`tgw-attach-…:tgw-…` for peering) | resource owner's region | `transitGatewayAttachment`: resource, associated TGW route table, `attachmentId` |
-| `ec2-managed-prefix-list` | `pl-…` | owner's region (none for AWS managed lists) | `prefixList`: name, owner, entries (customer managed and AWS gateway endpoint lists) |
+| `ec2-managed-prefix-list` | `<account id>:pl-…` | region | `prefixList`: `prefixListId` (the `pl-…` id references use), name, owner, entries (customer managed and AWS gateway endpoint lists) |
 | `ec2-dhcp-options` | `dopt-…` | region | `dhcpOptions`: configurations |
 | `ec2-flow-log` | `fl-…` | region | `flowLog`: logged resource, traffic type, destination |
 | `ec2-elastic-ip` | `eipalloc-…` | region | `elasticIp`: association, interface, instance |
@@ -72,16 +72,17 @@ Every node's own tags are in the top-level `tags` component as `{ key, value }` 
 
 ### Shared, cross-account and cross-region resources
 
-Transit gateways and their attachments shared through RAM, VPC peering connections between two accounts or two regions, prefix lists shared through RAM and AWS managed prefix lists (whose `pl-…` id is the same in every account of a region) are reported by more than one scan, but each is one node. Its `tenant.tenantId` is the owner AWS reports, not the scanning account, and only the owner's scan places it in the graph:
+Transit gateways and their attachments shared through RAM and VPC peering connections between two accounts or two regions are reported by more than one scan, but each is one node. Its `tenant.tenantId` is the owner AWS reports, not the scanning account, and only the owner's scan places it in the graph:
 
 | Node type | Owner |
 | --- | --- |
 | `ec2-transit-gateway` | `OwnerId`, in the scanned region |
 | `ec2-transit-gateway-attachment` | `ResourceOwnerId`, in the scanned region; for peering attachments `TransitGatewayOwnerId` |
 | `ec2-vpc-peering-connection` | requester `OwnerId`, in the requester `Region` |
-| `ec2-managed-prefix-list` | `OwnerId`, in the scanned region; AWS managed lists (`OwnerId: AWS`) have no owning account |
 
-The owner's scan puts the node under its region. Another scan that reports the resource leaves it out if the owner's account and region reported it in the same state, and otherwise (owner not scanned, or its call failed) adds it as a root node with no parent. AWS managed lists are always root nodes, and every account reports them with the same content. So the node, its tenant and its parent do not depend on the order in which accounts are scanned or inserted. The two ends of a transit gateway peering share an attachment id but are each reported against their own transit gateway, so each end is its own node, keyed `<attachment id>:<transit gateway id>`.
+The owner's scan puts the node under its region. Another scan that reports the resource leaves it out if the owner's account and region reported it in the same state, and otherwise (owner not scanned, or its call failed) adds it as a root node with no parent. So the node, its tenant and its parent do not depend on the order in which accounts are scanned or inserted. The two ends of a transit gateway peering share an attachment id but are each reported against their own transit gateway, so each end is its own node, keyed `<attachment id>:<transit gateway id>`.
+
+Managed prefix lists are scoped to the scanned account instead: AWS managed lists have the same `pl-…` id in every account of a region and customer managed lists can be shared through RAM, so each scanned account gets its own node, keyed `<account id>:<pl-…>`, with that account as tenant and its region as parent. The `pl-…` id that route tables, security group rules and endpoints reference is in `prefixList.prefixListId`, and the list's owner (`AWS` for AWS managed lists) in `prefixList.ownerId`.
 
 ### Subnet route table and network ACL
 

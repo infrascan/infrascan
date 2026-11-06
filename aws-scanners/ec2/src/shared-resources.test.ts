@@ -199,14 +199,10 @@ async function scanAll(): Promise<Connector> {
 async function buildGraph(connector: Connector, order: Scan[]) {
   const graph = Graph();
   const errors: string[] = [];
-  const conflicting: BaseState[] = [];
   const insert = (node: BaseState) => {
     try {
       graph.addNode(node);
     } catch (err) {
-      if (err instanceof NodeConflictError) {
-        conflicting.push(node);
-      }
       errors.push(
         `${node.$graph.id}: ${
           err instanceof NodeConflictError
@@ -233,16 +229,7 @@ async function buildGraph(connector: Connector, order: Scan[]) {
       }
     }
   }
-  return { graph, errors, conflicting };
-}
-
-/**
- * A node without the per-scan bookkeeping (`$metadata` timestamp)
- */
-function facts(node: unknown) {
-  const { $metadata, incomingEdges, outgoingEdges, parent, children, ...rest } =
-    node as Record<string, unknown>;
-  return rest;
+  return { graph, errors };
 }
 
 const expected: [string, string | undefined, string][] = [
@@ -260,46 +247,41 @@ const expected: [string, string | undefined, string][] = [
   // Owned by the requester
   ["pcx-ab", `${accountA}-${euWest1}`, accountA],
   ["pcx-xr", `${accountA}-${euWest1}`, accountA],
-  // AWS managed lists belong to no scanned account
-  ["pl-s3", undefined, "AWS"],
-  ["pl-s3-use1", undefined, "AWS"],
-  ["pl-shared", `${accountA}-${euWest1}`, accountA],
+  // Prefix lists are scoped to the scanned account: the AWS managed list and the list A shares with B are one node
+  // per account, each under that account's region
+  [`${accountA}:pl-s3`, `${accountA}-${euWest1}`, accountA],
+  [`${accountB}:pl-s3`, `${accountB}-${euWest1}`, accountB],
+  [`${accountA}:pl-s3-use1`, `${accountA}-${usEast1}`, accountA],
+  [`${accountA}:pl-shared`, `${accountA}-${euWest1}`, accountA],
+  [`${accountB}:pl-shared`, `${accountB}-${euWest1}`, accountB],
 ];
 
 t.test(
-  "Resources reported by several accounts and regions map to one node, whatever the scan order",
+  "Shared resources map to one node (prefix lists to one per account), whatever the scan order",
   async ({ same, equal, ok }) => {
     const connector = await scanAll();
 
     for (const order of [scans, [...scans].reverse()]) {
       const label = order.map(({ account }) => account).join(" then ");
-      const { graph, errors, conflicting } = await buildGraph(connector, order);
-      // Every account reports the AWS managed list with the same content, so the only conflict is an identical copy
-      // of a node that is already in the graph: nothing is dropped
-      same(
-        errors,
-        ["pl-s3: NodeConflictError"],
-        `${label}: no node is dropped`,
-      );
-      for (const duplicate of conflicting) {
-        same(
-          facts(duplicate),
-          facts(graph.getNode(duplicate.$graph.id)),
-          `${label}: ${duplicate.$graph.id} duplicate is identical`,
-        );
-      }
+      const { graph, errors } = await buildGraph(connector, order);
+      same(errors, [], `${label}: no node conflicts or is dropped`);
       for (const [id, parent, tenant] of expected) {
         const node = graph.getNode(id);
         ok(node, `${label}: ${id} exists`);
         equal(node?.parent?.$graph.id, parent, `${label}: ${id} parent`);
         equal(node?.tenant.tenantId, tenant, `${label}: ${id} tenant`);
       }
-      // The AWS managed list has its entries whichever account's copy is used
-      same(
-        (graph.getNode("pl-s3") as unknown as Record<string, any>)?.prefixList
-          ?.entries,
-        [{ cidr: "52.218.0.0/17", description: undefined }],
-      );
+      // Each account's copy of the AWS managed list keeps the raw id and its entries
+      for (const account of [accountA, accountB]) {
+        const prefixList = (
+          graph.getNode(`${account}:pl-s3`) as unknown as Record<string, any>
+        )?.prefixList;
+        equal(prefixList?.prefixListId, "pl-s3");
+        equal(prefixList?.ownerId, "AWS");
+        same(prefixList?.entries, [
+          { cidr: "52.218.0.0/17", description: undefined },
+        ]);
+      }
       equal(
         (
           graph.getNode("tgw-attach-peer:tgw-use1") as unknown as Record<
@@ -340,6 +322,10 @@ t.test(
     ]);
     same(await ids(accountB, euWest1, "ec2-vpc-peering-connection"), []);
     same(await ids(accountA, usEast1, "ec2-vpc-peering-connection"), []);
-    same(await ids(accountB, euWest1, "ec2-managed-prefix-list"), ["pl-s3"]);
+    // Prefix lists are not placed by owner: every account emits its own
+    same(await ids(accountB, euWest1, "ec2-managed-prefix-list"), [
+      `${accountB}:pl-s3`,
+      `${accountB}:pl-shared`,
+    ]);
   },
 );

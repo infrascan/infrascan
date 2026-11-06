@@ -203,8 +203,7 @@ const CloudWatchLogsScanner: ScannerDefinition<
     // gateway endpoint lists (com.amazonaws.<region>.s3, .s3express, .dynamodb): the lists a route table can route to
     // through a gateway endpoint. That is at most three AWS managed lists per region, whatever else AWS publishes.
     // A selector reads the state of a single function and parameters are zipped by index rather than concatenated, so
-    // "customer lists plus AWS lists referenced by routes or security group rules" cannot be expressed here. Selecting by
-    // name also keeps AWS managed list nodes identical in every account, as one node is shared across accounts.
+    // "customer lists plus AWS lists referenced by routes or security group rules" cannot be expressed here.
     {
       fn: "GetManagedPrefixListEntries",
       parameters: [

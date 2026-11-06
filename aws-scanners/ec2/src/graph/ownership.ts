@@ -18,7 +18,7 @@ export type Placements = Record<string, Placement>;
 export interface OwnerScope {
   /**
    * The AWS account that owns the resource, taken from the resource's own owner field. Undefined when the owner is not
-   * an account (e.g. AWS managed prefix lists, whose owner is `AWS`).
+   * known or is not an account, in which case the node is always placed as an observer.
    */
   account?: string;
   /**
