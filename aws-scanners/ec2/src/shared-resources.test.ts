@@ -271,15 +271,24 @@ t.test(
         equal(node?.parent?.$graph.id, parent, `${label}: ${id} parent`);
         equal(node?.tenant.tenantId, tenant, `${label}: ${id} tenant`);
       }
-      // Each account's copy of the AWS managed list keeps the raw id and its entries
+      // Each account's copy keeps the raw id; the shared customer list has its entries in both accounts, the AWS
+      // managed list (referenced by no route or rule here) has none
       for (const account of [accountA, accountB]) {
-        const prefixList = (
+        const s3 = (
           graph.getNode(`${account}:pl-s3`) as unknown as Record<string, any>
         )?.prefixList;
-        equal(prefixList?.prefixListId, "pl-s3");
-        equal(prefixList?.ownerId, "AWS");
-        same(prefixList?.entries, [
-          { cidr: "52.218.0.0/17", description: undefined },
+        equal(s3?.prefixListId, "pl-s3");
+        equal(s3?.ownerId, "AWS");
+        equal(s3?.entries, undefined);
+        const shared = (
+          graph.getNode(`${account}:pl-shared`) as unknown as Record<
+            string,
+            any
+          >
+        )?.prefixList;
+        equal(shared?.prefixListId, "pl-shared");
+        same(shared?.entries, [
+          { cidr: "203.0.113.0/24", description: undefined },
         ]);
       }
       equal(

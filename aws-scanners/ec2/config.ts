@@ -199,25 +199,11 @@ const CloudWatchLogsScanner: ScannerDefinition<
         response: "NextToken",
       },
     },
-    // Entries are fetched for customer managed lists, which are bounded by their MaxEntries, and for the AWS managed
-    // gateway endpoint lists (com.amazonaws.<region>.s3, .s3express, .dynamodb): the lists a route table can route to
-    // through a gateway endpoint. That is at most three AWS managed lists per region, whatever else AWS publishes.
-    // A selector reads the state of a single function and parameters are zipped by index rather than concatenated, so
-    // "customer lists plus AWS lists referenced by routes or security group rules" cannot be expressed here.
-    {
-      fn: "GetManagedPrefixListEntries",
-      parameters: [
-        {
-          Key: "PrefixListId",
-          Selector:
-            "EC2|DescribeManagedPrefixLists|[]._result.PrefixLists[?OwnerId != 'AWS' || (starts_with(PrefixListName || '', 'com.amazonaws.') && (ends_with(PrefixListName || '', '.s3') || ends_with(PrefixListName || '', '.s3express') || ends_with(PrefixListName || '', '.dynamodb')))].PrefixListId[]",
-        },
-      ],
-      paginationToken: {
-        request: "NextToken",
-        response: "NextToken",
-      },
-    },
+    // GetManagedPrefixListEntries is deliberately absent from the getters: the lists to fetch (customer managed lists
+    // plus the lists that route table routes or security group rules reference) join three functions' state, which a
+    // selector cannot express (it reads one function's state, and parameters are zipped by index rather than
+    // concatenated). It is implemented by hand in src/getters.ts and registered after DescribeManagedPrefixLists in
+    // src/index.ts.
     {
       fn: "DescribeDhcpOptions",
       paginationToken: {

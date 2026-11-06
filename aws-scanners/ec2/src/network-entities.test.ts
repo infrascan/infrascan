@@ -699,13 +699,13 @@ t.test("Network getters paginate and fan out", async ({ equal, same }) => {
   equal(mocked.commandCalls(DescribeVpcsCommand).length, 2);
   equal(mocked.commandCalls(DescribeRouteTablesCommand).length, 2);
   equal(mocked.commandCalls(DescribeManagedPrefixListsCommand).length, 2);
-  // Entries are fetched for customer managed lists and the AWS managed gateway endpoint lists (s3), not for other AWS
-  // managed lists (cloudfront)
+  // Entries are fetched for customer managed lists and for AWS managed lists a route or rule references (s3, by a
+  // route), not for unreferenced AWS managed lists (cloudfront); sorted by id
   same(
     mocked
       .commandCalls(GetManagedPrefixListEntriesCommand)
       .map((call) => call.args[0].input.PrefixListId),
-    ["pl-s3", "pl-corp", "pl-corp", "pl-partner"],
+    ["pl-corp", "pl-corp", "pl-partner", "pl-s3"],
   );
   // One call per (VPC, attribute) pair, across both DescribeVpcs pages
   same(

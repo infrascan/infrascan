@@ -20,11 +20,11 @@ import {
   DescribeTransitGatewayAttachments,
   DescribeVpnGateways,
   DescribeManagedPrefixLists,
-  GetManagedPrefixListEntries,
   DescribeDhcpOptions,
   DescribeFlowLogs,
   DescribeAddresses,
 } from "./generated/getters";
+import { GetManagedPrefixListEntries } from "./getters";
 import {
   DhcpOptionsEntity,
   EgressOnlyInternetGatewayEntity,
@@ -72,6 +72,8 @@ const EC2Scanner: ServiceModule<EC2Client, "aws"> = {
     DescribeTransitGatewayAttachments,
     DescribeVpnGateways,
     DescribeManagedPrefixLists,
+    // Hand-written: reads the DescribeSecurityGroups, DescribeRouteTables and DescribeManagedPrefixLists state above.
+    // The SDK awaits each getter in array order, so it must stay after all three.
     GetManagedPrefixListEntries,
     DescribeDhcpOptions,
     DescribeFlowLogs,

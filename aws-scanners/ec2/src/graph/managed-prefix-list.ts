@@ -33,8 +33,8 @@ export interface ManagedPrefixListDetails {
   state?: string;
   version?: number;
   /**
-   * Fetched for customer managed lists and for the AWS managed gateway endpoint lists (`com.amazonaws.<region>.s3`,
-   * `.s3express` and `.dynamodb`), undefined for other AWS managed lists
+   * Fetched for customer managed lists and for AWS managed lists that a scanned route or security group rule
+   * references, undefined for other AWS managed lists
    */
   entries?: { cidr?: string; description?: string }[];
 }
