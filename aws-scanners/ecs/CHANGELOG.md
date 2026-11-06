@@ -1,5 +1,11 @@
 # @infrascan/aws-ecs-scanner
 
+## 0.8.0
+
+### Minor Changes
+
+- [#154](https://github.com/infrascan/infrascan/pull/154) [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Task tags are only reported in the top-level `tags` component: `ecs.task.tags` (a copy of the same tags) is removed, along with `tags` on the exported `ECSTask` type.
+
 ## 0.7.0
 
 ### Minor Changes

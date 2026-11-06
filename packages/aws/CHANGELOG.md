@@ -1,5 +1,14 @@
 # @infrascan/aws
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [[`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd), [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd), [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd), [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd)]:
+  - @infrascan/aws-ec2-scanner@0.10.0
+  - @infrascan/aws-ecs-scanner@0.8.0
+  - @infrascan/aws-rds-scanner@0.7.2
+
 ## 0.6.2
 
 ### Patch Changes

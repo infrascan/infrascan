@@ -1,5 +1,24 @@
 # @infrascan/aws-ec2-scanner
 
+## 0.10.0
+
+### Minor Changes
+
+- [#154](https://github.com/infrascan/infrascan/pull/154) [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Record more network facts as AWS reports them:
+
+  - Subnets: `subnet.subnetId`, `vpcId`, `availabilityZoneId`, `ownerId` and `customerOwnedIpv4Pool` (no longer listed as a `cidrBlock` in `network.reservedAddresses`), plus `subnet.routeTable` (`{ id, associationId?, main, implicit }`, `implicit` when the VPC's main route table applies) and `subnet.networkAcl` (`{ id, associationId, isDefault }`), joined from the route table and network ACL state and left out when that state is missing.
+  - Network interfaces: `operator`, `ipOwnerId`, every private IPv4 address (`privateIpAddresses`, with its public association), `ipv6Addresses` (also in `network.assignedAddresses.ipv6`), and `owner` (`{ type, id }`) when a NAT gateway or VPC endpoint lists the interface or the attachment names an instance.
+  - VPC endpoints: `serviceNetworkArn`, `resourceConfigurationArn`, `serviceRegion`, `lastError`, `failureReason`, `ipv4Prefixes` and `ipv6Prefixes`.
+  - VPCs no longer list the primary CIDR block twice in `network.reservedAddresses`.
+  - `GetManagedPrefixListEntries` is now a hand-written getter. It fetches entries for every customer managed prefix list and for every AWS managed list that a scanned route table route or security group rule (ingress or egress) references, so those AWS managed lists (e.g. S3, DynamoDB, CloudFront origin-facing) carry their entries. Lists are fetched once each in id order, each page with its own parameters, and a failure for one list does not stop the others.
+  - `DescribeSubnets` now sends a proper `vpc-id` filter; the previous bare VPC id was dropped by the SDK, so every call returned every subnet.
+
+  Tag shape changes: NAT gateway and network interface `tags` are now `{ key, value }` (previously `{ key, val }`), and are left out rather than `[]` when there are none. Launch template `tags` are now the template's own tags from `DescribeLaunchTemplates`; the `TagSpecifications` in the launch data (tags for launched resources, previously flattened into `tags` as `{ key: "<resourceType>:<key>", val }`) move to a new `launchTemplate` component as `tagSpecifications: [{ resourceType, tags: [{ key, value }] }]`, next to the template id, name, version number, version description and default-version flag.
+
+- [#154](https://github.com/infrascan/infrascan/pull/154) [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Map transit gateways, transit gateway attachments and VPC peering connections that several scanned accounts or regions report (RAM shared, cross-account, cross-region) to one node each. `tenant.tenantId` now comes from the AWS owner field (`OwnerId`, `ResourceOwnerId`, the peering requester's `OwnerId`) instead of the scanning account. The node sits under the owner's region when the owner's account and region were scanned, and is otherwise a root node with no parent. Previously the second copy was dropped as a node conflict and the survivor's tenant and parent depended on scan order. Transit gateway peering attachments are now keyed `<attachment id>:<transit gateway id>`, one node per end, with the attachment id in `transitGatewayAttachment.attachmentId`.
+
+  Managed prefix list node ids (and `resource.id`) are now `<account id>:<pl-…>` for every list, customer and AWS managed, because AWS managed lists have the same id in every account of a region and customer managed lists can be shared through RAM. Each scanned account gets its own node, with that account as tenant and its region as parent. The `pl-…` id that route tables, security group rules and endpoints reference is in the new `prefixList.prefixListId`.
+
 ## 0.9.0
 
 ### Minor Changes
