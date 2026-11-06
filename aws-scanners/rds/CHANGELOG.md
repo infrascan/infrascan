@@ -1,5 +1,11 @@
 # @infrascan/aws-rds-scanner
 
+## 0.7.2
+
+### Patch Changes
+
+- [#154](https://github.com/infrascan/infrascan/pull/154) [`102745fcfb6e6d7275b06665746d2097c4a167dd`](https://github.com/infrascan/infrascan/commit/102745fcfb6e6d7275b06665746d2097c4a167dd) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Record the instance ARN and endpoint (address, port and hosted zone) on `rds-instance` nodes in `rds.instance`.
+
 ## 0.7.1
 
 ### Patch Changes
