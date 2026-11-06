@@ -2,7 +2,21 @@
 
 A scanner module for AWS API Gateway, designed to be used with the [@infrascan/sdk](../../packages/sdk).
 
-This module pulls information about the API Gateways in an AWS account by calling: `GetApis`, and `GetDomainNames`.
+This module pulls information about the API Gateway v2 (HTTP and WebSocket) APIs in an AWS account by calling: `GetApis`, `GetDomainNames`, `GetRoutes`, `GetIntegrations`, `GetAuthorizers` and `GetStages`.
+
+## Graph
+
+APIs are graphed as visual nodes, keyed by their ARN (`arn:aws:apigateway:{region}::/apis/{apiId}`). Their routes, integrations, authorizers and stages are graphed as informational nodes beneath the API.
+
+Edges are derived from routes, so integrations and authorizers which no route uses don't produce edges:
+
+- API → the resource each route's integration invokes, labelled with the routes that use it. Supported targets are Lambda functions (by ARN, alias or invocation URI), SQS queues, Step Functions state machines, EventBridge buses, Kinesis streams, and load balancers behind a VPC link (resolved from the listener). HTTP URLs aren't resolved.
+- API → the Lambda function behind a route's lambda authorizer.
+- API → the log group each stage writes access logs to.
+
+Roles assumed by integrations and authorizers (`CredentialsArn`) are reported so IAM permission edges are attributed to the API.
+
+Stage edges are declared in [config.ts](./config.ts) and generated, while route edges, which require routes to be joined to their integrations and authorizers, are resolved in [src/edges.ts](./src/edges.ts) using [src/targets.ts](./src/targets.ts).
 
 ## Quickstart
 
