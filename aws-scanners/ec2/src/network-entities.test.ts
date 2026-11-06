@@ -1305,18 +1305,36 @@ t.test(
     const nat = node(nodes, NatGatewayEntity.nodeType, "nat-0main");
     same(nat.tags, [{ key: "Name", value: "nat" }]);
 
-    // The launch template's own tags; TagSpecifications (tags for launched resources) are not the template's tags
+    // The launch template's own tags are its tags; TagSpecifications (tags for launched resources) are launch
+    // configuration in the launchTemplate component, not merged into the node's tags
     const template = node(nodes, LaunchTemplateEntity.nodeType, "lt-0web");
     same(template.tags, [{ key: "team", value: "web" }]);
-    equal(JSON.stringify(template).includes("web-instance"), false);
+    same(template.launchTemplate, {
+      templateId: "lt-0web",
+      templateName: "web",
+      versionNumber: 3,
+      versionDescription: undefined,
+      isDefaultVersion: true,
+      tagSpecifications: [
+        {
+          resourceType: "instance",
+          tags: [{ key: "Name", value: "web-instance" }],
+        },
+      ],
+    });
 
-    // No node carries a tag array outside its top-level tags component
+    // No node carries its own tags outside the top-level tags component (launch template tag specifications are
+    // configuration for launched resources)
     for (const nodesOfType of Object.values(nodes)) {
       for (const entityNode of nodesOfType) {
         for (const tag of entityNode.tags ?? []) {
           same(Object.keys(tag).sort(), ["key", "value"]);
         }
-        const { tags, ...components } = entityNode;
+        const { tags, ...components } = structuredClone(entityNode) as Record<
+          string,
+          any
+        >;
+        delete components.launchTemplate?.tagSpecifications;
         equal(
           JSON.stringify(components).includes('"tags"'),
           false,

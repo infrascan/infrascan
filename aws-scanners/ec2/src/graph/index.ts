@@ -1,6 +1,7 @@
 export {
   LaunchTemplateEntity,
   type LaunchTemplateConfig,
+  type LaunchTemplateTagSpecification,
   type LaunchTemplateCompute,
   type LaunchTemplateNetworkInterface,
   type LaunchTemplateCapacity,

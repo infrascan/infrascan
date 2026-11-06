@@ -68,7 +68,7 @@ Each resource is its own `informational` node, with the AWS response mapped into
 
 Gateways, peering connections, transit gateway resources and Elastic IPs sit under the region rather than a VPC because they can be detached or span accounts; the VPC they are attached to is recorded in `network.vpc` where there is one. Subnet nodes are keyed by ARN, so a `subnet-…` id in a route table, NACL or endpoint matches the subnet node's `subnet.subnetId` (and its label).
 
-Every node's own tags are in the top-level `tags` component as `{ key, value }` pairs; no other component carries tags. A launch template's `tags` are the template's own tags (`DescribeLaunchTemplates`); the `TagSpecifications` in its launch data (tags applied to the instances, volumes etc. it launches) are not included.
+Every node's own tags are in the top-level `tags` component as `{ key, value }` pairs; no other component carries tags. A launch template's `tags` are the template's own tags (`DescribeLaunchTemplates`). The `TagSpecifications` in its launch data (tags it applies to the instances, volumes etc. it launches) are launch configuration, recorded as `launchTemplate.tagSpecifications: [{ resourceType, tags: [{ key, value }] }]` alongside the template id, name and version, and are not merged into `tags`.
 
 ### Shared, cross-account and cross-region resources
 

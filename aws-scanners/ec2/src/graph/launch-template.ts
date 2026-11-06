@@ -13,6 +13,7 @@ import type {
   AwsContext,
   BaseState,
   Connector,
+  KVPair,
   ReservedAddresses,
   Serialized,
   State,
@@ -20,12 +21,25 @@ import type {
   WithCallContext,
 } from "@infrascan/shared-types";
 
+/**
+ * Tags the template applies to a type of resource it launches (`LaunchTemplateData.TagSpecifications`). These are
+ * launch configuration, not the launch template's own tags, which are in the top-level `tags` component.
+ */
+export interface LaunchTemplateTagSpecification {
+  /**
+   * e.g. `instance`, `volume`, `network-interface`, `spot-instances-request`
+   */
+  resourceType?: string;
+  tags: KVPair[];
+}
+
 export interface LaunchTemplateConfig {
   templateId?: string;
   templateName?: string;
   versionNumber?: number;
   versionDescription?: string;
   isDefaultVersion?: boolean;
+  tagSpecifications?: LaunchTemplateTagSpecification[];
 }
 
 export interface LaunchTemplateCompute {
@@ -97,6 +111,7 @@ export interface LaunchTemplateStorage {
 
 export interface LaunchTemplateState
   extends BaseState<DescribeLaunchTemplateVersionsCommandInput> {
+  launchTemplate?: LaunchTemplateConfig;
   compute: LaunchTemplateCompute;
   capacity: LaunchTemplateCapacity;
   storage: LaunchTemplateStorage;
@@ -239,6 +254,26 @@ export const LaunchTemplateEntity: TranslatedEntity<
         key: tag.Key,
         value: tag.Value,
       }));
+    },
+
+    launchTemplate(val) {
+      return {
+        templateId: val.LaunchTemplateId,
+        templateName: val.LaunchTemplateName,
+        versionNumber: val.VersionNumber,
+        versionDescription: val.VersionDescription,
+        isDefaultVersion: val.DefaultVersion,
+        tagSpecifications: val.LaunchTemplateData?.TagSpecifications?.map(
+          (specification) => ({
+            resourceType: specification.ResourceType,
+            tags:
+              specification.Tags?.map((tag) => ({
+                key: tag.Key,
+                value: tag.Value,
+              })) ?? [],
+          }),
+        ),
+      };
     },
 
     compute(val) {
