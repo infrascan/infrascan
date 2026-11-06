@@ -39,7 +39,7 @@ The scanner only calls read-only APIs. It needs:
 }
 ```
 
-If a permission from `DescribeVpcAttribute` onwards is missing the scan still completes, the corresponding nodes (or VPC DNS attributes / prefix list entries) are simply absent. `GetManagedPrefixListEntries` is only called for customer managed prefix lists (bounded by their `MaxEntries`); AWS managed lists are identified by name.
+If a permission from `DescribeVpcAttribute` onwards is missing the scan still completes, the corresponding nodes (or VPC DNS attributes / prefix list entries / subnet route table and network ACL membership) are simply absent. `DescribeSubnets` is called once per VPC with a `vpc-id` filter. `GetManagedPrefixListEntries` is called, once per list and paginated, for every customer managed prefix list returned by `DescribeManagedPrefixLists` (including lists shared through RAM, bounded by their `MaxEntries`), and for every AWS managed list that a scanned route table route (`DestinationPrefixListId`) or security group rule (ingress or egress `PrefixListIds`) references; unreferenced AWS managed lists are identified by name only. A referenced id that `DescribeManagedPrefixLists` did not return is skipped, since there is no prefix list node to record it on. A failure for one list does not stop the others.
 
 ## Graph nodes
 
@@ -48,25 +48,49 @@ Each resource is its own `informational` node, with the AWS response mapped into
 | Node type | Id | Parent | Component |
 | --- | --- | --- | --- |
 | `ec2-vpc` | `vpc-…` | region | `vpc` (now including `enableDnsSupport` / `enableDnsHostnames` from `DescribeVpcAttribute`) |
-| `ec2-subnet` | subnet ARN (labelled `subnet-…`) | region | `subnet` |
+| `ec2-subnet` | subnet ARN (labelled `subnet-…`) | region | `subnet`: including `subnetId`, `vpcId`, `availabilityZoneId`, `ownerId`, `customerOwnedIpv4Pool`, and `routeTable` / `networkAcl` (see below) |
 | `ec2-security-group` | `sg-…` | region | `network.rules` (inbound) and `network.egressRules` (outbound) |
-| `ec2-network-interface` | `eni-…` | VPC | `networkInterface`: type, status, requester, attachment, source/dest check, Elastic IP |
+| `ec2-network-interface` | `eni-…` | VPC | `networkInterface`: type, status, requester, operator, attachment, source/dest check, Elastic IP, public IP owner, every private IPv4 and IPv6 address, and `owner` (see below) |
 | `ec2-nat-gateway` | `nat-…` | VPC | `natGateway`: connectivity type, state, subnet, addresses |
 | `ec2-route-table` | `rtb-…` | VPC | `routeTable`: main flag, subnet/gateway associations, propagating VGWs, routes with their AWS target fields |
 | `ec2-network-acl` | `acl-…` | VPC | `networkAcl`: default flag, subnet associations, entries |
-| `ec2-vpc-endpoint` | `vpce-…` | VPC | `vpcEndpoint`: type, service, route tables, subnets, interfaces, DNS; policy in `resource.policy` |
+| `ec2-vpc-endpoint` | `vpce-…` | VPC | `vpcEndpoint`: type, service (or `serviceNetworkArn` / `resourceConfigurationArn` for VPC Lattice endpoints), `serviceRegion`, route tables, subnets, interfaces, IP prefixes, DNS, `lastError` / `failureReason`; policy in `resource.policy` |
 | `ec2-internet-gateway` | `igw-…` | region | `internetGateway`: attachments |
 | `ec2-egress-only-internet-gateway` | `eigw-…` | region | `egressOnlyInternetGateway`: attachments |
 | `ec2-vpn-gateway` | `vgw-…` | region | `vpnGateway`: type, ASN, attachments |
-| `ec2-vpc-peering-connection` | `pcx-…` | region | `vpcPeeringConnection`: status, requester and accepter VPCs |
-| `ec2-transit-gateway` | `tgw-…` | region | `transitGateway`: options, default route tables, CIDRs |
-| `ec2-transit-gateway-attachment` | `tgw-attach-…` | region | `transitGatewayAttachment`: resource, associated TGW route table |
-| `ec2-managed-prefix-list` | `pl-…` | region | `prefixList`: name, owner, entries (customer managed lists only) |
+| `ec2-vpc-peering-connection` | `pcx-…` | requester's region | `vpcPeeringConnection`: status, requester and accepter VPCs |
+| `ec2-transit-gateway` | `tgw-…` | owner's region | `transitGateway`: options, default route tables, CIDRs |
+| `ec2-transit-gateway-attachment` | `tgw-attach-…` (`tgw-attach-…:tgw-…` for peering) | resource owner's region | `transitGatewayAttachment`: resource, associated TGW route table, `attachmentId` |
+| `ec2-managed-prefix-list` | `<account id>:pl-…` | region | `prefixList`: `prefixListId` (the `pl-…` id references use), name, owner, entries (customer managed lists, and AWS managed lists a route or security group rule references) |
 | `ec2-dhcp-options` | `dopt-…` | region | `dhcpOptions`: configurations |
 | `ec2-flow-log` | `fl-…` | region | `flowLog`: logged resource, traffic type, destination |
 | `ec2-elastic-ip` | `eipalloc-…` | region | `elasticIp`: association, interface, instance |
 
-Gateways, peering connections, transit gateway resources and Elastic IPs sit under the region rather than a VPC because they can be detached or span accounts; the VPC they are attached to is recorded in `network.vpc` where there is one. Subnet nodes are keyed by ARN, so a `subnet-…` id in a route table, NACL or endpoint matches the subnet node's label.
+Gateways, peering connections, transit gateway resources and Elastic IPs sit under the region rather than a VPC because they can be detached or span accounts; the VPC they are attached to is recorded in `network.vpc` where there is one. Subnet nodes are keyed by ARN, so a `subnet-…` id in a route table, NACL or endpoint matches the subnet node's `subnet.subnetId` (and its label).
+
+Every node's own tags are in the top-level `tags` component as `{ key, value }` pairs; no other component carries tags. A launch template's `tags` are the template's own tags (`DescribeLaunchTemplates`). The `TagSpecifications` in its launch data (tags it applies to the instances, volumes etc. it launches) are launch configuration, recorded as `launchTemplate.tagSpecifications: [{ resourceType, tags: [{ key, value }] }]` alongside the template id, name and version, and are not merged into `tags`.
+
+### Shared, cross-account and cross-region resources
+
+Transit gateways and their attachments shared through RAM and VPC peering connections between two accounts or two regions are reported by more than one scan, but each is one node. Its `tenant.tenantId` is the owner AWS reports, not the scanning account, and only the owner's scan places it in the graph:
+
+| Node type | Owner |
+| --- | --- |
+| `ec2-transit-gateway` | `OwnerId`, in the scanned region |
+| `ec2-transit-gateway-attachment` | `ResourceOwnerId`, in the scanned region; for peering attachments `TransitGatewayOwnerId` |
+| `ec2-vpc-peering-connection` | requester `OwnerId`, in the requester `Region` |
+
+The owner's scan puts the node under its region. Another scan that reports the resource leaves it out if the owner's account and region reported it in the same state, and otherwise (owner not scanned, or its call failed) adds it as a root node with no parent. So the node, its tenant and its parent do not depend on the order in which accounts are scanned or inserted. The two ends of a transit gateway peering share an attachment id but are each reported against their own transit gateway, so each end is its own node, keyed `<attachment id>:<transit gateway id>`.
+
+Managed prefix lists are scoped to the scanned account instead: AWS managed lists have the same `pl-…` id in every account of a region and customer managed lists can be shared through RAM, so each scanned account gets its own node, keyed `<account id>:<pl-…>`, with that account as tenant and its region as parent. The `pl-…` id that route tables, security group rules and endpoints reference is in `prefixList.prefixListId`, and the list's owner (`AWS` for AWS managed lists) in `prefixList.ownerId`.
+
+### Subnet route table and network ACL
+
+`subnet.routeTable` is `{ id, associationId?, main, implicit }`: the route table explicitly associated with the subnet, or, when there is no explicit association, the VPC's main route table (`implicit: true`, no `associationId`), which AWS applies to such subnets. `subnet.networkAcl` is `{ id, associationId, isDefault }`, from the network ACL association AWS reports for the subnet (every subnet has one, including subnets on the default ACL). Either is left out when the route tables or network ACLs could not be read.
+
+### Network interface owner
+
+`networkInterface.owner` is `{ type, id }` only when an AWS field names the owner exactly: a NAT gateway (`nat-gateway`) or VPC endpoint (`vpc-endpoint`) whose own record lists the interface id, or the attachment's `InstanceId` (`instance`). Interfaces of other services (Lambda, load balancers, RDS, transit gateway attachments) have no owner; their `interfaceType`, `requesterId`, `requesterManaged`, `operator` and `description` are kept as reported.
 
 ## Quickstart
 
@@ -81,6 +105,8 @@ infrascanClient.registerScanner(EC2Scanner);
 If you plan on scanning all of an AWS account, you should use the [@infrascan/aws](../../packages/aws) package.
 
 ## Contributing
+
+`GetManagedPrefixListEntries` is hand-written in [src/getters.ts](./src/getters.ts) rather than generated, because the lists it fetches join the prefix list, route table and security group state. It is registered after those getters in [src/index.ts](./src/index.ts); the SDK runs a scanner's getters in order.
 
 The majority of the scanner modules are autogenerated from their [config.ts](./config.ts) file. 
 

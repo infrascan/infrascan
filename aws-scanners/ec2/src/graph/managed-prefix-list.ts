@@ -16,6 +16,12 @@ import type {
 } from "@infrascan/shared-types";
 
 export interface ManagedPrefixListDetails {
+  /**
+   * The `pl-…` id that route tables, security group rules and endpoints reference the list by. The node id is
+   * `<scanned account id>:<pl-…>`, since AWS managed lists have the same id in every account of a region and customer
+   * managed lists can be shared to other accounts through RAM.
+   */
+  prefixListId?: string;
   arn?: string;
   name?: string;
   /**
@@ -27,7 +33,8 @@ export interface ManagedPrefixListDetails {
   state?: string;
   version?: number;
   /**
-   * Only fetched for customer managed lists, undefined for AWS managed lists
+   * Fetched for customer managed lists and for AWS managed lists that a scanned route or security group rule
+   * references, undefined for other AWS managed lists
    */
   entries?: { cidr?: string; description?: string }[];
 }
@@ -58,6 +65,16 @@ export type ManagedPrefixListRawState = State<
 type ManagedPrefixListWithEntries = ManagedPrefixList & {
   $entries?: PrefixListEntry[];
 };
+
+/**
+ * Prefix list node ids are scoped to the scanned account: `<account id>:<pl-…>`
+ */
+export function managedPrefixListNodeId(
+  account: string,
+  prefixListId: string,
+): string {
+  return `${account}:${prefixListId}`;
+}
 
 export const ManagedPrefixListEntity: TranslatedEntity<
   ManagedPrefixListState,
@@ -127,7 +144,7 @@ export const ManagedPrefixListEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.PrefixListId!,
+        id: managedPrefixListNodeId(val.$metadata.account, val.PrefixListId!),
         label: val.PrefixListName ?? val.PrefixListId!,
         nodeClass: "informational",
         nodeType: ManagedPrefixListEntity.nodeType,
@@ -145,7 +162,7 @@ export const ManagedPrefixListEntity: TranslatedEntity<
 
     resource(val) {
       return {
-        id: val.PrefixListId!,
+        id: managedPrefixListNodeId(val.$metadata.account, val.PrefixListId!),
         name: val.PrefixListName ?? val.PrefixListId!,
         category: ManagedPrefixListEntity.category,
         subcategory: ManagedPrefixListEntity.subcategory,
@@ -174,6 +191,7 @@ export const ManagedPrefixListEntity: TranslatedEntity<
 
     prefixList(val) {
       return {
+        prefixListId: val.PrefixListId,
         arn: val.PrefixListArn,
         name: val.PrefixListName,
         ownerId: val.OwnerId,

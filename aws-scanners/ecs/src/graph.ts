@@ -438,7 +438,6 @@ export const TaskEntity: TranslatedEntity<
           stoppedAt: val.stoppedAt,
           stoppedReason: val.stoppedReason,
           stoppingAt: val.stoppingAt,
-          tags: val.tags,
           taskArn: val.taskArn,
           taskDefinitionArn: val.taskDefinitionArn,
           ephemeralStorage: val.ephemeralStorage,

@@ -12,6 +12,13 @@ import type {
   TranslatedEntity,
   WithCallContext,
 } from "@infrascan/shared-types";
+import {
+  isPlaced,
+  placedParent,
+  resolvePlacements,
+  type Placement,
+  type Placements,
+} from "./ownership";
 
 export interface PeeredVpc {
   vpcId?: string;
@@ -65,14 +72,22 @@ function toPeeredVpc(
   };
 }
 
+/**
+ * DescribeVpcPeeringConnections state with the placement of each connection. A connection between two scanned accounts,
+ * or between two regions of one account, is reported on both sides but is one node, owned by the requester.
+ */
+export type VpcPeeringConnectionRawState = State<
+  DescribeVpcPeeringConnectionsCommandOutput,
+  DescribeVpcPeeringConnectionsCommandInput
+> & {
+  $placements?: Placements;
+};
+
 export const VpcPeeringConnectionEntity: TranslatedEntity<
   VpcPeeringConnectionState,
-  State<
-    DescribeVpcPeeringConnectionsCommandOutput,
-    DescribeVpcPeeringConnectionsCommandInput
-  >,
+  VpcPeeringConnectionRawState,
   WithCallContext<
-    VpcPeeringConnection,
+    VpcPeeringConnection & { $placement?: Placement },
     DescribeVpcPeeringConnectionsCommandInput
   >
 > = {
@@ -85,20 +100,39 @@ export const VpcPeeringConnectionEntity: TranslatedEntity<
   nodeType: "ec2-vpc-peering-connection",
   selector: "EC2|DescribeVpcPeeringConnections|[]",
 
-  getState(state, context) {
-    return evaluateSelector(
-      context.account,
-      context.region,
-      VpcPeeringConnectionEntity.selector,
+  async getState(state, context) {
+    const pages =
+      (await evaluateSelector<Serialized<VpcPeeringConnectionRawState>>(
+        context.account,
+        context.region,
+        VpcPeeringConnectionEntity.selector,
+        state,
+      )) ?? [];
+    const $placements = await resolvePlacements(
       state,
+      context,
+      pages.flatMap((page) => page._result?.VpcPeeringConnections ?? []),
+      {
+        getId: (connection) => connection.VpcPeeringConnectionId,
+        getOwner: (connection) => ({
+          account: connection.RequesterVpcInfo?.OwnerId,
+          region: connection.RequesterVpcInfo?.Region,
+        }),
+        ownerItemsSelector:
+          "EC2|DescribeVpcPeeringConnections|[]._result.VpcPeeringConnections[]",
+      },
     );
+    return pages.map((page) => ({ ...page, $placements }));
   },
 
   translate(val) {
     return (
-      val._result.VpcPeeringConnections?.map((connection) => ({
+      val._result.VpcPeeringConnections?.filter((connection) =>
+        isPlaced(val.$placements, connection.VpcPeeringConnectionId),
+      ).map((connection) => ({
         $metadata: val._metadata,
         $parameters: val._parameters,
+        $placement: val.$placements?.[connection.VpcPeeringConnectionId!],
         ...connection,
       })) ?? []
     );
@@ -112,14 +146,15 @@ export const VpcPeeringConnectionEntity: TranslatedEntity<
       };
     },
 
-    // Peered VPCs can be in other accounts or regions, so the connection sits under the region rather than a VPC
+    // Peered VPCs can be in other accounts or regions, so the connection sits under the requester's region rather than
+    // a VPC, or at the root when the requester's account and region were not scanned
     $graph(val) {
       return {
         id: val.VpcPeeringConnectionId!,
         label: val.VpcPeeringConnectionId!,
         nodeClass: "informational",
         nodeType: VpcPeeringConnectionEntity.nodeType,
-        parent: `${val.$metadata.account}-${val.$metadata.region}`,
+        parent: placedParent(val.$placement, val.$metadata),
       };
     },
 
@@ -127,7 +162,7 @@ export const VpcPeeringConnectionEntity: TranslatedEntity<
       return {
         provider: VpcPeeringConnectionEntity.provider,
         partition: val.$metadata.partition,
-        tenantId: val.$metadata.account,
+        tenantId: val.RequesterVpcInfo?.OwnerId ?? val.$metadata.account,
       };
     },
 

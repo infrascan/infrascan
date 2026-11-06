@@ -30,7 +30,7 @@ const connector = buildFsConnector(tmpDir);
 
 t.test(
   "State is pulled correctly from ECS, and formatted as expected",
-  async ({ ok, equal }) => {
+  async ({ ok, equal, same }) => {
     const testContext = {
       region: "us-east-1",
       account: "0".repeat(8),
@@ -87,6 +87,7 @@ t.test(
           taskArn,
           taskDefinitionArn: scheduledTaskDefArn,
           clusterArn,
+          tags: [{ key: "team", value: "jobs" }],
         },
       ],
     });
@@ -134,6 +135,7 @@ t.test(
       );
     }
 
+    let taskTagsChecked = false;
     for (const entity of ECSScanner.entities ?? []) {
       const nodeProducer = generateNodesFromEntity(
         connector,
@@ -151,8 +153,19 @@ t.test(
         equal(node.resource.category, entity.category);
         equal(node.resource.subcategory, entity.subcategory);
         ok((node as unknown as ECSState<unknown>).ecs);
+        // Tags only live in the top-level tags component
+        const { tags, ...components } = node;
+        equal(JSON.stringify(components).includes('"tags"'), false);
+        if (
+          entity.nodeType === "ecs-task" &&
+          node.$graph.id === scheduledTaskDefArn
+        ) {
+          same(tags, [{ key: "team", value: "jobs" }]);
+          taskTagsChecked = true;
+        }
       }
     }
+    ok(taskTagsChecked, "task tags were checked");
   },
 );
 

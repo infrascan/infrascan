@@ -1,6 +1,7 @@
 export {
   LaunchTemplateEntity,
   type LaunchTemplateConfig,
+  type LaunchTemplateTagSpecification,
   type LaunchTemplateCompute,
   type LaunchTemplateNetworkInterface,
   type LaunchTemplateCapacity,
@@ -16,6 +17,7 @@ export {
   NetworkInterfaceEntity,
   type NetworkInterfaceState,
   type NetworkInterfaceDetails,
+  type NetworkInterfaceOwner,
 } from "./network-interface";
 export {
   SecurityGroupEntity,
@@ -27,6 +29,8 @@ export {
   type SubnetOnLaunch,
   type SubnetState,
   type Subnet,
+  type SubnetRouteTable,
+  type SubnetNetworkAcl,
 } from "./subnet";
 export { VpcEntity, type VpcConfig, type VpcState } from "./vpc";
 export {
