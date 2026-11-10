@@ -42,6 +42,7 @@ catalog:
   "@aws-sdk/client-sqs": 3.1138.0
   "@aws-sdk/client-sfn": 3.1138.0
   "@aws-sdk/client-sts": 3.1138.0
+  "@aws-sdk/client-ram": 3.1138.0
   "@aws-sdk/client-rds": 3.1138.0
   "@aws-sdk/client-route-53": 3.1138.0
   "@aws-sdk/credential-providers": 3.1138.0
