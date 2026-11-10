@@ -209,6 +209,9 @@ catalogs:
     '@aws-sdk/client-s3':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-securitylake':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-sfn':
       specifier: 3.1138.0
       version: 3.1138.0
@@ -995,6 +998,46 @@ importers:
         specifier: ^21
         version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
 
+  aws-scanners/security-lake:
+    dependencies:
+      '@aws-sdk/client-securitylake':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   aws-scanners/sns:
     dependencies:
       '@aws-sdk/client-sns':
@@ -1557,6 +1600,10 @@ packages:
 
   '@aws-sdk/client-s3@3.1138.0':
     resolution: {integrity: sha512-U7+dA10/2mk9PCoZ4JknQhGaw0atZfEtxMHT+vRGFS8z7fO8bb+Grvq5B4XkiL5epyrWImv8KwLclYWMq/4znA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-securitylake@3.1138.0':
+    resolution: {integrity: sha512-RTV0+oMtbj94thfJzVDPexQK3kaFfmE8Ap/ISCAD+PySusHTjKrwI4kwtvKX4pJ5SStiynAoN3Edzn3SfAWuDw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sfn@3.1138.0':
@@ -5388,6 +5435,17 @@ snapshots:
       '@aws-sdk/credential-provider-node': 3.972.87
       '@aws-sdk/middleware-sdk-s3': 3.972.80
       '@aws-sdk/signature-v4-multi-region': 3.996.48
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-securitylake@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
       '@aws-sdk/types': 3.974.6
       '@smithy/core': 3.36.1
       '@smithy/fetch-http-handler': 5.8.0
