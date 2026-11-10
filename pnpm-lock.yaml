@@ -164,16 +164,34 @@ settings:
 
 catalogs:
   default:
+    '@aws-sdk/client-account':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-apigatewayv2':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-auto-scaling':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-cloudformation':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-cloudfront':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-cloudtrail':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-cloudwatch-logs':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-config-service':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-controltower':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-detective':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-dynamodb':
@@ -191,13 +209,31 @@ catalogs:
     '@aws-sdk/client-eventbridge':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-fms':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-guardduty':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-iam':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-inspector2':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-kinesis':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-lambda':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-macie2':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-organizations':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-ram':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-rds':
@@ -209,6 +245,9 @@ catalogs:
     '@aws-sdk/client-s3':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-securitylake':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-sfn':
       specifier: 3.1138.0
       version: 3.1138.0
@@ -216,6 +255,9 @@ catalogs:
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-sqs':
+      specifier: 3.1138.0
+      version: 3.1138.0
+    '@aws-sdk/client-sso-admin':
       specifier: 3.1138.0
       version: 3.1138.0
     '@aws-sdk/client-sts':
@@ -301,6 +343,46 @@ importers:
       vite:
         specifier: ^7.0.0
         version: 7.3.7(@types/node@24.19.2)(yaml@2.9.1)
+
+  aws-scanners/account:
+    dependencies:
+      '@aws-sdk/client-account':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
 
   aws-scanners/api-gateway:
     dependencies:
@@ -400,6 +482,46 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  aws-scanners/cloudformation:
+    dependencies:
+      '@aws-sdk/client-cloudformation':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   aws-scanners/cloudfront:
     dependencies:
       '@aws-sdk/client-cloudfront':
@@ -445,6 +567,46 @@ importers:
       eslint-config-codegen:
         specifier: workspace:^
         version: link:../../internal/eslint-config-codegen
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/cloudtrail:
+    dependencies:
+      '@aws-sdk/client-cloudtrail':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
       tap:
         specifier: ^21
         version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
@@ -519,6 +681,126 @@ importers:
       eslint-config-custom:
         specifier: workspace:*
         version: link:../../internal/eslint-config-custom
+
+  aws-scanners/config:
+    dependencies:
+      '@aws-sdk/client-config-service':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/control-tower:
+    dependencies:
+      '@aws-sdk/client-controltower':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/detective:
+    dependencies:
+      '@aws-sdk/client-detective':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
 
   aws-scanners/dynamodb:
     dependencies:
@@ -750,6 +1032,166 @@ importers:
         specifier: 5.8.3
         version: 5.8.3
 
+  aws-scanners/firewall-manager:
+    dependencies:
+      '@aws-sdk/client-fms':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/guardduty:
+    dependencies:
+      '@aws-sdk/client-guardduty':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/identity-center:
+    dependencies:
+      '@aws-sdk/client-sso-admin':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/inspector:
+    dependencies:
+      '@aws-sdk/client-inspector2':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   aws-scanners/kinesis:
     dependencies:
       '@aws-sdk/client-kinesis':
@@ -835,6 +1277,126 @@ importers:
       eslint-config-codegen:
         specifier: workspace:^
         version: link:../../internal/eslint-config-codegen
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/macie:
+    dependencies:
+      '@aws-sdk/client-macie2':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/organizations:
+    dependencies:
+      '@aws-sdk/client-organizations':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/ram:
+    dependencies:
+      '@aws-sdk/client-ram':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
       tap:
         specifier: ^21
         version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
@@ -995,6 +1557,46 @@ importers:
         specifier: ^21
         version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
 
+  aws-scanners/security-lake:
+    dependencies:
+      '@aws-sdk/client-securitylake':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   aws-scanners/sns:
     dependencies:
       '@aws-sdk/client-sns':
@@ -1137,7 +1739,7 @@ importers:
     dependencies:
       eslint:
         specifier: latest
-        version: 10.13.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@8.1.1)
     devDependencies:
       eslint-config-custom:
         specifier: workspace:^
@@ -1147,20 +1749,20 @@ importers:
     dependencies:
       eslint:
         specifier: latest
-        version: 10.13.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@8.1.1)
       eslint-config-prettier:
         specifier: latest
-        version: 10.1.8(eslint@10.13.0(supports-color@8.1.1))
+        version: 10.1.8(eslint@10.14.0(supports-color@8.1.1))
     devDependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.35.0
-        version: 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+        version: 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
       '@typescript-eslint/parser':
         specifier: ^8.35.0
-        version: 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+        version: 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
       eslint-config-airbnb-typescript:
         specifier: ^18.0.0
-        version: 18.0.0(@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))
+        version: 18.0.0(@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))
 
   internal/tsconfig: {}
 
@@ -1499,6 +2101,10 @@ packages:
     resolution: {integrity: sha512-H8BiG/2DnfwydVxD1uDPLa1s1sfhRnVTbD2OwzfTr3WlJzgbIzICDXxBTlTMjbWNNCe4VS9X55fco+JI34L9kw==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-account@3.1138.0':
+    resolution: {integrity: sha512-QWVRhMJANF1obR76+jrtFgE9TbTcK2EXW4Rrj4r2I4Lbry27UO5kaSA6pp44ghgMoi1Fp0eTGKO11AaTfHyoUQ==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-apigatewayv2@3.1138.0':
     resolution: {integrity: sha512-IN/EXS19Z7IruwJqPyTIl4tBOsnScVOvAZ9+gwZTyi5aZqg44PU8liZ5TNjAoP7pxjUwCS9M9iStLBJ7e/bh+A==}
     engines: {node: '>=20.0.0'}
@@ -1507,12 +2113,32 @@ packages:
     resolution: {integrity: sha512-4B/0JEnZsCd8KpvDpODYJMKhnMZ9fTTroU8EJcV8N+4fYFntUDxpkzvD4dDYE5v+lO3Kqh47aQHjB62EYxjPGg==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-cloudformation@3.1138.0':
+    resolution: {integrity: sha512-GBV/xZVcQYcYKt+LEqUOT/1Ti7XiDJUrTz81+hbnMkykz7R2xzOp4TboqGTmy+oJuUhmpH3Ea88C32I+3yzGOQ==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-cloudfront@3.1138.0':
     resolution: {integrity: sha512-ueaJiNV96p4JpKgPQn3AS48KPjURA4bivdK/B7+F1eXvWZ1AnrMnKeK0WtcPmkh/AfVMhmexwkESWifeSwncDg==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-cloudtrail@3.1138.0':
+    resolution: {integrity: sha512-jS7e1ZcDfNT3OOsopSc0R1h8DIIUZ0Q86/N7+Og67V2Q8MujQNUXkvYR8e3iMoiEcFoh0mjqjF9BRGUCdAdmsw==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-cloudwatch-logs@3.1138.0':
     resolution: {integrity: sha512-qM4z+DroG6I9W61WvToFyGzAHPb82DUopx33rszje6rNqAGqa90LpH+cJg7dTzyNPUzDuA+ik+6SyOeJH6ub8g==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-config-service@3.1138.0':
+    resolution: {integrity: sha512-xu2orH2EnZ74aNScXw9p5p4dPrTDFplXGnjiMYCpeyQkja83f/EMC8hBEUN+/YitNeLDZF3tHE3InTwVkNgssA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-controltower@3.1138.0':
+    resolution: {integrity: sha512-faTxc6Qwq10xHnC6pGsyGMqDwEjJmrqydfcgUvH27bYli/8yQlcIqzhGORnhgyqO9KF7sx8PimkDF0EjX6U12w==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-detective@3.1138.0':
+    resolution: {integrity: sha512-EljSk1gLuVgHRe1EeEp6HQsz69VcreUcE9vg/SKJofmClAUPPrs9SkV9Xl5vZb8JbyOzD/GvPzsaAoPmFojrKg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-dynamodb@3.1138.0':
@@ -1535,8 +2161,20 @@ packages:
     resolution: {integrity: sha512-28Y/DhsywKVppHjTvyhrJWO7vSE8G+QZ+HHt/9FAL1N2Uq2YdGEOs11bBO3urJcISf2S02W4uiFzYNfkKdl/aQ==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-fms@3.1138.0':
+    resolution: {integrity: sha512-Cy87J2sL5Utoe1rVKIj/YiHIthRImkqRXe5LiJjLuxGZpIwaeJ38QM4QY2eab9FEgjdVJ3gEoS51y4FmlaYtaw==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-guardduty@3.1138.0':
+    resolution: {integrity: sha512-TW5fSTU2+/P00CX87TqhyVtVBVpBqdSoHrAO5+tfb3GhXIr/vk+FyAle1BhFeoQ7ltJC6QM01rByEkmwc2hSVQ==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-iam@3.1138.0':
     resolution: {integrity: sha512-Vx/3K0NfzOJJHOlqcD1dWmwu/1acDKXCioSbZjFj4NwE8bOLS3pOCc8v4HN+Dq5jx9ekWXAwQmLJTbZLywdA6A==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-inspector2@3.1138.0':
+    resolution: {integrity: sha512-PZ9UIuBNE8qTi2/TbpMhnROb8R8sZH6sgc9N6yljoU0ZLDTzFZvQOimuBJcOjmkXiSXaccMldB/qSK9HYllKYw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-kinesis@3.1138.0':
@@ -1545,6 +2183,18 @@ packages:
 
   '@aws-sdk/client-lambda@3.1138.0':
     resolution: {integrity: sha512-NSUryc07wf5rb+jbVLJy47/VlxU792ZS9P5CGJmrWnL3DEMhrAOm+WMTIMeWz/lIcTOrAmDt1O/l8rLPvUD8uw==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-macie2@3.1138.0':
+    resolution: {integrity: sha512-yrhczgn+p+ZZ7vi5w23OFXzMgbGkrKtb9TD7V5DRAbhyE3+LaQ7G23lcLKC8wcVpTMxGOpTKWmLlCEqMvmQJJQ==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-organizations@3.1138.0':
+    resolution: {integrity: sha512-fNkKCXVjMNqWd2BVtLI6AWZsFi+QV2Ne70xlZqk1b8vFkGoKWVCwXKy7cKp4TwNB7f3EBN0dBjlAMma/JIXpCQ==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-ram@3.1138.0':
+    resolution: {integrity: sha512-DY6rY8ENa+qfPBr2scRcxxRvCX9eNZnSHJEvLwMVGPt1+RNPM7vMffm+kAtNbjD/1GVlHunTS0HWs7GXH/djUA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-rds@3.1138.0':
@@ -1559,6 +2209,10 @@ packages:
     resolution: {integrity: sha512-U7+dA10/2mk9PCoZ4JknQhGaw0atZfEtxMHT+vRGFS8z7fO8bb+Grvq5B4XkiL5epyrWImv8KwLclYWMq/4znA==}
     engines: {node: '>=20.0.0'}
 
+  '@aws-sdk/client-securitylake@3.1138.0':
+    resolution: {integrity: sha512-RTV0+oMtbj94thfJzVDPexQK3kaFfmE8Ap/ISCAD+PySusHTjKrwI4kwtvKX4pJ5SStiynAoN3Edzn3SfAWuDw==}
+    engines: {node: '>=20.0.0'}
+
   '@aws-sdk/client-sfn@3.1138.0':
     resolution: {integrity: sha512-ZeFLZ4wNpWB0NxPZNXySF/1hmc9ZDSrl2tVxGPgfOjWNiafKPvRYlZz/j56VO9FfIs9tMQHw48zYmDTUD+InbA==}
     engines: {node: '>=20.0.0'}
@@ -1569,6 +2223,10 @@ packages:
 
   '@aws-sdk/client-sqs@3.1138.0':
     resolution: {integrity: sha512-7S9KekgQHlFp6l5FVo+SF3hbHO3267KGPhoI2rRkGImZ6mMQthUr8sAhh0wiq6DVtKbwuenEL/1XtTI2uNQWYw==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-sso-admin@3.1138.0':
+    resolution: {integrity: sha512-EOdl9QxFM3PtoBI5duS61NOVCsXJDVstBYw6MTkvC2UtN0/NnVwAouv8Qn32NYgGA/sweom9lsUhnKSmLRGQvw==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sts@3.1138.0':
@@ -2497,6 +3155,9 @@ packages:
   '@smithy/core@3.36.1':
     resolution: {integrity: sha512-WC5W1Jrsfxu1y6LeqXMie7N14qmcdafij/Haye4feVlyMMXLGpYxBeOX6Ee1iRJbDzGG5LVman8U1rrt9MYFHA==}
     engines: {node: '>=18.0.0'}
+    deprecated: |-
+      Deprecated due to a bug in custom logger data redaction. Upgrade to the latest version. If you used a custom logger with this
+        version, review your logs and rotate any credentials or other secrets. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}
@@ -3526,8 +4187,8 @@ packages:
     resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  eslint@10.13.0:
-    resolution: {integrity: sha512-UohDjD4zSzEwhf58M3O7vc/ycc8O1I7dNlhtD0WxE8Px8EHNJKtUwzBqrzeGhisRuv2ag4sAYswszCJRgKXYUg==}
+  eslint@10.14.0:
+    resolution: {integrity: sha512-T0pNsxkb9IKmtQjhpK3d7nWOpFv+YHuMbTJnSVMoQblF0onvXfErrtp4V1jHtsQPan7dKaGVD0q1WCXnzMF31A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     hasBin: true
     peerDependencies:
@@ -5221,6 +5882,17 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-account@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-apigatewayv2@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
@@ -5243,6 +5915,17 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-cloudformation@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-cloudfront@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
@@ -5254,7 +5937,51 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-cloudtrail@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-cloudwatch-logs@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-config-service@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-controltower@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-detective@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/credential-provider-node': 3.972.87
@@ -5324,7 +6051,40 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-fms@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-guardduty@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-iam@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-inspector2@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/credential-provider-node': 3.972.87
@@ -5347,6 +6107,39 @@ snapshots:
       tslib: 2.8.1
 
   '@aws-sdk/client-lambda@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-macie2@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-organizations@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-ram@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/credential-provider-node': 3.972.87
@@ -5395,6 +6188,17 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
+  '@aws-sdk/client-securitylake@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
   '@aws-sdk/client-sfn@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
@@ -5422,6 +6226,17 @@ snapshots:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/credential-provider-node': 3.972.87
       '@aws-sdk/middleware-sdk-sqs': 3.972.45
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-sso-admin@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
       '@aws-sdk/types': 3.974.6
       '@smithy/core': 3.36.1
       '@smithy/fetch-http-handler': 5.8.0
@@ -6000,9 +6815,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@eslint-community/eslint-utils@4.10.1(eslint@10.13.0(supports-color@8.1.1))':
+  '@eslint-community/eslint-utils@4.10.1(eslint@10.14.0(supports-color@8.1.1))':
     dependencies:
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/eslint-utils@4.10.1(eslint@9.29.0(supports-color@8.1.1))':
@@ -7035,15 +7850,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
+  '@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
       '@typescript-eslint/scope-manager': 8.72.0
-      '@typescript-eslint/type-utils': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/type-utils': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.72.0
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       ignore: 7.0.13
       natural-compare: 1.4.0
       ts-api-utils: 2.5.0(typescript@5.8.3)
@@ -7079,14 +7894,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
+  '@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.72.0
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/typescript-estree': 8.72.0(supports-color@8.1.1)(typescript@5.8.3)
       '@typescript-eslint/visitor-keys': 8.72.0
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
@@ -7150,13 +7965,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/type-utils@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
+  '@typescript-eslint/type-utils@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/typescript-estree': 8.72.0(supports-color@8.1.1)(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       ts-api-utils: 2.5.0(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -7220,13 +8035,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
+  '@typescript-eslint/utils@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.14.0(supports-color@8.1.1))
       '@typescript-eslint/scope-manager': 8.72.0
       '@typescript-eslint/types': 8.72.0
       '@typescript-eslint/typescript-estree': 8.72.0(supports-color@8.1.1)(typescript@5.8.3)
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
@@ -7834,11 +8649,11 @@ snapshots:
       object.entries: 1.1.9
       semver: 6.3.1
 
-  eslint-config-airbnb-base@15.0.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1)):
+  eslint-config-airbnb-base@15.0.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1)):
     dependencies:
       confusing-browser-globals: 1.0.11
-      eslint: 10.13.0(supports-color@8.1.1)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
       object.assign: 4.1.7
       object.entries: 1.1.9
       semver: 6.3.1
@@ -7852,18 +8667,18 @@ snapshots:
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.35.0(eslint@9.29.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@9.29.0(supports-color@8.1.1))(supports-color@8.1.1)
       typescript-eslint: 8.35.0(eslint@9.29.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
 
-  eslint-config-airbnb-typescript@18.0.0(@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1)):
+  eslint-config-airbnb-typescript@18.0.0(@typescript-eslint/eslint-plugin@8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1)):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
-      '@typescript-eslint/parser': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
-      eslint: 10.13.0(supports-color@8.1.1)
-      eslint-config-airbnb-base: 15.0.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))
+      '@typescript-eslint/eslint-plugin': 8.72.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      eslint: 10.14.0(supports-color@8.1.1)
+      eslint-config-airbnb-base: 15.0.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint-plugin-import
 
-  eslint-config-prettier@10.1.8(eslint@10.13.0(supports-color@8.1.1)):
+  eslint-config-prettier@10.1.8(eslint@10.14.0(supports-color@8.1.1)):
     dependencies:
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
 
   eslint-config-prettier@9.0.0(eslint@9.29.0(supports-color@8.1.1)):
     dependencies:
@@ -7887,12 +8702,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-module-utils@2.14.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       debug: 3.2.7(supports-color@8.1.1)
     optionalDependencies:
-      '@typescript-eslint/parser': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
-      eslint: 10.13.0(supports-color@8.1.1)
+      '@typescript-eslint/parser': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      eslint: 10.14.0(supports-color@8.1.1)
       eslint-import-resolver-node: 0.3.10(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
@@ -7926,7 +8741,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.2.0
@@ -7935,9 +8750,9 @@ snapshots:
       array.prototype.flatmap: 1.3.3
       debug: 3.2.7(supports-color@8.1.1)
       doctrine: 2.1.0
-      eslint: 10.13.0(supports-color@8.1.1)
+      eslint: 10.14.0(supports-color@8.1.1)
       eslint-import-resolver-node: 0.3.10(supports-color@8.1.1)
-      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.10(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
       hasown: 2.0.4
       is-core-module: 2.17.0
       is-glob: 4.0.3
@@ -7949,7 +8764,7 @@ snapshots:
       string.prototype.trimend: 1.0.10
       tsconfig-paths: 3.15.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.72.0(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.72.0(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.3)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -7973,9 +8788,9 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
-  eslint@10.13.0(supports-color@8.1.1):
+  eslint@10.14.0(supports-color@8.1.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.14.0(supports-color@8.1.1))
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.23.5(supports-color@8.1.1)
       '@eslint/config-helpers': 0.7.0
