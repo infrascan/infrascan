@@ -27,6 +27,7 @@ catalog:
   "@aws-sdk/types": 3.974.6
   "@aws-sdk/client-auto-scaling": 3.1138.0
   "@aws-sdk/client-apigatewayv2": 3.1138.0
+  "@aws-sdk/client-cloudformation": 3.1138.0
   "@aws-sdk/client-cloudfront": 3.1138.0
   "@aws-sdk/client-cloudwatch-logs": 3.1138.0
   "@aws-sdk/client-dynamodb": 3.1138.0

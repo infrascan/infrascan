@@ -170,6 +170,9 @@ catalogs:
     '@aws-sdk/client-auto-scaling':
       specifier: 3.1138.0
       version: 3.1138.0
+    '@aws-sdk/client-cloudformation':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-cloudfront':
       specifier: 3.1138.0
       version: 3.1138.0
@@ -393,6 +396,46 @@ importers:
       eslint-config-codegen:
         specifier: workspace:^
         version: link:../../internal/eslint-config-codegen
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  aws-scanners/cloudformation:
+    dependencies:
+      '@aws-sdk/client-cloudformation':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
       tap:
         specifier: ^21
         version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
@@ -1505,6 +1548,10 @@ packages:
 
   '@aws-sdk/client-auto-scaling@3.1138.0':
     resolution: {integrity: sha512-4B/0JEnZsCd8KpvDpODYJMKhnMZ9fTTroU8EJcV8N+4fYFntUDxpkzvD4dDYE5v+lO3Kqh47aQHjB62EYxjPGg==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-cloudformation@3.1138.0':
+    resolution: {integrity: sha512-GBV/xZVcQYcYKt+LEqUOT/1Ti7XiDJUrTz81+hbnMkykz7R2xzOp4TboqGTmy+oJuUhmpH3Ea88C32I+3yzGOQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-cloudfront@3.1138.0':
@@ -5233,6 +5280,17 @@ snapshots:
       tslib: 2.8.1
 
   '@aws-sdk/client-auto-scaling@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-cloudformation@3.1138.0':
     dependencies:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/credential-provider-node': 3.972.87
