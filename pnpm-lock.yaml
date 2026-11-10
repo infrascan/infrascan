@@ -164,6 +164,9 @@ settings:
 
 catalogs:
   default:
+    '@aws-sdk/client-account':
+      specifier: 3.1138.0
+      version: 3.1138.0
     '@aws-sdk/client-apigatewayv2':
       specifier: 3.1138.0
       version: 3.1138.0
@@ -301,6 +304,46 @@ importers:
       vite:
         specifier: ^7.0.0
         version: 7.3.7(@types/node@24.19.2)(yaml@2.9.1)
+
+  aws-scanners/account:
+    dependencies:
+      '@aws-sdk/client-account':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@infrascan/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      debug:
+        specifier: ^4
+        version: 4.4.3(supports-color@8.1.1)
+    devDependencies:
+      '@aws-sdk/credential-providers':
+        specifier: 'catalog:'
+        version: 3.1138.0
+      '@aws-sdk/types':
+        specifier: 'catalog:'
+        version: 3.974.6
+      '@infrascan/fs-connector':
+        specifier: workspace:^
+        version: link:../../packages/fs-connector
+      '@infrascan/shared-types':
+        specifier: workspace:^
+        version: link:../../packages/shared-types
+      '@infrascan/tsconfig':
+        specifier: workspace:*
+        version: link:../../internal/tsconfig
+      '@types/debug':
+        specifier: ^4
+        version: 4.1.13
+      aws-sdk-client-mock:
+        specifier: 'catalog:'
+        version: 3.1.0
+      tap:
+        specifier: ^21
+        version: 21.8.0(@types/node@24.19.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@5.8.3)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
 
   aws-scanners/api-gateway:
     dependencies:
@@ -1497,6 +1540,10 @@ packages:
 
   '@aws-sdk/checksums@3.1001.4':
     resolution: {integrity: sha512-H8BiG/2DnfwydVxD1uDPLa1s1sfhRnVTbD2OwzfTr3WlJzgbIzICDXxBTlTMjbWNNCe4VS9X55fco+JI34L9kw==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-account@3.1138.0':
+    resolution: {integrity: sha512-QWVRhMJANF1obR76+jrtFgE9TbTcK2EXW4Rrj4r2I4Lbry27UO5kaSA6pp44ghgMoi1Fp0eTGKO11AaTfHyoUQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-apigatewayv2@3.1138.0':
@@ -5218,6 +5265,17 @@ snapshots:
       '@aws-sdk/core': 3.978.4
       '@aws-sdk/types': 3.974.6
       '@smithy/core': 3.36.1
+      '@smithy/types': 4.19.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-account@3.1138.0':
+    dependencies:
+      '@aws-sdk/core': 3.978.4
+      '@aws-sdk/credential-provider-node': 3.972.87
+      '@aws-sdk/types': 3.974.6
+      '@smithy/core': 3.36.1
+      '@smithy/fetch-http-handler': 5.8.0
+      '@smithy/node-http-handler': 4.12.1
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
