@@ -1,0 +1,10 @@
+{
+  "extends": "@infrascan/tsconfig/base.json",
+  "include": ["src"],
+  "exclude": ["codegen.ts", "config.ts", "src/*.test.ts"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "outDir": "./dist"
+  }
+}
