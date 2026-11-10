@@ -29,6 +29,7 @@ catalog:
   "@aws-sdk/client-apigatewayv2": 3.1138.0
   "@aws-sdk/client-cloudfront": 3.1138.0
   "@aws-sdk/client-cloudwatch-logs": 3.1138.0
+  "@aws-sdk/client-config-service": 3.1138.0
   "@aws-sdk/client-dynamodb": 3.1138.0
   "@aws-sdk/client-ec2": 3.1138.0
   "@aws-sdk/client-ecs": 3.1138.0
