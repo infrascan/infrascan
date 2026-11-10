@@ -34,6 +34,7 @@ catalog:
   "@aws-sdk/client-ecs": 3.1138.0
   "@aws-sdk/client-elastic-load-balancing-v2": 3.1138.0
   "@aws-sdk/client-eventbridge": 3.1138.0
+  "@aws-sdk/client-guardduty": 3.1138.0
   "@aws-sdk/client-iam": 3.1138.0
   "@aws-sdk/client-kinesis": 3.1138.0
   "@aws-sdk/client-lambda": 3.1138.0
