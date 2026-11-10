@@ -33,7 +33,7 @@ async function ensureBasePathExists(
 ) {
   const basePathExists = existsSync(absoluteBasePath);
   if (!basePathExists && createTargetDirectory) {
-    mkdir(absoluteBasePath, {
+    await mkdir(absoluteBasePath, {
       recursive: true,
     });
   }
@@ -95,10 +95,10 @@ export default function buildFsConnector(
   basePath: string,
   config: FsResolverConfig = DEFAULT_CONFIG,
 ): Connector {
-  const resolvedConfig: Required<FsResolverConfig> = Object.assign(
-    DEFAULT_CONFIG,
-    config,
-  );
+  const resolvedConfig: Required<FsResolverConfig> = {
+    ...DEFAULT_CONFIG,
+    ...config,
+  };
   const absoluteBasePath = resolve(basePath);
 
   /* eslint-disable @typescript-eslint/no-explicit-any */

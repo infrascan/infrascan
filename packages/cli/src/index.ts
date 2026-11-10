@@ -6,6 +6,7 @@ import { CommandLineParser } from "@rushstack/ts-command-line";
 import GraphCmd from "./commands/graph";
 import RenderCmd from "./commands/render";
 import ScanCmd from "./commands/scan";
+import StateCmd from "./commands/state";
 
 class InfrascanCLI extends CommandLineParser {
   public constructor() {
@@ -19,6 +20,7 @@ class InfrascanCLI extends CommandLineParser {
     this.addAction(new GraphCmd(infrascanClient));
     this.addAction(new RenderCmd());
     this.addAction(new ScanCmd(infrascanClient));
+    this.addAction(new StateCmd());
   }
 
   protected onExecute(): Promise<void> {

@@ -10,6 +10,7 @@ import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
 import { serializeGraph as serializeVisualGraph } from "@infrascan/cytoscape-serializer";
 import { serializeGraph as serializeInformationalGraph } from "@infrascan/informational-serializer";
+import { resolveStateDirectory } from "../snapshot";
 
 function readScanMetadata(outputPath: string): ScanMetadata[] {
   const scanMetadata = readFileSync(
@@ -31,6 +32,8 @@ export default class GraphCmd extends CommandLineAction {
 
   private _serializer: CommandLineChoiceParameter;
 
+  private _scanId: CommandLineStringParameter;
+
   private infrascanClient: Infrascan;
 
   public constructor(infrascanClient: Infrascan) {
@@ -49,8 +52,13 @@ export default class GraphCmd extends CommandLineAction {
       parameterShortName: "-i",
       argumentName: "PATH_TO_STATE",
       description:
-        "Location to read scan state from. This should be the same as the directory given to the scan command.",
-      defaultValue: "./state",
+        "Location to read scan state from. This should be the same as the directory given to the scan command. When omitted, the latest scan in the local infrascan state directory is used.",
+    });
+    this._scanId = this.defineStringParameter({
+      parameterLongName: "--scan",
+      argumentName: "SCAN_ID",
+      description:
+        "Graph a specific scan from the local state directory, by id or unique id prefix (see `infrascan state`).",
     });
     this._serializer = this.defineChoiceParameter({
       required: false,
@@ -62,10 +70,13 @@ export default class GraphCmd extends CommandLineAction {
   }
 
   protected async onExecute(): Promise<void> {
-    const scanMetadata = readScanMetadata(
-      this._outputDirectory.value as string,
-    );
-    const connector = buildFsConnector(this._outputDirectory.value as string);
+    const stateDirectory = await resolveStateDirectory({
+      explicitDir: this._outputDirectory.value,
+      scanId: this._scanId.value,
+    });
+    console.log(`Graphing scan state in ${stateDirectory}`);
+    const scanMetadata = readScanMetadata(stateDirectory);
+    const connector = buildFsConnector(stateDirectory);
 
     let nServicesScanned = 0;
     this.infrascanClient.registerPlugin({
@@ -87,6 +98,7 @@ export default class GraphCmd extends CommandLineAction {
     console.log(
       `Graph Complete. Found resources in ${nServicesScanned} services.`,
     );
-    return writeGraphOutput(this._outputDirectory.value as string, graphData);
+    writeGraphOutput(stateDirectory, graphData);
+    console.log(`Graph written to ${join(stateDirectory, "graph.json")}`);
   }
 }

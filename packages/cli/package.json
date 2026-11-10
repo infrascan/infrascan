@@ -5,6 +5,7 @@
   "main": "dist/index.mjs",
   "scripts": {
     "build": "rm -rf dist ; tsup --config internal/tsconfig/app.tsup.json ; cp -r ./src/templates ./dist/templates",
+    "test": "tap src/*.test.ts --allow-incomplete-coverage --tsconfig tsconfig.test.json -- --typescript",
     "lint": "tsc --noEmit && eslint .",
     "clean": "rm -rf dist node_modules"
   },
@@ -47,6 +48,7 @@
     "@infrascan/tsconfig": "workspace:*",
     "@smithy/types": "catalog:",
     "@types/ejs": "^3.1.5",
+    "tap": "^21",
     "ts-node": "^10.9.1",
     "typescript": "5.8.3"
   }

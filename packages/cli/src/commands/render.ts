@@ -1,6 +1,6 @@
 import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, resolve, sep } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   CommandLineAction,
@@ -11,6 +11,8 @@ import { renderFile } from "ejs";
 import open from "open";
 
 import type { Graph } from "@infrascan/shared-types";
+import { resolveStateDirectory } from "../snapshot";
+import { GRAPH_FILE } from "../store";
 
 export default class RenderCmd extends CommandLineAction {
   #graphPath: CommandLineStringParameter;
@@ -18,6 +20,8 @@ export default class RenderCmd extends CommandLineAction {
   #outputPath: CommandLineStringParameter;
 
   #launchBrowser: CommandLineFlagParameter;
+
+  #scanId: CommandLineStringParameter;
 
   public constructor() {
     super({
@@ -34,8 +38,13 @@ export default class RenderCmd extends CommandLineAction {
       parameterShortName: "-i",
       argumentName: "PATH_TO_GRAPH",
       description:
-        "Location to read graph data from. This should be the path to the file output by the graph command.",
-      defaultValue: "./state/graph.json",
+        "Location to read graph data from. This should be the path to the file output by the graph command. When omitted, the latest graphed scan in the local infrascan state directory is used.",
+    });
+    this.#scanId = this.defineStringParameter({
+      parameterLongName: "--scan",
+      argumentName: "SCAN_ID",
+      description:
+        "Render the graph of a specific scan from the local state directory, by id or unique id prefix.",
     });
     this.#outputPath = this.defineStringParameter({
       parameterLongName: "--output",
@@ -52,7 +61,16 @@ export default class RenderCmd extends CommandLineAction {
   }
 
   protected async onExecute(): Promise<void> {
-    const graphText = this.readGraphData();
+    const graphPath =
+      this.#graphPath.value ??
+      join(
+        await resolveStateDirectory({
+          scanId: this.#scanId.value,
+          requireGraph: true,
+        }),
+        GRAPH_FILE,
+      );
+    const graphText = this.readGraphData(graphPath);
     if (graphText == null) {
       process.exit(1);
     }
@@ -88,18 +106,17 @@ export default class RenderCmd extends CommandLineAction {
     }
   }
 
-  private readGraphData(): string | null {
+  // eslint-disable-next-line class-methods-use-this
+  private readGraphData(graphPath: string): string | null {
     try {
-      return readFileSync(this.#graphPath.value as string, "utf8");
+      return readFileSync(graphPath, "utf8");
     } catch (err: unknown) {
       const errMessage =
         err instanceof Error && "message" in err
           ? err.message
           : "unknown error occurred";
       console.error(
-        `Failed to read graph data from: ${
-          this.#graphPath.value
-        }. ${errMessage}`,
+        `Failed to read graph data from: ${graphPath}. ${errMessage}`,
       );
       return null;
     }
