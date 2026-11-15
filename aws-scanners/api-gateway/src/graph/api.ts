@@ -108,7 +108,7 @@ export const ApiGatewayEntity: TranslatedEntity<
 
     apiGateway(val) {
       return {
-        apiId: val.ApiId,
+        api: { id: val.ApiId },
         endpoint: val.ApiEndpoint,
         protocol: val.ProtocolType,
         selections: {

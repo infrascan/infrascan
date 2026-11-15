@@ -2,11 +2,19 @@
 
 A scanner module for AWS API Gateway, designed to be used with the [@infrascan/sdk](../../packages/sdk).
 
-This module pulls information about the API Gateway v2 (HTTP and WebSocket) APIs in an AWS account by calling: `GetApis` and `GetDomainNames`.
+This module pulls information about the API Gateway v2 (HTTP and WebSocket) APIs in an AWS account by calling: `GetApis`, `GetDomainNames`, `GetRoutes` and `GetIntegrations`.
 
 ## Graph
 
-APIs are graphed as visual nodes, keyed by their ARN (`arn:aws:apigateway:{region}::/apis/{apiId}`).
+APIs are graphed as visual nodes, keyed by their ARN (`arn:aws:apigateway:{region}::/apis/{apiId}`). Their routes and integrations are graphed as informational nodes beneath the API.
+
+Edges are derived from routes, so integrations which no route uses don't produce edges:
+
+- API → the resource each route's integration invokes, labelled with the routes that use it. Supported targets are Lambda functions (by ARN, alias or invocation URI), SQS queues, Step Functions state machines, EventBridge buses, Kinesis streams, and load balancers behind a VPC link (resolved from the listener). HTTP URLs aren't resolved.
+
+Roles assumed by integrations (`CredentialsArn`) are reported so IAM permission edges are attributed to the API.
+
+Route edges require routes to be joined to their integrations, which the edge selectors in [config.ts](./config.ts) can't express, so they're resolved in [src/edges.ts](./src/edges.ts) using [src/targets.ts](./src/targets.ts).
 
 ## Quickstart
 
