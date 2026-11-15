@@ -1,5 +1,12 @@
 # @infrascan/aws
 
+## 0.6.5
+
+### Patch Changes
+
+- Updated dependencies [[`e71765a4ef7188a0d03eec39cd1697a2bd39db23`](https://github.com/infrascan/infrascan/commit/e71765a4ef7188a0d03eec39cd1697a2bd39db23), [`e7ee5386f56bc2e6a5228eee9d615fa9a85b6fda`](https://github.com/infrascan/infrascan/commit/e7ee5386f56bc2e6a5228eee9d615fa9a85b6fda)]:
+  - @infrascan/aws-api-gateway-scanner@0.8.0
+
 ## 0.6.4
 
 ### Patch Changes
