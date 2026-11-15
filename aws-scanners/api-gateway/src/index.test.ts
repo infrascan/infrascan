@@ -7,6 +7,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { fromProcess } from "@aws-sdk/credential-providers";
 import {
   GetApisCommand,
+  GetAuthorizersCommand,
   GetDomainNamesCommand,
   GetIntegrationsCommand,
   GetRoutesCommand,
@@ -34,11 +35,13 @@ const httpApiArn = `arn:aws:apigateway:${region}::/apis/${httpApiId}`;
 const wsApiArn = `arn:aws:apigateway:${region}::/apis/${wsApiId}`;
 
 const usersFunctionArn = `arn:aws:lambda:${region}:${account}:function:users`;
+const authFunctionArn = `arn:aws:lambda:${region}:${account}:function:auth`;
 const wsFunctionArn = `arn:aws:lambda:${region}:${account}:function:socket`;
 const orphanFunctionArn = `arn:aws:lambda:${region}:${account}:function:orphan`;
 const queueArn = `arn:aws:sqs:${region}:${account}:orders`;
 const loadBalancerArn = `arn:aws:elasticloadbalancing:${region}:${account}:loadbalancer/app/internal/50dc6c495c0c9188`;
 const integrationRoleArn = `arn:aws:iam::${account}:role/api-sqs`;
+const authorizerRoleArn = `arn:aws:iam::${account}:role/api-authorizer`;
 
 async function scan() {
   const connector = buildFsConnector(mkdtempSync(baseDirectory));
@@ -146,6 +149,27 @@ async function scan() {
       },
     ],
   });
+  mockedClient.on(GetAuthorizersCommand, { ApiId: httpApiId }).resolves({
+    Items: [
+      {
+        AuthorizerId: "a-lambda",
+        Name: "lambda-auth",
+        AuthorizerType: "REQUEST",
+        AuthorizerUri: `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${authFunctionArn}/invocations`,
+        AuthorizerCredentialsArn: authorizerRoleArn,
+        IdentitySource: ["$request.header.Authorization"],
+      },
+      {
+        AuthorizerId: "a-jwt",
+        Name: "jwt-auth",
+        AuthorizerType: "JWT",
+        JwtConfiguration: {
+          Audience: ["my-app"],
+          Issuer: "https://issuer.example.com",
+        },
+      },
+    ],
+  });
 
   mockedClient.on(GetRoutesCommand, { ApiId: wsApiId }).resolves({
     Items: [
@@ -169,6 +193,9 @@ async function scan() {
         IntegrationUri: `arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/${wsFunctionArn}/invocations`,
       },
     ],
+  });
+  mockedClient.on(GetAuthorizersCommand, { ApiId: wsApiId }).resolves({
+    Items: [],
   });
 
   // Getters run in order, as later getters depend on the APIs scanned by GetApis
@@ -257,6 +284,25 @@ t.test("Nodes are generated for APIs and their resources", async (t) => {
       integration.apiGateway.integration?.integrationId === "i-http",
   );
   t.equal(httpIntegration?.apiGateway.integration?.resolvedTarget, undefined);
+
+  const authorizers = bySubcategory("authorizer");
+  t.equal(authorizers.length, 2);
+  const lambdaAuthorizer = authorizers.find(
+    (authorizer) => authorizer.apiGateway.authorizer?.type === "REQUEST",
+  );
+  t.equal(
+    lambdaAuthorizer?.apiGateway.authorizer?.resolvedTarget,
+    authFunctionArn,
+  );
+  t.equal(lambdaAuthorizer?.apiGateway.api?.id, httpApiId);
+  const jwtAuthorizer = authorizers.find(
+    (authorizer) => authorizer.apiGateway.authorizer?.type === "JWT",
+  );
+  t.equal(
+    jwtAuthorizer?.apiGateway.authorizer?.jwt?.issuer,
+    "https://issuer.example.com",
+  );
+  t.equal(jwtAuthorizer?.apiGateway.authorizer?.resolvedTarget, undefined);
 });
 
 t.test("Edges are derived from routes and their integrations", async (t) => {
@@ -273,6 +319,7 @@ t.test("Edges are derived from routes and their integrations", async (t) => {
   t.same(edgeMap, {
     // Routes using the same function, including through an alias, are merged into one edge
     [`${httpApiArn}->${usersFunctionArn}`]: "GET /users, POST /users",
+    [`${httpApiArn}->${authFunctionArn}`]: "Authorizer: lambda-auth",
     [`${httpApiArn}->${queueArn}`]: "POST /orders",
     [`${httpApiArn}->${loadBalancerArn}`]: "ANY /internal/{proxy+}",
     [`${wsApiArn}->${wsFunctionArn}`]: "$connect, $default",
@@ -280,13 +327,16 @@ t.test("Edges are derived from routes and their integrations", async (t) => {
 });
 
 t.test(
-  "IAM roles are attributed to the API for routed integrations",
+  "IAM roles are attributed to the API for routed integrations and authorizers",
   async (t) => {
     const { connector } = await scan();
     const roles = await ApiGatewayScanner.getIamRoles!(connector);
     t.same(
       roles.sort((a, b) => a.roleArn.localeCompare(b.roleArn)),
-      [{ roleArn: integrationRoleArn, executor: httpApiArn }],
+      [
+        { roleArn: authorizerRoleArn, executor: httpApiArn },
+        { roleArn: integrationRoleArn, executor: httpApiArn },
+      ],
     );
   },
 );

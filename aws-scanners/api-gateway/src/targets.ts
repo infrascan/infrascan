@@ -1,4 +1,4 @@
-import type { Integration } from "@aws-sdk/client-apigatewayv2";
+import type { Authorizer, Integration } from "@aws-sdk/client-apigatewayv2";
 
 export const DEFAULT_PARTITION = "aws";
 
@@ -24,10 +24,10 @@ export function formatApiArn(
   return `arn:${partition}:apigateway:${region}::/apis/${apiId}`;
 }
 
-export type ApiChildResource = "routes" | "integrations";
+export type ApiChildResource = "routes" | "integrations" | "authorizers";
 
 /**
- * Builds the ARN of a resource that lives under an API (route, integration).
+ * Builds the ARN of a resource that lives under an API (route, integration, authorizer).
  */
 export function formatApiChildArn(
   apiArn: string,
@@ -82,7 +82,8 @@ const STATE_MACHINE_EXECUTION_ARN =
 
 /**
  * Resolves a lambda function ARN from either a bare (possibly qualified) function
- * ARN, or an API Gateway lambda invocation URI, as used by lambda proxy integrations.
+ * ARN, or an API Gateway lambda invocation URI. These are used by lambda proxy
+ * integrations and lambda authorizers.
  */
 export function resolveLambdaArn(uri?: string): string | undefined {
   if (uri == null) {
@@ -223,4 +224,17 @@ export function resolveIntegrationTarget(
     return resolveIntegrationUri(integration.IntegrationUri);
   }
   return undefined;
+}
+
+/**
+ * Resolves the lambda function behind a lambda (`REQUEST`) authorizer. JWT
+ * authorizers are evaluated by API Gateway itself, so have no target.
+ */
+export function resolveAuthorizerTarget(
+  authorizer: Authorizer,
+): string | undefined {
+  if (authorizer.AuthorizerType !== "REQUEST") {
+    return undefined;
+  }
+  return resolveLambdaArn(authorizer.AuthorizerUri);
 }

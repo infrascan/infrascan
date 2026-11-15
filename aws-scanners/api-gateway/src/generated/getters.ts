@@ -23,6 +23,11 @@ import {
   GetIntegrationsCommandInput,
   GetIntegrationsCommandOutput,
 } from "@aws-sdk/client-apigatewayv2";
+import {
+  GetAuthorizersCommand,
+  GetAuthorizersCommandInput,
+  GetAuthorizersCommandOutput,
+} from "@aws-sdk/client-apigatewayv2";
 import type {
   Connector,
   GenericState,
@@ -260,6 +265,70 @@ export async function GetIntegrations(
     context.region,
     "ApiGatewayV2",
     "GetIntegrations",
+    state,
+  );
+}
+
+export async function GetAuthorizers(
+  client: ApiGatewayV2Client,
+  stateConnector: Connector,
+  context: AwsContext,
+): Promise<void> {
+  const getterDebug = debug("apigatewayv2:GetAuthorizers");
+  const state: GenericState[] = [];
+  getterDebug("Fetching state");
+  const resolvers = [
+    { Key: "ApiId", Selector: "ApiGatewayV2|GetApis|[]._result.Items[].ApiId" },
+  ];
+  const parameterQueue = (await resolveFunctionCallParameters(
+    context.account,
+    context.region,
+    resolvers,
+    stateConnector,
+  )) as GetAuthorizersCommandInput[];
+  for (const parameters of parameterQueue) {
+    let pagingToken: string | undefined;
+    do {
+      const preparedParams: GetAuthorizersCommandInput = parameters;
+      preparedParams["NextToken"] = pagingToken;
+      try {
+        const cmd = new GetAuthorizersCommand(preparedParams);
+        const result: GetAuthorizersCommandOutput = await client.send(cmd);
+        state.push({
+          _metadata: {
+            account: context.account,
+            region: context.region,
+            timestamp: Date.now(),
+          },
+          _parameters: preparedParams,
+          _result: result,
+        });
+        pagingToken = result["NextToken"];
+        if (pagingToken != null) {
+          getterDebug("Found pagination token in response");
+        } else {
+          getterDebug("No pagination token found in response");
+        }
+      } catch (err: unknown) {
+        if (err instanceof ApiGatewayV2ServiceException) {
+          if (err?.$retryable) {
+            console.log("Encountered retryable error", err);
+          } else {
+            console.log("Encountered unretryable error", err);
+          }
+        } else {
+          console.log("Encountered unexpected error", err);
+        }
+        pagingToken = undefined;
+      }
+    } while (pagingToken != null);
+  }
+  getterDebug("Recording state");
+  await stateConnector.onServiceScanCompleteCallback(
+    context.account,
+    context.region,
+    "ApiGatewayV2",
+    "GetAuthorizers",
     state,
   );
 }

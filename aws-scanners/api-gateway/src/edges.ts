@@ -1,4 +1,7 @@
 import type {
+  Authorizer,
+  GetAuthorizersCommandInput,
+  GetAuthorizersCommandOutput,
   GetIntegrationsCommandInput,
   GetIntegrationsCommandOutput,
   GetRoutesCommandInput,
@@ -19,6 +22,7 @@ import debug from "debug";
 import {
   formatApiArn,
   getIntegrationIdFromRouteTarget,
+  resolveAuthorizerTarget,
   resolveIntegrationTarget,
 } from "./targets";
 
@@ -29,14 +33,15 @@ type PerApiState<O, I extends { ApiId: string | undefined }> = Serialized<
 >;
 
 /**
- * A route, along with the integration it uses, which has been joined from the
- * per-API state.
+ * A route, along with the integration and authorizer it uses, which have been
+ * joined from the per-API state.
  */
 interface ResolvedRoute {
   apiArn: string;
   location: CommandCallMetadata;
   route: Serialized<Route>;
   integration?: Serialized<Integration>;
+  authorizer?: Serialized<Authorizer>;
 }
 
 function apiKey(metadata: CommandCallMetadata, apiId: string): string {
@@ -45,7 +50,7 @@ function apiKey(metadata: CommandCallMetadata, apiId: string): string {
 
 /**
  * Indexes per-API state by account, region, API and resource ID so routes can be
- * joined onto the resources they reference.
+ * joined onto the integrations and authorizers they reference.
  */
 function indexByApi<T, I extends { ApiId: string | undefined }>(
   pages: PerApiState<{ Items?: T[] }, I>[],
@@ -67,24 +72,30 @@ function indexByApi<T, I extends { ApiId: string | undefined }>(
 }
 
 /**
- * Routes are what make an integration reachable, so they are used as the basis
- * for API Gateway's edges: an integration that no route references doesn't
- * produce an edge.
+ * Routes are what make an integration or authorizer reachable, so they are used
+ * as the basis for API Gateway's edges: an integration or authorizer that no
+ * route references doesn't produce an edge.
  */
 export async function resolveRoutes(
   stateConnector: Connector,
 ): Promise<ResolvedRoute[]> {
-  const [routesState, integrationsState]: [
+  const [routesState, integrationsState, authorizersState]: [
     PerApiState<GetRoutesCommandOutput, GetRoutesCommandInput>[],
     PerApiState<GetIntegrationsCommandOutput, GetIntegrationsCommandInput>[],
+    PerApiState<GetAuthorizersCommandOutput, GetAuthorizersCommandInput>[],
   ] = await Promise.all([
     evaluateSelectorGlobally("ApiGatewayV2|GetRoutes|[]", stateConnector),
     evaluateSelectorGlobally("ApiGatewayV2|GetIntegrations|[]", stateConnector),
+    evaluateSelectorGlobally("ApiGatewayV2|GetAuthorizers|[]", stateConnector),
   ]);
 
   const integrations = indexByApi(
     integrationsState ?? [],
     (integration) => integration.IntegrationId,
+  );
+  const authorizers = indexByApi(
+    authorizersState ?? [],
+    (authorizer) => authorizer.AuthorizerId,
   );
 
   return (routesState ?? []).flatMap((page) => {
@@ -108,6 +119,10 @@ export async function resolveRoutes(
           integrationId != null
             ? integrations.get(`${key}|${integrationId}`)
             : undefined,
+        authorizer:
+          route.AuthorizerId != null
+            ? authorizers.get(`${key}|${route.AuthorizerId}`)
+            : undefined,
       };
     });
   });
@@ -115,8 +130,9 @@ export async function resolveRoutes(
 
 /**
  * Builds edges from each API to the resources its routes send requests to,
- * via the route's integration. Edges between the same API and target are
- * merged, and labelled with every route that uses them.
+ * via the route's integration, and to the lambda functions which authorize them.
+ * Edges between the same API and target are merged, and labelled with every
+ * route that uses them.
  */
 export async function getRouteEdges(
   stateConnector: Connector,
@@ -132,7 +148,7 @@ export async function getRouteEdges(
   };
 
   const routes = await resolveRoutes(stateConnector);
-  for (const { apiArn, location, route, integration } of routes) {
+  for (const { apiArn, location, route, integration, authorizer } of routes) {
     const routeKey = route.RouteKey ?? route.RouteId ?? "route";
     const integrationTarget =
       integration != null
@@ -140,6 +156,15 @@ export async function getRouteEdges(
         : undefined;
     if (integrationTarget != null) {
       addLabel(apiArn, integrationTarget, routeKey);
+    }
+    const authorizerTarget =
+      authorizer != null ? resolveAuthorizerTarget(authorizer) : undefined;
+    if (authorizerTarget != null) {
+      addLabel(
+        apiArn,
+        authorizerTarget,
+        `Authorizer: ${authorizer?.Name ?? authorizer?.AuthorizerId}`,
+      );
     }
   }
 
@@ -153,8 +178,8 @@ export async function getRouteEdges(
 }
 
 /**
- * Integrations can assume a role to invoke their target, which is attributed
- * to the API. As with edges, only those used by a route are included.
+ * Integrations and authorizers can assume a role to invoke their target, which
+ * is attributed to the API. As with edges, only those used by a route are included.
  */
 export async function getIamRoles(
   stateConnector: Connector,
@@ -167,8 +192,9 @@ export async function getIamRoles(
   };
 
   const routes = await resolveRoutes(stateConnector);
-  for (const { apiArn, integration } of routes) {
+  for (const { apiArn, integration, authorizer } of routes) {
     addRole(integration?.CredentialsArn, apiArn);
+    addRole(authorizer?.AuthorizerCredentialsArn, apiArn);
   }
   return [...roles.values()];
 }

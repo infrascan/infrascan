@@ -2,6 +2,7 @@ import t from "tap";
 import {
   formatApiArn,
   getIntegrationIdFromRouteTarget,
+  resolveAuthorizerTarget,
   resolveIntegrationTarget,
   resolveLambdaArn,
 } from "./targets";
@@ -191,6 +192,21 @@ t.test("resolveIntegrationTarget: AWS service integrations", async (t) => {
       { IntegrationSubtype: "AppConfig-GetConfiguration" },
       location,
     ),
+    undefined,
+  );
+});
+
+t.test("resolveAuthorizerTarget", async (t) => {
+  t.equal(
+    resolveAuthorizerTarget({
+      Name: "lambda",
+      AuthorizerType: "REQUEST",
+      AuthorizerUri: `arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/${functionArn}/invocations`,
+    }),
+    functionArn,
+  );
+  t.equal(
+    resolveAuthorizerTarget({ Name: "jwt", AuthorizerType: "JWT" }),
     undefined,
   );
 });
