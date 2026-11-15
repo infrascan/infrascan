@@ -1,5 +1,15 @@
 # @infrascan/aws-api-gateway-scanner
 
+## 0.8.0
+
+### Minor Changes
+
+- [#160](https://github.com/infrascan/infrascan/pull/160) [`e71765a4ef7188a0d03eec39cd1697a2bd39db23`](https://github.com/infrascan/infrascan/commit/e71765a4ef7188a0d03eec39cd1697a2bd39db23) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Authorizers are scanned (`GetAuthorizers`) and graphed as informational nodes beneath their API. Each API links to the Lambda functions behind the lambda authorizers its routes use, and authorizer credentials roles are reported for IAM edges.
+
+- [#158](https://github.com/infrascan/infrascan/pull/158) [`e7ee5386f56bc2e6a5228eee9d615fa9a85b6fda`](https://github.com/infrascan/infrascan/commit/e7ee5386f56bc2e6a5228eee9d615fa9a85b6fda) Thanks [@lfarrel6](https://github.com/lfarrel6)! - Routes and integrations are scanned (`GetRoutes`, `GetIntegrations`) and graphed as informational nodes beneath their API. Edges are derived from routes: each API links to the resources its routes' integrations invoke (Lambda functions, including aliases and invocation URIs, SQS queues, Step Functions state machines, EventBridge buses, Kinesis streams, and load balancers behind VPC links), labelled with the routes that use them. Integration credentials roles are reported for IAM edges.
+
+  Every API Gateway node records the API it is, or belongs to, as `apiGateway.api.id`, which replaces `apiGateway.apiId` on API nodes. `apiGateway.managed` is likewise recorded at the top level rather than per resource.
+
 ## 0.7.0
 
 ### Minor Changes
