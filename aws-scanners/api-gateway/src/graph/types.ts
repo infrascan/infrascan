@@ -14,21 +14,64 @@ export interface Cors {
   MaxAge?: number;
 }
 
+export interface RouteDetails {
+  routeId?: string;
+  routeKey?: string;
+  target?: string;
+  integrationId?: string;
+  authorizerId?: string;
+  authorizationType?: string;
+  authorizationScopes?: string[];
+  apiKeyRequired?: boolean;
+  operationName?: string;
+}
+
+export interface IntegrationDetails {
+  integrationId?: string;
+  type?: string;
+  subtype?: string;
+  uri?: string;
+  method?: string;
+  connectionType?: string;
+  connectionId?: string;
+  payloadFormatVersion?: string;
+  timeoutInMillis?: number;
+  /**
+   * ARN of the scanned resource which the integration sends requests to, if it could be resolved.
+   */
+  resolvedTarget?: string;
+}
+
+export interface ApiReference {
+  id?: string;
+}
+
 /**
- * The API Gateway specific state for a node.
+ * The API Gateway specific state for a node. `api` is recorded for every node,
+ * and `managed` for every resource that reports it. API nodes populate the
+ * remaining top level fields, while nodes for the resources beneath an API
+ * populate their own key.
  */
 export interface ApiGatewayState {
-  apiId?: string;
+  /**
+   * The API that the node is, or belongs to.
+   */
+  api?: ApiReference;
+  /**
+   * Whether the resource is managed by API Gateway, e.g. created by quick create.
+   */
+  managed?: boolean;
   endpoint?: string;
   protocol?: string;
   selections?: Selections;
-  managed?: boolean;
   cors?: Cors;
   disableExecuteApiEndpoint?: boolean;
   disableSchemaValidation?: boolean;
   importInfo?: string[];
   version?: string;
   warnings?: string[];
+  route?: RouteDetails;
+  integration?: IntegrationDetails;
 }
 
 export type ApiGateway = BaseState<unknown> & {
