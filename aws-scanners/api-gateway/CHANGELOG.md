@@ -1,5 +1,11 @@
 # @infrascan/aws-api-gateway-scanner
 
+## 0.7.0
+
+### Minor Changes
+
+- [#156](https://github.com/infrascan/infrascan/pull/156) [`2ed27ebabba72bc2d769f6f075a199eee8f7523e`](https://github.com/infrascan/infrascan/commit/2ed27ebabba72bc2d769f6f075a199eee8f7523e) Thanks [@lfarrel6](https://github.com/lfarrel6)! - API nodes are keyed by their ARN (`arn:aws:apigateway:{region}::/apis/{apiId}`) instead of their endpoint, so other API Gateway state can be linked to them. The endpoint moves to `apiGateway.endpoint`, nodes are labelled by name, and the API ID, creation date and tags are recorded. `GetApis` and `GetDomainNames` are paginated.
+
 ## 0.6.0
 
 ### Minor Changes
