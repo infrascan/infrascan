@@ -42,6 +42,24 @@ export interface IntegrationDetails {
   resolvedTarget?: string;
 }
 
+export interface AuthorizerDetails {
+  authorizerId?: string;
+  type?: string;
+  uri?: string;
+  identitySource?: string[];
+  payloadFormatVersion?: string;
+  resultTtlInSeconds?: number;
+  enableSimpleResponses?: boolean;
+  jwt?: {
+    audience?: string[];
+    issuer?: string;
+  };
+  /**
+   * ARN of the lambda function backing the authorizer, if it could be resolved.
+   */
+  resolvedTarget?: string;
+}
+
 export interface ApiReference {
   id?: string;
 }
@@ -72,6 +90,7 @@ export interface ApiGatewayState {
   warnings?: string[];
   route?: RouteDetails;
   integration?: IntegrationDetails;
+  authorizer?: AuthorizerDetails;
 }
 
 export type ApiGateway = BaseState<unknown> & {

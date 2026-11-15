@@ -6,12 +6,14 @@ import {
   GetDomainNames,
   GetRoutes,
   GetIntegrations,
+  GetAuthorizers,
 } from "./generated/getters";
 import { getRouteEdges, getIamRoles } from "./edges";
 import {
   ApiGatewayEntity,
   ApiGatewayRouteEntity,
   ApiGatewayIntegrationEntity,
+  ApiGatewayAuthorizerEntity,
 } from "./graph";
 
 const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
@@ -21,7 +23,13 @@ const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
   arnLabel: "apigateway",
   getClient,
   callPerRegion: true,
-  getters: [GetApis, GetDomainNames, GetRoutes, GetIntegrations],
+  getters: [
+    GetApis,
+    GetDomainNames,
+    GetRoutes,
+    GetIntegrations,
+    GetAuthorizers,
+  ],
   getEdges: getRouteEdges,
   getIamRoles,
   // The API entity must come first, as it is the parent of the other entities' nodes
@@ -29,6 +37,7 @@ const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
     ApiGatewayEntity,
     ApiGatewayRouteEntity,
     ApiGatewayIntegrationEntity,
+    ApiGatewayAuthorizerEntity,
   ],
 };
 
@@ -41,5 +50,6 @@ export type {
   Selections,
   RouteDetails,
   IntegrationDetails,
+  AuthorizerDetails,
 } from "./graph";
 export default ApiGatewayV2Scanner;
