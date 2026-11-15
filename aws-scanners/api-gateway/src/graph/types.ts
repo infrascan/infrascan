@@ -60,6 +60,23 @@ export interface AuthorizerDetails {
   resolvedTarget?: string;
 }
 
+export interface StageDetails {
+  stageName?: string;
+  autoDeploy?: boolean;
+  deploymentId?: string;
+  lastDeploymentStatusMessage?: string;
+  stageVariables?: Record<string, string>;
+  accessLogs?: {
+    destinationArn?: string;
+    format?: string;
+  };
+  defaultRouteSettings?: {
+    detailedMetricsEnabled?: boolean;
+    throttlingBurstLimit?: number;
+    throttlingRateLimit?: number;
+  };
+}
+
 export interface ApiReference {
   id?: string;
 }
@@ -91,6 +108,7 @@ export interface ApiGatewayState {
   route?: RouteDetails;
   integration?: IntegrationDetails;
   authorizer?: AuthorizerDetails;
+  stage?: StageDetails;
 }
 
 export type ApiGateway = BaseState<unknown> & {

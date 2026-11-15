@@ -11,6 +11,7 @@ import {
   GetDomainNamesCommand,
   GetIntegrationsCommand,
   GetRoutesCommand,
+  GetStagesCommand,
 } from "@aws-sdk/client-apigatewayv2";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
@@ -40,6 +41,7 @@ const wsFunctionArn = `arn:aws:lambda:${region}:${account}:function:socket`;
 const orphanFunctionArn = `arn:aws:lambda:${region}:${account}:function:orphan`;
 const queueArn = `arn:aws:sqs:${region}:${account}:orders`;
 const loadBalancerArn = `arn:aws:elasticloadbalancing:${region}:${account}:loadbalancer/app/internal/50dc6c495c0c9188`;
+const logGroupArn = `arn:aws:logs:${region}:${account}:log-group:api-access-logs`;
 const integrationRoleArn = `arn:aws:iam::${account}:role/api-sqs`;
 const authorizerRoleArn = `arn:aws:iam::${account}:role/api-authorizer`;
 
@@ -170,6 +172,19 @@ async function scan() {
       },
     ],
   });
+  mockedClient.on(GetStagesCommand, { ApiId: httpApiId }).resolves({
+    Items: [
+      {
+        StageName: "$default",
+        AutoDeploy: true,
+        AccessLogSettings: {
+          DestinationArn: logGroupArn,
+          Format: "$context.requestId",
+        },
+        CreatedDate: new Date("2024-01-02T00:00:00Z"),
+      },
+    ],
+  });
 
   mockedClient.on(GetRoutesCommand, { ApiId: wsApiId }).resolves({
     Items: [
@@ -197,6 +212,9 @@ async function scan() {
   mockedClient.on(GetAuthorizersCommand, { ApiId: wsApiId }).resolves({
     Items: [],
   });
+  mockedClient
+    .on(GetStagesCommand, { ApiId: wsApiId })
+    .resolves({ Items: [{ StageName: "production" }] });
 
   // Getters run in order, as later getters depend on the APIs scanned by GetApis
   for (const getter of ApiGatewayScanner.getters) {
@@ -303,6 +321,20 @@ t.test("Nodes are generated for APIs and their resources", async (t) => {
     "https://issuer.example.com",
   );
   t.equal(jwtAuthorizer?.apiGateway.authorizer?.resolvedTarget, undefined);
+
+  const stages = bySubcategory("stage");
+  t.equal(stages.length, 2);
+  const defaultStage = stages.find(
+    (stage) => stage.$graph.parent === httpApiArn,
+  );
+  t.equal(defaultStage?.$graph.id, `${httpApiArn}/stages/$default`);
+  t.equal(defaultStage?.apiGateway.api?.id, httpApiId);
+  t.equal(defaultStage?.apiGateway.managed, false);
+  t.equal(
+    defaultStage?.apiGateway.stage?.accessLogs?.destinationArn,
+    logGroupArn,
+  );
+  t.equal(defaultStage?.audit?.createdAt, Date.parse("2024-01-02T00:00:00Z"));
 });
 
 t.test("Edges are derived from routes and their integrations", async (t) => {
@@ -322,6 +354,7 @@ t.test("Edges are derived from routes and their integrations", async (t) => {
     [`${httpApiArn}->${authFunctionArn}`]: "Authorizer: lambda-auth",
     [`${httpApiArn}->${queueArn}`]: "POST /orders",
     [`${httpApiArn}->${loadBalancerArn}`]: "ANY /internal/{proxy+}",
+    [`${httpApiArn}->${logGroupArn}`]: "Access logs ($default)",
     [`${wsApiArn}->${wsFunctionArn}`]: "$connect, $default",
   });
 });

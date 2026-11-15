@@ -24,10 +24,14 @@ export function formatApiArn(
   return `arn:${partition}:apigateway:${region}::/apis/${apiId}`;
 }
 
-export type ApiChildResource = "routes" | "integrations" | "authorizers";
+export type ApiChildResource =
+  | "routes"
+  | "integrations"
+  | "authorizers"
+  | "stages";
 
 /**
- * Builds the ARN of a resource that lives under an API (route, integration, authorizer).
+ * Builds the ARN of a resource that lives under an API (route, integration, authorizer, stage).
  */
 export function formatApiChildArn(
   apiArn: string,

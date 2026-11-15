@@ -1,5 +1,5 @@
 import { ApiGatewayV2Client } from "@aws-sdk/client-apigatewayv2";
-import type { ServiceModule } from "@infrascan/shared-types";
+import type { Connector, ServiceModule } from "@infrascan/shared-types";
 import { getClient } from "./generated/client";
 import {
   GetApis,
@@ -7,14 +7,25 @@ import {
   GetRoutes,
   GetIntegrations,
   GetAuthorizers,
+  GetStages,
 } from "./generated/getters";
+import { getEdges as getDeclaredEdges } from "./generated/graph";
 import { getRouteEdges, getIamRoles } from "./edges";
 import {
   ApiGatewayEntity,
   ApiGatewayRouteEntity,
   ApiGatewayIntegrationEntity,
   ApiGatewayAuthorizerEntity,
+  ApiGatewayStageEntity,
 } from "./graph";
+
+async function getEdges(stateConnector: Connector) {
+  const [declaredEdges, routeEdges] = await Promise.all([
+    getDeclaredEdges(stateConnector),
+    getRouteEdges(stateConnector),
+  ]);
+  return declaredEdges.concat(routeEdges);
+}
 
 const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
   provider: "aws",
@@ -29,8 +40,9 @@ const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
     GetRoutes,
     GetIntegrations,
     GetAuthorizers,
+    GetStages,
   ],
-  getEdges: getRouteEdges,
+  getEdges,
   getIamRoles,
   // The API entity must come first, as it is the parent of the other entities' nodes
   entities: [
@@ -38,6 +50,7 @@ const ApiGatewayV2Scanner: ServiceModule<ApiGatewayV2Client, "aws"> = {
     ApiGatewayRouteEntity,
     ApiGatewayIntegrationEntity,
     ApiGatewayAuthorizerEntity,
+    ApiGatewayStageEntity,
   ],
 };
 
@@ -51,5 +64,6 @@ export type {
   RouteDetails,
   IntegrationDetails,
   AuthorizerDetails,
+  StageDetails,
 } from "./graph";
 export default ApiGatewayV2Scanner;

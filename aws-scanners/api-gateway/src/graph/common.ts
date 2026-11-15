@@ -7,7 +7,7 @@ import {
 
 /**
  * Shape shared by the translated state of every resource scanned per API
- * (routes, integrations, authorizers).
+ * (routes, integrations, authorizers, stages).
  */
 export type ApiChildState = Serialized<{
   $metadata: CommandCallMetadata;
