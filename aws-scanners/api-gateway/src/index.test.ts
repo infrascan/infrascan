@@ -11,100 +11,103 @@ import {
 } from "@aws-sdk/client-apigatewayv2";
 import { generateNodesFromEntity } from "@infrascan/core";
 import buildFsConnector from "@infrascan/fs-connector";
-import ApiGatewayScanner, { type Graph } from "./index";
+import type { BaseState } from "@infrascan/shared-types";
+import ApiGatewayScanner, { type GraphState } from "./index";
 
 const stateDirectoryPrefix = "infrascan-test-state-";
 const baseDirectory =
   env.DEBUG_STATE != null
     ? stateDirectoryPrefix
     : join(tmpdir(), stateDirectoryPrefix);
-const tmpDir = mkdtempSync(baseDirectory);
-const connector = buildFsConnector(tmpDir);
 
-t.test(
-  "State is pulled correctly from API-Gateway, and formatted as expected",
-  async ({ equal, ok }) => {
-    const testContext = {
-      region: "us-east-1",
-      account: "0".repeat(8),
-    };
-    const apiGatewayClient = ApiGatewayScanner.getClient(
-      fromProcess(),
+const testContext = {
+  region: "us-east-1",
+  account: "0".repeat(12),
+};
+const { account, region } = testContext;
+
+const httpApiId = "httpapi";
+const wsApiId = "wsapi";
+const httpApiArn = `arn:aws:apigateway:${region}::/apis/${httpApiId}`;
+const wsApiArn = `arn:aws:apigateway:${region}::/apis/${wsApiId}`;
+
+async function scan() {
+  const connector = buildFsConnector(mkdtempSync(baseDirectory));
+  const client = ApiGatewayScanner.getClient(fromProcess(), testContext);
+  const mockedClient = mockClient(client);
+
+  mockedClient.on(GetApisCommand).resolves({
+    Items: [
+      {
+        ApiId: httpApiId,
+        ApiEndpoint: `https://${httpApiId}.execute-api.${region}.amazonaws.com`,
+        Name: "http-api",
+        ProtocolType: "HTTP",
+        RouteSelectionExpression: "$request.method $request.path",
+        DisableExecuteApiEndpoint: false,
+        CreatedDate: new Date("2024-01-01T00:00:00Z"),
+        Tags: { team: "payments" },
+      },
+      {
+        ApiId: wsApiId,
+        ApiEndpoint: `wss://${wsApiId}.execute-api.${region}.amazonaws.com`,
+        Name: "ws-api",
+        ProtocolType: "WEBSOCKET",
+        RouteSelectionExpression: "$request.body.action",
+        DisableExecuteApiEndpoint: true,
+      },
+    ],
+  });
+  mockedClient.on(GetDomainNamesCommand).resolves({ Items: [] });
+
+  for (const getter of ApiGatewayScanner.getters) {
+    await getter(client, connector, testContext);
+  }
+
+  const nodes: GraphState[] = [];
+  for (const entity of ApiGatewayScanner.entities ?? []) {
+    for await (const node of generateNodesFromEntity(
+      connector,
       testContext,
-    );
-
-    const mockedApiGatewayClient = mockClient(apiGatewayClient);
-
-    const FirstApiEndpoint = "my-api-1.aws.com";
-    const SecondApiEndpoint = "my-api-2.aws.com";
-
-    // Mock each of the functions used to pull state
-    mockedApiGatewayClient.on(GetApisCommand).resolves({
-      Items: [
-        {
-          ApiEndpoint: FirstApiEndpoint,
-          Name: "first-api",
-          ProtocolType: "HTTP",
-          RouteSelectionExpression: "default",
-          DisableExecuteApiEndpoint: true,
-        },
-        {
-          ApiEndpoint: SecondApiEndpoint,
-          Name: "second-api",
-          ProtocolType: "HTTP",
-          RouteSelectionExpression: "default",
-          DisableExecuteApiEndpoint: false,
-        },
-      ],
-    });
-
-    mockedApiGatewayClient.on(GetDomainNamesCommand).resolves({
-      Items: [
-        {
-          DomainName: "first-api.mysite.com",
-        },
-        {
-          DomainName: "second-api.mysite.com",
-        },
-      ],
-    });
-
-    await Promise.all(
-      ApiGatewayScanner.getters.map((getter) =>
-        getter(apiGatewayClient, connector, testContext),
-      ),
-    );
-
-    equal(ApiGatewayScanner.entities?.length, 1);
-    for (const entity of ApiGatewayScanner.entities ?? []) {
-      const nodeProducer = generateNodesFromEntity(
-        connector,
-        testContext,
-        entity,
-      );
-      for await (const node of nodeProducer) {
-        ok(node.$graph.id);
-        ok(node.$graph.label);
-        ok(node.$metadata.version);
-        equal(node.tenant.tenantId, testContext.account);
-        equal(node.tenant.provider, "aws");
-        ok(node.location?.code);
-        equal(node.$source?.command, entity.command);
-        equal(node.resource.category, entity.category);
-        equal(node.resource.subcategory, entity.subcategory);
-        equal(
-          (node as unknown as Graph.ApiGateway).apiGateway.protocol,
-          "HTTP",
-        );
-        if (
-          (node as unknown as Graph.ApiGateway).apiGateway
-            .disableExecuteApiEndpoint
-        ) {
-          equal(node.dns?.domains.length, 0);
-        } else {
-          equal(node.dns?.domains.length, 1);
-        }
-      }
+      entity,
+    )) {
+      nodes.push(node as GraphState);
     }
-  },
-);
+  }
+
+  return { connector, nodes };
+}
+
+t.test("API nodes are keyed by their ARN", async (t) => {
+  const { nodes } = await scan();
+
+  for (const node of nodes as BaseState[]) {
+    t.equal(node.tenant.tenantId, account);
+    t.equal(node.tenant.provider, "aws");
+    t.equal(node.location?.code, region);
+    t.equal(node.resource.category, "api-gateway");
+    t.equal(node.resource.subcategory, "apis");
+    t.equal(node.$graph.id, node.resource.id);
+    t.equal(node.$graph.nodeClass, "visual");
+    t.equal(node.$source?.command, "GetApis");
+    t.ok(node.$metadata.version);
+  }
+
+  t.equal(nodes.length, 2);
+  const httpApi = nodes.find((api) => api.$graph.id === httpApiArn);
+  t.ok(httpApi);
+  t.equal(httpApi?.$graph.label, "http-api");
+  t.equal(httpApi?.apiGateway.protocol, "HTTP");
+  t.equal(httpApi?.apiGateway.apiId, httpApiId);
+  t.equal(
+    httpApi?.apiGateway.endpoint,
+    `https://${httpApiId}.execute-api.${region}.amazonaws.com`,
+  );
+  t.same(httpApi?.dns?.domains, [httpApi?.apiGateway.endpoint]);
+  t.equal(httpApi?.audit?.createdAt, Date.parse("2024-01-01T00:00:00Z"));
+  t.same(httpApi?.tags, [{ key: "team", value: "payments" }]);
+
+  const wsApi = nodes.find((api) => api.$graph.id === wsApiArn);
+  t.equal(wsApi?.apiGateway.protocol, "WEBSOCKET");
+  t.same(wsApi?.dns?.domains, []);
+});

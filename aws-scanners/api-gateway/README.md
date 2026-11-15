@@ -2,7 +2,11 @@
 
 A scanner module for AWS API Gateway, designed to be used with the [@infrascan/sdk](../../packages/sdk).
 
-This module pulls information about the API Gateways in an AWS account by calling: `GetApis`, and `GetDomainNames`.
+This module pulls information about the API Gateway v2 (HTTP and WebSocket) APIs in an AWS account by calling: `GetApis` and `GetDomainNames`.
+
+## Graph
+
+APIs are graphed as visual nodes, keyed by their ARN (`arn:aws:apigateway:{region}::/apis/{apiId}`).
 
 ## Quickstart
 

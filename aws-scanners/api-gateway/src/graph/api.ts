@@ -1,53 +1,24 @@
 import type {
-  BaseState,
+  State,
   TranslatedEntity,
   WithCallContext,
-  State,
 } from "@infrascan/shared-types";
-import {
+import type {
   Api,
   GetApisCommandInput,
   GetApisCommandOutput,
 } from "@aws-sdk/client-apigatewayv2";
-import { evaluateSelector } from "@infrascan/core";
-
-export interface Selections {
-  route?: string;
-  apiKey?: string;
-}
-
-export interface Cors {
-  AllowCredentials?: boolean;
-  AllowHeaders?: string[];
-  AllowMethods?: string[];
-  AllowOrigins?: string[];
-  ExposeHeaders?: string[];
-  MaxAge?: number;
-}
-
-export interface ApiGatewayState {
-  protocol?: string;
-  selections?: Selections;
-  managed?: boolean;
-  cors?: Cors;
-  disableExecuteApiEndpoint?: boolean;
-  disableSchemaValidation?: boolean;
-  importInfo?: string[];
-  version?: string;
-  warnings?: string[];
-}
-
-export type ApiGateway = BaseState<GetApisCommandInput> & {
-  apiGateway: ApiGatewayState;
-};
-export type GraphState = ApiGateway;
+import { evaluateSelector, tryNormalizeDateEpoch } from "@infrascan/core";
+import { formatApiArn } from "../targets";
+import { formatTags } from "./common";
+import type { ApiGateway } from "./types";
 
 export const ApiGatewayEntity: TranslatedEntity<
   ApiGateway,
   State<GetApisCommandOutput, GetApisCommandInput>,
   WithCallContext<Api, GetApisCommandInput>
 > = {
-  version: "0.1.1",
+  version: "0.2.0",
   debugLabel: "api-gateway",
   provider: "aws",
   command: "GetApis",
@@ -66,12 +37,13 @@ export const ApiGatewayEntity: TranslatedEntity<
   },
 
   translate(val) {
-    return (val._result.Items ?? []).map((api) =>
-      Object.assign(api, {
+    return (val._result.Items ?? [])
+      .filter((api) => api.ApiId != null)
+      .map((api) => ({
+        ...api,
         $parameters: val._parameters,
         $metadata: val._metadata,
-      }),
-    );
+      }));
   },
 
   components: {
@@ -84,8 +56,12 @@ export const ApiGatewayEntity: TranslatedEntity<
 
     $graph(val) {
       return {
-        id: val.ApiEndpoint!,
-        label: val.ApiEndpoint!,
+        id: formatApiArn(
+          val.$metadata.region,
+          val.ApiId!,
+          val.$metadata.partition,
+        ),
+        label: val.Name ?? val.ApiId!,
         nodeClass: "visual",
         nodeType: ApiGatewayEntity.nodeType,
         parent: `${val.$metadata.account}-${val.$metadata.region}`,
@@ -112,16 +88,28 @@ export const ApiGatewayEntity: TranslatedEntity<
 
     resource(val) {
       return {
-        id: val.ApiEndpoint!,
-        name: val.ApiEndpoint!,
+        id: formatApiArn(
+          val.$metadata.region,
+          val.ApiId!,
+          val.$metadata.partition,
+        ),
+        name: val.Name ?? val.ApiId!,
         category: ApiGatewayEntity.category,
         subcategory: ApiGatewayEntity.subcategory,
         description: val.Description,
       };
     },
 
+    audit(val) {
+      return {
+        createdAt: tryNormalizeDateEpoch(val.CreatedDate),
+      };
+    },
+
     apiGateway(val) {
       return {
+        apiId: val.ApiId,
+        endpoint: val.ApiEndpoint,
         protocol: val.ProtocolType,
         selections: {
           route: val.RouteSelectionExpression,
@@ -147,13 +135,7 @@ export const ApiGatewayEntity: TranslatedEntity<
     },
 
     tags(val) {
-      if (val.Tags == null) {
-        return undefined;
-      }
-      return Object.entries(val.Tags).map(([key, value]) => ({
-        key,
-        value,
-      }));
+      return formatTags(val.Tags);
     },
   },
 };
