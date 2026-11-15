@@ -1,9 +1,13 @@
 import {
   ApiGatewayV2Client,
   ApiGatewayV2ServiceException,
+} from "@aws-sdk/client-apigatewayv2";
+import {
   GetApisCommand,
   GetApisCommandInput,
   GetApisCommandOutput,
+} from "@aws-sdk/client-apigatewayv2";
+import {
   GetDomainNamesCommand,
   GetDomainNamesCommandInput,
   GetDomainNamesCommandOutput,
@@ -22,31 +26,42 @@ export async function GetApis(
 ): Promise<void> {
   const getterDebug = debug("apigatewayv2:GetApis");
   const state: GenericState[] = [];
-  getterDebug("GetApis");
-  const preparedParams: GetApisCommandInput = {};
-  try {
-    const cmd = new GetApisCommand(preparedParams);
-    const result: GetApisCommandOutput = await client.send(cmd);
-    state.push({
-      _metadata: {
-        account: context.account,
-        region: context.region,
-        timestamp: Date.now(),
-      },
-      _parameters: preparedParams,
-      _result: result,
-    });
-  } catch (err: unknown) {
-    if (err instanceof ApiGatewayV2ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+  getterDebug("Fetching state");
+  let pagingToken: string | undefined;
+  do {
+    const preparedParams: GetApisCommandInput = {};
+    preparedParams["NextToken"] = pagingToken;
+    try {
+      const cmd = new GetApisCommand(preparedParams);
+      const result: GetApisCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+      pagingToken = result["NextToken"];
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
       } else {
-        console.log("Encountered unretryable error", err);
+        getterDebug("No pagination token found in response");
       }
-    } else {
-      console.log("Encountered unexpected error", err);
+    } catch (err: unknown) {
+      if (err instanceof ApiGatewayV2ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+      pagingToken = undefined;
     }
-  }
+  } while (pagingToken != null);
   getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
@@ -56,6 +71,7 @@ export async function GetApis(
     state,
   );
 }
+
 export async function GetDomainNames(
   client: ApiGatewayV2Client,
   stateConnector: Connector,
@@ -63,31 +79,42 @@ export async function GetDomainNames(
 ): Promise<void> {
   const getterDebug = debug("apigatewayv2:GetDomainNames");
   const state: GenericState[] = [];
-  getterDebug("GetDomainNames");
-  const preparedParams: GetDomainNamesCommandInput = {};
-  try {
-    const cmd = new GetDomainNamesCommand(preparedParams);
-    const result: GetDomainNamesCommandOutput = await client.send(cmd);
-    state.push({
-      _metadata: {
-        account: context.account,
-        region: context.region,
-        timestamp: Date.now(),
-      },
-      _parameters: preparedParams,
-      _result: result,
-    });
-  } catch (err: unknown) {
-    if (err instanceof ApiGatewayV2ServiceException) {
-      if (err?.$retryable) {
-        console.log("Encountered retryable error", err);
+  getterDebug("Fetching state");
+  let pagingToken: string | undefined;
+  do {
+    const preparedParams: GetDomainNamesCommandInput = {};
+    preparedParams["NextToken"] = pagingToken;
+    try {
+      const cmd = new GetDomainNamesCommand(preparedParams);
+      const result: GetDomainNamesCommandOutput = await client.send(cmd);
+      state.push({
+        _metadata: {
+          account: context.account,
+          region: context.region,
+          timestamp: Date.now(),
+        },
+        _parameters: preparedParams,
+        _result: result,
+      });
+      pagingToken = result["NextToken"];
+      if (pagingToken != null) {
+        getterDebug("Found pagination token in response");
       } else {
-        console.log("Encountered unretryable error", err);
+        getterDebug("No pagination token found in response");
       }
-    } else {
-      console.log("Encountered unexpected error", err);
+    } catch (err: unknown) {
+      if (err instanceof ApiGatewayV2ServiceException) {
+        if (err?.$retryable) {
+          console.log("Encountered retryable error", err);
+        } else {
+          console.log("Encountered unretryable error", err);
+        }
+      } else {
+        console.log("Encountered unexpected error", err);
+      }
+      pagingToken = undefined;
     }
-  }
+  } while (pagingToken != null);
   getterDebug("Recording state");
   await stateConnector.onServiceScanCompleteCallback(
     context.account,
