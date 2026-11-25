@@ -383,9 +383,8 @@ export default class QuickstartCmd extends CommandLineAction {
           scanConfigFromCredentialSource(source, regions),
         ),
       );
-      console.log(
-        `✔ Saved environment to ${savePath}. Reuse it with: infrascan quickstart -c ${savePath}`,
-      );
+      console.log(`✔ Saved environment to ${savePath}`);
+      console.log(`  Reuse it with: infrascan quickstart -c ${savePath}`);
     }
     return targets;
   }

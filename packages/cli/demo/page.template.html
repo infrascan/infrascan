@@ -1,0 +1,135 @@
+<title>Infrascan Quickstart Recording</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>/*PLAYER_CSS*/</style>
+<style>
+  /* Layout: one narrow column; the terminal recording leads, chapters below it act as a seekable index. */
+  :root {
+    --bg: #f5f7f6;
+    --surface: #ffffff;
+    --fg: #17201d;
+    --muted: #5b6863;
+    --rule: #dbe2df;
+    --accent: #0f7a5c;
+    --accent-soft: #e2f1eb;
+    --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1412; --surface: #161d1a; --fg: #e3ebe7; --muted: #93a29c;
+      --rule: #26302c; --accent: #4cc9a0; --accent-soft: #173229; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1412; --surface: #161d1a; --fg: #e3ebe7; --muted: #93a29c;
+    --rule: #26302c; --accent: #4cc9a0; --accent-soft: #173229; color-scheme: dark;
+  }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-sans);
+    font-size: 15px; line-height: 1.55;
+  }
+  .wrap {
+    max-width: 920px; margin: 0 auto;
+    padding-block: 40px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid; gap: 28px;
+  }
+  header { display: grid; gap: 8px; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  h1 { margin: 0; font-size: clamp(26px, 4vw, 34px); font-weight: 600; line-height: 1.15; text-wrap: balance; }
+  .lede { margin: 0; color: var(--muted); max-width: 65ch; }
+  code {
+    font-family: var(--font-mono); font-size: 0.92em; background: var(--accent-soft);
+    padding: 0.08em 0.35em; border-radius: 4px;
+  }
+  .player { min-width: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--rule); background: #121314; }
+  .player .ap-wrapper { background: #121314; }
+  .note {
+    margin: 0; font-size: 13.5px; color: var(--muted);
+    border-left: 2px solid var(--rule); padding-left: 12px; max-width: 70ch;
+  }
+  h2 { margin: 0 0 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  ol.chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .chapters button {
+    width: 100%; display: grid; grid-template-columns: 52px 1fr; gap: 12px; align-items: baseline;
+    text-align: left; font: inherit; color: inherit; background: transparent;
+    border: 0; border-radius: 8px; padding: 10px 12px; cursor: pointer;
+  }
+  .chapters button:hover { background: var(--surface); }
+  .chapters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .chapters button[aria-current="true"] { background: var(--accent-soft); }
+  .t { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .step { display: grid; gap: 2px; min-width: 0; }
+  .step strong { font-weight: 600; }
+  .step span { color: var(--muted); font-size: 14px; }
+  .replay { display: grid; gap: 8px; }
+  pre {
+    margin: 0; overflow-x: auto; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 12px 14px; font-family: var(--font-mono); font-size: 13px;
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">@infrascan/cli · quickstart · <span id="recorded"></span></div>
+    <h1>infrascan quickstart, recorded</h1>
+    <p class="lede">One run of <code>quickstart</code> with no flags. It builds an environment of two accounts, each with its own regions, saves it for reuse, then scans both into one graph.</p>
+  </header>
+
+  <div class="player" id="player"></div>
+
+  <p class="note">The AWS account in this recording is simulated. The CLI is the real build from the branch, but it was pointed at a local stand-in for the AWS APIs that serves a small example app in every account and region (three Lambda functions, an SQS queue, an SNS topic, a DynamoDB table and an S3 bucket). Profiles, account IDs and timings are illustrative.</p>
+
+  <section>
+    <h2>Chapters</h2>
+    <ol class="chapters" id="chapters"></ol>
+  </section>
+
+  <section class="replay">
+    <h2>Replay in a terminal</h2>
+    <pre>asciinema play quickstart.cast</pre>
+  </section>
+</div>
+
+<script type="application/json" id="cast">/*CAST_JSON*/</script>
+<script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.8.2/dist/bundle/asciinema-player.min.js"></script>
+<script>
+  const chapters = /*CHAPTERS_JSON*/;
+  document.getElementById("recorded").textContent = "recorded /*RECORDED_DATE*/";
+  const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+  const cast = JSON.parse(document.getElementById("cast").textContent);
+  const player = AsciinemaPlayer.create({ data: cast.data }, document.getElementById("player"), {
+    cols: cast.cols, rows: cast.rows, fit: "width", idleTimeLimit: 2, poster: `npt:${cast.poster}`,
+    markers: chapters.map((c) => [c.t, c.title]),
+  });
+
+  const list = document.getElementById("chapters");
+  const buttons = chapters.map((c) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `<span class="t">${fmt(c.t)}</span><span class="step"><strong></strong><span></span></span>`;
+    b.querySelector("strong").textContent = c.title;
+    b.querySelector(".step span").textContent = c.detail;
+    b.addEventListener("click", async () => {
+      await player.seek(Math.max(0, c.t - 0.3));
+      player.play();
+    });
+    li.appendChild(b); list.appendChild(li);
+    return b;
+  });
+  const highlight = () => {
+    const now = player.getCurrentTime();
+    let active = -1;
+    chapters.forEach((c, i) => { if (now >= c.t - 0.35) active = i; });
+    buttons.forEach((b, i) => b.setAttribute("aria-current", String(i === active)));
+  };
+  setInterval(highlight, 300);
+</script>
