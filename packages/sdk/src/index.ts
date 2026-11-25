@@ -27,6 +27,8 @@ import {
   CredentialProviderFactory,
   ScanCredentialProvider,
   resolveCredentialsFromProvider,
+  ScanProgressEvent,
+  ScanProgressListener,
 } from "./scan";
 
 const AWS_DEFAULT_REGION = "us-east-1";
@@ -116,6 +118,8 @@ export default class Infrascan {
    *  console.error("Failed to scan", err);
    * });
    * ```
+   *
+   * Pass `opts.onProgress` to be notified as each region and service is scanned (see {@link ScanProgressEvent}).
    */
   async performScan(
     credentialProvider: ScanCredentialProvider,
@@ -124,9 +128,11 @@ export default class Infrascan {
       regions?: string[];
       defaultRegion?: string | undefined;
       retryStrategy?: RetryStrategy;
+      onProgress?: ScanProgressListener;
     },
   ): Promise<ScanMetadata> {
     const defaultRegion = opts?.defaultRegion ?? AWS_DEFAULT_REGION;
+    const emitProgress: ScanProgressListener = opts?.onProgress ?? (() => {});
     const credentials = await resolveCredentialsFromProvider(
       credentialProvider,
       defaultRegion,
@@ -144,6 +150,11 @@ export default class Infrascan {
       regions: [],
       defaultRegion,
     };
+    emitProgress({
+      type: "account-start",
+      account: scanMetadata.account,
+      defaultRegion,
+    });
 
     const iamClient = new IAM({
       credentials,
@@ -162,8 +173,20 @@ export default class Infrascan {
 
     // Take list of all global services to scan
     const globalServiceEntries = Object.entries(this.globalScannerRegistry);
-    for (const [serviceName, serviceScanner] of globalServiceEntries) {
+    for (const [
+      serviceIndex,
+      [serviceName, serviceScanner],
+    ] of globalServiceEntries.entries()) {
       console.log(`Beginning global scan of ${serviceName}`);
+      const globalProgress = {
+        scope: "global",
+        account: scanContext.account,
+        region: defaultRegion,
+        service: serviceScanner.service,
+        serviceIndex,
+        serviceCount: globalServiceEntries.length,
+      } as const;
+      emitProgress({ type: "service-start", ...globalProgress });
       await scanService(
         serviceScanner,
         credentials,
@@ -173,6 +196,7 @@ export default class Infrascan {
         scanContext,
         opts?.retryStrategy,
       );
+      emitProgress({ type: "service-complete", ...globalProgress });
     }
 
     // Get all available regions for this account from the AWS API
@@ -181,8 +205,13 @@ export default class Infrascan {
       defaultRegion,
       opts?.regions,
     );
+    emitProgress({
+      type: "regions-resolved",
+      account: scanContext.account,
+      regions: regionsToScan,
+    });
     const regionalServiceEntries = Object.entries(this.regionalScannerRegistry);
-    for (const region of regionsToScan) {
+    for (const [regionIndex, region] of regionsToScan.entries()) {
       scanContext.region = region;
       const regionBoundCredentials = await resolveCredentialsFromProvider(
         credentialProvider,
@@ -190,8 +219,22 @@ export default class Infrascan {
       );
 
       console.log(`Beginning scan of ${region}`);
-      for (const [serviceName, serviceScanner] of regionalServiceEntries) {
+      for (const [
+        serviceIndex,
+        [serviceName, serviceScanner],
+      ] of regionalServiceEntries.entries()) {
         console.log(`Beginning scan of ${serviceName} in ${region}`);
+        const regionalProgress = {
+          scope: "regional",
+          account: scanContext.account,
+          region,
+          service: serviceScanner.service,
+          serviceIndex,
+          serviceCount: regionalServiceEntries.length,
+          regionIndex,
+          regionCount: regionsToScan.length,
+        } as const;
+        emitProgress({ type: "service-start", ...regionalProgress });
         await scanService(
           serviceScanner,
           regionBoundCredentials,
@@ -200,6 +243,7 @@ export default class Infrascan {
           iamClient,
           scanContext,
         );
+        emitProgress({ type: "service-complete", ...regionalProgress });
         console.log(`Completed scan of ${serviceName} in ${region}`);
       }
       scanMetadata.regions.push(region);
@@ -215,6 +259,11 @@ export default class Infrascan {
     );
 
     console.log(`Completed scan of ${scanContext.account}`);
+    emitProgress({
+      type: "account-complete",
+      account: scanContext.account,
+      regions: scanMetadata.regions,
+    });
     return scanMetadata;
   }
 
@@ -370,4 +419,10 @@ export default class Infrascan {
   }
 }
 
-export type { ScanMetadata, CredentialProviderFactory, ScanCredentialProvider };
+export type {
+  ScanMetadata,
+  CredentialProviderFactory,
+  ScanCredentialProvider,
+  ScanProgressEvent,
+  ScanProgressListener,
+};
