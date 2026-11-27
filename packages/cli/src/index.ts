@@ -4,6 +4,7 @@ import Infrascan from "@infrascan/sdk";
 import { registerAwsScanners } from "@infrascan/aws";
 import { CommandLineParser } from "@rushstack/ts-command-line";
 import GraphCmd from "./commands/graph";
+import QuickstartCmd from "./commands/quickstart";
 import RenderCmd from "./commands/render";
 import ScanCmd from "./commands/scan";
 
@@ -17,6 +18,7 @@ class InfrascanCLI extends CommandLineParser {
 
     const infrascanClient = registerAwsScanners(new Infrascan());
     this.addAction(new GraphCmd(infrascanClient));
+    this.addAction(new QuickstartCmd(infrascanClient));
     this.addAction(new RenderCmd());
     this.addAction(new ScanCmd(infrascanClient));
   }
