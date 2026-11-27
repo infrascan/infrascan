@@ -1,6 +1,3 @@
-import { readFileSync, writeFileSync } from "fs";
-import { join, resolve } from "path";
-import type { ScanMetadata } from "@infrascan/sdk";
 import {
   CommandLineAction,
   CommandLineChoiceParameter,
@@ -10,21 +7,7 @@ import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
 import { serializeGraph as serializeVisualGraph } from "@infrascan/cytoscape-serializer";
 import { serializeGraph as serializeInformationalGraph } from "@infrascan/informational-serializer";
-
-function readScanMetadata(outputPath: string): ScanMetadata[] {
-  const scanMetadata = readFileSync(
-    join(resolve(outputPath), "metadata.json"),
-    "utf8",
-  );
-  return JSON.parse(scanMetadata);
-}
-
-function writeGraphOutput<T>(outputPath: string, graphState: T) {
-  writeFileSync(
-    join(resolve(outputPath), "graph.json"),
-    JSON.stringify(graphState),
-  );
-}
+import { readScanMetadata, writeGraphOutput } from "../state";
 
 export default class GraphCmd extends CommandLineAction {
   private _outputDirectory: CommandLineStringParameter;
@@ -87,6 +70,6 @@ export default class GraphCmd extends CommandLineAction {
     console.log(
       `Graph Complete. Found resources in ${nServicesScanned} services.`,
     );
-    return writeGraphOutput(this._outputDirectory.value as string, graphData);
+    writeGraphOutput(this._outputDirectory.value as string, graphData);
   }
 }
