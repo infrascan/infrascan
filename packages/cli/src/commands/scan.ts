@@ -86,19 +86,17 @@ export default class ScanCmd extends CommandLineAction {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const {
         profile,
-        roleToAssume,
         regions,
         defaultRegion: configDefaultRegion,
       } = accountConfig;
 
-      const credentialSource = credentialSourceFromScanConfig(
-        profile,
-        roleToAssume,
-      );
+      const credentialSource = credentialSourceFromScanConfig(accountConfig);
       if (credentialSource.kind === "default") {
         console.log(
           "No profile or role given, falling back to default provider chain.",
         );
+      } else if (credentialSource.kind === "env") {
+        console.log("Using credentials from environment variables.");
       }
       const credentials = resolveCredentialProvider(credentialSource);
 

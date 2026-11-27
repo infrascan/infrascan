@@ -14,11 +14,12 @@ import buildFsConnector from "@infrascan/fs-connector";
 import Infrascan from "@infrascan/sdk";
 import type {
   CredentialProviderFactory,
+  ScanMetadata,
   ScanProgressEvent,
 } from "@infrascan/sdk";
 import { serializeGraph as serializeVisualGraph } from "@infrascan/cytoscape-serializer";
 import { serializeGraph as serializeInformationalGraph } from "@infrascan/informational-serializer";
-import { getDefaultRegion } from "../config";
+import { getConfig, getDefaultRegion, writeConfig } from "../config";
 import {
   CREDENTIAL_SOURCES,
   CredentialSource,
@@ -27,12 +28,16 @@ import {
   hasEnvCredentials,
   listProfiles,
   resolveCredentialProvider,
+  credentialSourceFromScanConfig,
+  scanConfigFromCredentialSource,
 } from "../credentials";
 import {
   canPrompt,
   isPromptCancelled,
+  promptAddAnotherAccount,
   promptCredentialSource,
   promptProfile,
+  promptSaveEnvironment,
   promptRegions,
   promptRegionsFreeform,
   promptRoleArn,
@@ -49,6 +54,18 @@ import {
 const FALLBACK_REGION = "us-east-1";
 const ROLE_SESSION_NAME = "infrascan-cli-quickstart";
 const LOG_FILE = "quickstart.log";
+
+/**
+ * One account to scan, with resolved credentials and regions.
+ */
+type AccountTarget = {
+  credentialSource: CredentialSource;
+  /** Regions to scan. Undefined scans every region, matching the scan command. */
+  regions?: string[];
+  defaultRegion: string;
+  /** Account ID, when credentials were checked before scanning. */
+  account?: string;
+};
 
 const USAGE_ERROR = "QuickstartUsageError";
 
@@ -70,13 +87,13 @@ function displayPath(path: string): string {
   return relativePath.startsWith("..") ? path : `./${relativePath}`;
 }
 
-async function getCallerArn(
+async function getCallerIdentity(
   credentials: CredentialProviderFactory,
   region: string,
-): Promise<string | undefined> {
+): Promise<{ arn?: string; account?: string }> {
   const sts = new STSClient({ region, credentials: await credentials(region) });
-  const { Arn } = await sts.send(new GetCallerIdentityCommand({}));
-  return Arn;
+  const { Arn, Account } = await sts.send(new GetCallerIdentityCommand({}));
+  return { arn: Arn, account: Account };
 }
 
 /**
@@ -97,12 +114,12 @@ async function listEnabledRegions(
 /**
  * Renders the SDK's scan progress events onto a single status line, with a permanent line per completed region.
  */
-function createScanProgressRenderer(progress: ProgressLine) {
+function createScanProgressRenderer(progress: ProgressLine, label: string) {
   let sectionStartedAt = Date.now();
   return (event: ScanProgressEvent) => {
     switch (event.type) {
       case "account-start":
-        progress.log(`Scanning account ${event.account}`);
+        progress.log(`Scanning account ${event.account} ${label}`);
         progress.update(`${event.account} › starting`);
         break;
       case "service-start":
@@ -127,9 +144,9 @@ function createScanProgressRenderer(progress: ProgressLine) {
         break;
       case "service-complete":
         if (event.serviceIndex === event.serviceCount - 1) {
-          const label = event.scope === "global" ? "global" : event.region;
+          const section = event.scope === "global" ? "global" : event.region;
           progress.log(
-            `  ✔ ${label} · ${event.serviceCount} services · ${formatDuration(
+            `  ✔ ${section} · ${event.serviceCount} services · ${formatDuration(
               Date.now() - sectionStartedAt,
             )}`,
           );
@@ -141,7 +158,54 @@ function createScanProgressRenderer(progress: ProgressLine) {
   };
 }
 
+function defaultRegionFor(
+  credentialSource: CredentialSource,
+  awsConfig?: SharedConfigFiles,
+): string {
+  return (
+    getDefaultRegion(
+      awsConfig?.configFile,
+      credentialSource.kind === "profile"
+        ? credentialSource.profile
+        : undefined,
+    ) ?? FALLBACK_REGION
+  );
+}
+
+/**
+ * Prompts for a credential source, and the profile or role it needs. Skips the first question when `kind` is known.
+ */
+async function promptCredentialSourceDetails(
+  awsConfig?: SharedConfigFiles,
+  knownKind?: CredentialSourceKind,
+): Promise<CredentialSource> {
+  const profiles = listProfiles(awsConfig);
+  const kind =
+    knownKind ??
+    (await promptCredentialSource({
+      envCredentialsAvailable: hasEnvCredentials(),
+      profiles,
+    }));
+  switch (kind) {
+    case "profile":
+      if (profiles.length === 0) {
+        throw usageError(
+          "No profiles found in your AWS config or credentials files.",
+        );
+      }
+      return { kind, profile: await promptProfile(profiles, awsConfig) };
+    case "role":
+      return { kind, roleToAssume: await promptRoleArn() };
+    case "env":
+      return { kind };
+    default:
+      return { kind: "default" };
+  }
+}
+
 export default class QuickstartCmd extends CommandLineAction {
+  #config: CommandLineStringParameter;
+
   #profile: CommandLineStringParameter;
 
   #roleToAssume: CommandLineStringParameter;
@@ -157,16 +221,24 @@ export default class QuickstartCmd extends CommandLineAction {
   public constructor(infrascanClient: Infrascan) {
     super({
       actionName: "quickstart",
-      summary: "Scans an AWS account and graphs it in one step",
+      summary: "Scans an environment of AWS accounts and graphs it in one step",
       documentation:
-        "Scans a single AWS account and generates both a visual (cytoscape) graph and an informational graph from the result.\n\n" +
-        "Credentials and regions can be given as flags. Anything not given is prompted for when running in a terminal. " +
+        "Scans one or more AWS accounts (an environment) and generates both a visual (cytoscape) graph and an informational graph covering all of them.\n\n" +
+        "Pass an environment file with --config (the same format as the scan command), or credentials and regions for a single account as flags. " +
+        "Anything not given is prompted for when running in a terminal, including whether to add more accounts and to save the environment to a file. " +
         "Outside of a terminal, the default credential provider chain and the default region from your AWS config are used.",
     });
     this.infrascanClient = infrascanClient;
   }
 
   protected onDefineParameters(): void {
+    this.#config = this.defineStringParameter({
+      parameterLongName: "--config",
+      parameterShortName: "-c",
+      argumentName: "PATH_TO_CONFIG",
+      description:
+        "Environment file listing the accounts and regions to scan, in the same format as the scan command's config. Can't be combined with --profile, --role-to-assume or --credential-source.",
+    });
     this.#profile = this.defineStringParameter({
       parameterLongName: "--profile",
       argumentName: "PROFILE",
@@ -189,7 +261,7 @@ export default class QuickstartCmd extends CommandLineAction {
       parameterLongName: "--region",
       argumentName: "REGION_TO_SCAN",
       description:
-        "The region to scan. This flag can be provided many times e.g. --region us-east-1 --region eu-west-1",
+        "The region to scan, applied to every account. This flag can be provided many times e.g. --region us-east-1 --region eu-west-1",
     });
     this.#outputDirectory = this.defineStringParameter({
       parameterLongName: "--output",
@@ -203,19 +275,11 @@ export default class QuickstartCmd extends CommandLineAction {
   protected async onExecute(): Promise<void> {
     const awsConfig = await loadSharedConfigFiles().catch(() => undefined);
 
-    let credentialSource: CredentialSource;
-    let defaultRegion: string;
-    let regions: string[];
+    let targets: AccountTarget[];
     try {
-      credentialSource = await this.#resolveCredentialSource(awsConfig);
-      defaultRegion =
-        getDefaultRegion(
-          awsConfig?.configFile,
-          credentialSource.kind === "profile"
-            ? credentialSource.profile
-            : undefined,
-        ) ?? FALLBACK_REGION;
-      regions = await this.#resolveRegions(credentialSource, defaultRegion);
+      targets = this.#config.value
+        ? this.#readEnvironment(this.#config.value, awsConfig)
+        : await this.#buildEnvironment(awsConfig);
     } catch (err) {
       if (isPromptCancelled(err)) {
         process.exitCode = 130;
@@ -229,7 +293,100 @@ export default class QuickstartCmd extends CommandLineAction {
       throw err;
     }
 
-    await this.#scanAndGraph(credentialSource, defaultRegion, regions);
+    await this.#scanAndGraph(targets);
+  }
+
+  get #runtimeRegions(): string[] | undefined {
+    return this.#regions.values.length > 0
+      ? [...this.#regions.values]
+      : undefined;
+  }
+
+  /**
+   * Loads an environment from a config file. Regions given with --region replace each account's regions, as in scan.
+   */
+  #readEnvironment(
+    path: string,
+    awsConfig?: SharedConfigFiles,
+  ): AccountTarget[] {
+    if (
+      this.#profile.value ||
+      this.#roleToAssume.value ||
+      this.#credentialSource.value
+    ) {
+      throw usageError(
+        "--config can't be combined with --profile, --role-to-assume or --credential-source.",
+      );
+    }
+    let config;
+    try {
+      config = getConfig(path);
+    } catch (err) {
+      throw usageError(`Couldn't read ${path}: ${errorMessage(err)}`);
+    }
+    if (config.length === 0) {
+      throw usageError(`${path} doesn't list any accounts.`);
+    }
+    return config.map((accountConfig) => {
+      const credentialSource = credentialSourceFromScanConfig(accountConfig);
+      if (credentialSource.kind === "env" && !hasEnvCredentials()) {
+        throw usageError(
+          `${path} uses environment credentials, but AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY aren't set.`,
+        );
+      }
+      return {
+        credentialSource,
+        regions: this.#runtimeRegions ?? accountConfig.regions,
+        defaultRegion:
+          accountConfig.defaultRegion ??
+          defaultRegionFor(credentialSource, awsConfig),
+      };
+    });
+  }
+
+  /**
+   * Builds an environment from flags and prompts. When credentials were prompted for, keeps offering to add more
+   * accounts, then offers to save the environment as a config file.
+   */
+  async #buildEnvironment(
+    awsConfig?: SharedConfigFiles,
+  ): Promise<AccountTarget[]> {
+    const credentialsFromFlags = Boolean(
+      this.#profile.value ||
+        this.#roleToAssume.value ||
+        this.#credentialSource.value,
+    );
+    const credentialSource = await this.#resolveCredentialSource(awsConfig);
+    const first = await this.#resolveAccount(credentialSource, awsConfig);
+    if (first == null) {
+      throw usageError("Couldn't resolve the account to scan.");
+    }
+    const targets: AccountTarget[] = [first];
+
+    if (credentialsFromFlags || !canPrompt()) {
+      return targets;
+    }
+
+    while (await promptAddAnotherAccount(targets.length)) {
+      const nextSource = await promptCredentialSourceDetails(awsConfig);
+      const next = await this.#resolveAccount(nextSource, awsConfig, targets);
+      if (next != null) {
+        targets.push(next);
+      }
+    }
+
+    const savePath = await promptSaveEnvironment();
+    if (savePath != null) {
+      writeConfig(
+        savePath,
+        targets.map(({ credentialSource: source, regions }) =>
+          scanConfigFromCredentialSource(source, regions),
+        ),
+      );
+      console.log(`✔ Saved environment to ${savePath}`);
+      console.log(`  Reuse it with: infrascan quickstart -c ${savePath}`);
+    }
+    return targets;
   }
 
   async #resolveCredentialSource(
@@ -260,20 +417,16 @@ export default class QuickstartCmd extends CommandLineAction {
       );
     }
 
-    const profiles = listProfiles(awsConfig);
-    let kind = explicitSource ?? impliedSource;
+    const kind = explicitSource ?? impliedSource;
     if (kind == null) {
       if (!canPrompt()) {
         return { kind: "default" };
       }
-      kind = await promptCredentialSource({
-        envCredentialsAvailable: hasEnvCredentials(),
-        profiles,
-      });
+      return promptCredentialSourceDetails(awsConfig);
     }
 
     switch (kind) {
-      case "profile": {
+      case "profile":
         if (profile) {
           return { kind, profile };
         }
@@ -282,14 +435,8 @@ export default class QuickstartCmd extends CommandLineAction {
             "--credential-source profile requires --profile when not running in a terminal.",
           );
         }
-        if (profiles.length === 0) {
-          throw usageError(
-            "No profiles found in your AWS config or credentials files.",
-          );
-        }
-        return { kind, profile: await promptProfile(profiles, awsConfig) };
-      }
-      case "role": {
+        return promptCredentialSourceDetails(awsConfig, kind);
+      case "role":
         if (roleToAssume) {
           return { kind, roleToAssume };
         }
@@ -298,8 +445,7 @@ export default class QuickstartCmd extends CommandLineAction {
             "--credential-source role requires --role-to-assume when not running in a terminal.",
           );
         }
-        return { kind, roleToAssume: await promptRoleArn() };
-      }
+        return promptCredentialSourceDetails(awsConfig, kind);
       case "env":
         if (!hasEnvCredentials()) {
           throw usageError(
@@ -312,15 +458,23 @@ export default class QuickstartCmd extends CommandLineAction {
     }
   }
 
-  async #resolveRegions(
+  /**
+   * Resolves the regions for an account. When prompting, the credentials are checked first, and an account already in
+   * the environment is turned away (returns undefined).
+   */
+  async #resolveAccount(
     credentialSource: CredentialSource,
-    defaultRegion: string,
-  ): Promise<string[]> {
-    if (this.#regions.values.length > 0) {
-      return [...this.#regions.values];
-    }
+    awsConfig?: SharedConfigFiles,
+    existing: AccountTarget[] = [],
+  ): Promise<AccountTarget | undefined> {
+    const defaultRegion = defaultRegionFor(credentialSource, awsConfig);
+    const runtimeRegions = this.#runtimeRegions;
     if (!canPrompt()) {
-      return [defaultRegion];
+      return {
+        credentialSource,
+        defaultRegion,
+        regions: runtimeRegions ?? [defaultRegion],
+      };
     }
 
     // Check the credentials work before asking anything else, and use them to find the account's regions.
@@ -332,16 +486,38 @@ export default class QuickstartCmd extends CommandLineAction {
     progress.update(
       `Checking credentials (${describeCredentialSource(credentialSource)})…`,
     );
+    let account: string | undefined;
     try {
-      const callerArn = await getCallerArn(credentials, defaultRegion);
-      progress.succeed(`Authenticated as ${callerArn}`);
+      const identity = await getCallerIdentity(credentials, defaultRegion);
+      account = identity.account;
+      progress.succeed(`Authenticated as ${identity.arn}`);
     } catch (err) {
       progress.fail(
         `Could not authenticate using ${describeCredentialSource(
           credentialSource,
         )}`,
       );
-      throw usageError(errorMessage(err));
+      if (existing.length === 0) {
+        throw usageError(errorMessage(err));
+      }
+      progress.log(`  ${errorMessage(err)}`);
+      return undefined;
+    }
+
+    if (account != null && existing.some((t) => t.account === account)) {
+      progress.log(
+        `  ⚠ Account ${account} is already in this environment, so it wasn't added again.`,
+      );
+      return undefined;
+    }
+
+    if (runtimeRegions != null) {
+      return {
+        credentialSource,
+        defaultRegion,
+        regions: runtimeRegions,
+        account,
+      };
     }
 
     progress.update("Listing regions…");
@@ -351,62 +527,95 @@ export default class QuickstartCmd extends CommandLineAction {
     ).catch(() => []);
     progress.stop();
 
-    if (availableRegions.length === 0) {
-      return promptRegionsFreeform(defaultRegion);
-    }
-    return promptRegions(availableRegions, defaultRegion);
+    const regions =
+      availableRegions.length === 0
+        ? await promptRegionsFreeform(defaultRegion)
+        : await promptRegions(availableRegions, defaultRegion);
+    return { credentialSource, defaultRegion, regions, account };
   }
 
-  async #scanAndGraph(
-    credentialSource: CredentialSource,
-    defaultRegion: string,
-    regions: string[],
-  ): Promise<void> {
+  async #scanAndGraph(targets: AccountTarget[]): Promise<void> {
     const outputDirectory = resolve(this.#outputDirectory.value as string);
     mkdirSync(outputDirectory, { recursive: true });
     const logPath = join(outputDirectory, LOG_FILE);
     const logStream = createWriteStream(logPath, { flags: "w" });
+    const logError = (err: unknown) => {
+      logStream.write(
+        `${new Date().toISOString()} ERROR ${
+          err instanceof Error ? err.stack : String(err)
+        }\n`,
+      );
+    };
 
     const progress = new ProgressLine();
-    progress.log(
-      `Using ${describeCredentialSource(
-        credentialSource,
-      )} · regions: ${regions.join(", ")}`,
-    );
+    if (targets.length > 1) {
+      progress.log(`Scanning an environment of ${targets.length} accounts`);
+    }
 
     // Everything the SDK and scanners log goes to the log file rather than the terminal.
     const restoreConsole = redirectConsole(logStream);
-    const renderScanProgress = createScanProgressRenderer(progress);
     const startedAt = Date.now();
+    const scanMetadata: ScanMetadata[] = [];
+    const failures: string[] = [];
     try {
-      progress.update("Connecting to AWS…");
       const connector = buildFsConnector(outputDirectory, {
         createTargetDirectory: true,
       });
-      const scanMetadata = await this.infrascanClient.performScan(
-        resolveCredentialProvider(credentialSource, ROLE_SESSION_NAME),
-        connector,
-        {
-          regions,
-          defaultRegion,
-          onProgress: (event) => {
-            if (event.type === "regions-resolved") {
-              const skipped = regions.filter(
-                (region) => !event.regions.includes(region),
-              );
-              if (skipped.length > 0) {
-                progress.log(
-                  `  ⚠ Skipping unknown region(s): ${skipped.join(", ")}`,
-                );
-              }
-            }
-            renderScanProgress(event);
-          },
-        },
+
+      for (const [index, target] of targets.entries()) {
+        const { credentialSource, regions, defaultRegion } = target;
+        const source = describeCredentialSource(credentialSource);
+        const position =
+          targets.length > 1 ? `${index + 1}/${targets.length}` : "";
+        const label = position ? `(${position} · ${source})` : `(${source})`;
+        const failureLabel = position
+          ? `${position} (${source})`
+          : `(${source})`;
+        const renderScanProgress = createScanProgressRenderer(progress, label);
+        progress.update(`Connecting to AWS ${label}…`);
+        try {
+          const accountMetadata = await this.infrascanClient.performScan(
+            resolveCredentialProvider(credentialSource, ROLE_SESSION_NAME),
+            connector,
+            {
+              regions,
+              defaultRegion,
+              onProgress: (event) => {
+                if (event.type === "regions-resolved" && regions != null) {
+                  const skipped = regions.filter(
+                    (region) => !event.regions.includes(region),
+                  );
+                  if (skipped.length > 0) {
+                    progress.log(
+                      `  ⚠ Skipping unknown region(s): ${skipped.join(", ")}`,
+                    );
+                  }
+                }
+                renderScanProgress(event);
+              },
+            },
+          );
+          scanMetadata.push(accountMetadata);
+        } catch (err) {
+          // Keep going so the rest of the environment is still scanned and graphed.
+          logError(err);
+          failures.push(failureLabel);
+          progress.fail(`Account ${failureLabel} failed: ${errorMessage(err)}`);
+        }
+      }
+
+      if (scanMetadata.length === 0) {
+        throw new Error("No accounts could be scanned.");
+      }
+      writeScanMetadata(outputDirectory, scanMetadata);
+      const regionCount = scanMetadata.reduce(
+        (total, { regions }) => total + regions.length,
+        0,
       );
-      writeScanMetadata(outputDirectory, [scanMetadata]);
+      const accountSummary =
+        targets.length > 1 ? `${scanMetadata.length} account(s), ` : "";
       progress.succeed(
-        `Scanned ${scanMetadata.regions.length} region(s) in ${formatDuration(
+        `Scanned ${accountSummary}${regionCount} region(s) in ${formatDuration(
           Date.now() - startedAt,
         )}`,
       );
@@ -439,17 +648,19 @@ export default class QuickstartCmd extends CommandLineAction {
       progress.log(`  Informational graph: ${displayPath(informationalPath)}`);
       progress.log(`  Scan log:            ${displayPath(logPath)}`);
       progress.log("");
+      if (failures.length > 0) {
+        progress.log(
+          `⚠ ${failures.length} account(s) failed and are missing from the graph. See the scan log for details.`,
+        );
+        process.exitCode = 1;
+      }
       progress.log(
         `View it with: infrascan render --input ${displayPath(
           visualPath,
         )} --browser`,
       );
     } catch (err) {
-      logStream.write(
-        `${new Date().toISOString()} ERROR ${
-          err instanceof Error ? err.stack : String(err)
-        }\n`,
-      );
+      logError(err);
       progress.fail(`Quickstart failed: ${errorMessage(err)}`);
       progress.log(`  See ${displayPath(logPath)} for details.`);
       process.exitCode = 1;
