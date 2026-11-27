@@ -1,4 +1,5 @@
-import { checkbox, input, select } from "@inquirer/prompts";
+import { existsSync } from "fs";
+import { checkbox, confirm, input, select } from "@inquirer/prompts";
 import type { SharedConfigFiles } from "@smithy/types";
 import type { CredentialSourceKind } from "./credentials";
 
@@ -142,4 +143,44 @@ export async function promptRegionsFreeform(
     },
   });
   return parseRegions(answer);
+}
+
+export async function promptAddAnotherAccount(
+  accountCount: number,
+): Promise<boolean> {
+  return confirm({
+    message: `Add another account to this environment? (${accountCount} so far)`,
+    default: false,
+  });
+}
+
+export const DEFAULT_ENVIRONMENT_FILE = "./infrascan-environment.json";
+
+/**
+ * Asks whether to save the environment to a config file, returning the path to save to, if any.
+ */
+export async function promptSaveEnvironment(): Promise<string | undefined> {
+  const save = await confirm({
+    message:
+      "Save this environment to a config file for infrascan scan -c / quickstart -c?",
+    default: false,
+  });
+  if (!save) {
+    return undefined;
+  }
+  const path = (
+    await input({
+      message: "Config file path:",
+      default: DEFAULT_ENVIRONMENT_FILE,
+      validate: (value) => value.trim().length > 0 || "Enter a file path.",
+    })
+  ).trim();
+  if (existsSync(path)) {
+    const overwrite = await confirm({
+      message: `${path} already exists. Overwrite it?`,
+      default: false,
+    });
+    return overwrite ? path : undefined;
+  }
+  return path;
 }

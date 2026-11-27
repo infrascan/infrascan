@@ -33,7 +33,7 @@ async function ensureBasePathExists(
 ) {
   const basePathExists = existsSync(absoluteBasePath);
   if (!basePathExists && createTargetDirectory) {
-    mkdir(absoluteBasePath, {
+    await mkdir(absoluteBasePath, {
       recursive: true,
     });
   }

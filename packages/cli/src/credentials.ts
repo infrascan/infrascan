@@ -8,6 +8,7 @@ import {
 import { DEFAULT_PROFILE } from "@smithy/shared-ini-file-loader";
 import type { SharedConfigFiles } from "@smithy/types";
 import type { CredentialProviderFactory } from "@infrascan/sdk";
+import type { AccountConfig } from "./config";
 
 export const CREDENTIAL_SOURCES = [
   "env",
@@ -29,19 +30,42 @@ export type CredentialSource =
   | { kind: "default" };
 
 /**
- * Maps an entry from the scan config file onto a credential source. `profile` takes precedence over `roleToAssume`.
+ * Maps an account from the scan config file onto a credential source.
+ * `profile` takes precedence over `roleToAssume`, which takes precedence over `credentialSource`.
  */
 export function credentialSourceFromScanConfig(
-  profile?: string,
-  roleToAssume?: string,
+  account: Pick<AccountConfig, "profile" | "roleToAssume" | "credentialSource">,
 ): CredentialSource {
-  if (profile) {
-    return { kind: "profile", profile };
+  if (account.profile) {
+    return { kind: "profile", profile: account.profile };
   }
-  if (roleToAssume) {
-    return { kind: "role", roleToAssume };
+  if (account.roleToAssume) {
+    return { kind: "role", roleToAssume: account.roleToAssume };
+  }
+  if (account.credentialSource === "env") {
+    return { kind: "env" };
   }
   return { kind: "default" };
+}
+
+/**
+ * The inverse of {@link credentialSourceFromScanConfig}: builds a scan config entry for an account.
+ */
+export function scanConfigFromCredentialSource(
+  source: CredentialSource,
+  regions?: string[],
+): AccountConfig {
+  const regionConfig = regions != null ? { regions } : {};
+  switch (source.kind) {
+    case "profile":
+      return { profile: source.profile, ...regionConfig };
+    case "role":
+      return { roleToAssume: source.roleToAssume, ...regionConfig };
+    case "env":
+      return { credentialSource: "env", ...regionConfig };
+    default:
+      return { ...regionConfig };
+  }
 }
 
 export function resolveCredentialProvider(
