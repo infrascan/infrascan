@@ -72,6 +72,50 @@ export async function getAllRegions(
 }
 
 /**
+ * Progress events emitted during {@link Infrascan.performScan}. Useful for rendering scan progress.
+ *
+ * Global services are scanned first (`scope: "global"`), followed by each regional service in each region.
+ */
+export type ScanProgressEvent =
+  | {
+      type: "account-start";
+      account: string;
+      defaultRegion: string;
+    }
+  | {
+      type: "regions-resolved";
+      account: string;
+      regions: string[];
+    }
+  | {
+      type: "service-start" | "service-complete";
+      scope: "global";
+      account: string;
+      region: string;
+      service: string;
+      serviceIndex: number;
+      serviceCount: number;
+    }
+  | {
+      type: "service-start" | "service-complete";
+      scope: "regional";
+      account: string;
+      region: string;
+      service: string;
+      serviceIndex: number;
+      serviceCount: number;
+      regionIndex: number;
+      regionCount: number;
+    }
+  | {
+      type: "account-complete";
+      account: string;
+      regions: string[];
+    };
+
+export type ScanProgressListener = (event: ScanProgressEvent) => void;
+
+/**
  * Returned type from a call to perform scan
  */
 export type ScanMetadata = {
