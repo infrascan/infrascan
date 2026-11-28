@@ -1,5 +1,11 @@
 # @infrascan/sdk
 
+## 0.8.0
+
+### Minor Changes
+
+- [#161](https://github.com/infrascan/infrascan/pull/161) [`6dd5312f698bab191b71de9aa38e0b13a6b88b22`](https://github.com/infrascan/infrascan/commit/6dd5312f698bab191b71de9aa38e0b13a6b88b22) Thanks [@lfarrel6](https://github.com/lfarrel6)! - `performScan` now accepts an `onProgress` listener, which receives a `ScanProgressEvent` as each account, region and service scan starts and completes.
+
 ## 0.7.1
 
 ### Patch Changes
