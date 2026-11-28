@@ -1,58 +1,18 @@
-import { writeFileSync } from "fs";
-import { resolve, join } from "path";
-
 import {
   CommandLineAction,
   CommandLineStringListParameter,
   CommandLineStringParameter,
 } from "@rushstack/ts-command-line";
 import buildFsConnector from "@infrascan/fs-connector";
-import {
-  fromIni,
-  fromNodeProviderChain,
-  fromTemporaryCredentials,
-} from "@aws-sdk/credential-providers";
 import { loadSharedConfigFiles } from "@smithy/shared-ini-file-loader";
 import Infrascan from "@infrascan/sdk";
-import type { CredentialProviderFactory } from "@infrascan/sdk";
+import type { ScanMetadata } from "@infrascan/sdk";
 import { ScanConfig, getConfig, getDefaultRegion } from "../config";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function writeScanMetadata(outputDirectory: string, metadata: any) {
-  writeFileSync(
-    join(resolve(outputDirectory), "metadata.json"),
-    JSON.stringify(metadata),
-    "utf8",
-  );
-}
-
-function resolveCredentialProvider(
-  profile?: string,
-  roleToAssume?: string,
-): CredentialProviderFactory {
-  if (profile) {
-    return (region: string) =>
-      fromIni({
-        profile,
-        clientConfig: { region },
-      });
-  }
-  if (roleToAssume) {
-    return (region: string) =>
-      fromTemporaryCredentials({
-        params: {
-          RoleArn: roleToAssume,
-          RoleSessionName: "infrascan-cli-scan",
-        },
-        clientConfig: { region },
-      });
-  }
-  console.log(
-    "No profile or role given, falling back to default provider chain.",
-  );
-  return (region: string) =>
-    fromNodeProviderChain({ clientConfig: { region } });
-}
+import {
+  credentialSourceFromScanConfig,
+  resolveCredentialProvider,
+} from "../credentials";
+import { writeScanMetadata } from "../state";
 
 export default class ScanCmd extends CommandLineAction {
   private _config: CommandLineStringParameter;
@@ -121,7 +81,7 @@ export default class ScanCmd extends CommandLineAction {
       createTargetDirectory: true,
     });
 
-    const metadata = [];
+    const metadata: ScanMetadata[] = [];
     for (const accountConfig of scanConfig) {
       // Resolving credentials is left up to the SDK — performing a full scan can take some time, so the SDK may need to refresh credentials.
       const {
@@ -131,7 +91,16 @@ export default class ScanCmd extends CommandLineAction {
         defaultRegion: configDefaultRegion,
       } = accountConfig;
 
-      const credentials = resolveCredentialProvider(profile, roleToAssume);
+      const credentialSource = credentialSourceFromScanConfig(
+        profile,
+        roleToAssume,
+      );
+      if (credentialSource.kind === "default") {
+        console.log(
+          "No profile or role given, falling back to default provider chain.",
+        );
+      }
+      const credentials = resolveCredentialProvider(credentialSource);
 
       const defaultRegion =
         configDefaultRegion ?? getDefaultRegion(awsConfig?.configFile, profile);
